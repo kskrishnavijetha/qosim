@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { GitBranch, Play, Pause, RotateCcw, Zap, Undo, Download, Trash2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { quantumSimulator, type QuantumGate, type SimulationResult } from "@/lib/quantumSimulator";
 
 interface Gate {
   id: string;
@@ -30,13 +31,7 @@ export function CircuitsPanel() {
     hoverPosition: null
   });
   const [history, setHistory] = useState<Gate[][]>([[]]);
-  const [quantumStates, setQuantumStates] = useState([
-    { qubit: 0, state: '|0⟩', amplitude: { re: 1, im: 0 }, phase: 0 },
-    { qubit: 1, state: '|0⟩', amplitude: { re: 1, im: 0 }, phase: 0 },
-    { qubit: 2, state: '|0⟩', amplitude: { re: 1, im: 0 }, phase: 0 },
-    { qubit: 3, state: '|0⟩', amplitude: { re: 1, im: 0 }, phase: 0 },
-    { qubit: 4, state: '|0⟩', amplitude: { re: 1, im: 0 }, phase: 0 },
-  ]);
+  const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
   
   const circuitRef = useRef<HTMLDivElement>(null);
   const NUM_QUBITS = 5;
@@ -53,52 +48,20 @@ export function CircuitsPanel() {
   ];
 
   const simulateQuantumState = useCallback((gates: Gate[]) => {
-    const newStates = [...quantumStates];
+    // Convert our Gate interface to QuantumGate interface
+    const quantumGates: QuantumGate[] = gates.map(gate => ({
+      id: gate.id,
+      type: gate.type,
+      qubit: gate.qubit,
+      qubits: gate.qubits,
+      position: gate.position,
+      angle: gate.angle
+    }));
     
-    gates.forEach(gate => {
-      switch (gate.type) {
-        case 'H':
-          if (gate.qubit !== undefined) {
-            newStates[gate.qubit] = {
-              ...newStates[gate.qubit],
-              state: '(|0⟩ + |1⟩)/√2',
-              amplitude: { re: 0.707, im: 0 },
-              phase: 0
-            };
-          }
-          break;
-        case 'X':
-          if (gate.qubit !== undefined) {
-            newStates[gate.qubit] = {
-              ...newStates[gate.qubit],
-              state: newStates[gate.qubit].state === '|0⟩' ? '|1⟩' : '|0⟩',
-              phase: newStates[gate.qubit].phase + Math.PI
-            };
-          }
-          break;
-        case 'Z':
-          if (gate.qubit !== undefined && newStates[gate.qubit].state === '|1⟩') {
-            newStates[gate.qubit] = {
-              ...newStates[gate.qubit],
-              phase: newStates[gate.qubit].phase + Math.PI
-            };
-          }
-          break;
-        case 'RX':
-        case 'RY':
-          if (gate.qubit !== undefined) {
-            newStates[gate.qubit] = {
-              ...newStates[gate.qubit],
-              state: '|ψ⟩',
-              amplitude: { re: Math.cos((gate.angle || Math.PI/4) / 2), im: Math.sin((gate.angle || Math.PI/4) / 2) }
-            };
-          }
-          break;
-      }
-    });
-    
-    setQuantumStates(newStates);
-  }, [quantumStates]);
+    // Run the quantum simulation
+    const result = quantumSimulator.simulate(quantumGates);
+    setSimulationResult(result);
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent, gateType: string) => {
     e.preventDefault();
@@ -182,7 +145,7 @@ export function CircuitsPanel() {
   const handleClear = () => {
     setCircuit([]);
     setHistory([[]]);
-    setQuantumStates(quantumStates.map(s => ({ ...s, state: '|0⟩', amplitude: { re: 1, im: 0 }, phase: 0 })));
+    setSimulationResult(null);
   };
 
   const handleDeleteGate = (gateId: string) => {
@@ -245,9 +208,12 @@ export function CircuitsPanel() {
     a.click();
   };
 
-  const getBlochSphereStyle = (state: typeof quantumStates[0]) => {
-    const { amplitude, phase } = state;
-    const theta = 2 * Math.acos(amplitude.re);
+  const getBlochSphereStyle = (qubitState: { 
+    amplitude: { real: number; imag: number }; 
+    phase: number; 
+  }) => {
+    const { amplitude, phase } = qubitState;
+    const theta = 2 * Math.acos(Math.abs(amplitude.real));
     const phi = phase;
     
     return {
@@ -336,7 +302,7 @@ export function CircuitsPanel() {
                       <div className="w-8 text-xs font-mono text-quantum-neon absolute -left-10">q{i}</div>
                       <div className="w-full h-0.5 bg-quantum-neon relative entanglement-line"></div>
                       <div className="w-16 text-xs font-mono text-muted-foreground absolute -right-20">
-                        {quantumStates[i].state}
+                        {simulationResult?.qubitStates[i]?.state || '|0⟩'}
                       </div>
                     </div>
                   ))}
@@ -395,22 +361,51 @@ export function CircuitsPanel() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-4">
-              {quantumStates.map((state, i) => (
-                <div key={i} className="flex flex-col items-center space-y-2">
-                  <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
-                  <div 
-                    className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation"
-                    style={getBlochSphereStyle(state)}
-                  >
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+              {Array.from({ length: NUM_QUBITS }).map((_, i) => {
+                const qubitState = simulationResult?.qubitStates[i] || {
+                  state: '|0⟩',
+                  amplitude: { real: 1, imag: 0 },
+                  phase: 0,
+                  probability: 1
+                };
+                
+                return (
+                  <div key={i} className="flex flex-col items-center space-y-2">
+                    <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
+                    <div 
+                      className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation"
+                      style={getBlochSphereStyle(qubitState)}
+                    >
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div className="text-xs font-mono text-center">
+                      <div className="text-quantum-neon">{qubitState.state}</div>
+                      <div className="text-muted-foreground">φ: {qubitState.phase.toFixed(2)}</div>
+                      <div className="text-muted-foreground">P: {qubitState.probability.toFixed(3)}</div>
+                    </div>
                   </div>
-                  <div className="text-xs font-mono text-center">
-                    <div className="text-quantum-neon">{state.state}</div>
-                    <div className="text-muted-foreground">φ: {state.phase.toFixed(2)}</div>
+                );
+              })}
+            </div>
+            
+            {/* State Vector Display */}
+            {simulationResult && (
+              <div className="mt-6 p-4 bg-quantum-matrix rounded-lg">
+                <h4 className="text-sm font-mono text-quantum-neon mb-2">State Vector</h4>
+                <div className="text-xs font-mono text-muted-foreground max-h-20 overflow-y-auto">
+                  {quantumSimulator.getStateString()}
+                </div>
+                <div className="mt-2">
+                  <h5 className="text-xs font-mono text-quantum-particle">Measurement Probabilities</h5>
+                  <div className="text-xs font-mono text-muted-foreground">
+                    {simulationResult.measurementProbabilities
+                      .map((prob, i) => prob > 0.001 ? `|${i.toString(2).padStart(NUM_QUBITS, '0')}⟩: ${(prob * 100).toFixed(1)}%` : null)
+                      .filter(Boolean)
+                      .join(', ')}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
