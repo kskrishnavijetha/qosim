@@ -71,13 +71,27 @@ export function CircuitsPanel() {
                   </div>
                 </div>
 
-                {/* Circuit Visualization */}
-                <div className="mt-4 bg-quantum-matrix rounded p-3">
-                  <div className="grid grid-cols-8 gap-1">
+                {/* Enhanced Circuit Visualization */}
+                <div className="mt-4 bg-quantum-matrix rounded-lg p-4 quantum-panel">
+                  <div className="space-y-4">
                     {Array.from({ length: circuit.qubits }).map((_, i) => (
-                      <div key={i} className="h-8 flex items-center">
-                        <div className="w-full h-px bg-quantum-neon relative">
-                          <div className="absolute -top-2 -left-2 w-4 h-4 bg-quantum-glow rounded-full particle-animation"></div>
+                      <div key={i} className="flex items-center">
+                        <div className="w-8 text-xs font-mono text-quantum-neon">q{i}</div>
+                        <div className="flex-1 relative h-6 flex items-center">
+                          {/* Quantum wire */}
+                          <div className="w-full h-0.5 bg-quantum-neon relative entanglement-line"></div>
+                          
+                          {/* Quantum gates */}
+                          <div className="absolute left-1/4 w-8 h-8 bg-quantum-glow rounded border-2 border-quantum-glow flex items-center justify-center text-xs font-bold text-black quantum-float">
+                            H
+                          </div>
+                          <div className="absolute left-1/2 w-8 h-8 bg-quantum-neon rounded border-2 border-quantum-neon flex items-center justify-center text-xs font-bold text-black quantum-float">
+                            X
+                          </div>
+                          <div className="absolute left-3/4 w-2 h-2 bg-quantum-particle rounded-full particle-animation"></div>
+                        </div>
+                        <div className="w-16 text-xs font-mono text-muted-foreground text-right">
+                          |{Math.random() > 0.5 ? '0' : '1'}⟩
                         </div>
                       </div>
                     ))}

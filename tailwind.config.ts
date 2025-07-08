@@ -67,8 +67,13 @@ export default {
 					neon: 'hsl(var(--quantum-neon))',
 					void: 'hsl(var(--quantum-void))',
 					matrix: 'hsl(var(--quantum-matrix))',
-					particle: 'hsl(var(--quantum-particle))'
+					particle: 'hsl(var(--quantum-particle))',
+					plasma: 'hsl(var(--quantum-plasma))',
+					energy: 'hsl(var(--quantum-energy))'
 				}
+			},
+			fontFamily: {
+				mono: ['Fira Code', 'JetBrains Mono', 'Consolas', 'Monaco', 'monospace'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

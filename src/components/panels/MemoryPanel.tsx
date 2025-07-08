@@ -75,24 +75,47 @@ export function MemoryPanel() {
             <CardTitle className="text-lg font-mono text-quantum-glow">Qubit State Matrix</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-8 gap-3">
               {qubits.slice(0, 64).map((qubit) => (
                 <div
                   key={qubit.id}
                   className={`
-                    relative w-12 h-12 rounded border-2 font-mono text-xs flex items-center justify-center cursor-pointer
-                    transition-all duration-300 hover:scale-110
+                    relative w-14 h-14 rounded-lg border-2 font-mono text-xs flex items-center justify-center cursor-pointer
+                    transition-all duration-500 hover:scale-110 hover:z-10
                     ${qubit.entangled 
-                      ? 'border-quantum-glow bg-quantum-glow/20 text-quantum-glow quantum-glow' 
-                      : 'border-quantum-neon bg-quantum-neon/10 text-quantum-neon'
+                      ? 'border-quantum-glow bg-quantum-glow/20 text-quantum-glow quantum-glow quantum-float' 
+                      : 'border-quantum-neon bg-quantum-neon/10 text-quantum-neon hover:border-quantum-glow hover:text-quantum-glow'
                     }
                   `}
                   title={`Qubit ${qubit.id}: ${qubit.state}, Coherence: ${qubit.coherence.toFixed(1)}%`}
                 >
-                  <span>{qubit.state}</span>
+                  <span className="z-10 relative font-bold">{qubit.state}</span>
+                  
+                  {/* Coherence indicator */}
+                  <div 
+                    className="absolute bottom-1 left-1 right-1 h-1 bg-quantum-matrix rounded-full overflow-hidden"
+                  >
+                    <div 
+                      className="h-full bg-gradient-to-r from-quantum-glow to-quantum-neon transition-all duration-300"
+                      style={{ width: `${qubit.coherence}%` }}
+                    />
+                  </div>
+                  
+                  {/* Entanglement indicator */}
                   {qubit.entangled && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-quantum-glow rounded-full particle-animation" />
+                    <>
+                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-quantum-glow rounded-full particle-animation quantum-orbit" />
+                      <div className="absolute inset-0 border-2 border-quantum-glow rounded-lg animate-pulse" />
+                    </>
                   )}
+                  
+                  {/* Amplitude visualization */}
+                  <div 
+                    className="absolute inset-0 rounded-lg pointer-events-none"
+                    style={{
+                      background: `radial-gradient(circle, hsl(var(--quantum-particle) / ${qubit.amplitude * 0.3}), transparent)`
+                    }}
+                  />
                 </div>
               ))}
             </div>
