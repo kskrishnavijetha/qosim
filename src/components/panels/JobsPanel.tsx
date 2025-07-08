@@ -146,7 +146,7 @@ export function JobsPanel() {
     }
   };
 
-  const handleJobAction = (jobId: string, action: "run" | "pause" | "resume" | "delete") => {
+  const handleJobAction = async (jobId: string, action: "run" | "pause" | "resume" | "delete") => {
     setJobs(prev => prev.map(job => {
       if (job.id === jobId) {
         const newLogs = [...job.logs];
@@ -156,6 +156,8 @@ export function JobsPanel() {
           case "run":
             if (job.status === "queued") {
               newLogs.push(`${timestamp} INFO: Job started`);
+              // Start simulation asynchronously
+              simulateJob(jobId, job.circuit);
               return { ...job, status: "running" as const, logs: newLogs, startTime: new Date() };
             }
             break;
@@ -177,6 +179,86 @@ export function JobsPanel() {
       }
       return job;
     }).filter(Boolean) as Job[]);
+  };
+
+  const simulateJob = async (jobId: string, circuit: QuantumGate[]) => {
+    try {
+      // Add simulation start log
+      addJobLog(jobId, "INFO", "Starting quantum simulation...");
+      
+      if (circuit.length === 0) {
+        throw new Error("Empty circuit - no gates to simulate");
+      }
+
+      // Validate circuit
+      const maxQubit = Math.max(
+        ...circuit.flatMap(gate => 
+          gate.qubit !== undefined ? [gate.qubit] : gate.qubits || []
+        )
+      );
+      
+      if (maxQubit >= 5) {
+        throw new Error(`Circuit uses qubit ${maxQubit}, but simulator supports max 5 qubits (0-4)`);
+      }
+
+      addJobLog(jobId, "INFO", `Circuit validated: ${circuit.length} gates, ${maxQubit + 1} qubits`);
+      
+      // Simulate the circuit
+      const result = quantumSimulator.simulate(circuit);
+      
+      // Add detailed results to logs
+      addJobLog(jobId, "INFO", "Simulation completed successfully");
+      addJobLog(jobId, "INFO", `State vector: ${quantumSimulator.getStateString()}`);
+      
+      // Display qubit states
+      result.qubitStates.forEach((qubitState, index) => {
+        const prob = (qubitState.probability * 100).toFixed(1);
+        const phase = (qubitState.phase * 180 / Math.PI).toFixed(1);
+        addJobLog(jobId, "INFO", `Qubit ${index}: ${qubitState.state} (${prob}% probability, ${phase}° phase)`);
+      });
+
+      // Display measurement probabilities for basis states
+      const significantStates = result.measurementProbabilities
+        .map((prob, index) => ({ index, prob }))
+        .filter(({ prob }) => prob > 0.001)
+        .sort((a, b) => b.prob - a.prob)
+        .slice(0, 5);
+
+      addJobLog(jobId, "INFO", "Measurement probabilities:");
+      significantStates.forEach(({ index, prob }) => {
+        const binaryState = index.toString(2).padStart(maxQubit + 1, '0');
+        addJobLog(jobId, "INFO", `  |${binaryState}⟩: ${(prob * 100).toFixed(2)}%`);
+      });
+
+      // Mark job as completed
+      setJobs(prev => prev.map(job => 
+        job.id === jobId 
+          ? { ...job, status: "completed" as const, progress: 100, endTime: new Date() }
+          : job
+      ));
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown simulation error";
+      addJobLog(jobId, "ERROR", `Simulation failed: ${errorMessage}`);
+      
+      // Mark job as failed
+      setJobs(prev => prev.map(job => 
+        job.id === jobId 
+          ? { ...job, status: "failed" as const, endTime: new Date() }
+          : job
+      ));
+    }
+  };
+
+  const addJobLog = (jobId: string, level: string, message: string) => {
+    const timestamp = `[${new Date().toLocaleTimeString()}]`;
+    const logEntry = `${timestamp} ${level}: ${message}`;
+    
+    setJobs(prev => prev.map(job => 
+      job.id === jobId 
+        ? { ...job, logs: [...job.logs, logEntry] }
+        : job
+    ));
   };
 
   const createNewJob = () => {
