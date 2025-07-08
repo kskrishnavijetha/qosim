@@ -109,6 +109,10 @@ export function CircuitsPanel() {
       const newCircuit = [...circuit, newGate];
       setCircuit(newCircuit);
       setHistory(prev => [...prev, newCircuit]);
+      
+      // Generate standardized circuit data structure and simulate
+      const circuitData = generateCircuitData(newCircuit);
+      console.log('Generated circuit data:', circuitData);
       simulateQuantumState(newCircuit);
     }
     
@@ -155,14 +159,20 @@ export function CircuitsPanel() {
     simulateQuantumState(newCircuit);
   };
 
+  const generateCircuitData = (gates: Gate[]) => {
+    return gates
+      .sort((a, b) => a.position - b.position) // Sort by time step
+      .map(gate => ({
+        gate: gate.type,
+        qubit: gate.qubit,
+        qubits: gate.qubits,
+        time: gate.position,
+        angle: gate.angle
+      }));
+  };
+
   const exportToJSON = () => {
-    const data = circuit.map(gate => ({
-      gate: gate.type,
-      qubit: gate.qubit,
-      qubits: gate.qubits,
-      time: gate.position,
-      angle: gate.angle
-    }));
+    const data = generateCircuitData(circuit);
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
