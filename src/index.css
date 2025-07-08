@@ -2,41 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Quantum OS Simulator Design System - Dark quantum theme with neon accents */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 263 70% 50%;
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 215 25% 27%;
+    --muted-foreground: 217 10% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 20% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 263 70% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Quantum-specific design tokens */
+    --quantum-glow: 263 70% 50%;
+    --quantum-neon: 199 89% 48%;
+    --quantum-void: 224 71% 4%;
+    --quantum-matrix: 215 25% 27%;
+    --quantum-particle: 263 85% 65%;
+    
+    /* Gradients */
+    --gradient-quantum: linear-gradient(135deg, hsl(263, 70%, 50%), hsl(199, 89%, 48%));
+    --gradient-void: linear-gradient(180deg, hsl(224, 71%, 4%), hsl(215, 25%, 27%));
+    --gradient-glow: radial-gradient(circle, hsl(263, 70%, 50% / 0.3), transparent);
+    
+    /* Shadows and glows */
+    --shadow-quantum: 0 0 20px hsl(263, 70%, 50% / 0.5);
+    --shadow-neon: 0 0 15px hsl(199, 89%, 48% / 0.4);
+    --shadow-void: 0 10px 30px hsl(224, 71%, 4% / 0.8);
+    
+    /* Animations */
+    --transition-quantum: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +119,85 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
+  }
+}
+
+@layer components {
+  /* Quantum UI Components */
+  .quantum-glow {
+    box-shadow: var(--shadow-quantum);
+    transition: var(--transition-quantum);
+  }
+  
+  .quantum-glow:hover {
+    box-shadow: 0 0 30px hsl(var(--quantum-glow) / 0.8);
+  }
+  
+  .neon-border {
+    border: 1px solid hsl(var(--quantum-neon) / 0.5);
+    box-shadow: 0 0 10px hsl(var(--quantum-neon) / 0.3);
+  }
+  
+  .quantum-panel {
+    background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    backdrop-filter: blur(10px);
+  }
+  
+  .quantum-grid {
+    background-image: 
+      linear-gradient(hsl(var(--quantum-neon) / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--quantum-neon) / 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .particle-animation {
+    animation: var(--animation-pulse);
+  }
+  
+  .holographic {
+    background: linear-gradient(45deg, 
+      hsl(var(--quantum-glow) / 0.1), 
+      hsl(var(--quantum-neon) / 0.1), 
+      hsl(var(--quantum-particle) / 0.1)
+    );
+    background-size: 400% 400%;
+    animation: holographic-shift 4s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-quantum-glow {
+    color: hsl(var(--quantum-glow));
+  }
+  
+  .text-quantum-neon {
+    color: hsl(var(--quantum-neon));
+  }
+  
+  .bg-quantum-void {
+    background-color: hsl(var(--quantum-void));
+  }
+  
+  .bg-quantum-matrix {
+    background-color: hsl(var(--quantum-matrix));
+  }
+}
+
+@keyframes holographic-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes quantum-pulse {
+  0%, 100% { 
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.05);
   }
 }
