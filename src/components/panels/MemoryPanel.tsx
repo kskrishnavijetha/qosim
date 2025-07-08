@@ -1,16 +1,47 @@
 import { Database, Zap, Activity, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { BlochSphere } from "@/components/BlochSphere";
+import { quantumSimulator } from "@/lib/quantumSimulator";
 
 export function MemoryPanel() {
-  // Simulate quantum memory states
-  const qubits = Array.from({ length: 64 }, (_, i) => ({
-    id: i,
-    state: Math.random() > 0.5 ? "|1⟩" : "|0⟩",
-    coherence: Math.random() * 100,
-    entangled: Math.random() > 0.7,
-    amplitude: Math.random(),
+  // Get current quantum state from simulator
+  const result = quantumSimulator.getResult();
+  
+  // Create qubit states based on simulation
+  const simulatedQubits = result.qubitStates.map((qubit, index) => ({
+    id: index,
+    state: qubit.state,
+    coherence: qubit.probability * 100,
+    entangled: Math.abs(qubit.probability - 0.5) < 0.1, // Consider near 50% as superposition/entangled
+    amplitude: qubit.probability,
+    blochState: {
+      amplitude0: { real: Math.sqrt(1 - qubit.probability), imag: 0 },
+      amplitude1: { real: Math.sqrt(qubit.probability) * Math.cos(qubit.phase), imag: Math.sqrt(qubit.probability) * Math.sin(qubit.phase) },
+      probability0: 1 - qubit.probability,
+      probability1: qubit.probability,
+      phase: qubit.phase
+    }
   }));
+
+  // Fill remaining slots with simulated data for visualization
+  const qubits = [
+    ...simulatedQubits,
+    ...Array.from({ length: 64 - simulatedQubits.length }, (_, i) => ({
+      id: simulatedQubits.length + i,
+      state: Math.random() > 0.5 ? "|1⟩" : "|0⟩",
+      coherence: Math.random() * 100,
+      entangled: Math.random() > 0.7,
+      amplitude: Math.random(),
+      blochState: {
+        amplitude0: { real: Math.sqrt(Math.random()), imag: 0 },
+        amplitude1: { real: Math.sqrt(Math.random()), imag: 0 },
+        probability0: Math.random(),
+        probability1: Math.random(),
+        phase: Math.random() * Math.PI * 2
+      }
+    }))
+  ];
 
   const memoryBanks = [
     { id: "QMB-0", name: "Primary Quantum Register", capacity: "256 qubits", used: "128 qubits", coherence: 98.3 },
@@ -128,6 +159,29 @@ export function MemoryPanel() {
                 <div className="w-3 h-3 border-2 border-quantum-glow bg-quantum-glow/20 rounded" />
                 <span className="text-muted-foreground">Entangled</span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bloch Sphere Visualization */}
+        <Card className="quantum-panel neon-border">
+          <CardHeader>
+            <CardTitle className="text-lg font-mono text-quantum-glow">Bloch Sphere Visualization</CardTitle>
+            <p className="text-sm text-muted-foreground font-mono">3D quantum state representation</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {simulatedQubits.slice(0, 6).map((qubit) => (
+                <div key={qubit.id} className="space-y-2">
+                  <div className="text-sm font-mono text-quantum-neon">
+                    Qubit {qubit.id}
+                  </div>
+                  <BlochSphere 
+                    qubitState={qubit.blochState}
+                    size={180}
+                  />
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
