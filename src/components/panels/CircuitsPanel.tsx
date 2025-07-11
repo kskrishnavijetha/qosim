@@ -1,20 +1,15 @@
-import React, { useState } from "react";
-import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
-import { ExistingCircuitsList } from "@/components/circuits/ExistingCircuitsList";
-import { GateSuggestionsPanel } from "@/components/circuits/GateSuggestionsPanel";
-import { ExportDialog } from "@/components/dialogs/ExportDialog";
+import React, { useState, useEffect } from "react";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
-import { CircuitActions } from "@/components/circuits/CircuitActions";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
 import { SimulationModeSelector } from "@/components/simulation/SimulationModeSelector";
-import { EntanglementVisualization } from "@/components/simulation/EntanglementVisualization";
+import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
-import { LearningModeToggle } from "@/components/learning/LearningModeToggle";
-import { TutorialStepGuide } from "@/components/learning/TutorialStepGuide";
-import { CircuitTemplates } from "@/components/learning/CircuitTemplates";
-import { ProgressTracker } from "@/components/learning/ProgressTracker";
+import { useTemplateLoader } from "@/hooks/useTemplateLoader";
+import { CircuitPanelHeader } from "./CircuitPanelHeader";
+import { LearningModeSection } from "./LearningModeSection";
+import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
 
 export function CircuitsPanel() {
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -59,6 +54,12 @@ export function CircuitsPanel() {
     onGateAdd: addGate,
     numQubits: NUM_QUBITS,
     gridSize: GRID_SIZE
+  });
+
+  const { handleTemplateLoad } = useTemplateLoader({
+    addGate,
+    clearCircuit,
+    completeTemplate
   });
 
   // Legacy simple exports (kept for quick access)
@@ -113,27 +114,8 @@ export function CircuitsPanel() {
     console.log('Suggestion clicked:', suggestion);
   };
 
-  const handleTemplateLoad = (template: any) => {
-    clearCircuit();
-    // Load template gates one by one with proper positioning
-    template.gates.forEach((gateData: any, index: number) => {
-      setTimeout(() => {
-        const gate = {
-          ...gateData,
-          id: `template-gate-${index}-${Date.now()}`
-        };
-        addGate(gate);
-        
-        // Complete template after all gates are loaded
-        if (index === template.gates.length - 1) {
-          setTimeout(() => completeTemplate(template.id), 100);
-        }
-      }, index * 200); // Stagger gate placement for visual effect
-    });
-  };
-
   // Check tutorial progress when circuit changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLearningMode) {
       checkStepCompletion(circuit);
     }
@@ -142,26 +124,24 @@ export function CircuitsPanel() {
   return (
     <div className="h-full overflow-auto quantum-grid">
       <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="animate-in fade-in slide-in-from-left">
-            <h2 className="text-xl lg:text-2xl font-bold text-quantum-glow">Quantum Circuit Builder</h2>
-            <p className="text-muted-foreground font-mono text-sm">Drag and drop gates to build quantum circuits</p>
-          </div>
-          <CircuitActions
-            onUndo={undo}
-            onClear={clearCircuit}
-            onExportJSON={exportToJSON}
-            onExportQASM={exportToQASM}
-            onShowExportDialog={() => setShowExportDialog(true)}
-            canUndo={canUndo}
-          />
-        </div>
+        <CircuitPanelHeader
+          onUndo={undo}
+          onClear={clearCircuit}
+          onExportJSON={exportToJSON}
+          onExportQASM={exportToQASM}
+          onShowExportDialog={() => setShowExportDialog(true)}
+          canUndo={canUndo}
+        />
 
-        {/* Learning Mode Toggle */}
-        <LearningModeToggle
+        <LearningModeSection
           isLearningMode={isLearningMode}
           onToggle={toggleLearningMode}
           progress={progress}
+          currentStep={currentStep}
+          onReset={resetTutorial}
+          templates={templates}
+          onSelectTemplate={selectTemplate}
+          onLoadTemplate={handleTemplateLoad}
         />
 
         {/* Circuit Builder */}
@@ -185,54 +165,12 @@ export function CircuitsPanel() {
           isCloudConfigured={isCloudConfigured}
         />
 
-        {isLearningMode && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-            {/* Tutorial Guide */}
-            <TutorialStepGuide
-              currentStep={currentStep}
-              onReset={resetTutorial}
-            />
-
-            {/* Progress Tracker */}
-            <ProgressTracker
-              progress={progress}
-              totalTemplates={templates.length}
-            />
-          </div>
-        )}
-
-        {isLearningMode && (
-          /* Circuit Templates */
-          <CircuitTemplates
-            templates={templates}
-            completedTemplates={progress.completedTemplates}
-            onSelectTemplate={selectTemplate}
-            onLoadTemplate={handleTemplateLoad}
-          />
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          {/* Live Quantum State Visualization */}
-          <QuantumStateVisualization 
-            simulationResult={simulationResult} 
-            NUM_QUBITS={NUM_QUBITS} 
-          />
-
-          {/* Entanglement Analysis */}
-          <EntanglementVisualization
-            simulationResult={simulationResult}
-            numQubits={NUM_QUBITS}
-          />
-        </div>
-
-        {/* AI Suggestions Panel */}
-        <GateSuggestionsPanel 
+        <CircuitVisualizationSection
+          simulationResult={simulationResult}
+          numQubits={NUM_QUBITS}
           circuit={circuit}
           onSuggestionClick={handleSuggestionClick}
         />
-
-        {/* Existing Circuits */}
-        <ExistingCircuitsList />
 
         {/* Export Dialog */}
         <ExportDialog
