@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from "react";
-import { Undo, Download, Trash2 } from "lucide-react";
+import { Undo, Download, Trash2, Share, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { quantumSimulator, type QuantumGate, type SimulationResult } from "@/lib/quantumSimulator";
@@ -8,6 +8,7 @@ import { CircuitGrid } from "@/components/circuits/CircuitGrid";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
 import { ExistingCircuitsList } from "@/components/circuits/ExistingCircuitsList";
 import { GateSuggestionsPanel } from "@/components/circuits/GateSuggestionsPanel";
+import { ExportDialog } from "@/components/dialogs/ExportDialog";
 
 interface Gate {
   id: string;
@@ -37,6 +38,7 @@ export function CircuitsPanel() {
   });
   const [history, setHistory] = useState<Gate[][]>([[]]);
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   
   const circuitRef = useRef<HTMLDivElement>(null);
   const NUM_QUBITS = 5;
@@ -176,6 +178,7 @@ export function CircuitsPanel() {
       }));
   };
 
+  // Legacy simple exports (kept for quick access)
   const exportToJSON = () => {
     const data = generateCircuitData(circuit);
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -253,6 +256,10 @@ export function CircuitsPanel() {
               <Download className="w-4 h-4 mr-2" />
               QASM
             </Button>
+            <Button onClick={() => setShowExportDialog(true)} className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
+              <FileDown className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Advanced Export</span>
+            </Button>
           </div>
         </div>
 
@@ -299,6 +306,15 @@ export function CircuitsPanel() {
 
         {/* Existing Circuits */}
         <ExistingCircuitsList />
+
+        {/* Export Dialog */}
+        <ExportDialog
+          open={showExportDialog}
+          onOpenChange={setShowExportDialog}
+          circuit={circuit}
+          circuitRef={circuitRef}
+          numQubits={NUM_QUBITS}
+        />
 
         {/* Dragging Gate */}
         {dragState.isDragging && (
