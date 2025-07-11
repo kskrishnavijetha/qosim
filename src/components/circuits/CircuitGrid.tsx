@@ -66,28 +66,30 @@ export function CircuitGrid({
         ))}
 
         {/* Placed Gates */}
-        {circuit.map(gate => (
+        {circuit.map((gate, index) => (
           <div
             key={gate.id}
-            className={`absolute w-10 h-10 rounded border-2 flex items-center justify-center text-xs font-bold text-black cursor-pointer hover:scale-110 transition-transform quantum-glow ${
+            className={`absolute w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black cursor-pointer hover:scale-110 transition-all duration-300 quantum-glow animate-in zoom-in ${
               gateTypes.find(g => g.type === gate.type)?.color || 'bg-secondary'
             }`}
             style={{
               left: gate.position * GRID_SIZE + 20,
-              top: gate.type === 'CNOT' ? (gate.qubits ? gate.qubits[0] * 60 + 15 : 0) : (gate.qubit ? gate.qubit * 60 + 15 : 0)
+              top: gate.type === 'CNOT' ? (gate.qubits ? gate.qubits[0] * 60 + 15 : 0) : (gate.qubit ? gate.qubit * 60 + 15 : 0),
+              animationDelay: `${index * 100}ms`
             }}
             onClick={() => onDeleteGate(gate.id)}
-            title="Click to delete"
+            title="Click to delete gate"
           >
             {gate.type}
             {gate.type === 'CNOT' && gate.qubits && (
               <div 
-                className="absolute w-0.5 bg-quantum-neon"
+                className="absolute w-0.5 bg-quantum-neon animate-in slide-in-from-top"
                 style={{
                   height: Math.abs(gate.qubits[1] - gate.qubits[0]) * 60,
                   top: gate.qubits[0] < gate.qubits[1] ? '100%' : `-${Math.abs(gate.qubits[1] - gate.qubits[0]) * 60}px`,
                   left: '50%',
-                  transform: 'translateX(-50%)'
+                  transform: 'translateX(-50%)',
+                  animationDelay: `${index * 100 + 200}ms`
                 }}
               />
             )}
@@ -97,7 +99,7 @@ export function CircuitGrid({
         {/* Drop Zone Indicator */}
         {dragState.isDragging && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (
           <div
-            className="absolute w-10 h-10 border-2 border-dashed border-quantum-glow rounded bg-quantum-glow/20 flex items-center justify-center text-xs font-bold quantum-glow"
+            className="absolute w-10 h-10 border-2 border-dashed border-quantum-glow rounded-lg bg-quantum-glow/20 flex items-center justify-center text-xs font-bold quantum-glow animate-pulse"
             style={{
               left: dragState.hoverPosition * GRID_SIZE + 20,
               top: dragState.hoverQubit * 60 + 15

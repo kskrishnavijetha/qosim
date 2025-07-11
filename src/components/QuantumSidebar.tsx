@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Cpu, Database, FileText, GitBranch, Activity, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface QuantumSidebarProps {
   activeTab: string;
@@ -18,7 +19,7 @@ const navigationItems = [
 export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) {
   return (
     <div className="w-64 bg-quantum-void border-r neon-border quantum-panel h-full">
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         <div className="flex items-center gap-3 mb-8">
           <div className="relative">
             <Activity className="w-8 h-8 text-quantum-glow particle-animation" />
@@ -68,7 +69,10 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
         </nav>
         
         <div className="mt-8 p-4 quantum-panel rounded-lg">
-          <h3 className="text-sm font-semibold text-quantum-neon mb-2">System Status</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-quantum-neon">System Status</h3>
+            <ThemeToggle />
+          </div>
           <div className="space-y-2 text-xs font-mono">
             <div className="flex justify-between">
               <span>Qubits:</span>

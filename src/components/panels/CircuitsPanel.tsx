@@ -224,26 +224,26 @@ export function CircuitsPanel() {
 
   return (
     <div className="h-full overflow-auto quantum-grid">
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-quantum-glow">Quantum Circuit Builder</h2>
-            <p className="text-muted-foreground font-mono">Drag and drop gates to build quantum circuits</p>
+      <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="animate-in fade-in slide-in-from-left">
+            <h2 className="text-xl lg:text-2xl font-bold text-quantum-glow">Quantum Circuit Builder</h2>
+            <p className="text-muted-foreground font-mono text-sm">Drag and drop gates to build quantum circuits</p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleUndo} variant="outline" className="neon-border">
+          <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-right" style={{ animationDelay: '200ms' }}>
+            <Button onClick={handleUndo} variant="outline" className="neon-border hover:scale-105 transition-all duration-300">
               <Undo className="w-4 h-4 mr-2" />
-              Undo
+              <span className="hidden sm:inline">Undo</span>
             </Button>
-            <Button onClick={handleClear} variant="outline" className="neon-border">
+            <Button onClick={handleClear} variant="outline" className="neon-border hover:scale-105 transition-all duration-300">
               <Trash2 className="w-4 h-4 mr-2" />
-              Clear
+              <span className="hidden sm:inline">Clear</span>
             </Button>
-            <Button onClick={exportToJSON} variant="outline" className="neon-border">
+            <Button onClick={exportToJSON} variant="outline" className="neon-border hover:scale-105 transition-all duration-300">
               <Download className="w-4 h-4 mr-2" />
               JSON
             </Button>
-            <Button onClick={exportToQASM} variant="outline" className="neon-border">
+            <Button onClick={exportToQASM} variant="outline" className="neon-border hover:scale-105 transition-all duration-300">
               <Download className="w-4 h-4 mr-2" />
               QASM
             </Button>
@@ -251,13 +251,15 @@ export function CircuitsPanel() {
         </div>
 
         {/* Circuit Builder */}
-        <Card className="quantum-panel neon-border">
+        <Card className="quantum-panel neon-border animate-in fade-in slide-in-from-bottom" style={{ animationDelay: '400ms' }}>
           <CardHeader>
             <CardTitle className="text-lg font-mono text-quantum-glow">Circuit Designer</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-6">
-              <GatePalette onGateMouseDown={handleMouseDown} />
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+              <div className="lg:shrink-0">
+                <GatePalette onGateMouseDown={handleMouseDown} />
+              </div>
               <CircuitGrid 
                 circuit={circuit}
                 dragState={dragState}
@@ -283,12 +285,13 @@ export function CircuitsPanel() {
         {/* Dragging Gate */}
         {dragState.isDragging && (
           <div
-            className={`fixed w-10 h-10 rounded border-2 flex items-center justify-center text-xs font-bold text-black pointer-events-none z-50 quantum-glow ${
+            className={`fixed w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black pointer-events-none z-50 quantum-glow animate-pulse shadow-2xl ${
               gateTypes.find(g => g.type === dragState.gateType)?.color || 'bg-secondary'
             }`}
             style={{
               left: dragState.dragPosition.x - 20,
-              top: dragState.dragPosition.y - 20
+              top: dragState.dragPosition.y - 20,
+              transform: 'rotate(5deg) scale(1.1)'
             }}
           >
             {dragState.gateType}
