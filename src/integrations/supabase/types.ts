@@ -119,6 +119,57 @@ export type Database = {
         }
         Relationships: []
       }
+      quantum_jobs: {
+        Row: {
+          circuit_data: Json
+          created_at: string
+          end_time: string | null
+          estimated_time: string | null
+          id: string
+          logs: Json
+          name: string
+          priority: string
+          progress: number
+          qubits: number
+          start_time: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          circuit_data?: Json
+          created_at?: string
+          end_time?: string | null
+          estimated_time?: string | null
+          id?: string
+          logs?: Json
+          name: string
+          priority?: string
+          progress?: number
+          qubits?: number
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          circuit_data?: Json
+          created_at?: string
+          end_time?: string | null
+          estimated_time?: string | null
+          id?: string
+          logs?: Json
+          name?: string
+          priority?: string
+          progress?: number
+          qubits?: number
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Clock, Cpu, CheckCircle, XCircle, Pause, Play, Trash2, Plus, Terminal, Eye } from "lucide-react";
+import { useState } from "react";
+import { Clock, Cpu, CheckCircle, XCircle, Pause, Play, Trash2, Plus, Terminal } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,89 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { QuantumGate, quantumSimulator } from "@/lib/quantumSimulator";
-
-interface Job {
-  id: string;
-  name: string;
-  status: "queued" | "running" | "completed" | "failed" | "paused";
-  progress: number;
-  qubits: number;
-  estimatedTime: string;
-  priority: "high" | "medium" | "low";
-  circuit: QuantumGate[];
-  logs: string[];
-  startTime?: Date;
-  endTime?: Date;
-}
-
-interface LogEntry {
-  timestamp: string;
-  level: "info" | "error" | "warning";
-  message: string;
-}
+import { QuantumGate } from "@/lib/quantumSimulator";
+import { useJobs, type Job } from "@/hooks/useJobs";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function JobsPanel() {
-  const [jobs, setJobs] = useState<Job[]>([
-    { 
-      id: "Q-4571", 
-      name: "Quantum Teleportation", 
-      status: "running", 
-      progress: 73,
-      qubits: 3,
-      estimatedTime: "2m 14s",
-      priority: "high",
-      circuit: [
-        { id: "1", type: "H", qubit: 0, position: 0 },
-        { id: "2", type: "CNOT", qubits: [0, 1], position: 1 },
-        { id: "3", type: "CNOT", qubits: [2, 0], position: 2 }
-      ],
-      logs: [
-        "[14:32:15] INFO: Job started",
-        "[14:32:16] INFO: Applying Hadamard gate to qubit 0",
-        "[14:32:17] INFO: Applying CNOT gate to qubits 0,1",
-        "[14:32:18] INFO: Processing CNOT gate to qubits 2,0..."
-      ],
-      startTime: new Date(Date.now() - 120000)
-    },
-    { 
-      id: "Q-4570", 
-      name: "Shor's Algorithm Demo", 
-      status: "queued", 
-      progress: 0,
-      qubits: 4,
-      estimatedTime: "5m 30s",
-      priority: "medium",
-      circuit: [
-        { id: "1", type: "H", qubit: 0, position: 0 },
-        { id: "2", type: "H", qubit: 1, position: 0 },
-        { id: "3", type: "CNOT", qubits: [0, 2], position: 1 }
-      ],
-      logs: ["[14:30:45] INFO: Job queued, waiting for available resources"]
-    },
-    { 
-      id: "Q-4569", 
-      name: "Bell State Creation", 
-      status: "completed", 
-      progress: 100,
-      qubits: 2,
-      estimatedTime: "1m 15s",
-      priority: "low",
-      circuit: [
-        { id: "1", type: "H", qubit: 0, position: 0 },
-        { id: "2", type: "CNOT", qubits: [0, 1], position: 1 }
-      ],
-      logs: [
-        "[14:28:30] INFO: Job started",
-        "[14:28:31] INFO: Applying Hadamard gate to qubit 0",
-        "[14:28:32] INFO: Applying CNOT gate to qubits 0,1",
-        "[14:28:33] INFO: Simulation completed successfully",
-        "[14:28:33] INFO: Final state: |00⟩ + |11⟩"
-      ],
-      startTime: new Date(Date.now() - 300000),
-      endTime: new Date(Date.now() - 240000)
-    }
-  ]);
+  const { user } = useAuth();
+  const { 
+    jobs, 
+    loading, 
+    createJob, 
+    handleJobAction, 
+    getJobStats 
+  } = useJobs();
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -98,33 +28,13 @@ export function JobsPanel() {
   const [newJobPriority, setNewJobPriority] = useState<"high" | "medium" | "low">("medium");
   const [newJobCircuit, setNewJobCircuit] = useState("");
 
-  // Simulate job progress for running jobs
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setJobs(prev => prev.map(job => {
-        if (job.status === "running" && job.progress < 100) {
-          const newProgress = Math.min(job.progress + Math.random() * 5, 100);
-          const isCompleted = newProgress >= 100;
-          
-          const newLogs = [...job.logs];
-          if (isCompleted) {
-            newLogs.push(`[${new Date().toLocaleTimeString()}] INFO: Job completed successfully`);
-          }
-          
-          return {
-            ...job,
-            progress: newProgress,
-            status: isCompleted ? "completed" as const : job.status,
-            logs: newLogs,
-            endTime: isCompleted ? new Date() : job.endTime
-          };
-        }
-        return job;
-      }));
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
+  if (!user) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-muted-foreground">Please sign in to use the job scheduler</p>
+      </div>
+    );
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -146,122 +56,7 @@ export function JobsPanel() {
     }
   };
 
-  const handleJobAction = async (jobId: string, action: "run" | "pause" | "resume" | "delete") => {
-    setJobs(prev => prev.map(job => {
-      if (job.id === jobId) {
-        const newLogs = [...job.logs];
-        const timestamp = `[${new Date().toLocaleTimeString()}]`;
-        
-        switch (action) {
-          case "run":
-            if (job.status === "queued") {
-              newLogs.push(`${timestamp} INFO: Job started`);
-              // Start simulation asynchronously
-              simulateJob(jobId, job.circuit);
-              return { ...job, status: "running" as const, logs: newLogs, startTime: new Date() };
-            }
-            break;
-          case "pause":
-            if (job.status === "running") {
-              newLogs.push(`${timestamp} INFO: Job paused`);
-              return { ...job, status: "paused" as const, logs: newLogs };
-            }
-            break;
-          case "resume":
-            if (job.status === "paused") {
-              newLogs.push(`${timestamp} INFO: Job resumed`);
-              return { ...job, status: "running" as const, logs: newLogs };
-            }
-            break;
-          case "delete":
-            return null;
-        }
-      }
-      return job;
-    }).filter(Boolean) as Job[]);
-  };
-
-  const simulateJob = async (jobId: string, circuit: QuantumGate[]) => {
-    try {
-      // Add simulation start log
-      addJobLog(jobId, "INFO", "Starting quantum simulation...");
-      
-      if (circuit.length === 0) {
-        throw new Error("Empty circuit - no gates to simulate");
-      }
-
-      // Validate circuit
-      const maxQubit = Math.max(
-        ...circuit.flatMap(gate => 
-          gate.qubit !== undefined ? [gate.qubit] : gate.qubits || []
-        )
-      );
-      
-      if (maxQubit >= 5) {
-        throw new Error(`Circuit uses qubit ${maxQubit}, but simulator supports max 5 qubits (0-4)`);
-      }
-
-      addJobLog(jobId, "INFO", `Circuit validated: ${circuit.length} gates, ${maxQubit + 1} qubits`);
-      
-      // Simulate the circuit
-      const result = quantumSimulator.simulate(circuit);
-      
-      // Add detailed results to logs
-      addJobLog(jobId, "INFO", "Simulation completed successfully");
-      addJobLog(jobId, "INFO", `State vector: ${quantumSimulator.getStateString()}`);
-      
-      // Display qubit states
-      result.qubitStates.forEach((qubitState, index) => {
-        const prob = (qubitState.probability * 100).toFixed(1);
-        const phase = (qubitState.phase * 180 / Math.PI).toFixed(1);
-        addJobLog(jobId, "INFO", `Qubit ${index}: ${qubitState.state} (${prob}% probability, ${phase}° phase)`);
-      });
-
-      // Display measurement probabilities for basis states
-      const significantStates = result.measurementProbabilities
-        .map((prob, index) => ({ index, prob }))
-        .filter(({ prob }) => prob > 0.001)
-        .sort((a, b) => b.prob - a.prob)
-        .slice(0, 5);
-
-      addJobLog(jobId, "INFO", "Measurement probabilities:");
-      significantStates.forEach(({ index, prob }) => {
-        const binaryState = index.toString(2).padStart(maxQubit + 1, '0');
-        addJobLog(jobId, "INFO", `  |${binaryState}⟩: ${(prob * 100).toFixed(2)}%`);
-      });
-
-      // Mark job as completed
-      setJobs(prev => prev.map(job => 
-        job.id === jobId 
-          ? { ...job, status: "completed" as const, progress: 100, endTime: new Date() }
-          : job
-      ));
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown simulation error";
-      addJobLog(jobId, "ERROR", `Simulation failed: ${errorMessage}`);
-      
-      // Mark job as failed
-      setJobs(prev => prev.map(job => 
-        job.id === jobId 
-          ? { ...job, status: "failed" as const, endTime: new Date() }
-          : job
-      ));
-    }
-  };
-
-  const addJobLog = (jobId: string, level: string, message: string) => {
-    const timestamp = `[${new Date().toLocaleTimeString()}]`;
-    const logEntry = `${timestamp} ${level}: ${message}`;
-    
-    setJobs(prev => prev.map(job => 
-      job.id === jobId 
-        ? { ...job, logs: [...job.logs, logEntry] }
-        : job
-    ));
-  };
-
-  const createNewJob = () => {
+  const createNewJob = async () => {
     if (!newJobName.trim()) return;
     
     // Parse simple circuit description (e.g., "H(0), CNOT(0,1)")
@@ -296,33 +91,29 @@ export function JobsPanel() {
       });
     }
     
-    const newJob: Job = {
-      id: `Q-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+    const qubits = Math.max(...gates.flatMap(g => g.qubit ? [g.qubit] : g.qubits || []), 0) + 1;
+    const estimatedTime = `${Math.floor(Math.random() * 5) + 1}m ${Math.floor(Math.random() * 60)}s`;
+    
+    await createJob({
       name: newJobName,
-      status: "queued",
-      progress: 0,
-      qubits: Math.max(...gates.flatMap(g => g.qubit ? [g.qubit] : g.qubits || []), 1) + 1,
-      estimatedTime: `${Math.floor(Math.random() * 5) + 1}m ${Math.floor(Math.random() * 60)}s`,
       priority: newJobPriority,
       circuit: gates,
-      logs: [`[${new Date().toLocaleTimeString()}] INFO: Job created and queued`]
-    };
+      qubits,
+      estimatedTime
+    });
     
-    setJobs(prev => [newJob, ...prev]);
     setNewJobName("");
     setNewJobCircuit("");
     setIsCreateDialogOpen(false);
   };
 
-  const getJobStats = () => {
-    const running = jobs.filter(j => j.status === "running").length;
-    const queued = jobs.filter(j => j.status === "queued").length;
-    const completed = jobs.filter(j => j.status === "completed").length;
-    const failed = jobs.filter(j => j.status === "failed").length;
-    return { running, queued, completed, failed };
-  };
-
-  const stats = getJobStats();
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-quantum-glow">Loading jobs...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -400,7 +191,7 @@ export function JobsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-quantum-glow">{stats.running}</div>
+                <div className="text-2xl font-bold text-quantum-glow">{getJobStats.running}</div>
                 <div className="text-xs text-muted-foreground font-mono">RUNNING</div>
               </div>
             </CardContent>
@@ -408,7 +199,7 @@ export function JobsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-quantum-neon">{stats.queued}</div>
+                <div className="text-2xl font-bold text-quantum-neon">{getJobStats.queued}</div>
                 <div className="text-xs text-muted-foreground font-mono">QUEUED</div>
               </div>
             </CardContent>
@@ -416,7 +207,7 @@ export function JobsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{stats.completed}</div>
+                <div className="text-2xl font-bold text-green-400">{getJobStats.completed}</div>
                 <div className="text-xs text-muted-foreground font-mono">COMPLETED</div>
               </div>
             </CardContent>
@@ -424,7 +215,7 @@ export function JobsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">{stats.failed}</div>
+                <div className="text-2xl font-bold text-red-400">{getJobStats.failed}</div>
                 <div className="text-xs text-muted-foreground font-mono">FAILED</div>
               </div>
             </CardContent>
@@ -433,132 +224,141 @@ export function JobsPanel() {
 
         {/* Job Queue */}
         <div className="space-y-4">
-          {jobs.map((job) => (
-            <Card key={job.id} className="quantum-panel neon-border">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(job.status)}
-                    <div>
-                      <CardTitle className="text-lg font-mono">{job.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground font-mono">{job.id}</p>
+          {jobs.length === 0 ? (
+            <Card className="quantum-panel neon-border">
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground font-mono">No jobs in queue</p>
+                <p className="text-sm text-muted-foreground mt-2">Create your first quantum job to get started</p>
+              </CardContent>
+            </Card>
+          ) : (
+            jobs.map((job) => (
+              <Card key={job.id} className="quantum-panel neon-border">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {getStatusIcon(job.status)}
+                      <div>
+                        <CardTitle className="text-lg font-mono">{job.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground font-mono">{job.id}</p>
+                      </div>
                     </div>
+                    <Badge className={getPriorityColor(job.priority)}>
+                      {job.priority.toUpperCase()}
+                    </Badge>
                   </div>
-                  <Badge className={getPriorityColor(job.priority)}>
-                    {job.priority.toUpperCase()}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {/* Circuit Preview */}
-                  <div className="bg-quantum-matrix/30 rounded p-2 font-mono text-xs">
-                    <span className="text-muted-foreground">Circuit: </span>
-                    <span className="text-quantum-neon">
-                      {job.circuit.map(gate => 
-                        gate.type === "CNOT" 
-                          ? `${gate.type}(${gate.qubits?.join(',')})`
-                          : `${gate.type}(${gate.qubit})`
-                      ).join(', ') || 'No gates defined'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm font-mono">
-                    <span className="text-muted-foreground">Qubits: {job.qubits}</span>
-                    <span className="text-muted-foreground">Est. Time: {job.estimatedTime}</span>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-full bg-quantum-matrix rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-quantum-glow to-quantum-neon h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${job.progress}%` }}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-mono text-muted-foreground">
-                      Progress: {job.progress}%
-                    </span>
-                    <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {/* Circuit Preview */}
+                    <div className="bg-quantum-matrix/30 rounded p-2 font-mono text-xs">
+                      <span className="text-muted-foreground">Circuit: </span>
+                      <span className="text-quantum-neon">
+                        {job.circuit.map(gate => 
+                          gate.type === "CNOT" 
+                            ? `${gate.type}(${gate.qubits?.join(',')})`
+                            : `${gate.type}(${gate.qubit})`
+                        ).join(', ') || 'No gates defined'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm font-mono">
+                      <span className="text-muted-foreground">Qubits: {job.qubits}</span>
+                      <span className="text-muted-foreground">Est. Time: {job.estimatedTime}</span>
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    <div className="w-full bg-quantum-matrix rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-quantum-glow to-quantum-neon h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${job.progress}%` }}
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        Progress: {job.progress}%
+                      </span>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="neon-border"
+                              onClick={() => setSelectedJob(job)}
+                            >
+                              <Terminal className="w-3 h-3 mr-1" />
+                              Logs
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="quantum-panel neon-border max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle className="text-quantum-glow font-mono">
+                                Job Logs: {job.name}
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="bg-black rounded p-4 max-h-96 overflow-y-auto">
+                              {job.logs.map((log, idx) => (
+                                <div key={idx} className="font-mono text-xs text-green-400 mb-1">
+                                  {log}
+                                </div>
+                              ))}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        {job.status === "queued" && (
                           <Button 
                             variant="outline" 
                             size="sm" 
                             className="neon-border"
-                            onClick={() => setSelectedJob(job)}
+                            onClick={() => handleJobAction(job.id, "run")}
                           >
-                            <Terminal className="w-3 h-3 mr-1" />
-                            Logs
+                            <Play className="w-3 h-3 mr-1" />
+                            Run
                           </Button>
-                        </DialogTrigger>
-                        <DialogContent className="quantum-panel neon-border max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle className="text-quantum-glow font-mono">
-                              Job Logs: {job.name}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="bg-black rounded p-4 max-h-96 overflow-y-auto">
-                            {job.logs.map((log, idx) => (
-                              <div key={idx} className="font-mono text-xs text-green-400 mb-1">
-                                {log}
-                              </div>
-                            ))}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      
-                      {job.status === "queued" && (
+                        )}
+                        
+                        {job.status === "running" && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="neon-border"
+                            onClick={() => handleJobAction(job.id, "pause")}
+                          >
+                            <Pause className="w-3 h-3 mr-1" />
+                            Pause
+                          </Button>
+                        )}
+                        
+                        {job.status === "paused" && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="neon-border"
+                            onClick={() => handleJobAction(job.id, "resume")}
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            Resume
+                          </Button>
+                        )}
+                        
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="neon-border"
-                          onClick={() => handleJobAction(job.id, "run")}
+                          className="neon-border hover:border-red-400 hover:text-red-400"
+                          onClick={() => handleJobAction(job.id, "delete")}
                         >
-                          <Play className="w-3 h-3 mr-1" />
-                          Run
+                          <Trash2 className="w-3 h-3" />
                         </Button>
-                      )}
-                      
-                      {job.status === "running" && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="neon-border"
-                          onClick={() => handleJobAction(job.id, "pause")}
-                        >
-                          <Pause className="w-3 h-3 mr-1" />
-                          Pause
-                        </Button>
-                      )}
-                      
-                      {job.status === "paused" && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="neon-border"
-                          onClick={() => handleJobAction(job.id, "resume")}
-                        >
-                          <Play className="w-3 h-3 mr-1" />
-                          Resume
-                        </Button>
-                      )}
-                      
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="neon-border hover:border-red-400 hover:text-red-400"
-                        onClick={() => handleJobAction(job.id, "delete")}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </div>
