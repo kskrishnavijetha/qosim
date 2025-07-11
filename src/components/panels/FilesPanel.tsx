@@ -7,87 +7,51 @@ import { VersionHistory } from "../circuits/VersionHistory";
 import { FileSystemStats } from "./FileSystemStats";
 import { QuantumProperties } from "./QuantumProperties";
 import { FileItem } from "./FileItem";
-import { useFileOperations } from "@/hooks/useFileOperations";
+
+import { useQuantumFiles } from "@/hooks/useQuantumFiles";
 import { ShareDialog } from "../dialogs/ShareDialog";
 
 export function FilesPanel() {
-  const [files, setFiles] = useState([
-    { 
-      id: "qfs-001", 
-      name: "bell_state.qasm", 
-      type: "circuit", 
-      size: "2.4 KB", 
-      modified: "2024-01-15 14:30",
-      superposition: true,
-      favorite: true,
-      tags: ["bell", "entanglement"],
-      versions: 3,
-      lastVersion: "v1.2"
-    },
-    { 
-      id: "qfs-002", 
-      name: "grover_search.py", 
-      type: "algorithm", 
-      size: "8.7 KB", 
-      modified: "2024-01-15 13:45",
-      superposition: false,
-      favorite: false,
-      tags: ["search", "grover"],
-      versions: 5,
-      lastVersion: "v2.1"
-    },
-    { 
-      id: "qfs-003", 
-      name: "error_correction/", 
-      type: "folder", 
-      size: "15 files", 
-      modified: "2024-01-14 16:22",
-      superposition: true,
-      favorite: false,
-      tags: ["error-correction"],
-      versions: 1,
-      lastVersion: "v1.0"
-    },
-    { 
-      id: "qfs-004", 
-      name: "quantum_ml_model.qnn", 
-      type: "model", 
-      size: "45.2 MB", 
-      modified: "2024-01-14 11:18",
-      superposition: false,
-      favorite: true,
-      tags: ["ml", "neural"],
-      versions: 8,
-      lastVersion: "v3.4"
-    },
-    { 
-      id: "qfs-005", 
-      name: "results.json", 
-      type: "data", 
-      size: "1.2 MB", 
-      modified: "2024-01-13 09:33",
-      superposition: true,
-      favorite: false,
-      tags: ["results", "data"],
-      versions: 2,
-      lastVersion: "v1.1"
-    },
-  ]);
+  const { files, loading, createFile, updateFile, deleteFile, toggleFavorite, getFileStats } = useQuantumFiles();
 
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareFile, setShareFile] = useState<any>(null);
 
-  const {
-    draggedItem,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd,
-    handleDrop,
-    handleContextAction: contextAction,
-    toggleFavorite
-  } = useFileOperations(files, setFiles);
+  // Transform files to legacy format for useFileOperations compatibility
+  const legacyFiles = files.map(file => ({
+    id: file.id,
+    name: file.name,
+    type: file.type,
+    size: file.sizeDisplay,
+    modified: file.updatedAt.toLocaleString(),
+    superposition: file.superposition,
+    favorite: file.favorite,
+    tags: file.tags,
+    versions: file.versions,
+    lastVersion: file.lastVersion
+  }));
+
+  // Simplified drag and drop state for this component
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, fileId: string) => {
+    setDraggedItem(fileId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, fileId: string) => {
+    e.preventDefault();
+    handleDragEnd();
+  };
 
   const handleContextAction = (action: string, fileId: string) => {
     if (action === "versions") {
@@ -99,12 +63,13 @@ export function FilesPanel() {
         setShareFile(file);
         setShowShareDialog(true);
       }
-    } else {
-      contextAction(action, fileId, (file) => {
-        setShareFile(file);
-        setShowShareDialog(true);
-      });
+    } else if (action === "delete") {
+      deleteFile(fileId);
     }
+  };
+
+  const handleToggleFavorite = (fileId: string) => {
+    toggleFavorite(fileId);
   };
 
   return (
@@ -128,7 +93,7 @@ export function FilesPanel() {
         </div>
 
         {/* File System Stats */}
-        <FileSystemStats favoriteCount={files.filter(f => f.favorite).length} />
+        <FileSystemStats favoriteCount={getFileStats.favoriteCount} />
 
         {/* File Browser */}
         <Card className="quantum-panel neon-border">
@@ -137,7 +102,7 @@ export function FilesPanel() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {files.map((file) => (
+              {legacyFiles.map((file) => (
                 <FileItem
                   key={file.id}
                   file={file}
@@ -146,7 +111,7 @@ export function FilesPanel() {
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   onDragEnd={handleDragEnd}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                   onContextAction={handleContextAction}
                 />
               ))}
@@ -155,7 +120,7 @@ export function FilesPanel() {
         </Card>
 
         {/* Quantum File Properties */}
-        <QuantumProperties files={files} />
+        <QuantumProperties files={legacyFiles} />
 
         {/* Version History Dialog */}
         <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>

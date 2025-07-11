@@ -2,58 +2,10 @@ import { Terminal, Filter, Download, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useRuntimeLogs } from "@/hooks/useRuntimeLogs";
 
 export function LogsPanel() {
-  const logs = [
-    {
-      id: "log-001",
-      timestamp: "2024-01-15 14:32:15.847",
-      level: "quantum",
-      component: "QOS-CORE",
-      message: "Quantum state |ψ⟩ = 0.707|0⟩ + 0.707|1⟩ initialized on qubit 0",
-      details: "Bell state preparation successful"
-    },
-    {
-      id: "log-002",
-      timestamp: "2024-01-15 14:32:14.203",
-      level: "info",
-      component: "SCHEDULER",
-      message: "Job Q-4571 'Quantum Teleportation' started execution",
-      details: "Allocated 6 qubits from QMB-0"
-    },
-    {
-      id: "log-003",
-      timestamp: "2024-01-15 14:32:12.956",
-      level: "warning",
-      component: "MEMORY",
-      message: "Coherence time degradation detected on qubit 8",
-      details: "Remaining coherence: 23.4μs (threshold: 20μs)"
-    },
-    {
-      id: "log-004",
-      timestamp: "2024-01-15 14:32:11.445",
-      level: "error",
-      component: "QEC",
-      message: "Quantum error correction triggered",
-      details: "Bit-flip error on qubit 15, syndrome: 101"
-    },
-    {
-      id: "log-005",
-      timestamp: "2024-01-15 14:32:09.122",
-      level: "quantum",
-      component: "ENTANGLER",
-      message: "Entanglement established between qubits 2-3",
-      details: "Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2 created"
-    },
-    {
-      id: "log-006",
-      timestamp: "2024-01-15 14:32:07.889",
-      level: "info",
-      component: "QFS",
-      message: "File 'bell_state.qasm' accessed in superposition",
-      details: "Quantum read operation completed"
-    },
-  ];
+  const { logs, loading, createLog, generateRandomLog, clearLogs, getLogStats } = useRuntimeLogs();
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -94,7 +46,12 @@ export function LogsPanel() {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button variant="outline" className="neon-border">
+            <Button 
+              onClick={clearLogs}
+              disabled={loading}
+              variant="outline" 
+              className="neon-border"
+            >
               <Trash2 className="w-4 h-4 mr-2" />
               Clear
             </Button>
@@ -106,7 +63,7 @@ export function LogsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">2</div>
+                <div className="text-2xl font-bold text-red-400">{getLogStats.errors}</div>
                 <div className="text-xs text-muted-foreground font-mono">ERRORS</div>
               </div>
             </CardContent>
@@ -114,7 +71,7 @@ export function LogsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">3</div>
+                <div className="text-2xl font-bold text-yellow-400">{getLogStats.warnings}</div>
                 <div className="text-xs text-muted-foreground font-mono">WARNINGS</div>
               </div>
             </CardContent>
@@ -122,7 +79,7 @@ export function LogsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-quantum-glow">15</div>
+                <div className="text-2xl font-bold text-quantum-glow">{getLogStats.quantum}</div>
                 <div className="text-xs text-muted-foreground font-mono">QUANTUM</div>
               </div>
             </CardContent>
@@ -130,7 +87,7 @@ export function LogsPanel() {
           <Card className="quantum-panel neon-border">
             <CardContent className="p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-quantum-neon">42</div>
+                <div className="text-2xl font-bold text-quantum-neon">{getLogStats.info}</div>
                 <div className="text-xs text-muted-foreground font-mono">INFO</div>
               </div>
             </CardContent>
@@ -144,34 +101,36 @@ export function LogsPanel() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {logs.map((log) => (
-                <div
-                  key={log.id}
-                  className="border border-quantum-matrix rounded-lg p-4 hover:bg-quantum-matrix/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <Badge className={getLevelColor(log.level)}>
-                        {log.level.toUpperCase()}
-                      </Badge>
-                      <Badge variant="outline" className={`neon-border ${getComponentColor(log.component)}`}>
-                        {log.component}
-                      </Badge>
+                {logs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="border border-quantum-matrix rounded-lg p-4 hover:bg-quantum-matrix/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <Badge className={getLevelColor(log.level)}>
+                          {log.level.toUpperCase()}
+                        </Badge>
+                        <Badge variant="outline" className={`neon-border ${getComponentColor(log.component)}`}>
+                          {log.component}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {log.timestamp.toLocaleString()}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {log.timestamp}
-                    </span>
+                    
+                    <div className="font-mono text-sm mb-2">
+                      {log.message}
+                    </div>
+                    
+                    {log.details && (
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {log.details}
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="font-mono text-sm mb-2">
-                    {log.message}
-                  </div>
-                  
-                  <div className="text-xs text-muted-foreground font-mono">
-                    {log.details}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </CardContent>
         </Card>

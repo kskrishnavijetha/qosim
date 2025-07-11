@@ -2,52 +2,15 @@ import { Database, Zap, Activity, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BlochSphere } from "@/components/BlochSphere";
-import { quantumSimulator } from "@/lib/quantumSimulator";
+import { useMemory } from "@/hooks/useMemory";
 
 export function MemoryPanel() {
-  // Get current quantum state from simulator
-  const result = quantumSimulator.getResult();
+  const { memoryBanks, loading, refreshQuantumStates, generateQuantumState } = useMemory();
   
-  // Create qubit states based on simulation
-  const simulatedQubits = result.qubitStates.map((qubit, index) => ({
-    id: index,
-    state: qubit.state,
-    coherence: qubit.probability * 100,
-    entangled: Math.abs(qubit.probability - 0.5) < 0.1, // Consider near 50% as superposition/entangled
-    amplitude: qubit.probability,
-    blochState: {
-      amplitude0: { real: Math.sqrt(1 - qubit.probability), imag: 0 },
-      amplitude1: { real: Math.sqrt(qubit.probability) * Math.cos(qubit.phase), imag: Math.sqrt(qubit.probability) * Math.sin(qubit.phase) },
-      probability0: 1 - qubit.probability,
-      probability1: qubit.probability,
-      phase: qubit.phase
-    }
-  }));
-
-  // Fill remaining slots with simulated data for visualization
-  const qubits = [
-    ...simulatedQubits,
-    ...Array.from({ length: 64 - simulatedQubits.length }, (_, i) => ({
-      id: simulatedQubits.length + i,
-      state: Math.random() > 0.5 ? "|1⟩" : "|0⟩",
-      coherence: Math.random() * 100,
-      entangled: Math.random() > 0.7,
-      amplitude: Math.random(),
-      blochState: {
-        amplitude0: { real: Math.sqrt(Math.random()), imag: 0 },
-        amplitude1: { real: Math.sqrt(Math.random()), imag: 0 },
-        probability0: Math.random(),
-        probability1: Math.random(),
-        phase: Math.random() * Math.PI * 2
-      }
-    }))
-  ];
-
-  const memoryBanks = [
-    { id: "QMB-0", name: "Primary Quantum Register", capacity: "256 qubits", used: "128 qubits", coherence: 98.3 },
-    { id: "QMB-1", name: "Auxiliary Storage", capacity: "128 qubits", used: "64 qubits", coherence: 94.7 },
-    { id: "QMB-2", name: "Error Correction Buffer", capacity: "64 qubits", used: "32 qubits", coherence: 99.1 },
-  ];
+  // Get current quantum states for visualization
+  const qubits = memoryBanks.length > 0 && memoryBanks[0].qubitStates.length > 0 
+    ? memoryBanks[0].qubitStates 
+    : generateQuantumState();
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -57,8 +20,12 @@ export function MemoryPanel() {
             <h2 className="text-2xl font-bold text-quantum-glow">Quantum Memory</h2>
             <p className="text-muted-foreground font-mono">Qubit state visualization and management</p>
           </div>
-          <Button className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
-            <RefreshCw className="w-4 h-4 mr-2" />
+          <Button 
+            onClick={refreshQuantumStates}
+            disabled={loading}
+            className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh States
           </Button>
         </div>
@@ -72,7 +39,7 @@ export function MemoryPanel() {
                   <CardTitle className="text-lg font-mono">{bank.name}</CardTitle>
                   <div className="flex items-center gap-2">
                     <Activity className="w-4 h-4 text-quantum-glow particle-animation" />
-                    <span className="text-sm font-mono text-quantum-neon">{bank.coherence}%</span>
+                    <span className="text-sm font-mono text-quantum-neon">{bank.coherence.toFixed(1)}%</span>
                   </div>
                 </div>
               </CardHeader>
@@ -81,17 +48,17 @@ export function MemoryPanel() {
                   <div className="space-y-1">
                     <div className="text-sm font-mono">
                       <span className="text-muted-foreground">Capacity:</span>
-                      <span className="ml-2 text-quantum-neon">{bank.capacity}</span>
+                      <span className="ml-2 text-quantum-neon">{bank.capacity} qubits</span>
                     </div>
                     <div className="text-sm font-mono">
                       <span className="text-muted-foreground">Used:</span>
-                      <span className="ml-2 text-quantum-glow">{bank.used}</span>
+                      <span className="ml-2 text-quantum-glow">{bank.used} qubits</span>
                     </div>
                   </div>
                   <div className="w-32 bg-quantum-matrix rounded-full h-2">
                     <div 
                       className="bg-gradient-to-r from-quantum-glow to-quantum-neon h-2 rounded-full"
-                      style={{ width: `${(parseInt(bank.used) / parseInt(bank.capacity)) * 100}%` }}
+                      style={{ width: `${(bank.used / bank.capacity) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -171,7 +138,7 @@ export function MemoryPanel() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {simulatedQubits.slice(0, 6).map((qubit) => (
+              {qubits.slice(0, 6).map((qubit) => (
                 <div key={qubit.id} className="space-y-2">
                   <div className="text-sm font-mono text-quantum-neon">
                     Qubit {qubit.id}

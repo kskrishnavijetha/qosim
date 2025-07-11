@@ -47,6 +47,45 @@ export type Database = {
         }
         Relationships: []
       }
+      memory_states: {
+        Row: {
+          bank_id: string
+          bank_name: string
+          capacity_qubits: number
+          coherence_percentage: number
+          created_at: string
+          id: string
+          qubit_states: Json
+          updated_at: string
+          used_qubits: number
+          user_id: string
+        }
+        Insert: {
+          bank_id: string
+          bank_name: string
+          capacity_qubits?: number
+          coherence_percentage?: number
+          created_at?: string
+          id?: string
+          qubit_states?: Json
+          updated_at?: string
+          used_qubits?: number
+          user_id: string
+        }
+        Update: {
+          bank_id?: string
+          bank_name?: string
+          capacity_qubits?: number
+          coherence_percentage?: number
+          created_at?: string
+          id?: string
+          qubit_states?: Json
+          updated_at?: string
+          used_qubits?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       optimization_sessions: {
         Row: {
           created_at: string
@@ -119,6 +158,60 @@ export type Database = {
         }
         Relationships: []
       }
+      quantum_files: {
+        Row: {
+          content_data: Json | null
+          created_at: string
+          favorite: boolean
+          id: string
+          last_version: string
+          name: string
+          parent_folder_id: string | null
+          size_bytes: number
+          size_display: string
+          superposition: boolean
+          tags: string[]
+          type: string
+          updated_at: string
+          user_id: string
+          versions: number
+        }
+        Insert: {
+          content_data?: Json | null
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          last_version?: string
+          name: string
+          parent_folder_id?: string | null
+          size_bytes?: number
+          size_display: string
+          superposition?: boolean
+          tags?: string[]
+          type: string
+          updated_at?: string
+          user_id: string
+          versions?: number
+        }
+        Update: {
+          content_data?: Json | null
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          last_version?: string
+          name?: string
+          parent_folder_id?: string | null
+          size_bytes?: number
+          size_display?: string
+          superposition?: boolean
+          tags?: string[]
+          type?: string
+          updated_at?: string
+          user_id?: string
+          versions?: number
+        }
+        Relationships: []
+      }
       quantum_jobs: {
         Row: {
           circuit_data: Json
@@ -166,6 +259,42 @@ export type Database = {
           start_time?: string | null
           status?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      runtime_logs: {
+        Row: {
+          component: string
+          created_at: string
+          details: string | null
+          id: string
+          level: string
+          message: string
+          metadata: Json | null
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          component: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          level: string
+          message: string
+          metadata?: Json | null
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          component?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          level?: string
+          message?: string
+          metadata?: Json | null
+          timestamp?: string
           user_id?: string
         }
         Relationships: []
