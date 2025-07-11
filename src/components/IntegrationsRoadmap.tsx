@@ -347,15 +347,13 @@ export function IntegrationsRoadmap() {
 
                     {/* Actions */}
                     <div className="flex gap-2">
-                      {integration.setupAction && (
+                      {integration.setupAction && integration.setupAction !== 'Connect GitHub' && (
                          <Button 
                           size="sm" 
                           variant="outline" 
                           className="flex-1 neon-border"
                           onClick={() => {
-                            if (integration.setupAction === 'Connect GitHub') {
-                              window.open('https://docs.lovable.dev/integrations/github/', '_blank');
-                            }
+                            // Handle other setup actions if needed
                           }}
                         >
                           {integration.setupAction}
