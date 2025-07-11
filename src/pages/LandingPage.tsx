@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom } from "lucide-react";
+import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const LandingPage = () => {
   const [email, setEmail] = useState("");
+  const [activeSection, setActiveSection] = useState("hero");
 
   const handleWaitlistSignup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,10 +18,33 @@ const LandingPage = () => {
     setEmail("");
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['hero', 'about', 'features', 'use-cases', 'early-access'];
+      const currentSection = sections.find(section => {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          return rect.top <= 100 && rect.bottom > 100;
+        }
+        return false;
+      });
+      if (currentSection) setActiveSection(currentSection);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+      <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/95">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-quantum-glow to-quantum-neon rounded-md flex items-center justify-center">
@@ -30,8 +54,30 @@ const LandingPage = () => {
               QOSim
             </span>
           </div>
+          
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {[
+              { id: 'hero', label: 'Home' },
+              { id: 'about', label: 'Product' },
+              { id: 'features', label: 'Features' },
+              { id: 'use-cases', label: 'Use Cases' },
+              { id: 'early-access', label: 'Early Access' }
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className={`text-sm transition-colors hover:text-quantum-glow ${
+                  activeSection === item.id ? 'text-quantum-glow' : 'text-muted-foreground'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
           <div className="flex items-center space-x-4">
-            <Badge variant="outline" className="border-quantum-neon text-quantum-neon">
+            <Badge variant="outline" className="hidden sm:flex border-quantum-neon text-quantum-neon">
               <Shield className="w-3 h-3 mr-1" />
               Patent Pending
             </Badge>
@@ -48,23 +94,31 @@ const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-quantum-void/30 via-background to-quantum-matrix/30" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,hsl(var(--quantum-glow))/30,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,hsl(var(--quantum-neon))/20,transparent_50%)]" />
+      <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
+        {/* Animated Background Nebula */}
+        <div className="absolute inset-0 bg-gradient-to-br from-quantum-void/40 via-background to-quantum-matrix/40" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_50%,hsl(var(--quantum-glow))/20,transparent_70%)] animate-pulse" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,hsl(var(--quantum-neon))/15,transparent_70%)] animate-pulse" style={{animationDelay: '1s'}} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_80%,hsl(var(--quantum-plasma))/10,transparent_70%)] animate-pulse" style={{animationDelay: '2s'}} />
         
-        {/* Floating Particles Animation */}
-        <div className="absolute inset-0">
-          <div className="particle-animation absolute top-10 left-10 w-2 h-2 bg-quantum-glow rounded-full opacity-60"></div>
-          <div className="particle-animation absolute top-32 right-20 w-1 h-1 bg-quantum-neon rounded-full opacity-80" style={{animationDelay: '1s'}}></div>
-          <div className="particle-animation absolute bottom-20 left-32 w-3 h-3 bg-quantum-plasma rounded-full opacity-40" style={{animationDelay: '2s'}}></div>
-          <div className="particle-animation absolute top-60 right-40 w-1.5 h-1.5 bg-quantum-energy rounded-full opacity-70" style={{animationDelay: '0.5s'}}></div>
+        {/* Enhanced Floating Particles Animation */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Large particles */}
+          <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-quantum-glow rounded-full opacity-60 animate-float"></div>
+          <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-quantum-neon rounded-full opacity-70 animate-float-delayed"></div>
+          <div className="absolute bottom-1/3 left-1/3 w-4 h-4 bg-quantum-plasma rounded-full opacity-40 animate-float-slow"></div>
+          <div className="absolute top-3/4 right-1/3 w-2.5 h-2.5 bg-quantum-energy rounded-full opacity-80 animate-float-reverse"></div>
+          
+          {/* Small particles */}
+          <div className="absolute top-16 left-16 w-1 h-1 bg-quantum-glow rounded-full opacity-50 animate-float-fast"></div>
+          <div className="absolute top-1/2 right-16 w-1 h-1 bg-quantum-neon rounded-full opacity-60 animate-float-delayed"></div>
+          <div className="absolute bottom-16 left-1/2 w-1 h-1 bg-quantum-plasma rounded-full opacity-40 animate-float"></div>
+          <div className="absolute top-40 right-1/2 w-1 h-1 bg-quantum-energy rounded-full opacity-70 animate-float-slow"></div>
         </div>
         
         {/* Circuit Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
-          <div className="quantum-grid"></div>
+          <div className="quantum-grid animate-pulse"></div>
         </div>
         
         <div className="relative container mx-auto px-4 py-24 text-center z-10">
@@ -103,13 +157,59 @@ const LandingPage = () => {
               </Button>
             </div>
             
-            {/* 3D Mockup Placeholder */}
+            {/* Floating Laptop Mockup */}
             <div className="mt-16 relative">
-              <div className="bg-gradient-to-br from-quantum-void/40 to-quantum-matrix/40 rounded-2xl border border-quantum-neon/30 p-8 backdrop-blur-sm">
-                <div className="text-quantum-glow text-center">
-                  <CircuitBoard className="w-24 h-24 mx-auto mb-4 opacity-60" />
-                  <p className="text-sm text-muted-foreground">3D Quantum Circuit UI Mockup</p>
+              <div className="relative max-w-4xl mx-auto">
+                {/* Laptop Frame */}
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-quantum-neon/30 transform perspective-1000 rotate-x-15 hover:rotate-x-12 transition-transform duration-500 shadow-2xl">
+                  {/* Screen */}
+                  <div className="bg-gradient-to-br from-quantum-void/60 to-quantum-matrix/60 rounded-xl border border-quantum-glow/40 p-4 backdrop-blur-sm relative overflow-hidden">
+                    {/* Simulator Interface Mockup */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex space-x-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <div className="text-xs text-quantum-glow">QOSim - Quantum OS Simulator</div>
+                      </div>
+                      
+                      {/* Circuit Grid */}
+                      <div className="grid grid-cols-8 gap-1 py-4">
+                        {Array.from({length: 32}).map((_, i) => (
+                          <div key={i} className={`h-2 rounded-sm ${
+                            i % 8 === 0 || i % 8 === 7 ? 'bg-quantum-glow/40' :
+                            i % 4 === 1 ? 'bg-quantum-neon/40' :
+                            i % 6 === 2 ? 'bg-quantum-plasma/40' :
+                            'bg-quantum-energy/20'
+                          }`}></div>
+                        ))}
+                      </div>
+                      
+                      {/* Quantum State Visualization */}
+                      <div className="flex justify-between items-end">
+                        <div className="space-y-1">
+                          <div className="w-16 h-1 bg-quantum-glow rounded"></div>
+                          <div className="w-12 h-1 bg-quantum-neon rounded"></div>
+                          <div className="w-20 h-1 bg-quantum-plasma rounded"></div>
+                        </div>
+                        <div className="w-12 h-12 border border-quantum-glow/50 rounded-full flex items-center justify-center">
+                          <Atom className="w-6 h-6 text-quantum-glow animate-spin-slow" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Glowing effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-quantum-glow/5 to-transparent rounded-xl"></div>
+                  </div>
+                  
+                  {/* Laptop base */}
+                  <div className="h-4 bg-gradient-to-r from-slate-700 to-slate-800 rounded-b-xl"></div>
                 </div>
+                
+                {/* Floating effect shadow */}
+                <div className="absolute inset-0 bg-quantum-glow/10 blur-3xl rounded-2xl transform translate-y-8 scale-95"></div>
               </div>
             </div>
           </div>
@@ -117,7 +217,7 @@ const LandingPage = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-24 bg-gradient-to-br from-quantum-void/10 to-quantum-matrix/10 relative">
+      <section id="about" className="py-24 bg-gradient-to-br from-quantum-void/10 to-quantum-matrix/10 relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--quantum-plasma))/10,transparent_50%)]"></div>
         
         <div className="container mx-auto px-4 relative">
@@ -197,7 +297,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24">
+      <section id="features" className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
@@ -254,7 +354,7 @@ const LandingPage = () => {
       </section>
 
       {/* Use Cases */}
-      <section className="py-24 bg-muted/30">
+      <section id="use-cases" className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Who Uses QOSim?</h2>
@@ -304,7 +404,7 @@ const LandingPage = () => {
       </section>
 
       {/* Early Access Section */}
-      <section className="py-24 relative overflow-hidden">
+      <section id="early-access" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/5 via-background to-quantum-neon/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--quantum-plasma))/10,transparent_70%)]"></div>
         

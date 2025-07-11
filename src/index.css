@@ -361,12 +361,70 @@
     color: hsl(var(--quantum-particle));
   }
   
+  .bg-quantum-glow {
+    background-color: hsl(var(--quantum-glow));
+  }
+  
+  .bg-quantum-neon {
+    background-color: hsl(var(--quantum-neon));
+  }
+  
+  .bg-quantum-plasma {
+    background-color: hsl(var(--quantum-plasma));
+  }
+  
+  .bg-quantum-energy {
+    background-color: hsl(var(--quantum-energy));
+  }
+  
+  .bg-quantum-particle {
+    background-color: hsl(var(--quantum-particle));
+  }
+  
   .bg-quantum-void {
     background-color: hsl(var(--quantum-void));
   }
   
   .bg-quantum-matrix {
     background-color: hsl(var(--quantum-matrix));
+  }
+  
+  /* Floating animation utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite 2s;
+  }
+  
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animate-float-fast {
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .animate-float-reverse {
+    animation: float-reverse 6s ease-in-out infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  /* 3D transforms */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .rotate-x-15 {
+    transform: rotateX(15deg);
+  }
+  
+  .rotate-x-12 {
+    transform: rotateX(12deg);
   }
 }
 
@@ -535,5 +593,36 @@
   }
   100% {
     opacity: 1;
+  }
+}
+
+/* Float animations for particles */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  50% {
+    transform: translateY(-40px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-20px) translateX(-10px);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(20px) translateX(-10px);
+  }
+  50% {
+    transform: translateY(40px) translateX(5px);
+  }
+  75% {
+    transform: translateY(20px) translateX(10px);
   }
 }
