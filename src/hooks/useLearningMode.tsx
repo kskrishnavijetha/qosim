@@ -184,6 +184,7 @@ export function useLearningMode() {
     const template = CIRCUIT_TEMPLATES.find(t => t.id === templateId);
     setCurrentTemplate(template || null);
     setCurrentStep(0);
+    console.log('Selected template:', template);
   }, []);
 
   const checkStepCompletion = useCallback((circuit: Gate[]) => {
