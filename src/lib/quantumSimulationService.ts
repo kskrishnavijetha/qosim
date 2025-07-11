@@ -234,35 +234,54 @@ export class QuantumSimulationManager {
   }
 
   async simulate(circuit: QuantumGate[], numQubits: number): Promise<EnhancedSimulationResult> {
-    switch (this.currentMode) {
-      case 'fast':
-        return this.simulateFast(circuit, numQubits);
-      
-      case 'accurate':
-        return this.simulateAccurate(circuit, numQubits);
-      
-      case 'cloud':
-        return this.cloudService.simulateCircuit(circuit, numQubits);
-      
-      default:
-        return this.simulateFast(circuit, numQubits);
+    console.log('QuantumSimulationManager.simulate called with mode:', this.currentMode);
+    console.log('Circuit:', circuit);
+    console.log('NumQubits:', numQubits);
+    
+    try {
+      switch (this.currentMode) {
+        case 'fast':
+          console.log('Running fast simulation...');
+          return this.simulateFast(circuit, numQubits);
+        
+        case 'accurate':
+          console.log('Running accurate simulation...');
+          return this.simulateAccurate(circuit, numQubits);
+        
+        case 'cloud':
+          console.log('Running cloud simulation...');
+          return this.cloudService.simulateCircuit(circuit, numQubits);
+        
+        default:
+          console.log('Running default (fast) simulation...');
+          return this.simulateFast(circuit, numQubits);
+      }
+    } catch (error) {
+      console.error('Simulation error:', error);
+      throw error;
     }
   }
 
   private simulateFast(circuit: QuantumGate[], numQubits: number): EnhancedSimulationResult {
     const startTime = performance.now();
     
+    console.log('Fast simulation - importing quantumSimulator...');
     // Use existing fast simulator with minimal calculations
     const { quantumSimulator } = require('./quantumSimulator');
+    console.log('Fast simulation - running simulation with circuit:', circuit);
     const result = quantumSimulator.simulate(circuit);
+    console.log('Fast simulation - result:', result);
     
     const executionTime = performance.now() - startTime;
     
-    return {
+    const enhancedResult = {
       ...result,
       mode: 'fast' as SimulationMode,
       executionTime
     };
+    
+    console.log('Fast simulation - enhanced result:', enhancedResult);
+    return enhancedResult;
   }
 
   private async simulateAccurate(circuit: QuantumGate[], numQubits: number): Promise<EnhancedSimulationResult> {

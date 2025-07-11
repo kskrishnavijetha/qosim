@@ -19,19 +19,29 @@ export function useCircuitState() {
   const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>({});
 
   const simulateQuantumState = useCallback(async (gates: Gate[]) => {
-    // Convert our Gate interface to QuantumGate interface
-    const quantumGates: QuantumGate[] = gates.map(gate => ({
-      id: gate.id,
-      type: gate.type,
-      qubit: gate.qubit,
-      qubits: gate.qubits,
-      position: gate.position,
-      angle: gate.angle
-    }));
+    console.log('simulateQuantumState called with gates:', gates);
     
-    // Run the enhanced quantum simulation
-    const result = await quantumSimulationManager.simulate(quantumGates, 5);
-    setSimulationResult(result);
+    try {
+      // Convert our Gate interface to QuantumGate interface
+      const quantumGates: QuantumGate[] = gates.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubit,
+        qubits: gate.qubits,
+        position: gate.position,
+        angle: gate.angle
+      }));
+      
+      console.log('Converted quantum gates:', quantumGates);
+      
+      // Run the enhanced quantum simulation
+      console.log('Calling quantumSimulationManager.simulate...');
+      const result = await quantumSimulationManager.simulate(quantumGates, 5);
+      console.log('Simulation result received:', result);
+      setSimulationResult(result);
+    } catch (error) {
+      console.error('Error in simulateQuantumState:', error);
+    }
   }, []);
 
   const handleModeChange = useCallback((mode: SimulationMode) => {
