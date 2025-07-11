@@ -20,18 +20,20 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user) {
-      // Check if user came from the landing page by checking the referrer
-      const referrer = document.referrer;
-      const currentOrigin = window.location.origin;
-      
-      if (referrer === `${currentOrigin}/` || referrer === currentOrigin || !referrer) {
-        // If they came from landing page or direct access, go to app
-        navigate('/app');
-      } else {
-        // If they came from elsewhere, go to app
-        navigate('/app');
-      }
+      navigate('/app');
     }
+  }, [user, navigate]);
+
+  // Handle back navigation to landing page
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!user) {
+        navigate('/');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
