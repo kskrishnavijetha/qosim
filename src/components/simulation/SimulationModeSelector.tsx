@@ -78,18 +78,17 @@ export function SimulationModeSelector({
           <TabsList className="grid w-full grid-cols-3 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
-              const isDisabled = mode.requiresConfig && !isCloudConfigured;
+              const needsSetup = mode.requiresConfig && !isCloudConfigured;
               
               return (
                 <TabsTrigger 
                   key={mode.id} 
                   value={mode.id}
-                  disabled={isDisabled}
                   className="flex items-center gap-2 data-[state=active]:bg-quantum-glow/20"
                 >
                   <Icon className="w-4 h-4" />
                   {mode.name}
-                  {isDisabled && <Badge variant="outline" className="text-xs">Setup Required</Badge>}
+                  {needsSetup && <Badge variant="outline" className="text-xs">Setup Required</Badge>}
                 </TabsTrigger>
               );
             })}
