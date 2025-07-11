@@ -1,5 +1,5 @@
 // Enhanced quantum simulation service with cloud integration
-import { Complex, StateVector, QuantumGate, SimulationResult, complex } from './quantumSimulator';
+import { Complex, StateVector, QuantumGate, SimulationResult, complex, quantumSimulator } from './quantumSimulator';
 
 export type SimulationMode = 'fast' | 'accurate' | 'cloud';
 
@@ -357,9 +357,6 @@ export class QuantumSimulationManager {
   private simulateFast(circuit: QuantumGate[], numQubits: number): EnhancedSimulationResult {
     const startTime = performance.now();
     
-    console.log('Fast simulation - importing quantumSimulator...');
-    // Use existing fast simulator with minimal calculations
-    const { quantumSimulator } = require('./quantumSimulator');
     console.log('Fast simulation - running simulation with circuit:', circuit);
     const result = quantumSimulator.simulate(circuit);
     console.log('Fast simulation - result:', result);
@@ -398,7 +395,6 @@ export class QuantumSimulationManager {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     // Use high-precision calculations
-    const { quantumSimulator } = require('./quantumSimulator');
     return quantumSimulator.simulate(circuit);
   }
 
