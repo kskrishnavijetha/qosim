@@ -194,8 +194,8 @@ export function SimulationModeSelector({
                   )}
 
                   <Button
-                    onClick={() => onModeChange(mode.id)}
-                    disabled={mode.requiresConfig && !isCloudConfigured || currentMode === mode.id}
+                    onClick={currentMode === mode.id ? undefined : () => onModeChange(mode.id)}
+                    disabled={(mode.requiresConfig && !isCloudConfigured) || currentMode === mode.id}
                     className="w-full quantum-button"
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
