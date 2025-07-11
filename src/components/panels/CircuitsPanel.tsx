@@ -7,6 +7,7 @@ import { GatePalette } from "@/components/circuits/GatePalette";
 import { CircuitGrid } from "@/components/circuits/CircuitGrid";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
 import { ExistingCircuitsList } from "@/components/circuits/ExistingCircuitsList";
+import { GateSuggestionsPanel } from "@/components/circuits/GateSuggestionsPanel";
 
 interface Gate {
   id: string;
@@ -222,6 +223,11 @@ export function CircuitsPanel() {
     a.click();
   };
 
+  const handleSuggestionClick = (suggestion: any) => {
+    // For now, just log the suggestion. Could be extended to auto-add gates
+    console.log('Suggestion clicked:', suggestion);
+  };
+
   return (
     <div className="h-full overflow-auto quantum-grid">
       <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
@@ -273,11 +279,23 @@ export function CircuitsPanel() {
           </CardContent>
         </Card>
 
-        {/* Live Quantum State Visualization */}
-        <QuantumStateVisualization 
-          simulationResult={simulationResult} 
-          NUM_QUBITS={NUM_QUBITS} 
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          {/* Live Quantum State Visualization */}
+          <div className="lg:col-span-2">
+            <QuantumStateVisualization 
+              simulationResult={simulationResult} 
+              NUM_QUBITS={NUM_QUBITS} 
+            />
+          </div>
+
+          {/* AI Suggestions Panel */}
+          <div className="lg:col-span-1">
+            <GateSuggestionsPanel 
+              circuit={circuit}
+              onSuggestionClick={handleSuggestionClick}
+            />
+          </div>
+        </div>
 
         {/* Existing Circuits */}
         <ExistingCircuitsList />
