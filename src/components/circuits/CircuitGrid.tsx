@@ -1,6 +1,7 @@
 import React from "react";
 import { type SimulationResult } from "@/lib/quantumSimulator";
 import { type EnhancedSimulationResult } from "@/lib/quantumSimulationService";
+import { VirtualizedCircuitGrid } from "./VirtualizedCircuitGrid";
 
 interface Gate {
   id: string;
@@ -38,6 +39,25 @@ export function CircuitGrid({
   NUM_QUBITS, 
   GRID_SIZE 
 }: CircuitGridProps) {
+  // Check if circuit is long enough to benefit from virtualization
+  const maxPosition = circuit.reduce((max, gate) => Math.max(max, gate.position), 0);
+  const shouldVirtualize = maxPosition > 20; // Virtualize for circuits with >20 time steps
+
+  if (shouldVirtualize) {
+    return (
+      <VirtualizedCircuitGrid
+        circuit={circuit}
+        dragState={dragState}
+        simulationResult={simulationResult}
+        onDeleteGate={onDeleteGate}
+        circuitRef={circuitRef}
+        NUM_QUBITS={NUM_QUBITS}
+        GRID_SIZE={GRID_SIZE}
+      />
+    );
+  }
+
+  // Fallback to original rendering for small circuits
   const gateTypes = [
     { type: 'H', name: 'Hadamard', color: 'bg-quantum-glow' },
     { type: 'X', name: 'Pauli-X', color: 'bg-quantum-neon' },

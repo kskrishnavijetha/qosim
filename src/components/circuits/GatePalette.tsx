@@ -1,11 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GatePaletteProps {
   onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
 }
 
-export function GatePalette({ onGateMouseDown }: GatePaletteProps) {
+export const GatePalette = memo(function GatePalette({ onGateMouseDown }: GatePaletteProps) {
   const gateTypes = [
     { type: 'H', name: 'Hadamard', color: 'bg-quantum-glow', description: 'Creates superposition - transforms |0⟩ to (|0⟩ + |1⟩)/√2' },
     { type: 'X', name: 'Pauli-X', color: 'bg-quantum-neon', description: 'Bit flip gate - transforms |0⟩ ↔ |1⟩' },
@@ -42,4 +42,4 @@ export function GatePalette({ onGateMouseDown }: GatePaletteProps) {
       </div>
     </div>
   );
-}
+});

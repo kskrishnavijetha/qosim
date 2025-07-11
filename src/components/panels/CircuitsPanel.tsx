@@ -7,6 +7,7 @@ import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
+import { useDeferredQFSLoader } from "@/hooks/useDeferredQFSLoader";
 import { CircuitPanelHeader } from "./CircuitPanelHeader";
 import { LearningModeSection } from "./LearningModeSection";
 import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
@@ -60,6 +61,11 @@ export function CircuitsPanel() {
     addGate,
     clearCircuit,
     completeTemplate
+  });
+
+  const { requestLoad, getFile, isLoading, loadedCount } = useDeferredQFSLoader({
+    maxConcurrentLoads: 2,
+    priorityThreshold: 30000
   });
 
   // Legacy simple exports (kept for quick access)
