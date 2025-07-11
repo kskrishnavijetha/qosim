@@ -104,6 +104,7 @@ export function FilesPanel() {
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedItem(id);
     e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -111,12 +112,25 @@ export function FilesPanel() {
     e.dataTransfer.dropEffect = "move";
   };
 
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
+
   const handleDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
-    if (!draggedItem || draggedItem === targetId) return;
+    const draggedId = e.dataTransfer.getData("text/plain");
+    if (!draggedId || draggedId === targetId) {
+      setDraggedItem(null);
+      return;
+    }
 
-    const draggedIndex = files.findIndex(f => f.id === draggedItem);
+    const draggedIndex = files.findIndex(f => f.id === draggedId);
     const targetIndex = files.findIndex(f => f.id === targetId);
+    
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedItem(null);
+      return;
+    }
     
     const newFiles = [...files];
     const [draggedFile] = newFiles.splice(draggedIndex, 1);
@@ -132,23 +146,38 @@ export function FilesPanel() {
 
     switch (action) {
       case "rename":
-        // Implementation for rename
-        console.log("Rename", file.name);
+        const newName = prompt("Enter new name:", file.name);
+        if (newName && newName !== file.name) {
+          setFiles(files.map(f => 
+            f.id === fileId ? { ...f, name: newName, modified: new Date().toISOString().slice(0, 16).replace('T', ' ') } : f
+          ));
+        }
         break;
       case "duplicate":
+        const extension = file.name.includes('.') ? file.name.split('.').pop() : '';
+        const baseName = file.name.includes('.') ? file.name.split('.').slice(0, -1).join('.') : file.name;
         const duplicated = {
           ...file,
-          id: `${file.id}-copy`,
-          name: `${file.name.split('.')[0]}_copy.${file.name.split('.')[1]}`,
-          modified: new Date().toISOString().slice(0, 16).replace('T', ' ')
+          id: `${file.id}-copy-${Date.now()}`,
+          name: extension ? `${baseName}_copy.${extension}` : `${baseName}_copy`,
+          modified: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          versions: 1,
+          lastVersion: "v1.0"
         };
         setFiles([...files, duplicated]);
         break;
       case "delete":
-        setFiles(files.filter(f => f.id !== fileId));
+        if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
+          setFiles(files.filter(f => f.id !== fileId));
+        }
         break;
       case "share":
-        console.log("Share", file.name);
+        const shareUrl = `${window.location.origin}/shared/${fileId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert(`Share link copied to clipboard: ${shareUrl}`);
+        }).catch(() => {
+          alert(`Share link: ${shareUrl}`);
+        });
         break;
       case "versions":
         setSelectedFile(fileId);
@@ -230,11 +259,12 @@ export function FilesPanel() {
                       onDragStart={(e) => handleDragStart(e, file.id)}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, file.id)}
+                      onDragEnd={handleDragEnd}
                       className={`
                         flex items-center justify-between p-3 rounded-lg transition-all duration-300
                         hover:bg-quantum-matrix cursor-pointer group
                         ${file.superposition ? 'border border-quantum-glow/30 holographic' : 'border border-transparent'}
-                        ${draggedItem === file.id ? 'opacity-50' : ''}
+                        ${draggedItem === file.id ? 'opacity-50 scale-95' : ''}
                       `}
                     >
                       <div className="flex items-center gap-3 flex-1">
