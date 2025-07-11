@@ -10,6 +10,11 @@ import { SimulationModeSelector } from "@/components/simulation/SimulationModeSe
 import { EntanglementVisualization } from "@/components/simulation/EntanglementVisualization";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
+import { useLearningMode } from "@/hooks/useLearningMode";
+import { LearningModeToggle } from "@/components/learning/LearningModeToggle";
+import { TutorialStepGuide } from "@/components/learning/TutorialStepGuide";
+import { CircuitTemplates } from "@/components/learning/CircuitTemplates";
+import { ProgressTracker } from "@/components/learning/ProgressTracker";
 
 export function CircuitsPanel() {
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -29,6 +34,19 @@ export function CircuitsPanel() {
     isCloudConfigured,
     canUndo
   } = useCircuitState();
+
+  const {
+    isLearningMode,
+    currentTemplate,
+    currentStep,
+    progress,
+    templates,
+    toggleLearningMode,
+    selectTemplate,
+    checkStepCompletion,
+    completeTemplate,
+    resetTutorial
+  } = useLearningMode();
 
   const NUM_QUBITS = 5;
   const GRID_SIZE = 50;
@@ -95,6 +113,25 @@ export function CircuitsPanel() {
     console.log('Suggestion clicked:', suggestion);
   };
 
+  const handleTemplateLoad = (template: any) => {
+    clearCircuit();
+    template.gates.forEach((gateData: any, index: number) => {
+      const gate = {
+        ...gateData,
+        id: `template-gate-${index}-${Date.now()}`
+      };
+      addGate(gate);
+    });
+    completeTemplate(template.id);
+  };
+
+  // Check tutorial progress when circuit changes
+  React.useEffect(() => {
+    if (isLearningMode) {
+      checkStepCompletion(circuit);
+    }
+  }, [circuit, isLearningMode, checkStepCompletion]);
+
   return (
     <div className="h-full overflow-auto quantum-grid">
       <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
@@ -112,6 +149,13 @@ export function CircuitsPanel() {
             canUndo={canUndo}
           />
         </div>
+
+        {/* Learning Mode Toggle */}
+        <LearningModeToggle
+          isLearningMode={isLearningMode}
+          onToggle={toggleLearningMode}
+          progress={progress}
+        />
 
         {/* Circuit Builder */}
         <CircuitBuilder
@@ -133,6 +177,32 @@ export function CircuitsPanel() {
           onCloudConfigChange={handleCloudConfigChange}
           isCloudConfigured={isCloudConfigured}
         />
+
+        {isLearningMode && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            {/* Tutorial Guide */}
+            <TutorialStepGuide
+              currentStep={currentStep}
+              onReset={resetTutorial}
+            />
+
+            {/* Progress Tracker */}
+            <ProgressTracker
+              progress={progress}
+              totalTemplates={templates.length}
+            />
+          </div>
+        )}
+
+        {isLearningMode && (
+          /* Circuit Templates */
+          <CircuitTemplates
+            templates={templates}
+            completedTemplates={progress.completedTemplates}
+            onSelectTemplate={selectTemplate}
+            onLoadTemplate={handleTemplateLoad}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {/* Live Quantum State Visualization */}
