@@ -357,6 +357,10 @@
     color: hsl(var(--quantum-neon));
   }
   
+  .text-quantum-particle {
+    color: hsl(var(--quantum-particle));
+  }
+  
   .bg-quantum-void {
     background-color: hsl(var(--quantum-void));
   }
