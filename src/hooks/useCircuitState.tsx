@@ -124,6 +124,7 @@ export function useCircuitState() {
 
   return {
     circuit,
+    setCircuit,
     history,
     simulationResult,
     simulationMode,
