@@ -315,7 +315,7 @@ export class QuantumSimulationManager {
   }
 
   isCloudConfigured(): boolean {
-    return !!this.config.ibmqToken;
+    return !!this.config.ibmqToken && this.config.ibmqToken.trim().length > 0;
   }
 }
 
