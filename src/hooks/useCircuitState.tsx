@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { quantumSimulationManager, type EnhancedSimulationResult, type SimulationMode, type CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
@@ -16,7 +16,23 @@ export function useCircuitState() {
   const [history, setHistory] = useState<Gate[][]>([[]]);
   const [simulationResult, setSimulationResult] = useState<EnhancedSimulationResult | null>(null);
   const [simulationMode, setSimulationMode] = useState<SimulationMode>('fast');
-  const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>({});
+  const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>(() => {
+    try {
+      const saved = localStorage.getItem('quantum-cloud-config');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Persist cloud config to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('quantum-cloud-config', JSON.stringify(cloudConfig));
+    } catch (error) {
+      console.error('Failed to save cloud config to localStorage:', error);
+    }
+  }, [cloudConfig]);
 
   const simulateQuantumState = useCallback(async (gates: Gate[]) => {
     console.log('simulateQuantumState called with gates:', gates);
