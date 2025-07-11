@@ -7,6 +7,7 @@ import { MemoryPanel } from "./panels/MemoryPanel";
 import { FilesPanel } from "./panels/FilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
+import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -23,6 +24,8 @@ export function QuantumDashboard() {
         return <FilesPanel />;
       case "logs":
         return <LogsPanel />;
+      case "integrations":
+        return <IntegrationsRoadmap />;
       default:
         return <CircuitsPanel />;
     }

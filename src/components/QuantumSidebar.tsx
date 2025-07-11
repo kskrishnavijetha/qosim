@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Cpu, Database, FileText, GitBranch, Activity, Terminal } from "lucide-react";
+import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -14,6 +14,7 @@ const navigationItems = [
   { id: "memory", label: "Memory", icon: Database },
   { id: "files", label: "Files", icon: FileText },
   { id: "logs", label: "Runtime Logs", icon: Terminal },
+  { id: "integrations", label: "Integrations", icon: Share2 },
 ];
 
 export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) {

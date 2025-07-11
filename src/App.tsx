@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import LandingPage from "./pages/LandingPage";
 import ThankYou from "./pages/ThankYou";
 import Index from "./pages/Index";
+import IntegrationsPage from "./pages/IntegrationsPage";
 import NotFound from "./pages/NotFound";
 import { SharedCircuit } from "./pages/SharedCircuit";
 import { EmbedCircuit } from "./pages/EmbedCircuit";
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/app" element={<Index />} />
+            <Route path="/integrations" element={<IntegrationsPage />} />
             <Route path="/shared/:fileId" element={<SharedCircuit />} />
             <Route path="/embed/:fileId" element={<EmbedCircuit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
