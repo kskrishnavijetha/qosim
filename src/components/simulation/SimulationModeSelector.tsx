@@ -198,7 +198,9 @@ export function SimulationModeSelector({
                     className="w-full quantum-button"
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
-                    {currentMode === mode.id ? 'Currently Active' : `Switch to ${mode.name}`}
+                    {currentMode === mode.id ? 'Currently Active' : 
+                     (mode.requiresConfig && !isCloudConfigured) ? 'Configure First' : 
+                     `Switch to ${mode.name}`}
                   </Button>
                 </div>
               </TabsContent>
