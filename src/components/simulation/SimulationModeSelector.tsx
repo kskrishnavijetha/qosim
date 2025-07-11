@@ -50,6 +50,7 @@ export function SimulationModeSelector({
   ];
 
   const handleTokenChange = (token: string) => {
+    console.log('Token changed:', token, 'Length:', token.length);
     onCloudConfigChange({ ...cloudConfig, ibmqToken: token });
   };
 
@@ -64,6 +65,8 @@ export function SimulationModeSelector({
   const handleNoiseToggle = (useNoisySimulation: boolean) => {
     onCloudConfigChange({ ...cloudConfig, useNoisySimulation });
   };
+
+  console.log('SimulationModeSelector render - isCloudConfigured:', isCloudConfigured, 'cloudConfig:', cloudConfig);
 
   return (
     <Card className="quantum-panel neon-border">
