@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
+import { quantumSimulationManager, type EnhancedSimulationResult, type SimulationMode, type CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
 export interface Gate {
   id: string;
@@ -13,9 +14,11 @@ export interface Gate {
 export function useCircuitState() {
   const [circuit, setCircuit] = useState<Gate[]>([]);
   const [history, setHistory] = useState<Gate[][]>([[]]);
-  const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
+  const [simulationResult, setSimulationResult] = useState<EnhancedSimulationResult | null>(null);
+  const [simulationMode, setSimulationMode] = useState<SimulationMode>('fast');
+  const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>({});
 
-  const simulateQuantumState = useCallback((gates: Gate[]) => {
+  const simulateQuantumState = useCallback(async (gates: Gate[]) => {
     // Convert our Gate interface to QuantumGate interface
     const quantumGates: QuantumGate[] = gates.map(gate => ({
       id: gate.id,
@@ -26,9 +29,23 @@ export function useCircuitState() {
       angle: gate.angle
     }));
     
-    // Run the quantum simulation
-    const result = quantumSimulator.simulate(quantumGates);
+    // Run the enhanced quantum simulation
+    const result = await quantumSimulationManager.simulate(quantumGates, 5);
     setSimulationResult(result);
+  }, []);
+
+  const handleModeChange = useCallback((mode: SimulationMode) => {
+    setSimulationMode(mode);
+    quantumSimulationManager.setMode(mode);
+    // Re-simulate with new mode if circuit exists
+    if (circuit.length > 0) {
+      simulateQuantumState(circuit);
+    }
+  }, [circuit, simulateQuantumState]);
+
+  const handleCloudConfigChange = useCallback((config: CloudSimulationConfig) => {
+    setCloudConfig(config);
+    quantumSimulationManager.setCloudConfig(config);
   }, []);
 
   const addGate = useCallback((newGate: Gate) => {
@@ -83,12 +100,17 @@ export function useCircuitState() {
     circuit,
     history,
     simulationResult,
+    simulationMode,
+    cloudConfig,
     addGate,
     deleteGate,
     undo,
     clearCircuit,
     simulateQuantumState,
     generateCircuitData,
+    handleModeChange,
+    handleCloudConfigChange,
+    isCloudConfigured: quantumSimulationManager.isCloudConfigured(),
     canUndo
   };
 }

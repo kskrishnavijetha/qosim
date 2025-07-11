@@ -6,6 +6,8 @@ import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { CircuitActions } from "@/components/circuits/CircuitActions";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
+import { SimulationModeSelector } from "@/components/simulation/SimulationModeSelector";
+import { EntanglementVisualization } from "@/components/simulation/EntanglementVisualization";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 
@@ -15,11 +17,16 @@ export function CircuitsPanel() {
   const {
     circuit,
     simulationResult,
+    simulationMode,
+    cloudConfig,
     addGate,
     deleteGate,
     undo,
     clearCircuit,
     generateCircuitData,
+    handleModeChange,
+    handleCloudConfigChange,
+    isCloudConfigured,
     canUndo
   } = useCircuitState();
 
@@ -118,23 +125,34 @@ export function CircuitsPanel() {
           gridSize={GRID_SIZE}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Live Quantum State Visualization */}
-          <div className="lg:col-span-2">
-            <QuantumStateVisualization 
-              simulationResult={simulationResult} 
-              NUM_QUBITS={NUM_QUBITS} 
-            />
-          </div>
+        {/* Simulation Mode Selector */}
+        <SimulationModeSelector
+          currentMode={simulationMode}
+          onModeChange={handleModeChange}
+          cloudConfig={cloudConfig}
+          onCloudConfigChange={handleCloudConfigChange}
+          isCloudConfigured={isCloudConfigured}
+        />
 
-          {/* AI Suggestions Panel */}
-          <div className="lg:col-span-1">
-            <GateSuggestionsPanel 
-              circuit={circuit}
-              onSuggestionClick={handleSuggestionClick}
-            />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          {/* Live Quantum State Visualization */}
+          <QuantumStateVisualization 
+            simulationResult={simulationResult} 
+            NUM_QUBITS={NUM_QUBITS} 
+          />
+
+          {/* Entanglement Analysis */}
+          <EntanglementVisualization
+            simulationResult={simulationResult}
+            numQubits={NUM_QUBITS}
+          />
         </div>
+
+        {/* AI Suggestions Panel */}
+        <GateSuggestionsPanel 
+          circuit={circuit}
+          onSuggestionClick={handleSuggestionClick}
+        />
 
         {/* Existing Circuits */}
         <ExistingCircuitsList />
