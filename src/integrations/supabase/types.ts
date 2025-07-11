@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      circuits: {
+        Row: {
+          circuit_data: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          circuit_data: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          circuit_data?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       optimization_sessions: {
         Row: {
           created_at: string

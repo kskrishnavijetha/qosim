@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2 } from "lucide-react";
+import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface QuantumSidebarProps {
   activeTab: string;
@@ -18,9 +28,20 @@ const navigationItems = [
 ];
 
 export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'QU';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
-    <div className="w-64 bg-quantum-void border-r neon-border quantum-panel h-full">
-      <div className="p-4 lg:p-6">
+    <div className="w-64 bg-quantum-void border-r neon-border quantum-panel h-full flex flex-col">
+      <div className="p-4 lg:p-6 flex-1">
         <div className="flex items-center gap-3 mb-8">
           <div className="relative">
             <Activity className="w-8 h-8 text-quantum-glow particle-animation" />
@@ -89,6 +110,43 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
             </div>
           </div>
         </div>
+      </div>
+
+      {/* User Profile Section */}
+      <div className="p-4 border-t border-quantum-matrix">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full p-2 h-auto hover:bg-quantum-matrix">
+              <div className="flex items-center gap-3 w-full">
+                <Avatar className="w-8 h-8 neon-border">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                  <AvatarFallback className="bg-quantum-matrix text-quantum-glow text-xs">
+                    {getInitials(user?.user_metadata?.display_name || user?.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-medium text-quantum-glow truncate">
+                    {user?.user_metadata?.display_name || user?.email?.split('@')[0]}
+                  </p>
+                  <p className="text-xs text-quantum-neon truncate">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 quantum-panel neon-border">
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="w-4 h-4 mr-2" />
+              Profile Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-quantum-matrix" />
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-400">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

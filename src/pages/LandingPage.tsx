@@ -35,9 +35,14 @@ const LandingPage = () => {
               <Shield className="w-3 h-3 mr-1" />
               Patent Pending
             </Badge>
-            <Button asChild>
-              <Link to="/app">Launch App</Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/app">Launch App</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -76,8 +81,10 @@ const LandingPage = () => {
                   <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline">
-                Watch Demo
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/auth">
+                  Sign In
+                </Link>
               </Button>
             </div>
           </div>
