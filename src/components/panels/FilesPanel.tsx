@@ -8,6 +8,7 @@ import { FileSystemStats } from "./FileSystemStats";
 import { QuantumProperties } from "./QuantumProperties";
 import { FileItem } from "./FileItem";
 import { useFileOperations } from "@/hooks/useFileOperations";
+import { ShareDialog } from "../dialogs/ShareDialog";
 
 export function FilesPanel() {
   const [files, setFiles] = useState([
@@ -75,6 +76,8 @@ export function FilesPanel() {
 
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [shareFile, setShareFile] = useState<any>(null);
 
   const {
     draggedItem,
@@ -90,8 +93,17 @@ export function FilesPanel() {
     if (action === "versions") {
       setSelectedFile(fileId);
       setShowVersionHistory(true);
+    } else if (action === "share") {
+      const file = files.find(f => f.id === fileId);
+      if (file) {
+        setShareFile(file);
+        setShowShareDialog(true);
+      }
     } else {
-      contextAction(action, fileId);
+      contextAction(action, fileId, (file) => {
+        setShareFile(file);
+        setShowShareDialog(true);
+      });
     }
   };
 
@@ -156,6 +168,15 @@ export function FilesPanel() {
             {selectedFile && <VersionHistory fileId={selectedFile} />}
           </DialogContent>
         </Dialog>
+
+        {/* Share Dialog */}
+        {shareFile && (
+          <ShareDialog
+            open={showShareDialog}
+            onOpenChange={setShowShareDialog}
+            file={shareFile}
+          />
+        )}
       </div>
     </div>
   );

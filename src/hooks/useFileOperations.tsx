@@ -55,7 +55,7 @@ export function useFileOperations(files: File[], setFiles: (files: File[]) => vo
     setDraggedItem(null);
   };
 
-  const handleContextAction = (action: string, fileId: string) => {
+  const handleContextAction = (action: string, fileId: string, onShare?: (file: any) => void) => {
     const file = files.find(f => f.id === fileId);
     if (!file) return;
 
@@ -87,12 +87,17 @@ export function useFileOperations(files: File[], setFiles: (files: File[]) => vo
         }
         break;
       case "share":
-        const shareUrl = `${window.location.origin}/shared/${fileId}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert(`Share link copied to clipboard: ${shareUrl}`);
-        }).catch(() => {
-          alert(`Share link: ${shareUrl}`);
-        });
+        if (onShare) {
+          onShare(file);
+        } else {
+          // Fallback to simple share
+          const shareUrl = `${window.location.origin}/shared/${fileId}`;
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            alert(`Share link copied to clipboard: ${shareUrl}`);
+          }).catch(() => {
+            alert(`Share link: ${shareUrl}`);
+          });
+        }
         break;
     }
   };
