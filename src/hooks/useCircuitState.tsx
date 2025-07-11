@@ -120,7 +120,7 @@ export function useCircuitState() {
     generateCircuitData,
     handleModeChange,
     handleCloudConfigChange,
-    isCloudConfigured: quantumSimulationManager.isCloudConfigured(),
+    isCloudConfigured: !!cloudConfig.ibmqToken && cloudConfig.ibmqToken.trim().length > 0,
     canUndo
   };
 }
