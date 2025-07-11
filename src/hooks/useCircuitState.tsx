@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { quantumSimulationManager, type EnhancedSimulationResult, type SimulationMode, type CloudSimulationConfig } from '@/lib/quantumSimulationService';
+import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
 
 export interface Gate {
   id: string;
@@ -16,6 +17,7 @@ export function useCircuitState() {
   const [history, setHistory] = useState<Gate[][]>([[]]);
   const [simulationResult, setSimulationResult] = useState<EnhancedSimulationResult | null>(null);
   const [simulationMode, setSimulationMode] = useState<SimulationMode>('fast');
+  const [sessionTracker] = useState(() => new CircuitSessionTracker(`circuit-${Date.now()}`));
   const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>(() => {
     try {
       const saved = localStorage.getItem('quantum-cloud-config');
@@ -54,6 +56,13 @@ export function useCircuitState() {
       console.log('Calling quantumSimulationManager.simulate...');
       const result = await quantumSimulationManager.simulate(quantumGates, 5);
       console.log('Simulation result received:', result);
+      
+      // Track simulation analytics
+      trackEvent('circuit_simulated', { 
+        gateCount: gates.length, 
+        numQubits: 5 
+      });
+      
       setSimulationResult(result);
     } catch (error) {
       console.error('Error in simulateQuantumState:', error);
@@ -79,6 +88,18 @@ export function useCircuitState() {
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
     
+    // Track analytics
+    trackEvent('gate_added', { 
+      gateType: newGate.type, 
+      qubit: newGate.qubit, 
+      position: newGate.position 
+    });
+    gateUsageTracker.increment(newGate.type);
+    trackEvent('circuit_modified', { 
+      gateType: newGate.type, 
+      numGates: newCircuit.length 
+    });
+    
     // Generate standardized circuit data structure and simulate
     const circuitData = generateCircuitData(newCircuit);
     console.log('Generated circuit data:', circuitData);
@@ -86,9 +107,16 @@ export function useCircuitState() {
   }, [circuit, simulateQuantumState]);
 
   const deleteGate = useCallback((gateId: string) => {
+    const gateToDelete = circuit.find(g => g.id === gateId);
     const newCircuit = circuit.filter(gate => gate.id !== gateId);
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
+    
+    // Track analytics
+    if (gateToDelete) {
+      trackEvent('gate_removed', { gateType: gateToDelete.type });
+    }
+    
     simulateQuantumState(newCircuit);
   }, [circuit, simulateQuantumState]);
 
@@ -103,10 +131,14 @@ export function useCircuitState() {
   }, [history, simulateQuantumState]);
 
   const clearCircuit = useCallback(() => {
+    // Track session time before clearing
+    sessionTracker.trackTimeSpent();
+    sessionTracker.reset();
+    
     setCircuit([]);
     setHistory([[]]);
     setSimulationResult(null);
-  }, []);
+  }, [sessionTracker]);
 
   const generateCircuitData = (gates: Gate[]) => {
     return gates

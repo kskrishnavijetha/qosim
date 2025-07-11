@@ -6,6 +6,7 @@ import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { FilesPanel } from "./panels/FilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
+import { FeedbackWidget } from "./FeedbackWidget";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -46,6 +47,9 @@ export function QuantumDashboard() {
           <QuantumConsole />
         </div>
       </div>
+      
+      {/* Feedback Widget */}
+      <FeedbackWidget />
     </div>
   );
 }

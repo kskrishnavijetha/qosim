@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { trackEvent } from '@/lib/analytics';
 
 interface Gate {
   id: string;
@@ -60,6 +61,7 @@ export function ExportDialog({
       a.href = url;
       a.download = `${options.projectName}.json`;
       a.click();
+      trackEvent('circuit_exported', { format: 'json', gateCount: circuit.length });
       toast({ title: "JSON exported successfully!" });
     } catch (error) {
       toast({ title: "Export failed", description: String(error), variant: "destructive" });
@@ -102,6 +104,7 @@ export function ExportDialog({
       a.href = url;
       a.download = `${options.projectName}.qasm`;
       a.click();
+      trackEvent('circuit_exported', { format: 'qasm', gateCount: circuit.length });
       toast({ title: "QASM exported successfully!" });
     } catch (error) {
       toast({ title: "Export failed", description: String(error), variant: "destructive" });
