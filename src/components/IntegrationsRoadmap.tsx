@@ -80,7 +80,7 @@ const integrations: Integration[] = [
       'Share circuits easily'
     ],
     progress: 0,
-    setupAction: 'Setup Supabase'
+    setupAction: 'Configure API'
   },
   {
     id: 'dropbox',
@@ -101,7 +101,7 @@ const integrations: Integration[] = [
       'Offline access'
     ],
     progress: 0,
-    setupAction: 'Setup Supabase'
+    setupAction: 'Configure API'
   },
   {
     id: 'ibm-q',
@@ -124,7 +124,7 @@ const integrations: Integration[] = [
       'Research-grade capabilities'
     ],
     progress: 30,
-    setupAction: 'Setup Supabase'
+    setupAction: 'Configure API'
   },
   {
     id: 'aws-braket',
@@ -147,7 +147,7 @@ const integrations: Integration[] = [
       'Pay-per-use pricing'
     ],
     progress: 0,
-    setupAction: 'Setup Supabase'
+    setupAction: 'Configure API'
   },
   {
     id: 'classiq',
@@ -168,7 +168,7 @@ const integrations: Integration[] = [
       'Hardware-agnostic deployment'
     ],
     progress: 0,
-    setupAction: 'Setup Supabase'
+    setupAction: 'Configure API'
   },
   {
     id: 'email-notifications',
@@ -191,7 +191,7 @@ const integrations: Integration[] = [
       'Collaboration updates'
     ],
     progress: 0,
-    setupAction: 'Setup Supabase'
+    setupAction: 'Configure API'
   }
 ];
 
@@ -348,15 +348,13 @@ export function IntegrationsRoadmap() {
                     {/* Actions */}
                     <div className="flex gap-2">
                       {integration.setupAction && (
-                        <Button 
+                         <Button 
                           size="sm" 
                           variant="outline" 
                           className="flex-1 neon-border"
                           onClick={() => {
                             if (integration.setupAction === 'Connect GitHub') {
                               window.open('https://docs.lovable.dev/integrations/github/', '_blank');
-                            } else if (integration.setupAction === 'Setup Supabase') {
-                              window.open('https://docs.lovable.dev/integrations/supabase/', '_blank');
                             }
                           }}
                         >
@@ -392,16 +390,16 @@ export function IntegrationsRoadmap() {
             <div>
               <h4 className="font-medium text-quantum-glow mb-2">Prerequisites</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• Supabase integration for secure API key storage</li>
+                <li>• Secure API key storage</li>
                 <li>• OAuth2 authentication flows</li>
-                <li>• Edge functions for external API calls</li>
+                <li>• External API connections</li>
                 <li>• User preference management</li>
               </ul>
             </div>
             <div>
               <h4 className="font-medium text-quantum-glow mb-2">Security Considerations</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• API keys stored in Supabase secrets</li>
+                <li>• API keys stored securely</li>
                 <li>• User consent for data sharing</li>
                 <li>• Rate limiting and quota management</li>
                 <li>• Encrypted circuit data transmission</li>
