@@ -122,7 +122,10 @@ export function CircuitTemplates({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onSelectTemplate(template.id)}
+              onClick={() => {
+                console.log('Learn button clicked for template:', template.id);
+                onSelectTemplate(template.id);
+              }}
               className="flex-1 font-mono text-xs border-quantum-neon text-quantum-neon hover:bg-quantum-neon hover:text-black"
             >
               <BookOpen className="w-3 h-3 mr-1" />
@@ -130,7 +133,10 @@ export function CircuitTemplates({
             </Button>
             <Button
               size="sm"
-              onClick={() => onLoadTemplate(template)}
+              onClick={() => {
+                console.log('Load button clicked for template:', template.name);
+                onLoadTemplate(template);
+              }}
               className="flex-1 font-mono text-xs bg-quantum-glow text-black hover:bg-quantum-glow/80"
             >
               <Play className="w-3 h-3 mr-1" />
