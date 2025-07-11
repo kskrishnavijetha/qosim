@@ -45,8 +45,9 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     const relativeX = e.clientX - circuitRect.left;
     const relativeY = e.clientY - circuitRect.top;
     
-    const qubit = Math.floor((relativeY - 40) / 60);
-    const position = Math.floor(relativeX / gridSize);
+    // Account for padding (16px) and qubit line positioning (20px + i*60)
+    const qubit = Math.floor((relativeY - 16 - 20) / 60);
+    const position = Math.floor((relativeX - 16 - 20) / gridSize);
     
     setDragState(prev => ({
       ...prev,
