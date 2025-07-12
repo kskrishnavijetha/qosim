@@ -1,0 +1,114 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2200 >>
+stream
+BT
+/F1 24 Tf
+50 720 Td
+(QOSim - Getting Started Guide) Tj
+0 -40 Td
+/F1 18 Tf
+(🧭 Documentation) Tj
+0 -60 Td
+/F1 16 Tf
+(What is QOSim?) Tj
+0 -30 Td
+/F1 12 Tf
+(QOSim is a revolutionary quantum operating system simulator that provides) Tj
+0 -15 Td
+(a visual, drag-and-drop interface for building and simulating quantum) Tj
+0 -15 Td
+(circuits. Built for researchers, educators, and developers, QOSim makes) Tj
+0 -15 Td
+(quantum computing accessible through intuitive visual tools.) Tj
+0 -40 Td
+/F1 16 Tf
+(Key Features) Tj
+0 -25 Td
+/F1 12 Tf
+(• Visual Circuit Builder: Drag-and-drop quantum gates) Tj
+0 -15 Td
+(• Real-time Simulation: Instant quantum state visualization) Tj
+0 -15 Td
+(• Bloch Sphere Visualization: 3D quantum state representation) Tj
+0 -15 Td
+(• Circuit Export: Save and share your quantum circuits) Tj
+0 -15 Td
+(• Educational Mode: Built-in tutorials and templates) Tj
+0 -15 Td
+(• Patent-pending QFS: Quantum File System for state management) Tj
+0 -40 Td
+/F1 16 Tf
+(System Requirements) Tj
+0 -25 Td
+/F1 12 Tf
+(• Modern web browser \(Chrome, Firefox, Safari, Edge\)) Tj
+0 -15 Td
+(• JavaScript enabled) Tj
+0 -15 Td
+(• Minimum 4GB RAM recommended) Tj
+0 -15 Td
+(• Stable internet connection for cloud features) Tj
+0 -40 Td
+/F1 16 Tf
+(Quickstart Guide - Build Your First Quantum Circuit) Tj
+0 -25 Td
+/F1 12 Tf
+(1. Launch QOSim in your web browser) Tj
+0 -15 Td
+(2. Create a new quantum circuit from the dashboard) Tj
+0 -15 Td
+(3. Drag quantum gates from the palette to the circuit grid) Tj
+0 -15 Td
+(4. Connect gates to qubits to build your circuit) Tj
+0 -15 Td
+(5. Click "Simulate" to run your quantum circuit) Tj
+0 -15 Td
+(6. View results in the Bloch sphere and state visualization) Tj
+0 -15 Td
+(7. Export your circuit for sharing or future use) Tj
+0 -40 Td
+/F1 16 Tf
+(Using QOSim on the Web) Tj
+0 -25 Td
+/F1 12 Tf
+(QOSim runs entirely in your web browser - no downloads required!) Tj
+0 -15 Td
+(Simply visit the QOSim website and click "Launch App" to begin.) Tj
+0 -15 Td
+(Your circuits are automatically saved to the cloud when you) Tj
+0 -15 Td
+(create an account, enabling access from any device.) Tj
+0 -40 Td
+/F1 12 Tf
+(For support and tutorials, visit: hello@qosim.com) Tj
+0 -20 Td
+(© 2024 QOSim. All rights reserved. Patent Pending.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000053 00000 n 
+0000000106 00000 n 
+0000000244 00000 n 
+0000000312 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2564
+%%EOF

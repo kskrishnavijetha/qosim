@@ -781,7 +781,7 @@ const LandingPage = () => {
               <h3 className="font-semibold mb-3">Product</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/app" className="hover:text-foreground transition-colors">Launch App</Link></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
+                <li><a href="/qosim-getting-started.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Documentation</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">Tutorials</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">Examples</a></li>
               </ul>
