@@ -141,11 +141,7 @@ export function CircuitsPanel() {
 
         <LearningModeSection
           isLearningMode={isLearningMode}
-          onToggle={() => {
-            console.log('🎓 Toggling learning mode. Current state:', isLearningMode);
-            console.log('🎓 Available templates:', templates);
-            toggleLearningMode();
-          }}
+          onToggle={toggleLearningMode}
           progress={progress}
           currentStep={currentStep}
           onReset={resetTutorial}

@@ -75,10 +75,7 @@ export function LearningModeToggle({ isLearningMode, onToggle, progress }: Learn
 
             <Switch
               checked={isLearningMode}
-              onCheckedChange={() => {
-                console.log('🎓 Learning mode toggle clicked! Current state:', isLearningMode);
-                onToggle();
-              }}
+              onCheckedChange={onToggle}
               className="data-[state=checked]:bg-quantum-glow"
             />
           </div>
