@@ -85,7 +85,10 @@ export function SimulationModeSelector({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={currentMode} onValueChange={(mode) => onModeChange(mode as EnhancedSimulationMode)}>
+        <Tabs value={currentMode} onValueChange={(mode) => {
+          console.log('🔄 SimulationModeSelector: Tab changed to', mode);
+          onModeChange(mode as EnhancedSimulationMode);
+        }}>
           <TabsList className="grid w-full grid-cols-4 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
@@ -96,6 +99,7 @@ export function SimulationModeSelector({
                   key={mode.id} 
                   value={mode.id}
                   className="flex items-center gap-2 data-[state=active]:bg-quantum-glow/20"
+                  disabled={needsSetup}
                 >
                   <Icon className="w-4 h-4" />
                   {mode.name}
@@ -204,8 +208,11 @@ export function SimulationModeSelector({
                   )}
 
                   <Button
-                    onClick={currentMode === mode.id ? undefined : () => onModeChange(mode.id)}
-                    disabled={(mode.requiresConfig && !isCloudConfigured) || currentMode === mode.id}
+                    onClick={() => {
+                      console.log('🔄 SimulationModeSelector: Button clicked for mode', mode.id);
+                      onModeChange(mode.id);
+                    }}
+                    disabled={mode.requiresConfig && !isCloudConfigured}
                     className="w-full quantum-button"
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
