@@ -1,11 +1,10 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type SimulationResult } from "@/lib/quantumSimulator";
-import { type EnhancedSimulationResult } from "@/lib/quantumSimulationService";
+import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { quantumSimulator } from "@/lib/quantumSimulator";
 
 interface QuantumStateVisualizationProps {
-  simulationResult: EnhancedSimulationResult | null;
+  simulationResult: OptimizedSimulationResult | null;
   NUM_QUBITS: number;
 }
 

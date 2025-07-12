@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { EnhancedSimulationResult } from '@/lib/quantumSimulationService';
+import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 import { Zap, Link2 } from 'lucide-react';
 
 interface EntanglementVisualizationProps {
-  simulationResult: EnhancedSimulationResult | null;
+  simulationResult: OptimizedSimulationResult | null;
   numQubits: number;
 }
 

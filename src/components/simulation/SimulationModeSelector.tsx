@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, Brain, Cloud, Settings, Key } from 'lucide-react';
-import { SimulationMode, CloudSimulationConfig } from '@/lib/quantumSimulationService';
+import { EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
+import { CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
 interface SimulationModeSelectorProps {
-  currentMode: SimulationMode;
-  onModeChange: (mode: SimulationMode) => void;
+  currentMode: EnhancedSimulationMode;
+  onModeChange: (mode: EnhancedSimulationMode) => void;
   cloudConfig: CloudSimulationConfig;
   onCloudConfigChange: (config: CloudSimulationConfig) => void;
   isCloudConfigured: boolean;
@@ -26,26 +27,33 @@ export function SimulationModeSelector({
 }: SimulationModeSelectorProps) {
   const modes = [
     {
-      id: 'fast' as SimulationMode,
+      id: 'fast' as EnhancedSimulationMode,
       name: 'Fast Mock',
       icon: Zap,
       description: 'Local simulation with basic quantum operations',
       features: ['Instant results', 'Basic gates', 'No noise model']
     },
     {
-      id: 'accurate' as SimulationMode,
+      id: 'accurate' as EnhancedSimulationMode,
       name: 'Accurate Local',
       icon: Brain,
       description: 'Enhanced local simulation with entanglement analysis',
       features: ['High precision', 'Entanglement metrics', 'Fidelity tracking']
     },
     {
-      id: 'cloud' as SimulationMode,
+      id: 'cloud' as EnhancedSimulationMode,
       name: 'Qiskit Cloud',
       icon: Cloud,
       description: 'Real quantum simulation via IBM Qiskit',
       features: ['Real backend simulation', 'Noise models', 'Hardware constraints'],
       requiresConfig: true
+    },
+    {
+      id: 'step-by-step' as EnhancedSimulationMode,
+      name: 'Debug Mode',
+      icon: Settings,
+      description: 'Step-by-step execution with pause/resume controls',
+      features: ['Breakpoints', 'State inspection', 'Manual stepping']
     }
   ];
 
@@ -77,8 +85,8 @@ export function SimulationModeSelector({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={currentMode} onValueChange={(mode) => onModeChange(mode as SimulationMode)}>
-          <TabsList className="grid w-full grid-cols-3 quantum-tabs">
+        <Tabs value={currentMode} onValueChange={(mode) => onModeChange(mode as EnhancedSimulationMode)}>
+          <TabsList className="grid w-full grid-cols-4 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
               const needsSetup = mode.requiresConfig && !isCloudConfigured;
