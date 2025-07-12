@@ -145,6 +145,21 @@ const LandingPage = () => {
               memory mapping, and a revolutionary quantum-native file system (QFS).
             </p>
             
+            {/* Patent Pending Badge */}
+            <div className="flex justify-center mt-6">
+              <div className="relative group">
+                {/* Subtle glow effect */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-quantum-glow/30 to-quantum-neon/30 rounded-full blur-sm opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                
+                {/* Badge */}
+                <div className="relative bg-gradient-to-r from-quantum-void/40 to-quantum-matrix/40 border border-quantum-glow/40 backdrop-blur-sm rounded-full px-4 py-2 text-sm">
+                  <span className="text-quantum-glow font-medium">
+                    🛡️ Patent Pending: Quantum File System (QFS)
+                  </span>
+                </div>
+              </div>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-6">
               <Button size="lg" className="group bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8 py-3 text-lg">
                 Join Early Access
@@ -406,9 +421,24 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
               Everything you need to explore, learn, and innovate in quantum computing
             </p>
+            
+            {/* Patent Pending Badge in Features */}
+            <div className="flex justify-center">
+              <div className="relative group">
+                {/* Subtle glow effect */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-quantum-plasma/20 to-quantum-energy/20 rounded-full blur-sm opacity-40 group-hover:opacity-60 transition-opacity"></div>
+                
+                {/* Badge */}
+                <div className="relative bg-gradient-to-r from-quantum-void/30 to-quantum-matrix/30 border border-quantum-plasma/40 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs">
+                  <span className="text-quantum-plasma font-medium">
+                    🛡️ Patent Pending: Quantum File System (QFS)
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
