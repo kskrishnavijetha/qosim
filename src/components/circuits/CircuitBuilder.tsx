@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GatePalette } from './GatePalette';
 import { CircuitGrid } from './CircuitGrid';
 import { Gate } from '@/hooks/useCircuitState';
-import { EnhancedSimulationResult } from '@/lib/quantumSimulationService';
+import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 
 interface DragState {
   isDragging: boolean;
@@ -16,7 +16,7 @@ interface DragState {
 interface CircuitBuilderProps {
   circuit: Gate[];
   dragState: DragState;
-  simulationResult: EnhancedSimulationResult | null;
+  simulationResult: OptimizedSimulationResult | null;
   onDeleteGate: (gateId: string) => void;
   onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
   circuitRef: React.RefObject<HTMLDivElement>;

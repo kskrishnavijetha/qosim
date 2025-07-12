@@ -4,10 +4,10 @@ import { EntanglementVisualization } from '@/components/simulation/EntanglementV
 import { GateSuggestionsPanel } from '@/components/circuits/GateSuggestionsPanel';
 import { ExistingCircuitsList } from '@/components/circuits/ExistingCircuitsList';
 import { Gate } from '@/hooks/useCircuitState';
-import { EnhancedSimulationResult } from '@/lib/quantumSimulationService';
+import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 
 interface CircuitVisualizationSectionProps {
-  simulationResult: EnhancedSimulationResult | null;
+  simulationResult: OptimizedSimulationResult | null;
   numQubits: number;
   circuit: Gate[];
   onSuggestionClick: (suggestion: any) => void;
