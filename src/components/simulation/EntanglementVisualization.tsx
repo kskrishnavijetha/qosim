@@ -138,9 +138,10 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
           <Badge variant="outline" className={`font-mono ${
             mode === 'cloud' ? 'border-quantum-glow text-quantum-glow' :
             mode === 'accurate' ? 'border-quantum-neon text-quantum-neon' :
+            mode === 'step-by-step' ? 'border-purple-400 text-purple-400' :
             'border-quantum-particle text-quantum-particle'
           }`}>
-            {mode.toUpperCase()}
+            {mode === 'step-by-step' ? 'DEBUG' : mode.toUpperCase()}
           </Badge>
           <Badge variant="secondary" className="font-mono text-xs">
             {executionTime.toFixed(0)}ms

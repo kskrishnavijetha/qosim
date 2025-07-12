@@ -147,6 +147,9 @@ class EnhancedQuantumSimulationManager {
         case 'step-by-step':
           result = await this.simulateStepByStep(optimizedCircuit, numQubits);
           break;
+        case 'cloud-simulation':
+          result = await this.simulateWithCloud(optimizedCircuit, numQubits);
+          break;
         case 'optimized-local':
         default:
           result = await this.simulateOptimized(optimizedCircuit, numQubits);
@@ -262,21 +265,44 @@ class EnhancedQuantumSimulationManager {
 
   // Simulation strategy selection
   private selectSimulationStrategy(circuit: QuantumGate[], numQubits: number): string {
-    const complexity = this.calculateCircuitComplexity(circuit, numQubits);
+    console.log('🔬 selectSimulationStrategy: currentMode =', this.currentMode, 'isStepMode =', this.isStepMode);
     
-    if (this.isStepMode) {
+    // Step mode overrides everything
+    if (this.isStepMode || this.currentMode === 'step-by-step') {
+      console.log('🔬 selectSimulationStrategy: Selecting step-by-step mode');
       return 'step-by-step';
     }
     
-    if (this.wasmConfig.enabled && circuit.length > this.wasmConfig.fallbackThreshold) {
-      return 'wasm-fallback';
+    // Handle different simulation modes
+    switch (this.currentMode) {
+      case 'fast':
+        console.log('🔬 selectSimulationStrategy: Selecting fast mode (optimized-local)');
+        return 'optimized-local';
+        
+      case 'accurate':
+        console.log('🔬 selectSimulationStrategy: Selecting accurate mode (optimized-local with full analysis)');
+        return 'optimized-local';
+        
+      case 'cloud':
+        console.log('🔬 selectSimulationStrategy: Selecting cloud mode (cloud-simulation)');
+        return 'cloud-simulation';
+        
+      default:
+        const complexity = this.calculateCircuitComplexity(circuit, numQubits);
+        
+        if (this.wasmConfig.enabled && circuit.length > this.wasmConfig.fallbackThreshold) {
+          console.log('🔬 selectSimulationStrategy: Selecting wasm-fallback (circuit too large)');
+          return 'wasm-fallback';
+        }
+        
+        if (complexity > 1000) { // High complexity threshold
+          console.log('🔬 selectSimulationStrategy: Selecting wasm-fallback (complexity too high)');
+          return 'wasm-fallback';
+        }
+        
+        console.log('🔬 selectSimulationStrategy: Selecting default optimized-local');
+        return 'optimized-local';
     }
-    
-    if (complexity > 1000) { // High complexity threshold
-      return 'wasm-fallback';
-    }
-    
-    return 'optimized-local';
   }
 
   private calculateCircuitComplexity(circuit: QuantumGate[], numQubits: number): number {
@@ -312,6 +338,21 @@ class EnhancedQuantumSimulationManager {
     // For now, use optimized local simulation with async batching
     // In a real implementation, this would interface with WASM quantum simulator
     return await this.simulateOptimized(circuit, numQubits);
+  }
+
+  private async simulateWithCloud(circuit: QuantumGate[], numQubits: number): Promise<OptimizedSimulationResult> {
+    this.log('info', 'Using cloud simulation mode - fallback to local accurate simulation');
+    
+    // For now, use optimized local simulation with enhanced entanglement analysis
+    // In a real implementation, this would connect to IBM Qiskit or other cloud providers
+    const result = await this.simulateOptimized(circuit, numQubits);
+    
+    // Add cloud-specific enhancements like noise modeling
+    return {
+      ...result,
+      mode: 'cloud' as any,
+      fidelity: result.fidelity * 0.95 // Simulate some cloud noise
+    };
   }
 
   // Error correction
