@@ -3,112 +3,505 @@
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R 8 0 R] /Count 6 >>
 endobj
 3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R /F2 10 0 R >> >> /Contents 11 0 R >>
 endobj
 4 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R /F2 10 0 R >> >> /Contents 12 0 R >>
 endobj
 5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R /F2 10 0 R >> >> /Contents 13 0 R >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R /F2 10 0 R >> >> /Contents 14 0 R >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R /F2 10 0 R >> >> /Contents 15 0 R >>
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R /F2 10 0 R >> >> /Contents 16 0 R >>
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+10 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+11 0 obj
+<< /Length 3200 >>
+stream
+BT
+/F2 24 Tf
+50 720 Td
+(QOSim Documentation) Tj
+0 -50 Td
+/F2 18 Tf
+(1. Getting Started) Tj
+0 -30 Td
+/F2 14 Tf
+(What is QOSim?) Tj
+0 -20 Td
+/F1 11 Tf
+(QOSim is a visual Quantum Operating System Simulator designed to help users) Tj
+0 -12 Td
+(understand, build, and simulate quantum circuits without deep coding knowledge.) Tj
+0 -12 Td
+(It brings the power of a quantum development environment into an intuitive) Tj
+0 -12 Td
+(drag-and-drop interface.) Tj
+0 -25 Td
+/F2 14 Tf
+(Key Features) Tj
+0 -15 Td
+/F1 11 Tf
+(• Drag-and-Drop Circuit Builder) Tj
+0 -12 Td
+(• QFS \(Quantum File System\)) Tj
+0 -12 Td
+(• Multi-qubit simulation) Tj
+0 -12 Td
+(• Export Options: QASM, Qiskit, Cirq) Tj
+0 -12 Td
+(• Educational Mode) Tj
+0 -12 Td
+(• Patent-Pending Architecture) Tj
+0 -25 Td
+/F2 14 Tf
+(System Requirements) Tj
+0 -15 Td
+/F1 11 Tf
+(• Browser: Chrome, Firefox, Safari \(latest\)) Tj
+0 -12 Td
+(• Internet: Stable connection) Tj
+0 -12 Td
+(• Device: Desktop/laptop with minimum 4GB RAM) Tj
+0 -25 Td
+/F2 14 Tf
+(Quickstart Guide) Tj
+0 -15 Td
+/F1 11 Tf
+(1. Visit qosim.app) Tj
+0 -12 Td
+(2. Launch Simulator) Tj
+0 -12 Td
+(3. Add a qubit line) Tj
+0 -12 Td
+(4. Add Hadamard and measurement gates) Tj
+0 -12 Td
+(5. Run and view output) Tj
+0 -25 Td
+/F2 14 Tf
+(Installing QOSim \(if downloadable\)) Tj
+0 -15 Td
+/F1 11 Tf
+(• Download from qosim.app/download \(if available\)) Tj
+0 -25 Td
+/F2 14 Tf
+(Using QOSim on the Web) Tj
+0 -15 Td
+/F1 11 Tf
+(• Runs in Chrome, Firefox, Safari) Tj
+0 -12 Td
+(• No installation needed) Tj
+0 -40 Td
+/F1 9 Tf
+(Contact: support@qosim.app | Page 1) Tj
+ET
+endstream
+endobj
+12 0 obj
+<< /Length 3000 >>
+stream
+BT
+/F2 18 Tf
+50 720 Td
+(2. Core Concepts) Tj
+0 -30 Td
+/F2 14 Tf
+(What is a Quantum Operating System?) Tj
+0 -15 Td
+/F1 11 Tf
+(A software abstraction that manages qubits and quantum memory. QOSim) Tj
+0 -12 Td
+(simulates this using QFS and a visual interface.) Tj
+0 -25 Td
+/F2 14 Tf
+(Introduction to QFS) Tj
+0 -15 Td
+/F1 11 Tf
+(A simulation of quantum memory and logic structure, representing quantum) Tj
+0 -12 Td
+(storage as a logical file system.) Tj
+0 -25 Td
+/F2 14 Tf
+(Qubit Basics & Entanglement) Tj
+0 -15 Td
+/F1 11 Tf
+(Understand superposition, entanglement, and how multi-qubit systems behave.) Tj
+0 -25 Td
+/F2 14 Tf
+(Quantum Logic Gates) Tj
+0 -15 Td
+/F1 11 Tf
+(Includes H, X, CNOT, Toffoli, and more. Applied visually.) Tj
+0 -25 Td
+/F2 14 Tf
+(Superposition, Measurement & Collapse) Tj
+0 -15 Td
+/F1 11 Tf
+(Learn how quantum states collapse to classical bits after measurement.) Tj
+0 -40 Td
+/F2 18 Tf
+(3. Using the Interface) Tj
+0 -30 Td
+/F2 14 Tf
+(Dashboard Overview) Tj
+0 -15 Td
+/F1 11 Tf
+(Understand main panels and controls.) Tj
+0 -25 Td
+/F2 14 Tf
+(Circuit Builder) Tj
+0 -15 Td
+/F1 11 Tf
+(Use drag-and-drop to construct quantum circuits.) Tj
+0 -25 Td
+/F2 14 Tf
+(QFS Explorer) Tj
+0 -15 Td
+/F1 11 Tf
+(Manage quantum memory, files, and register states.) Tj
+0 -25 Td
+/F2 14 Tf
+(Simulation Workflow) Tj
+0 -15 Td
+/F1 11 Tf
+(Run, observe, export results.) Tj
+0 -25 Td
+/F2 14 Tf
+(Saving Projects) Tj
+0 -15 Td
+/F1 11 Tf
+(Save locally or in cloud.) Tj
+0 -40 Td
+/F1 9 Tf
+(Contact: support@qosim.app | Page 2) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Length 2800 >>
+stream
+BT
+/F2 18 Tf
+50 720 Td
+(4. Integrations) Tj
+0 -30 Td
+/F2 14 Tf
+(Export Options) Tj
+0 -15 Td
+/F1 11 Tf
+(• QASM) Tj
+0 -12 Td
+(• Qiskit) Tj
+0 -12 Td
+(• Cirq/Braket) Tj
+0 -25 Td
+/F2 14 Tf
+(Import QASM files) Tj
+0 -15 Td
+/F1 11 Tf
+(Upload and simulate externally built circuits.) Tj
+0 -25 Td
+/F2 14 Tf
+(SDK/API \(Coming Soon\)) Tj
+0 -40 Td
+/F2 18 Tf
+(5. Educational Mode) Tj
+0 -30 Td
+/F2 14 Tf
+(Create Lessons) Tj
+0 -15 Td
+/F1 11 Tf
+(Design visual modules for student use.) Tj
+0 -25 Td
+/F2 14 Tf
+(Assignments & Labs) Tj
+0 -15 Td
+/F1 11 Tf
+(Distribute custom circuit challenges.) Tj
+0 -25 Td
+/F2 14 Tf
+(Progress Tracking) Tj
+0 -15 Td
+/F1 11 Tf
+(Monitor student work \(future feature\).) Tj
+0 -25 Td
+/F2 14 Tf
+(LMS Embeds) Tj
+0 -15 Td
+/F1 11 Tf
+(Use within Moodle, Canvas, etc.) Tj
+0 -40 Td
+/F2 18 Tf
+(6. Advanced Features) Tj
+0 -30 Td
+/F2 14 Tf
+(Multi-Qubit Systems) Tj
+0 -15 Td
+/F1 11 Tf
+(Simulate large, entangled qubit registers.) Tj
+0 -25 Td
+/F2 14 Tf
+(Noise Simulation) Tj
+0 -15 Td
+/F1 11 Tf
+(Include probabilistic errors \(if supported\).) Tj
+0 -25 Td
+/F2 14 Tf
+(QFS Deep Dive) Tj
+0 -15 Td
+/F1 11 Tf
+(Understand inner memory simulation architecture.) Tj
+0 -40 Td
+/F1 9 Tf
+(Contact: support@qosim.app | Page 3) Tj
+ET
+endstream
+endobj
+14 0 obj
+<< /Length 2600 >>
+stream
+BT
+/F2 18 Tf
+50 720 Td
+(7. Developer Guide) Tj
+0 -30 Td
+/F2 14 Tf
+(SDK Use) Tj
+0 -15 Td
+/F1 11 Tf
+(Integrate QOSim logic in other platforms.) Tj
+0 -25 Td
+/F2 14 Tf
+(API Endpoints) Tj
+0 -15 Td
+/F1 11 Tf
+(Documented API calls \(if any\).) Tj
+0 -25 Td
+/F2 14 Tf
+(Contributing) Tj
+0 -15 Td
+/F1 11 Tf
+(Open-source guidelines.) Tj
+0 -40 Td
+/F2 18 Tf
+(8. Resources) Tj
+0 -30 Td
+/F2 14 Tf
+(Glossary) Tj
+0 -15 Td
+/F1 11 Tf
+(Definitions of common quantum terms.) Tj
+0 -25 Td
+/F2 14 Tf
+(Sample Circuits) Tj
+0 -15 Td
+/F1 11 Tf
+(Templates and walkthroughs.) Tj
+0 -25 Td
+/F2 14 Tf
+(Community) Tj
+0 -15 Td
+/F1 11 Tf
+(Join forums, Discord, GitHub.) Tj
+0 -40 Td
+/F2 18 Tf
+(9. FAQ) Tj
+0 -30 Td
+/F2 14 Tf
+(What makes QOSim different?) Tj
+0 -15 Td
+/F1 11 Tf
+(Visual builder + QFS memory layer.) Tj
+0 -25 Td
+/F2 14 Tf
+(Can I use it for real hardware?) Tj
+0 -15 Td
+/F1 11 Tf
+(Yes, via export formats \(QASM, Qiskit\).) Tj
+0 -25 Td
+/F2 14 Tf
+(Can I publish using QOSim?) Tj
+0 -15 Td
+/F1 11 Tf
+(Yes, citation welcome.) Tj
+0 -40 Td
+/F1 9 Tf
+(Contact: support@qosim.app | Page 4) Tj
+ET
+endstream
+endobj
+15 0 obj
 << /Length 2200 >>
 stream
 BT
-/F1 24 Tf
+/F2 18 Tf
 50 720 Td
-(QOSim - Getting Started Guide) Tj
-0 -40 Td
-/F1 18 Tf
-(🧭 Documentation) Tj
-0 -60 Td
-/F1 16 Tf
-(What is QOSim?) Tj
+(10. Legal & Licensing) Tj
 0 -30 Td
-/F1 12 Tf
-(QOSim is a revolutionary quantum operating system simulator that provides) Tj
+/F2 14 Tf
+(Terms of Use) Tj
 0 -15 Td
-(a visual, drag-and-drop interface for building and simulating quantum) Tj
-0 -15 Td
-(circuits. Built for researchers, educators, and developers, QOSim makes) Tj
-0 -15 Td
-(quantum computing accessible through intuitive visual tools.) Tj
-0 -40 Td
-/F1 16 Tf
-(Key Features) Tj
+/F1 11 Tf
+(User rights and limitations.) Tj
 0 -25 Td
-/F1 12 Tf
-(• Visual Circuit Builder: Drag-and-drop quantum gates) Tj
+/F2 14 Tf
+(Privacy Policy) Tj
 0 -15 Td
-(• Real-time Simulation: Instant quantum state visualization) Tj
-0 -15 Td
-(• Bloch Sphere Visualization: 3D quantum state representation) Tj
-0 -15 Td
-(• Circuit Export: Save and share your quantum circuits) Tj
-0 -15 Td
-(• Educational Mode: Built-in tutorials and templates) Tj
-0 -15 Td
-(• Patent-pending QFS: Quantum File System for state management) Tj
-0 -40 Td
-/F1 16 Tf
-(System Requirements) Tj
+/F1 11 Tf
+(Data handling details.) Tj
 0 -25 Td
-/F1 12 Tf
-(• Modern web browser \(Chrome, Firefox, Safari, Edge\)) Tj
+/F2 14 Tf
+(Patent Disclaimer) Tj
 0 -15 Td
-(• JavaScript enabled) Tj
-0 -15 Td
-(• Minimum 4GB RAM recommended) Tj
-0 -15 Td
-(• Stable internet connection for cloud features) Tj
-0 -40 Td
-/F1 16 Tf
-(Quickstart Guide - Build Your First Quantum Circuit) Tj
+/F1 11 Tf
+(Covers QFS and proprietary layers.) Tj
 0 -25 Td
-/F1 12 Tf
-(1. Launch QOSim in your web browser) Tj
+/F2 14 Tf
+(Educational Licensing) Tj
 0 -15 Td
-(2. Create a new quantum circuit from the dashboard) Tj
-0 -15 Td
-(3. Drag quantum gates from the palette to the circuit grid) Tj
-0 -15 Td
-(4. Connect gates to qubits to build your circuit) Tj
-0 -15 Td
-(5. Click "Simulate" to run your quantum circuit) Tj
-0 -15 Td
-(6. View results in the Bloch sphere and state visualization) Tj
-0 -15 Td
-(7. Export your circuit for sharing or future use) Tj
-0 -40 Td
-/F1 16 Tf
-(Using QOSim on the Web) Tj
+/F1 11 Tf
+(Flexible access for teachers and institutions.) Tj
+0 -60 Td
+/F2 16 Tf
+(Thank you for using QOSim!) Tj
 0 -25 Td
-/F1 12 Tf
-(QOSim runs entirely in your web browser - no downloads required!) Tj
-0 -15 Td
-(Simply visit the QOSim website and click "Launch App" to begin.) Tj
-0 -15 Td
-(Your circuits are automatically saved to the cloud when you) Tj
-0 -15 Td
-(create an account, enabling access from any device.) Tj
-0 -40 Td
-/F1 12 Tf
-(For support and tutorials, visit: hello@qosim.com) Tj
+/F1 11 Tf
+(For additional support, tutorials, and community resources:) Tj
 0 -20 Td
-(© 2024 QOSim. All rights reserved. Patent Pending.) Tj
+(• Visit our website: qosim.app) Tj
+0 -12 Td
+(• Email support: support@qosim.app) Tj
+0 -12 Td
+(• Join our Discord community) Tj
+0 -12 Td
+(• Follow us on GitHub) Tj
+0 -30 Td
+/F1 10 Tf
+(QOSim - Visual Quantum OS Simulator) Tj
+0 -12 Td
+(Patent-pending QFS technology) Tj
+0 -12 Td
+(Built for researchers, educators, and developers) Tj
+0 -40 Td
+/F1 9 Tf
+(Contact: support@qosim.app | Page 5) Tj
+ET
+endstream
+endobj
+16 0 obj
+<< /Length 1800 >>
+stream
+BT
+/F2 18 Tf
+50 720 Td
+(Appendix: Quick Reference) Tj
+0 -30 Td
+/F2 14 Tf
+(Common Quantum Gates) Tj
+0 -15 Td
+/F1 11 Tf
+(• H \(Hadamard\): Creates superposition) Tj
+0 -12 Td
+(• X \(Pauli-X\): Bit flip gate) Tj
+0 -12 Td
+(• Y \(Pauli-Y\): Bit and phase flip) Tj
+0 -12 Td
+(• Z \(Pauli-Z\): Phase flip gate) Tj
+0 -12 Td
+(• CNOT: Controlled NOT gate) Tj
+0 -12 Td
+(• Toffoli: Three-qubit controlled gate) Tj
+0 -25 Td
+/F2 14 Tf
+(Keyboard Shortcuts) Tj
+0 -15 Td
+/F1 11 Tf
+(• Ctrl+N: New circuit) Tj
+0 -12 Td
+(• Ctrl+S: Save circuit) Tj
+0 -12 Td
+(• Ctrl+Z: Undo) Tj
+0 -12 Td
+(• Ctrl+Y: Redo) Tj
+0 -12 Td
+(• Space: Run simulation) Tj
+0 -12 Td
+(• Delete: Remove selected gate) Tj
+0 -25 Td
+/F2 14 Tf
+(File Formats Supported) Tj
+0 -15 Td
+/F1 11 Tf
+(• Import: QASM, OpenQASM 2.0, OpenQASM 3.0) Tj
+0 -12 Td
+(• Export: QASM, Qiskit Python, Cirq Python, Amazon Braket) Tj
+0 -25 Td
+/F2 14 Tf
+(Browser Compatibility) Tj
+0 -15 Td
+/F1 11 Tf
+(• Chrome 90+ \(Recommended\)) Tj
+0 -12 Td
+(• Firefox 88+) Tj
+0 -12 Td
+(• Safari 14+) Tj
+0 -12 Td
+(• Edge 90+) Tj
+0 -25 Td
+/F2 14 Tf
+(Performance Tips) Tj
+0 -15 Td
+/F1 11 Tf
+(• Close unused browser tabs) Tj
+0 -12 Td
+(• Use hardware acceleration) Tj
+0 -12 Td
+(• Clear browser cache if experiencing issues) Tj
+0 -12 Td
+(• For large circuits \(>20 qubits\), consider export to) Tj
+0 -12 Td
+(  dedicated quantum computing platforms) Tj
+0 -40 Td
+/F1 9 Tf
+(Contact: support@qosim.app | Page 6) Tj
 ET
 endstream
 endobj
 xref
-0 6
+0 17
 0000000000 65535 f 
 0000000010 00000 n 
 0000000053 00000 n 
-0000000106 00000 n 
-0000000244 00000 n 
-0000000312 00000 n 
+0000000125 00000 n 
+0000000263 00000 n 
+0000000401 00000 n 
+0000000539 00000 n 
+0000000677 00000 n 
+0000000815 00000 n 
+0000000953 00000 n 
+0000001021 00000 n 
+0000001094 00000 n 
+0000004346 00000 n 
+0000007398 00000 n 
+0000010250 00000 n 
+0000012902 00000 n 
+0000015156 00000 n 
 trailer
-<< /Size 6 /Root 1 0 R >>
+<< /Size 17 /Root 1 0 R >>
 startxref
-2564
+17008
 %%EOF
