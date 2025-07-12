@@ -51,6 +51,7 @@ export function LearningModeSection({
       )}
 
       {/* Circuit Templates - Always show to make templates accessible */}
+      {console.log('🎯 Rendering CircuitTemplates with:', { templates, templateCount: templates.length })}
       <CircuitTemplates
         templates={templates}
         completedTemplates={progress.completedTemplates}
