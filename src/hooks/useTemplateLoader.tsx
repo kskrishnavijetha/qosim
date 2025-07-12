@@ -9,8 +9,15 @@ interface UseTemplateLoaderProps {
 
 export function useTemplateLoader({ addGate, clearCircuit, completeTemplate }: UseTemplateLoaderProps) {
   const handleTemplateLoad = useCallback((template: any) => {
-    console.log('Loading template:', template);
+    console.log('🎯 Loading template:', template);
+    console.log('🎯 Template gates:', template.gates);
     clearCircuit();
+    
+    if (!template.gates || template.gates.length === 0) {
+      console.error('❌ Template has no gates!', template);
+      return;
+    }
+    
     // Load template gates one by one with proper positioning
     template.gates.forEach((gateData: any, index: number) => {
       setTimeout(() => {
@@ -18,13 +25,13 @@ export function useTemplateLoader({ addGate, clearCircuit, completeTemplate }: U
           ...gateData,
           id: `template-gate-${index}-${Date.now()}`
         };
-        console.log('Adding gate:', gate);
+        console.log('🚀 Adding template gate:', gate);
         addGate(gate);
         
         // Complete template after all gates are loaded
         if (index === template.gates.length - 1) {
           setTimeout(() => {
-            console.log('Completing template:', template.id);
+            console.log('✅ Completing template:', template.id);
             completeTemplate(template.id);
           }, 100);
         }
