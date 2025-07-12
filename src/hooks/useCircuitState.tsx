@@ -84,7 +84,9 @@ export function useCircuitState() {
   }, []);
 
   const addGate = useCallback((newGate: Gate) => {
+    console.log('🎯 AddGate called with:', newGate);
     const newCircuit = [...circuit, newGate];
+    console.log('🔄 New circuit:', newCircuit);
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
     
@@ -103,6 +105,7 @@ export function useCircuitState() {
     // Generate standardized circuit data structure and simulate
     const circuitData = generateCircuitData(newCircuit);
     console.log('Generated circuit data:', circuitData);
+    console.log('🚀 Calling simulateQuantumState...');
     simulateQuantumState(newCircuit);
   }, [circuit, simulateQuantumState]);
 
