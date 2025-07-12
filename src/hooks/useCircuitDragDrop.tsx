@@ -63,13 +63,63 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     if (!dragState.isDragging) return;
     
     if (dragState.hoverQubit !== null && dragState.hoverPosition !== null) {
+      const gateType = dragState.gateType;
+      
+      // Determine if this is a multi-qubit gate
+      const multiQubitGates = ['CNOT', 'CX', 'CZ', 'SWAP', 'TOFFOLI', 'CCX', 'FREDKIN', 'CSWAP'];
+      const isMultiQubit = multiQubitGates.includes(gateType);
+      
+      // Determine qubits array for multi-qubit gates
+      let qubits: number[] | undefined;
+      let qubit: number | undefined = dragState.hoverQubit;
+      
+      if (isMultiQubit) {
+        qubit = undefined;
+        switch (gateType) {
+          case 'CNOT':
+          case 'CX':
+          case 'CZ':
+          case 'SWAP':
+            qubits = [dragState.hoverQubit, Math.min(dragState.hoverQubit + 1, numQubits - 1)];
+            break;
+          case 'TOFFOLI':
+          case 'CCX':
+          case 'FREDKIN':
+          case 'CSWAP':
+            qubits = [
+              dragState.hoverQubit, 
+              Math.min(dragState.hoverQubit + 1, numQubits - 1),
+              Math.min(dragState.hoverQubit + 2, numQubits - 1)
+            ];
+            break;
+          case 'QFT':
+            // For QFT, apply to all qubits starting from hover position
+            qubits = Array.from({ length: Math.min(3, numQubits - dragState.hoverQubit) }, 
+                               (_, i) => dragState.hoverQubit + i);
+            break;
+        }
+      }
+      
+      // Set default parameters for parametric gates
+      let angle: number | undefined;
+      let params: number[] | undefined;
+      
+      if (gateType.startsWith('R') || gateType === 'U1') {
+        angle = Math.PI / 4; // Default angle
+      } else if (gateType === 'U2') {
+        params = [0, Math.PI / 2]; // Default φ, λ for U2
+      } else if (gateType === 'U3') {
+        params = [Math.PI / 2, 0, Math.PI / 2]; // Default θ, φ, λ for U3
+      }
+      
       const newGate: Gate = {
         id: `gate_${Date.now()}`,
-        type: dragState.gateType,
-        qubit: dragState.gateType === 'CNOT' ? undefined : dragState.hoverQubit,
-        qubits: dragState.gateType === 'CNOT' ? [dragState.hoverQubit, Math.min(dragState.hoverQubit + 1, numQubits - 1)] : undefined,
+        type: gateType,
+        qubit,
+        qubits,
         position: dragState.hoverPosition,
-        angle: dragState.gateType.startsWith('R') ? Math.PI / 4 : undefined
+        angle,
+        params
       };
       
       onGateAdd(newGate);

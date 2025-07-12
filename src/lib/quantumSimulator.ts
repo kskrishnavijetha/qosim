@@ -15,6 +15,7 @@ export interface QuantumGate {
   qubits?: number[];
   position: number;
   angle?: number;
+  params?: number[]; // For multi-parameter gates like U2, U3
 }
 
 // Simulation result

@@ -9,6 +9,7 @@ interface Gate {
   qubits?: number[];
   position: number;
   angle?: number;
+  params?: number[];
 }
 
 interface DragState {
