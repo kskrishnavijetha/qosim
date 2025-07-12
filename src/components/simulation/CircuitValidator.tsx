@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -24,6 +24,19 @@ interface ValidationResult {
 }
 
 export function CircuitValidator({ circuit, numQubits }: CircuitValidatorProps) {
+  const [validation, setValidation] = useState<ValidationResult>(() => validateInitialCircuit());
+  const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
+
+  function validateInitialCircuit(): ValidationResult {
+    return {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      suggestions: [],
+      metrics: { depth: 0, gateCount: 0, entanglementEstimate: 0, complexityScore: 0 }
+    };
+  }
+
   const validateCircuit = (): ValidationResult => {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -139,7 +152,13 @@ export function CircuitValidator({ circuit, numQubits }: CircuitValidatorProps) 
     };
   };
 
-  const validation = validateCircuit();
+  // Real-time updates when circuit changes
+  useEffect(() => {
+    console.log('🎯 CircuitValidator: circuit updated, validating in real-time');
+    const newValidation = validateCircuit();
+    setValidation(newValidation);
+    setLastUpdate(Date.now());
+  }, [circuit, numQubits]);
 
   return (
     <Card className="quantum-panel neon-border">
@@ -147,12 +166,16 @@ export function CircuitValidator({ circuit, numQubits }: CircuitValidatorProps) 
         <CardTitle className="flex items-center gap-2 text-quantum-glow">
           <Zap className="w-5 h-5" />
           Circuit Validator
-          <Badge 
-            variant={validation.isValid ? "default" : "destructive"}
-            className="ml-auto"
-          >
-            {validation.isValid ? 'Valid' : 'Invalid'}
-          </Badge>
+          <div className="ml-auto flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              Updated: {new Date(lastUpdate).toLocaleTimeString()}
+            </Badge>
+            <Badge 
+              variant={validation.isValid ? "default" : "destructive"}
+            >
+              {validation.isValid ? 'Valid' : 'Invalid'}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

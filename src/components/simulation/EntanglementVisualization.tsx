@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
@@ -10,8 +10,36 @@ interface EntanglementVisualizationProps {
 }
 
 export function EntanglementVisualization({ simulationResult, numQubits }: EntanglementVisualizationProps) {
+  const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
+  const [animationKey, setAnimationKey] = useState<number>(0);
+
+  // Real-time updates when simulation result changes
+  useEffect(() => {
+    if (simulationResult?.entanglement) {
+      console.log('🎯 EntanglementVisualization: simulationResult updated in real-time');
+      setLastUpdate(Date.now());
+      setAnimationKey(prev => prev + 1); // Force re-animation
+    }
+  }, [simulationResult]);
+
   if (!simulationResult?.entanglement) {
-    return null;
+    return (
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
+            <Link2 className="w-5 h-5" />
+            Quantum Entanglement Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            <Zap className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p className="font-mono">No simulation data available</p>
+            <p className="text-sm mt-2">Add gates to your circuit to see entanglement analysis</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const { entanglement, mode, executionTime, fidelity } = simulationResult;
@@ -30,7 +58,7 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
     }));
 
     return (
-      <div className="relative h-32 bg-quantum-matrix rounded-lg overflow-hidden">
+      <div className="relative h-32 bg-quantum-matrix rounded-lg overflow-hidden" key={animationKey}>
         <svg className="absolute inset-0 w-full h-full">
           {/* Draw entanglement connections */}
           {pairs.map((pair, idx) => {
@@ -103,7 +131,10 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
           <Link2 className="w-5 h-5" />
           Quantum Entanglement Analysis
         </CardTitle>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-xs">
+            Updated: {new Date(lastUpdate).toLocaleTimeString()}
+          </Badge>
           <Badge variant="outline" className={`font-mono ${
             mode === 'cloud' ? 'border-quantum-glow text-quantum-glow' :
             mode === 'accurate' ? 'border-quantum-neon text-quantum-neon' :

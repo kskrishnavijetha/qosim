@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +32,23 @@ export function StepByStepExecutor({
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState([500]); // milliseconds
   const [stepData, setStepData] = useState<SimulationStepData | null>(null);
+
+  // Real-time updates when simulation result changes
+  useEffect(() => {
+    console.log('🎯 StepByStepExecutor: simulationResult updated', simulationResult?.executionTime);
+    if (simulationResult) {
+      setCurrentStep(0);
+      setStepData(null);
+    }
+  }, [simulationResult]);
+
+  // Real-time updates when circuit changes
+  useEffect(() => {
+    console.log('🎯 StepByStepExecutor: circuit updated, length:', circuit.length);
+    setCurrentStep(0);
+    setStepData(null);
+    setIsPlaying(false);
+  }, [circuit]);
 
   const handleStepModeToggle = useCallback(() => {
     const newStepMode = !isStepMode;
