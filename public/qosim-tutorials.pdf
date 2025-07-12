@@ -1,0 +1,316 @@
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R 4 0 R 5 0 R]
+/Count 3
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 6 0 R
+/Resources <<
+  /Font <<
+    /F1 7 0 R
+    /F2 8 0 R
+  >>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 9 0 R
+/Resources <<
+  /Font <<
+    /F1 7 0 R
+    /F2 8 0 R
+  >>
+>>
+>>
+endobj
+
+5 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 10 0 R
+/Resources <<
+  /Font <<
+    /F1 7 0 R
+    /F2 8 0 R
+  >>
+>>
+>>
+endobj
+
+6 0 obj
+<<
+/Length 2500
+>>
+stream
+BT
+/F2 24 Tf
+50 750 Td
+(🎓 QOSim Tutorials) Tj
+0 -40 Td
+/F1 12 Tf
+(Welcome to the QOSim Tutorial Hub. Whether you're a beginner, student, educator, or developer,) Tj
+0 -15 Td
+(our tutorials help you understand quantum computing visually using QOSim's drag-and-drop) Tj
+0 -15 Td
+(circuit builder and Quantum File System \(QFS\).) Tj
+0 -40 Td
+/F2 18 Tf
+(🚀 Beginner Tutorials) Tj
+0 -30 Td
+/F2 14 Tf
+(🧱 Building Your First Quantum Circuit) Tj
+0 -20 Td
+/F1 12 Tf
+(Learn how to construct a basic quantum circuit:) Tj
+0 -20 Td
+(• Launch QOSim at qosim.app) Tj
+0 -15 Td
+(• Drag a Qubit Line to the workspace) Tj
+0 -15 Td
+(• Add a Hadamard \(H\) Gate to create superposition) Tj
+0 -15 Td
+(• Add a Measurement Gate) Tj
+0 -15 Td
+(• Click Run Simulation to observe state collapse) Tj
+0 -15 Td
+(• View measurement results and probabilities) Tj
+0 -15 Td
+(• Export your circuit as QASM or Python \(Qiskit-ready\)) Tj
+0 -30 Td
+/F2 14 Tf
+(🧠 Understanding QFS \(Quantum File System\)) Tj
+0 -20 Td
+/F1 12 Tf
+(QFS is QOSim's unique abstraction layer that simulates quantum memory. This tutorial covers:) Tj
+0 -20 Td
+(• How to create folders for qubit sets) Tj
+0 -15 Td
+(• Simulate entangled file structures) Tj
+0 -15 Td
+(• Observe dynamic memory allocation with logic gate pathways) Tj
+0 -20 Td
+(You'll learn how quantum logic can be structured like a file tree — a core innovation of QOSim.) Tj
+0 -30 Td
+/F2 14 Tf
+(🧪 Simulation Examples) Tj
+0 -20 Td
+/F1 12 Tf
+(Use pre-built templates to explore famous quantum experiments:) Tj
+0 -20 Td
+/F2 12 Tf
+(🔗 Quantum Teleportation) Tj
+0 -15 Td
+/F1 12 Tf
+(• Create a 3-qubit teleportation protocol) Tj
+0 -15 Td
+(• Simulate Alice/Bob roles with entangled qubits) Tj
+0 -15 Td
+(• Track how qubit states are transferred non-locally) Tj
+0 -20 Td
+/F2 12 Tf
+(⚛️ Bell State Entanglement) Tj
+0 -15 Td
+/F1 12 Tf
+(• Use H + CNOT gates to produce Bell states) Tj
+0 -15 Td
+(• Run repeated simulations and observe 50/50 probabilities) Tj
+ET
+endstream
+endobj
+
+7 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+8 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica-Bold
+>>
+endobj
+
+9 0 obj
+<<
+/Length 2200
+>>
+stream
+BT
+/F2 12 Tf
+50 750 Td
+(🌊 Superposition and Interference) Tj
+0 -15 Td
+/F1 12 Tf
+(• Apply Hadamard + phase gates) Tj
+0 -15 Td
+(• Measure the output of interfering states) Tj
+0 -20 Td
+(Each example includes:) Tj
+0 -15 Td
+(• Visual walk-through) Tj
+0 -15 Td
+(• Export options) Tj
+0 -15 Td
+(• Circuit logic annotations) Tj
+0 -40 Td
+/F2 18 Tf
+(🧑‍🏫 Educator Mode \(for Teachers\)) Tj
+0 -30 Td
+/F1 12 Tf
+(QOSim includes tools for quantum education:) Tj
+0 -20 Td
+(• Pre-built curriculum circuits and labs) Tj
+0 -15 Td
+(• Assignment distribution and sharing) Tj
+0 -15 Td
+(• Student evaluation roadmap \(coming soon\)) Tj
+0 -15 Td
+(• LMS Embed support: Canvas, Moodle, Google Classroom) Tj
+0 -20 Td
+(Use QOSim to explain:) Tj
+0 -15 Td
+(• Qubit superposition with interactive sliders) Tj
+0 -15 Td
+(• Real-time entanglement demos) Tj
+0 -15 Td
+(• Measurement collapse using step-run) Tj
+0 -40 Td
+/F2 18 Tf
+(💻 Developer Integration) Tj
+0 -30 Td
+/F1 12 Tf
+(Build once visually — then run in code:) Tj
+0 -20 Td
+(• Export circuits to OpenQASM 2.0, Qiskit Python) Tj
+0 -15 Td
+(• Run them on IBM Q, Braket or Cirq environments) Tj
+0 -15 Td
+(• Reverse-import QASM and visualize it inside QOSim) Tj
+0 -15 Td
+(• CLI and SDK \(coming soon\)) Tj
+0 -20 Td
+(Advanced options include:) Tj
+0 -15 Td
+(• QFS path-based address simulation) Tj
+0 -15 Td
+(• Gate timing simulation for scheduling experiments) Tj
+0 -40 Td
+/F2 18 Tf
+(📦 Save & Share) Tj
+0 -30 Td
+/F1 12 Tf
+(• Save circuit projects to your account or download locally) Tj
+0 -15 Td
+(• Share your design with others using unique project URLs \(future\)) Tj
+0 -40 Td
+/F2 18 Tf
+(📧 Need Help?) Tj
+0 -30 Td
+/F1 12 Tf
+(Contact us at support@qosim.app for any tutorial requests, feedback, or educational) Tj
+0 -15 Td
+(partnership inquiries.) Tj
+ET
+endstream
+endobj
+
+10 0 obj
+<<
+/Length 800
+>>
+stream
+BT
+/F2 18 Tf
+50 750 Td
+(Additional Resources) Tj
+0 -40 Td
+/F1 12 Tf
+(Visit qosim.app to access:) Tj
+0 -20 Td
+(• Interactive circuit builder) Tj
+0 -15 Td
+(• QFS file system simulator) Tj
+0 -15 Td
+(• Educational templates) Tj
+0 -15 Td
+(• Export tools for quantum frameworks) Tj
+0 -40 Td
+/F2 14 Tf
+(Getting Started Quickly:) Tj
+0 -20 Td
+/F1 12 Tf
+(1. Visit qosim.app) Tj
+0 -15 Td
+(2. Click "Launch Simulator") Tj
+0 -15 Td
+(3. Follow the beginner tutorial) Tj
+0 -15 Td
+(4. Build your first quantum circuit) Tj
+0 -15 Td
+(5. Export and test on real quantum hardware) Tj
+0 -40 Td
+/F2 14 Tf
+(Support & Community:) Tj
+0 -20 Td
+/F1 12 Tf
+(• Email: support@qosim.app) Tj
+0 -15 Td
+(• Documentation: Available in app) Tj
+0 -15 Td
+(• Tutorials: Interactive guides) Tj
+0 -15 Td
+(• Educational licensing available) Tj
+0 -40 Td
+/F1 10 Tf
+(© 2024 QOSim. All rights reserved. | Page 3) Tj
+ET
+endstream
+endobj
+
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000125 00000 n 
+0000000282 00000 n 
+0000000439 00000 n 
+0000000596 00000 n 
+0000003148 00000 n 
+0000003205 00000 n 
+0000003267 00000 n 
+0000005519 00000 n 
+trailer
+<<
+/Size 11
+/Root 1 0 R
+>>
+startxref
+6369
+%%EOF
