@@ -56,6 +56,7 @@ export function useCircuitState() {
       
       // Run the enhanced quantum simulation
       console.log('Calling enhancedQuantumSimulationManager.simulate...');
+      enhancedQuantumSimulationManager.setMode(simulationMode);
       const result = await enhancedQuantumSimulationManager.simulate(quantumGates, 5);
       console.log('Simulation result received:', result);
       

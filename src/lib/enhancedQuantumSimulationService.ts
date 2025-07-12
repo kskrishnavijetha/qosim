@@ -116,6 +116,9 @@ class EnhancedQuantumSimulationManager {
     this.log('info', `Starting simulation with ${circuit.length} gates`, { gateCount: circuit.length, numQubits });
 
     try {
+      // Create new simulator instance if needed for different qubit count
+      this.simulator = new OptimizedQuantumSimulator(numQubits);
+
       // Validate and optimize circuit
       const optimizedCircuit = await this.optimizeCircuit(circuit);
       
@@ -152,7 +155,8 @@ class EnhancedQuantumSimulationManager {
 
       return {
         ...result,
-        executionTime: totalTime
+        executionTime: totalTime,
+        mode: this.currentMode
       };
 
     } catch (error) {

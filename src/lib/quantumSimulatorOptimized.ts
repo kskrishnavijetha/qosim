@@ -481,12 +481,13 @@ export class OptimizedQuantumSimulator {
     return result;
   }
   
+  // FIXED: Correct matrix-vector multiplication (matrix * vector)
   private vectorMatrixMultiply(vector: StateVector, matrix: Complex[][]): StateVector {
     const result: StateVector = [];
     for (let i = 0; i < matrix.length; i++) {
       result[i] = {real: 0, imag: 0};
       for (let j = 0; j < vector.length; j++) {
-        result[i] = complex.add(result[i], complex.multiply(vector[j], matrix[i][j]));
+        result[i] = complex.add(result[i], complex.multiply(matrix[i][j], vector[j]));
       }
       result[i] = normalizeComplex(result[i]);
     }
