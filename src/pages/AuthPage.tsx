@@ -24,17 +24,6 @@ export default function AuthPage() {
     }
   }, [user, navigate]);
 
-  // Handle back navigation to landing page
-  useEffect(() => {
-    const handlePopState = () => {
-      if (!user) {
-        navigate('/');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
