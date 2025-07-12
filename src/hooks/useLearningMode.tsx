@@ -32,7 +32,7 @@ export interface LearningProgress {
 const CIRCUIT_TEMPLATES: CircuitTemplate[] = [
   {
     id: 'bell-state-generator',
-    name: 'Bell State Generator',
+    name: 'Bell State Generator', 
     description: 'Create maximally entangled Bell states |Φ+⟩ = (|00⟩ + |11⟩)/√2',
     difficulty: 'beginner',
     category: 'Entanglement',
@@ -42,38 +42,17 @@ const CIRCUIT_TEMPLATES: CircuitTemplate[] = [
     ],
     learningObjectives: [
       'Understand superposition with Hadamard gates',
-      'Create entanglement with CNOT gates',
+      'Create entanglement with CNOT gates', 
       'Observe Bell state measurement statistics',
       'Analyze quantum correlations'
     ],
     keyconcepts: ['Superposition', 'Entanglement', 'Bell States', 'Quantum Correlations']
   },
   {
-    id: 'quantum-teleportation',
-    name: 'Quantum Teleportation',
-    description: 'Teleport quantum state using entanglement and classical communication',
-    difficulty: 'intermediate',
-    category: 'Communication',
-    gates: [
-      { type: 'H', qubit: 1, position: 0 },
-      { type: 'CNOT', qubits: [1, 2], position: 1 },
-      { type: 'CNOT', qubits: [0, 1], position: 2 },
-      { type: 'H', qubit: 0, position: 3 },
-      { type: 'M', qubit: 0, position: 4 },
-      { type: 'M', qubit: 1, position: 5 }
-    ],
-    learningObjectives: [
-      'Prepare entangled Bell pair',
-      'Perform Bell measurement',
-      'Apply conditional corrections'
-    ],
-    keyconcepts: ['Teleportation', 'Bell Measurement', 'No-cloning theorem']
-  },
-  {
-    id: 'grovers-algorithm',
-    name: "Grover's Algorithm",
-    description: 'Quantum search algorithm providing quadratic speedup over classical search',
-    difficulty: 'expert',
+    id: 'grovers-3qubit-oracle',
+    name: "Grover's 3-Qubit Oracle",
+    description: 'Grover search for 3-qubit target state |101⟩ with optimized oracle and diffusion',
+    difficulty: 'intermediate', 
     category: 'Algorithms',
     gates: [
       // Initialize superposition
@@ -81,42 +60,42 @@ const CIRCUIT_TEMPLATES: CircuitTemplate[] = [
       { type: 'H', qubit: 1, position: 0 },
       { type: 'H', qubit: 2, position: 0 },
       
-      // Oracle (mark target state)
-      { type: 'Z', qubit: 2, position: 1 },
-      { type: 'CNOT', qubits: [0, 2], position: 2 },
-      { type: 'CNOT', qubits: [1, 2], position: 3 },
+      // Oracle: mark |101⟩ state (flip phase)
+      { type: 'X', qubit: 1, position: 1 }, // Flip qubit 1 
+      { type: 'TOFFOLI', qubits: [0, 1, 2], position: 2 }, // Multi-controlled Z
+      { type: 'X', qubit: 1, position: 3 }, // Restore qubit 1
       
-      // Diffusion operator
+      // Diffusion operator (inversion about average)
       { type: 'H', qubit: 0, position: 4 },
       { type: 'H', qubit: 1, position: 4 },
       { type: 'H', qubit: 2, position: 4 },
       { type: 'X', qubit: 0, position: 5 },
       { type: 'X', qubit: 1, position: 5 },
       { type: 'X', qubit: 2, position: 5 },
-      { type: 'CNOT', qubits: [1, 2], position: 6 },
-      { type: 'CNOT', qubits: [0, 2], position: 7 },
-      { type: 'X', qubit: 0, position: 8 },
-      { type: 'X', qubit: 1, position: 8 },
-      { type: 'X', qubit: 2, position: 8 },
-      { type: 'H', qubit: 0, position: 9 },
-      { type: 'H', qubit: 1, position: 9 },
-      { type: 'H', qubit: 2, position: 9 }
+      { type: 'TOFFOLI', qubits: [0, 1, 2], position: 6 },
+      { type: 'X', qubit: 0, position: 7 },
+      { type: 'X', qubit: 1, position: 7 }, 
+      { type: 'X', qubit: 2, position: 7 },
+      { type: 'H', qubit: 0, position: 8 },
+      { type: 'H', qubit: 1, position: 8 },
+      { type: 'H', qubit: 2, position: 8 }
     ],
     learningObjectives: [
       'Initialize uniform superposition state',
-      'Implement quantum oracle function',
-      'Apply diffusion operator for amplitude amplification',
-      'Observe quadratic speedup in search'
+      'Mark target item with oracle',
+      'Amplify correct amplitude',
+      'Measure with high probability'
     ],
-    keyconcepts: ['Amplitude Amplification', 'Oracle Functions', 'Quadratic Speedup', 'Inversion About Average']
+    keyconcepts: ['Amplitude Amplification', 'Oracle Functions', 'Quadratic Speedup', 'Diffusion Operator']
   },
   {
-    id: 'quantum-fourier-transform',
-    name: 'Quantum Fourier Transform',
-    description: 'QFT implementation with precision optimization for quantum algorithms',
+    id: 'qft-3qubit',
+    name: '3-Qubit QFT',
+    description: 'Quantum Fourier Transform on 3 qubits with controlled phase rotations',
     difficulty: 'expert',
-    category: 'Transform',
+    category: 'Transform', 
     gates: [
+      // QFT on qubit 0
       { type: 'H', qubit: 0, position: 0 },
       { type: 'RZ', qubit: 1, angle: Math.PI/2, position: 1 },
       { type: 'CNOT', qubits: [0, 1], position: 1 },
@@ -126,68 +105,64 @@ const CIRCUIT_TEMPLATES: CircuitTemplate[] = [
       { type: 'CNOT', qubits: [0, 2], position: 3 },
       { type: 'RZ', qubit: 2, angle: -Math.PI/4, position: 4 },
       { type: 'CNOT', qubits: [0, 2], position: 4 },
+      
+      // QFT on qubit 1
       { type: 'H', qubit: 1, position: 5 },
       { type: 'RZ', qubit: 2, angle: Math.PI/2, position: 6 },
       { type: 'CNOT', qubits: [1, 2], position: 6 },
       { type: 'RZ', qubit: 2, angle: -Math.PI/2, position: 7 },
       { type: 'CNOT', qubits: [1, 2], position: 7 },
-      { type: 'H', qubit: 2, position: 8 }
+      
+      // QFT on qubit 2
+      { type: 'H', qubit: 2, position: 8 },
+      
+      // SWAP network (reverse order)
+      { type: 'SWAP', qubits: [0, 2], position: 9 }
     ],
     learningObjectives: [
-      'Understand quantum Fourier transform principles',
-      'Implement controlled rotation gates',
-      'Handle precision thresholding for small angles',
-      'Observe frequency domain representation'
+      'Understand quantum Fourier transform',
+      'Implement controlled rotations',
+      'Handle phase precision', 
+      'Apply QFT to algorithms'
     ],
-    keyconcepts: ['Fourier Transform', 'Controlled Rotations', 'Phase Estimation', 'Frequency Domain']
+    keyconcepts: ['Fourier Transform', 'Controlled Phase', 'Frequency Domain', 'Phase Estimation']
   },
   {
-    id: 'error-correction',
-    name: 'Error Correction',
-    description: '3-qubit bit-flip error correction code with syndrome detection',
+    id: 'bit-flip-error-correction',
+    name: 'Bit-flip Error Correction',
+    description: '3-qubit repetition code protecting against single bit-flip errors',
     difficulty: 'expert',
     category: 'Error Correction',
     gates: [
-      { type: 'H', qubit: 0, position: 0 },
+      // Encode logical |0⟩ 
+      { type: 'H', qubit: 0, position: 0 }, // Create superposition first
       { type: 'CNOT', qubits: [0, 1], position: 1 },
       { type: 'CNOT', qubits: [0, 2], position: 2 },
-      { type: 'X', qubit: 1, position: 3 }, // Simulate error
-      { type: 'CNOT', qubits: [0, 3], position: 4 },
+      
+      // Simulate bit-flip error on qubit 1
+      { type: 'X', qubit: 1, position: 3 },
+      
+      // Syndrome measurement (detect error location)
+      { type: 'CNOT', qubits: [0, 3], position: 4 }, // Syndrome qubit 1
       { type: 'CNOT', qubits: [1, 3], position: 5 },
-      { type: 'CNOT', qubits: [1, 4], position: 6 },
-      { type: 'CNOT', qubits: [2, 4], position: 7 }
+      { type: 'CNOT', qubits: [1, 4], position: 6 }, // Syndrome qubit 2  
+      { type: 'CNOT', qubits: [2, 4], position: 7 },
+      
+      // Measure syndrome
+      { type: 'M', qubit: 3, position: 8 },
+      { type: 'M', qubit: 4, position: 9 },
+      
+      // Recovery (conditional X gates based on syndrome)
+      // In real implementation, these would be conditional on measurement results
+      { type: 'X', qubit: 1, position: 10 } // Correct the error we introduced
     ],
     learningObjectives: [
-      'Understand quantum error correction principles',
-      'Implement 3-qubit bit-flip code',
-      'Perform syndrome measurement',
-      'Apply conditional recovery operations'
+      'Encode logical qubits',
+      'Detect error syndromes',
+      'Apply recovery operations',
+      'Understand fault tolerance'
     ],
     keyconcepts: ['Error Correction', 'Syndrome Detection', 'Logical Qubits', 'Fault Tolerance']
-  },
-  {
-    id: 'deutsch-jozsa',
-    name: 'Deutsch-Jozsa Algorithm',
-    description: 'Determine if function is constant or balanced in one query',
-    difficulty: 'intermediate',
-    category: 'Algorithms',
-    gates: [
-      { type: 'H', qubit: 0, position: 0 },
-      { type: 'H', qubit: 1, position: 0 },
-      { type: 'X', qubit: 2, position: 0 },
-      { type: 'H', qubit: 2, position: 1 },
-      { type: 'CNOT', qubits: [1, 2], position: 2 },
-      { type: 'H', qubit: 0, position: 3 },
-      { type: 'H', qubit: 1, position: 3 },
-      { type: 'M', qubit: 0, position: 4 },
-      { type: 'M', qubit: 1, position: 5 }
-    ],
-    learningObjectives: [
-      'Understand quantum oracle concept',
-      'See quantum parallelism in action',
-      'Observe exponential advantage'
-    ],
-    keyconcepts: ['Quantum Parallelism', 'Oracle', 'Phase Kickback']
   }
 ];
 
