@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useRef, useEffect, useState } from "react";
-import { type EnhancedSimulationResult } from "@/lib/quantumSimulationService";
+import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { MemoizedGate } from "./MemoizedGate";
 
 interface Gate {
@@ -22,7 +22,7 @@ interface DragState {
 interface VirtualizedCircuitGridProps {
   circuit: Gate[];
   dragState: DragState;
-  simulationResult: EnhancedSimulationResult | null;
+  simulationResult: OptimizedSimulationResult | null;
   onDeleteGate: (gateId: string) => void;
   circuitRef: React.RefObject<HTMLDivElement>;
   NUM_QUBITS: number;
