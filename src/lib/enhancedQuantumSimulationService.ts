@@ -129,7 +129,11 @@ class EnhancedQuantumSimulationManager {
         this.simulator = new OptimizedQuantumSimulator(numQubits);
       } else {
         console.log('🔬 Reusing existing simulator for', numQubits, 'qubits');
+        this.simulator.reset();
       }
+      
+      // Set the current mode on the simulator
+      this.simulator.setMode(this.currentMode);
 
       // Validate and optimize circuit
       const optimizedCircuit = await this.optimizeCircuit(circuit);

@@ -19,9 +19,16 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
   // Real-time updates when simulation result changes
   useEffect(() => {
     if (simulationResult?.entanglement) {
-      console.log('🎯 EntanglementVisualization: simulationResult updated in real-time');
+      console.log('🎯 EntanglementVisualization: simulationResult updated in real-time', {
+        mode: simulationResult.mode,
+        entanglement: simulationResult.entanglement,
+        numPairs: simulationResult.entanglement.pairs.length,
+        totalEntanglement: simulationResult.entanglement.totalEntanglement
+      });
       setLastUpdate(Date.now());
       setAnimationKey(prev => prev + 1); // Force re-animation
+    } else {
+      console.log('🎯 EntanglementVisualization: No entanglement data available', { simulationResult });
     }
   }, [simulationResult]);
 

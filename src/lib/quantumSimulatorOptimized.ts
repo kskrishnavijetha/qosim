@@ -277,12 +277,17 @@ export class OptimizedQuantumSimulator {
   private measurementHistory: Array<{ qubit: number; result: 0 | 1; timestamp: number }> = [];
   private classicalBits: { [key: string]: 0 | 1 } = {};
   private circuit: QuantumGate[] = [];
+  private currentMode: SimulationMode = 'fast';
 
   // Public getter for numQubits
   get qubits(): number {
     return this.numQubits;
   }
   private realTimeMode: boolean = false;
+  
+  setMode(mode: SimulationMode): void {
+    this.currentMode = mode;
+  }
   
   constructor(numQubits: number = 5) {
     this.numQubits = numQubits;
@@ -574,7 +579,7 @@ export class OptimizedQuantumSimulator {
       executionTime,
       stepResults: this.isStepMode ? this.stepResults.map(step => this.getOptimizedResult(step.timestamp)) : undefined,
       fidelity,
-      mode: 'fast' as SimulationMode
+      mode: this.currentMode
     };
   }
   

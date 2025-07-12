@@ -9,6 +9,7 @@ interface QuantumStateVisualizationProps {
 }
 
 export function QuantumStateVisualization({ simulationResult, NUM_QUBITS }: QuantumStateVisualizationProps) {
+  console.log('🔬 QuantumStateVisualization: Rendering with', { simulationResult, NUM_QUBITS });
   const getBlochSphereStyle = (qubitState: { 
     amplitude: { real: number; imag: number }; 
     phase: number; 
