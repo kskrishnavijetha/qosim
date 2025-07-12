@@ -55,7 +55,13 @@ class EnhancedQuantumSimulationManager {
   }> = [];
 
   constructor() {
-    this.simulator = new OptimizedQuantumSimulator(5);
+    console.log('EnhancedQuantumSimulationManager: Initializing...');
+    try {
+      this.simulator = new OptimizedQuantumSimulator(5);
+      console.log('EnhancedQuantumSimulationManager: OptimizedQuantumSimulator created successfully');
+    } catch (error) {
+      console.error('EnhancedQuantumSimulationManager: Failed to create OptimizedQuantumSimulator:', error);
+    }
   }
 
   // Configuration methods
@@ -112,6 +118,7 @@ class EnhancedQuantumSimulationManager {
 
   // Main simulation method with optimizations
   async simulate(circuit: QuantumGate[], numQubits: number = 5): Promise<OptimizedSimulationResult> {
+    console.log('EnhancedQuantumSimulationManager.simulate: Called with', { circuitLength: circuit.length, numQubits });
     const startTime = performance.now();
     this.log('info', `Starting simulation with ${circuit.length} gates`, { gateCount: circuit.length, numQubits });
 

@@ -40,6 +40,7 @@ export function useCircuitState() {
 
   const simulateQuantumState = useCallback(async (gates: Gate[]) => {
     console.log('simulateQuantumState called with gates:', gates);
+    console.log('Current simulation mode:', simulationMode);
     
     try {
       // Convert our Gate interface to QuantumGate interface
@@ -56,6 +57,8 @@ export function useCircuitState() {
       
       // Run the enhanced quantum simulation
       console.log('Calling enhancedQuantumSimulationManager.simulate...');
+      console.log('enhancedQuantumSimulationManager instance:', enhancedQuantumSimulationManager);
+      
       enhancedQuantumSimulationManager.setMode(simulationMode);
       const result = await enhancedQuantumSimulationManager.simulate(quantumGates, 5);
       console.log('Simulation result received:', result);
@@ -69,8 +72,9 @@ export function useCircuitState() {
       setSimulationResult(result);
     } catch (error) {
       console.error('Error in simulateQuantumState:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     }
-  }, []);
+  }, [simulationMode]);
 
   const handleModeChange = useCallback((mode: EnhancedSimulationMode) => {
     setSimulationMode(mode);
