@@ -161,7 +161,19 @@ class EnhancedQuantumSimulationManager {
         result = this.applyErrorCorrection(result);
       }
 
+      // Ensure the mode is correctly set in the result
+      result.mode = this.currentMode;
+
       const totalTime = performance.now() - startTime;
+      result.executionTime = totalTime;
+      
+      console.log('✅ EnhancedQuantumSimulationManager: Simulation completed:', {
+        mode: result.mode,
+        currentMode: this.currentMode,
+        executionTime: totalTime,
+        hasEntanglement: !!result.entanglement
+      });
+      
       this.log('info', `Simulation completed in ${totalTime.toFixed(2)}ms`, { 
         executionTime: totalTime,
         fidelity: result.fidelity,

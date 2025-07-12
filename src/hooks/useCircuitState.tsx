@@ -56,6 +56,10 @@ export function useCircuitState() {
       // Always reset the simulation manager for fresh state
       enhancedQuantumSimulationManager.reset();
       
+      // Set the mode BEFORE simulation to ensure it's applied
+      console.log('🔄 Setting simulation mode to:', simulationMode);
+      enhancedQuantumSimulationManager.setMode(simulationMode);
+      
       // Convert our Gate interface to QuantumGate interface
       const quantumGates: QuantumGate[] = gates.map(gate => ({
         id: gate.id,
@@ -71,9 +75,9 @@ export function useCircuitState() {
       // Run the enhanced quantum simulation
       console.log('🔄 Calling enhancedQuantumSimulationManager.simulate...');
       
-      enhancedQuantumSimulationManager.setMode(simulationMode);
       const result = await enhancedQuantumSimulationManager.simulate(quantumGates, 5);
       console.log('🔄 Simulation result received:', result);
+      console.log('🔄 Result mode should be:', simulationMode, 'actual mode in result:', result.mode);
       
       // Track simulation analytics
       trackEvent('circuit_simulated', { 
@@ -82,13 +86,12 @@ export function useCircuitState() {
       });
       
       console.log('🔄 Setting simulation result with timestamp:', Date.now());
-      console.log('🔄 Previous simulation result timestamp was:', simulationResult?.executionTime);
       setSimulationResult(result);
     } catch (error) {
       console.error('❌ Error in simulateQuantumState:', error);
       console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     }
-  }, [simulationMode, simulationResult]);
+  }, [simulationMode]);
 
   const handleModeChange = useCallback((mode: EnhancedSimulationMode) => {
     setSimulationMode(mode);
