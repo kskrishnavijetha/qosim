@@ -353,6 +353,183 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-24 relative overflow-hidden">
+        {/* Cosmic background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-quantum-void/20 via-background to-quantum-matrix/20"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,hsl(var(--quantum-plasma))/15,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(var(--quantum-energy))/10,transparent_50%)]"></div>
+        
+        {/* Floating particles */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-2 h-2 bg-quantum-glow rounded-full animate-pulse"></div>
+          <div className="absolute top-40 right-32 w-1 h-1 bg-quantum-neon rounded-full animate-pulse delay-1000"></div>
+          <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-quantum-plasma rounded-full animate-pulse delay-2000"></div>
+          <div className="absolute bottom-20 right-20 w-1 h-1 bg-quantum-energy rounded-full animate-pulse delay-500"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              How{" "}
+              <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
+                It Works
+              </span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Build quantum circuits visually, simulate them in real-time, and export to your favorite quantum framework. 
+              No complex math required.
+            </p>
+          </div>
+          
+          <div className="max-w-6xl mx-auto">
+            {/* Steps */}
+            <div className="grid md:grid-cols-3 gap-12 relative">
+              {/* Connection lines */}
+              <div className="hidden md:block absolute top-24 left-1/3 w-1/3 h-0.5 bg-gradient-to-r from-quantum-glow/50 to-quantum-neon/50"></div>
+              <div className="hidden md:block absolute top-24 right-0 w-1/3 h-0.5 bg-gradient-to-r from-quantum-neon/50 to-quantum-plasma/50 translate-x-1/3"></div>
+              
+              {/* Step 1: Create */}
+              <div className="text-center group">
+                <div className="relative mb-8">
+                  {/* Wireframe icon container */}
+                  <div className="w-24 h-24 mx-auto relative">
+                    {/* Outer glow */}
+                    <div className="absolute inset-0 bg-quantum-glow/20 rounded-full blur-xl group-hover:bg-quantum-glow/30 transition-all duration-500"></div>
+                    
+                    {/* Icon background */}
+                    <div className="relative w-full h-full border-2 border-quantum-glow/50 rounded-full flex items-center justify-center group-hover:border-quantum-glow group-hover:scale-110 transition-all duration-500">
+                      {/* Wireframe circuit icon */}
+                      <svg viewBox="0 0 48 48" className="w-10 h-10 text-quantum-glow">
+                        <g fill="none" stroke="currentColor" strokeWidth="1.5">
+                          {/* Circuit board lines */}
+                          <path d="M8 12h32M8 24h32M8 36h32" className="opacity-60"/>
+                          <path d="M12 8v32M24 8v32M36 8v32" className="opacity-60"/>
+                          {/* Quantum gates */}
+                          <rect x="18" y="18" width="12" height="12" rx="2" className="group-hover:fill-quantum-glow/10 transition-all"/>
+                          <circle cx="12" cy="12" r="3" className="group-hover:fill-quantum-glow/10 transition-all"/>
+                          <circle cx="36" cy="36" r="3" className="group-hover:fill-quantum-glow/10 transition-all"/>
+                          {/* Connection points */}
+                          <circle cx="12" cy="24" r="1.5" fill="currentColor"/>
+                          <circle cx="24" cy="12" r="1.5" fill="currentColor"/>
+                          <circle cx="36" cy="24" r="1.5" fill="currentColor"/>
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  {/* Step number */}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-quantum-glow to-quantum-neon rounded-full flex items-center justify-center text-black font-bold text-sm">
+                    1
+                  </div>
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-4 text-quantum-glow">Create</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Drag and drop quantum gates to build your circuit. No coding required - 
+                  just intuitive visual design with real-time feedback.
+                </p>
+              </div>
+              
+              {/* Step 2: Simulate */}
+              <div className="text-center group">
+                <div className="relative mb-8">
+                  {/* Wireframe icon container */}
+                  <div className="w-24 h-24 mx-auto relative">
+                    {/* Outer glow */}
+                    <div className="absolute inset-0 bg-quantum-neon/20 rounded-full blur-xl group-hover:bg-quantum-neon/30 transition-all duration-500"></div>
+                    
+                    {/* Icon background */}
+                    <div className="relative w-full h-full border-2 border-quantum-neon/50 rounded-full flex items-center justify-center group-hover:border-quantum-neon group-hover:scale-110 transition-all duration-500">
+                      {/* Wireframe simulation icon */}
+                      <svg viewBox="0 0 48 48" className="w-10 h-10 text-quantum-neon">
+                        <g fill="none" stroke="currentColor" strokeWidth="1.5">
+                          {/* Quantum state visualization */}
+                          <circle cx="24" cy="24" r="16" className="opacity-60"/>
+                          <circle cx="24" cy="24" r="10" className="opacity-40"/>
+                          <circle cx="24" cy="24" r="4" className="group-hover:fill-quantum-neon/10 transition-all"/>
+                          {/* Probability waves */}
+                          <path d="M8 24c4-8 8-8 12 0s8 8 12 0s8-8 12 0" className="opacity-80"/>
+                          <path d="M10 18c3-6 6-6 9 0s6 6 9 0s6-6 9 0" className="opacity-60"/>
+                          <path d="M10 30c3-6 6-6 9 0s6 6 9 0s6-6 9 0" className="opacity-60"/>
+                          {/* Measurement indicators */}
+                          <circle cx="16" cy="12" r="2" fill="currentColor" className="opacity-80"/>
+                          <circle cx="32" cy="12" r="2" fill="currentColor" className="opacity-80"/>
+                          <circle cx="16" cy="36" r="2" fill="currentColor" className="opacity-80"/>
+                          <circle cx="32" cy="36" r="2" fill="currentColor" className="opacity-80"/>
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  {/* Step number */}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-quantum-neon to-quantum-plasma rounded-full flex items-center justify-center text-black font-bold text-sm">
+                    2
+                  </div>
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-4 text-quantum-neon">Simulate</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Watch your quantum circuit come to life with real-time simulation. 
+                  Visualize quantum states, probabilities, and entanglement.
+                </p>
+              </div>
+              
+              {/* Step 3: Export */}
+              <div className="text-center group">
+                <div className="relative mb-8">
+                  {/* Wireframe icon container */}
+                  <div className="w-24 h-24 mx-auto relative">
+                    {/* Outer glow */}
+                    <div className="absolute inset-0 bg-quantum-plasma/20 rounded-full blur-xl group-hover:bg-quantum-plasma/30 transition-all duration-500"></div>
+                    
+                    {/* Icon background */}
+                    <div className="relative w-full h-full border-2 border-quantum-plasma/50 rounded-full flex items-center justify-center group-hover:border-quantum-plasma group-hover:scale-110 transition-all duration-500">
+                      {/* Wireframe export icon */}
+                      <svg viewBox="0 0 48 48" className="w-10 h-10 text-quantum-plasma">
+                        <g fill="none" stroke="currentColor" strokeWidth="1.5">
+                          {/* Document/code representation */}
+                          <rect x="12" y="8" width="24" height="32" rx="2" className="opacity-60"/>
+                          <path d="M16 16h16M16 20h12M16 24h16M16 28h8" className="opacity-80"/>
+                          {/* Export arrow */}
+                          <path d="M24 32l-4 4m4-4l4 4m-4-4v8" strokeLinecap="round" strokeLinejoin="round"/>
+                          {/* Platform indicators */}
+                          <circle cx="8" cy="36" r="3" className="group-hover:fill-quantum-plasma/10 transition-all"/>
+                          <circle cx="40" cy="36" r="3" className="group-hover:fill-quantum-plasma/10 transition-all"/>
+                          <rect x="18" y="6" width="12" height="4" rx="1" className="opacity-40"/>
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  {/* Step number */}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-quantum-plasma to-quantum-energy rounded-full flex items-center justify-center text-black font-bold text-sm">
+                    3
+                  </div>
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-4 text-quantum-plasma">Export</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Export your circuits to Qiskit, Cirq, or other quantum frameworks. 
+                  Seamless integration with your existing quantum workflow.
+                </p>
+              </div>
+            </div>
+            
+            {/* Call to action */}
+            <div className="text-center mt-16">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8 py-3 text-lg"
+                onClick={() => scrollToSection('early-access')}
+              >
+                Start Building Quantum Circuits
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Use Cases */}
       <section id="use-cases" className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
