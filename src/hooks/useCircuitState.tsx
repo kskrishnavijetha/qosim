@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
-import { type OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
+import { type OptimizedSimulationResult, type SimulationStepData } from '@/lib/quantumSimulatorOptimized';
 import { type CloudSimulationConfig, quantumSimulationManager } from '@/lib/quantumSimulationService';
 import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
 
@@ -157,6 +157,28 @@ export function useCircuitState() {
 
   const canUndo = history.length > 1;
 
+  // Step-by-step execution methods
+  const handleStepModeToggle = useCallback((enabled: boolean) => {
+    enhancedQuantumSimulationManager.enableStepMode(enabled);
+  }, []);
+
+  const handleSimulationStep = useCallback((): SimulationStepData | null => {
+    return enhancedQuantumSimulationManager.step();
+  }, []);
+
+  const handleSimulationReset = useCallback(() => {
+    enhancedQuantumSimulationManager.reset();
+    setSimulationResult(null);
+  }, []);
+
+  const handleSimulationPause = useCallback(() => {
+    enhancedQuantumSimulationManager.pause();
+  }, []);
+
+  const handleSimulationResume = useCallback(() => {
+    enhancedQuantumSimulationManager.resume();
+  }, []);
+
   return {
     circuit,
     setCircuit,
@@ -172,6 +194,11 @@ export function useCircuitState() {
     generateCircuitData,
     handleModeChange,
     handleCloudConfigChange,
+    handleStepModeToggle,
+    handleSimulationStep,
+    handleSimulationReset,
+    handleSimulationPause,
+    handleSimulationResume,
     isCloudConfigured: !!cloudConfig.ibmqToken && cloudConfig.ibmqToken.trim().length > 0,
     canUndo
   };

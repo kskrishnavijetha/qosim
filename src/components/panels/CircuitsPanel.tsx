@@ -27,6 +27,11 @@ export function CircuitsPanel() {
     generateCircuitData,
     handleModeChange,
     handleCloudConfigChange,
+    handleStepModeToggle,
+    handleSimulationStep,
+    handleSimulationReset,
+    handleSimulationPause,
+    handleSimulationResume,
     isCloudConfigured,
     canUndo
   } = useCircuitState();
@@ -176,6 +181,11 @@ export function CircuitsPanel() {
           numQubits={NUM_QUBITS}
           circuit={circuit}
           onSuggestionClick={handleSuggestionClick}
+          onStepModeToggle={handleStepModeToggle}
+          onSimulationStep={handleSimulationStep}
+          onSimulationReset={handleSimulationReset}
+          onSimulationPause={handleSimulationPause}
+          onSimulationResume={handleSimulationResume}
         />
 
         {/* Export Dialog */}

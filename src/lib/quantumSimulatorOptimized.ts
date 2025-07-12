@@ -86,6 +86,19 @@ const enhancedGates = {
       [{real: 0, imag: 0}, {real: Math.cos(phase), imag: Math.sin(phase)}]
     ];
   },
+  
+  // Controlled rotation gates for QFT implementation
+  CRk: (k: number) => {
+    const angle = 2 * Math.PI / Math.pow(2, k);
+    if (Math.abs(angle) < 1e-10) return enhancedGates.I;
+    
+    // For QFT, this is conceptually a controlled-RZ gate
+    const phase = angle/2;
+    return [
+      [{real: Math.cos(-phase), imag: Math.sin(-phase)}, {real: 0, imag: 0}],
+      [{real: 0, imag: 0}, {real: Math.cos(phase), imag: Math.sin(phase)}]
+    ];
+  },
 };
 
 // Optimized matrix operations with floating point precision
@@ -261,6 +274,10 @@ export class OptimizedQuantumSimulator {
   private isStepMode: boolean = false;
   private currentStep: number = 0;
   private isPaused: boolean = false;
+  private measurementHistory: Array<{ qubit: number; result: 0 | 1; timestamp: number }> = [];
+  private classicalBits: { [key: string]: 0 | 1 } = {};
+  private circuit: QuantumGate[] = [];
+  private realTimeMode: boolean = false;
   
   constructor(numQubits: number = 5) {
     this.numQubits = numQubits;
