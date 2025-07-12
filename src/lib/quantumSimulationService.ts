@@ -1,7 +1,7 @@
 // Enhanced quantum simulation service with cloud integration
 import { Complex, StateVector, QuantumGate, SimulationResult, complex, quantumSimulator } from './quantumSimulator';
 
-export type SimulationMode = 'fast' | 'accurate' | 'cloud';
+export type SimulationMode = 'fast' | 'accurate' | 'cloud' | 'step-by-step';
 
 export interface CloudSimulationConfig {
   ibmqToken?: string;

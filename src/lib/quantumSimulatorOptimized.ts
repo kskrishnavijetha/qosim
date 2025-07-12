@@ -1,5 +1,6 @@
 // Enhanced Quantum Circuit Simulator with Real-time Optimization
 import { Complex, StateVector, QuantumGate, complex } from './quantumSimulator';
+import { SimulationMode } from './quantumSimulationService';
 
 export interface OptimizedSimulationResult {
   stateVector: StateVector;
@@ -20,6 +21,7 @@ export interface OptimizedSimulationResult {
   stepResults?: OptimizedSimulationResult[];
   fidelity: number;
   errorRates?: { [qubit: number]: number };
+  mode: SimulationMode; // Add mode property for compatibility
 }
 
 export interface SimulationStepData {
@@ -548,7 +550,8 @@ export class OptimizedQuantumSimulator {
       entanglement,
       executionTime,
       stepResults: this.isStepMode ? this.stepResults.map(step => this.getOptimizedResult(step.timestamp)) : undefined,
-      fidelity
+      fidelity,
+      mode: 'fast' as SimulationMode
     };
   }
   
