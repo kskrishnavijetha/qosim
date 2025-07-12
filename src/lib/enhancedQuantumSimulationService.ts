@@ -123,8 +123,13 @@ class EnhancedQuantumSimulationManager {
     this.log('info', `Starting simulation with ${circuit.length} gates`, { gateCount: circuit.length, numQubits });
 
     try {
-      // Create new simulator instance if needed for different qubit count
-      this.simulator = new OptimizedQuantumSimulator(numQubits);
+      // Only create new simulator instance if qubit count changed
+      if (!this.simulator || this.simulator.qubits !== numQubits) {
+        console.log('🔬 Creating new simulator for', numQubits, 'qubits');
+        this.simulator = new OptimizedQuantumSimulator(numQubits);
+      } else {
+        console.log('🔬 Reusing existing simulator for', numQubits, 'qubits');
+      }
 
       // Validate and optimize circuit
       const optimizedCircuit = await this.optimizeCircuit(circuit);
@@ -289,7 +294,10 @@ class EnhancedQuantumSimulationManager {
 
   // Simulation methods
   private async simulateOptimized(circuit: QuantumGate[], numQubits: number): Promise<OptimizedSimulationResult> {
-    return await this.simulator.simulateAsync(circuit);
+    console.log('🔬 simulateOptimized: About to call simulator.simulateAsync with circuit:', circuit);
+    const result = await this.simulator.simulateAsync(circuit);
+    console.log('🔬 simulateOptimized: Raw result from simulator:', result);
+    return result;
   }
 
   private async simulateStepByStep(circuit: QuantumGate[], numQubits: number): Promise<OptimizedSimulationResult> {

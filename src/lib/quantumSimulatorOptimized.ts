@@ -277,6 +277,11 @@ export class OptimizedQuantumSimulator {
   private measurementHistory: Array<{ qubit: number; result: 0 | 1; timestamp: number }> = [];
   private classicalBits: { [key: string]: 0 | 1 } = {};
   private circuit: QuantumGate[] = [];
+
+  // Public getter for numQubits
+  get qubits(): number {
+    return this.numQubits;
+  }
   private realTimeMode: boolean = false;
   
   constructor(numQubits: number = 5) {

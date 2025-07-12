@@ -39,10 +39,23 @@ export function useCircuitState() {
   }, [cloudConfig]);
 
   const simulateQuantumState = useCallback(async (gates: Gate[]) => {
-    console.log('simulateQuantumState called with gates:', gates);
-    console.log('Current simulation mode:', simulationMode);
+    console.log('🔄 simulateQuantumState called with gates:', gates);
+    console.log('🔄 Current simulation mode:', simulationMode);
+    
+    // Generate circuit hash for uniqueness verification
+    const circuitHash = JSON.stringify(gates.map(g => ({ 
+      type: g.type, 
+      qubit: g.qubit, 
+      qubits: g.qubits, 
+      position: g.position, 
+      angle: g.angle 
+    })));
+    console.log('🔄 Circuit hash:', circuitHash.substring(0, 50) + '...');
     
     try {
+      // Always reset the simulation manager for fresh state
+      enhancedQuantumSimulationManager.reset();
+      
       // Convert our Gate interface to QuantumGate interface
       const quantumGates: QuantumGate[] = gates.map(gate => ({
         id: gate.id,
@@ -53,15 +66,14 @@ export function useCircuitState() {
         angle: gate.angle
       }));
       
-      console.log('Converted quantum gates:', quantumGates);
+      console.log('🔄 Converted quantum gates:', quantumGates);
       
       // Run the enhanced quantum simulation
-      console.log('Calling enhancedQuantumSimulationManager.simulate...');
-      console.log('enhancedQuantumSimulationManager instance:', enhancedQuantumSimulationManager);
+      console.log('🔄 Calling enhancedQuantumSimulationManager.simulate...');
       
       enhancedQuantumSimulationManager.setMode(simulationMode);
       const result = await enhancedQuantumSimulationManager.simulate(quantumGates, 5);
-      console.log('Simulation result received:', result);
+      console.log('🔄 Simulation result received:', result);
       
       // Track simulation analytics
       trackEvent('circuit_simulated', { 
@@ -69,12 +81,14 @@ export function useCircuitState() {
         numQubits: 5 
       });
       
+      console.log('🔄 Setting simulation result with timestamp:', Date.now());
+      console.log('🔄 Previous simulation result timestamp was:', simulationResult?.executionTime);
       setSimulationResult(result);
     } catch (error) {
-      console.error('Error in simulateQuantumState:', error);
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('❌ Error in simulateQuantumState:', error);
+      console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     }
-  }, [simulationMode]);
+  }, [simulationMode, simulationResult]);
 
   const handleModeChange = useCallback((mode: EnhancedSimulationMode) => {
     setSimulationMode(mode);
@@ -91,7 +105,9 @@ export function useCircuitState() {
   }, []);
 
   const addGate = useCallback((newGate: Gate) => {
+    console.log('🔄 Adding gate:', newGate);
     const newCircuit = [...circuit, newGate];
+    console.log('🔄 New circuit length:', newCircuit.length);
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
     
@@ -109,7 +125,8 @@ export function useCircuitState() {
     
     // Generate standardized circuit data structure and simulate
     const circuitData = generateCircuitData(newCircuit);
-    console.log('Generated circuit data:', circuitData);
+    console.log('🔄 Generated circuit data:', circuitData);
+    console.log('🔄 About to call simulateQuantumState with circuit length:', newCircuit.length);
     simulateQuantumState(newCircuit);
   }, [circuit, simulateQuantumState]);
 
