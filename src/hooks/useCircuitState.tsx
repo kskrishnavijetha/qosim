@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
-import { quantumSimulationManager, type EnhancedSimulationResult, type SimulationMode, type CloudSimulationConfig } from '@/lib/quantumSimulationService';
+import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
+import { type OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
 
 export interface Gate {
@@ -15,8 +16,8 @@ export interface Gate {
 export function useCircuitState() {
   const [circuit, setCircuit] = useState<Gate[]>([]);
   const [history, setHistory] = useState<Gate[][]>([[]]);
-  const [simulationResult, setSimulationResult] = useState<EnhancedSimulationResult | null>(null);
-  const [simulationMode, setSimulationMode] = useState<SimulationMode>('fast');
+  const [simulationResult, setSimulationResult] = useState<OptimizedSimulationResult | null>(null);
+  const [simulationMode, setSimulationMode] = useState<EnhancedSimulationMode>('fast');
   const [sessionTracker] = useState(() => new CircuitSessionTracker(`circuit-${Date.now()}`));
   const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>(() => {
     try {
@@ -53,8 +54,8 @@ export function useCircuitState() {
       console.log('Converted quantum gates:', quantumGates);
       
       // Run the enhanced quantum simulation
-      console.log('Calling quantumSimulationManager.simulate...');
-      const result = await quantumSimulationManager.simulate(quantumGates, 5);
+      console.log('Calling enhancedQuantumSimulationManager.simulate...');
+      const result = await enhancedQuantumSimulationManager.simulate(quantumGates, 5);
       console.log('Simulation result received:', result);
       
       // Track simulation analytics
@@ -69,9 +70,9 @@ export function useCircuitState() {
     }
   }, []);
 
-  const handleModeChange = useCallback((mode: SimulationMode) => {
+  const handleModeChange = useCallback((mode: EnhancedSimulationMode) => {
     setSimulationMode(mode);
-    quantumSimulationManager.setMode(mode);
+    enhancedQuantumSimulationManager.setMode(mode);
     // Re-simulate with new mode if circuit exists
     if (circuit.length > 0) {
       simulateQuantumState(circuit);
