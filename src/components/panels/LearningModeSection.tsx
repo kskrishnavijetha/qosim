@@ -50,15 +50,13 @@ export function LearningModeSection({
         </div>
       )}
 
-      {isLearningMode && (
-        /* Circuit Templates */
-        <CircuitTemplates
-          templates={templates}
-          completedTemplates={progress.completedTemplates}
-          onSelectTemplate={onSelectTemplate}
-          onLoadTemplate={onLoadTemplate}
-        />
-      )}
+      {/* Circuit Templates - Always available */}
+      <CircuitTemplates
+        templates={templates}
+        completedTemplates={progress.completedTemplates}
+        onSelectTemplate={onSelectTemplate}
+        onLoadTemplate={onLoadTemplate}
+      />
     </>
   );
 }
