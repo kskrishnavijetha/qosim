@@ -160,12 +160,12 @@ const LandingPage = () => {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-6">
-              <Button size="lg" className="group bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8 py-3 text-lg">
+            <div className="flex flex-col gap-4 sm:flex-row sm:gap-6 justify-center items-center pt-6">
+              <Button size="lg" className="w-full sm:w-auto group bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg">
                 Join Early Access
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black px-8 py-3 text-lg" asChild>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
                 <Link to="/app">
                   View Live Preview
                 </Link>
@@ -326,7 +326,7 @@ const LandingPage = () => {
             <div className="text-center mt-12">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8"
+                className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
                 onClick={() => scrollToSection('early-access')}
               >
                 Try It Yourself
@@ -441,46 +441,46 @@ const LandingPage = () => {
             </div>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                icon: <Cpu className="w-8 h-8" />,
+                icon: <Cpu className="w-6 h-6 sm:w-8 sm:h-8" />,
                 title: "Visual Circuit Builder",
                 description: "Drag and drop quantum gates to build complex circuits"
               },
               {
-                icon: <Eye className="w-8 h-8" />,
+                icon: <Eye className="w-6 h-6 sm:w-8 sm:h-8" />,
                 title: "Real-time Simulation",
                 description: "Watch quantum states evolve as you build"
               },
               {
-                icon: <Zap className="w-8 h-8" />,
+                icon: <Zap className="w-6 h-6 sm:w-8 sm:h-8" />,
                 title: "Bloch Sphere Visualization",
                 description: "3D representation of qubit states"
               },
               {
-                icon: <Code className="w-8 h-8" />,
+                icon: <Code className="w-6 h-6 sm:w-8 sm:h-8" />,
                 title: "Code Export",
                 description: "Export to Qiskit, Cirq, and more"
               },
               {
-                icon: <Users className="w-8 h-8" />,
+                icon: <Users className="w-6 h-6 sm:w-8 sm:h-8" />,
                 title: "Collaborative Workspaces",
                 description: "Share and collaborate on quantum projects"
               },
               {
-                icon: <GraduationCap className="w-8 h-8" />,
+                icon: <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8" />,
                 title: "Educational Resources",
                 description: "Built-in tutorials and learning paths"
               }
             ].map((feature, index) => (
-              <Card key={index} className="hover:border-quantum-glow/50 transition-colors">
-                <CardHeader>
+              <Card key={index} className="p-4 sm:p-6 hover:border-quantum-glow/50 transition-colors">
+                <CardHeader className="p-0 pb-3 sm:pb-4">
                   <div className="text-quantum-glow mb-2">{feature.icon}</div>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">{feature.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                <CardContent className="p-0">
+                  <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -655,7 +655,7 @@ const LandingPage = () => {
             <div className="text-center mt-16">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8 py-3 text-lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
                 onClick={() => scrollToSection('early-access')}
               >
                 Start Building Quantum Circuits
@@ -672,40 +672,40 @@ const LandingPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Who Uses QOSim?</h2>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center border-quantum-neon/20">
-              <CardHeader>
-                <GraduationCap className="w-16 h-16 text-quantum-glow mx-auto mb-4" />
-                <CardTitle>Educators</CardTitle>
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+            <Card className="p-4 sm:p-6 text-center border-quantum-neon/20">
+              <CardHeader className="p-0 pb-4">
+                <GraduationCap className="w-12 h-12 sm:w-16 sm:h-16 text-quantum-glow mx-auto mb-3 sm:mb-4" />
+                <CardTitle className="text-lg sm:text-xl">Educators</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
+              <CardContent className="p-0">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Teach quantum computing concepts with interactive visualizations.
                   Perfect for universities and online courses.
                 </p>
               </CardContent>
             </Card>
             
-            <Card className="text-center border-quantum-energy/20">
-              <CardHeader>
-                <Code className="w-16 h-16 text-quantum-energy mx-auto mb-4" />
-                <CardTitle>Developers</CardTitle>
+            <Card className="p-4 sm:p-6 text-center border-quantum-energy/20">
+              <CardHeader className="p-0 pb-4">
+                <Code className="w-12 h-12 sm:w-16 sm:h-16 text-quantum-energy mx-auto mb-3 sm:mb-4" />
+                <CardTitle className="text-lg sm:text-xl">Developers</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
+              <CardContent className="p-0">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Prototype quantum algorithms visually before implementing in code.
                   Export to popular quantum frameworks.
                 </p>
               </CardContent>
             </Card>
             
-            <Card className="text-center border-quantum-plasma/20">
-              <CardHeader>
-                <FlaskConical className="w-16 h-16 text-quantum-plasma mx-auto mb-4" />
-                <CardTitle>Research Labs</CardTitle>
+            <Card className="p-4 sm:p-6 text-center border-quantum-plasma/20">
+              <CardHeader className="p-0 pb-4">
+                <FlaskConical className="w-12 h-12 sm:w-16 sm:h-16 text-quantum-plasma mx-auto mb-3 sm:mb-4" />
+                <CardTitle className="text-lg sm:text-xl">Research Labs</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
+              <CardContent className="p-0">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Collaborate on quantum research with powerful simulation tools
                   and shared workspaces.
                 </p>
@@ -733,25 +733,25 @@ const LandingPage = () => {
               Get early access to QOSim and shape the quantum computing landscape.
             </p>
             
-            <div className="bg-gradient-to-br from-quantum-void/30 to-quantum-matrix/30 border border-quantum-neon/30 rounded-2xl p-8 backdrop-blur-sm">
-              <form onSubmit={handleWaitlistSignup} className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+            <div className="bg-gradient-to-br from-quantum-void/30 to-quantum-matrix/30 border border-quantum-neon/30 rounded-2xl p-4 sm:p-8 backdrop-blur-sm">
+              <form onSubmit={handleWaitlistSignup} className="flex flex-col gap-3 sm:gap-4 max-w-lg mx-auto">
                 <Input
                   type="email"
                   placeholder="Enter your email for early access"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="flex-1 bg-background/50 border-quantum-glow/30 focus:border-quantum-glow"
+                  className="w-full bg-background/50 border-quantum-glow/30 focus:border-quantum-glow px-3 py-2 sm:px-4 sm:py-3"
                 />
                 <Button 
                   type="submit" 
-                  className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8"
+                  className="w-full bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 py-2.5 sm:px-8 sm:py-3 text-base sm:text-lg"
                 >
                   Join Early Access
                 </Button>
               </form>
               
-              <p className="text-sm text-muted-foreground mt-6">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6">
                 🔒 No spam, quantum-secured privacy. Join 10,000+ quantum enthusiasts.
               </p>
             </div>
