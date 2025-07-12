@@ -1,6 +1,5 @@
 import React from "react";
-import { type SimulationResult } from "@/lib/quantumSimulator";
-import { type EnhancedSimulationResult } from "@/lib/quantumSimulationService";
+import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { VirtualizedCircuitGrid } from "./VirtualizedCircuitGrid";
 
 interface Gate {
@@ -23,7 +22,7 @@ interface DragState {
 interface CircuitGridProps {
   circuit: Gate[];
   dragState: DragState;
-  simulationResult: EnhancedSimulationResult | null;
+  simulationResult: OptimizedSimulationResult | null;
   onDeleteGate: (gateId: string) => void;
   circuitRef: React.RefObject<HTMLDivElement>;
   NUM_QUBITS: number;
