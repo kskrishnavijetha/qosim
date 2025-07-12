@@ -243,33 +243,33 @@ const LandingPage = () => {
               
               {/* Video container */}
               <div className="relative bg-gradient-to-br from-quantum-void/20 to-background border border-quantum-neon/30 rounded-2xl p-2 backdrop-blur-sm">
-                <div className="aspect-video rounded-xl overflow-hidden bg-quantum-void/40 flex items-center justify-center relative">
-                  {/* Placeholder for YouTube embed or GIF */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/10 to-quantum-neon/10"></div>
-                  
-                  {/* YouTube embed placeholder - replace with actual video */}
-                  <iframe
-                    className="w-full h-full rounded-xl"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=1&showinfo=0&rel=0"
-                    title="QOSim Demo: Create, Simulate, Export Quantum Circuits"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                  
-                  {/* Fallback content if video doesn't load */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-quantum-void/80 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-glow/20 to-quantum-neon/20 rounded-full flex items-center justify-center">
-                        <svg className="w-8 h-8 text-quantum-glow" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z"/>
-                        </svg>
-                      </div>
-                      <p className="text-quantum-glow font-medium">Demo Video</p>
-                      <p className="text-sm text-muted-foreground mt-1">Circuit Creation → Simulation → QASM Export</p>
+              <div className="aspect-video rounded-xl overflow-hidden bg-quantum-void/40 flex items-center justify-center relative">
+                {/* Placeholder for demo GIF */}
+                <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/10 to-quantum-neon/10"></div>
+                
+                {/* GIF placeholder - replace src with actual demo GIF */}
+                <img
+                  src="/placeholder.svg"
+                  alt="QOSim Demo: Create, Simulate, Export Quantum Circuits"
+                  className="w-full h-full object-cover rounded-xl"
+                />
+                
+                {/* Demo overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-quantum-void/60 backdrop-blur-sm rounded-xl">
+                  <div className="text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-quantum-glow/30 to-quantum-neon/30 rounded-full flex items-center justify-center">
+                      <svg className="w-10 h-10 text-quantum-glow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h2a1 1 0 011 1v3" />
+                        <rect x="7" y="8" width="10" height="8" rx="1" />
+                        <path d="M10 12h4M10 14h2" strokeLinecap="round" />
+                      </svg>
                     </div>
+                    <p className="text-xl font-semibold text-quantum-glow mb-2">Interactive Demo</p>
+                    <p className="text-sm text-muted-foreground">Circuit Creation → Simulation → QASM Export</p>
+                    <p className="text-xs text-quantum-neon/70 mt-2">GIF Demo Coming Soon</p>
                   </div>
                 </div>
+              </div>
               </div>
               
               {/* Feature highlights below video */}
