@@ -11,7 +11,21 @@ export function useTemplateLoader({ addGate, clearCircuit, completeTemplate }: U
   const handleTemplateLoad = useCallback((template: any) => {
     console.log('🎯 Loading template:', template);
     console.log('🎯 Template gates:', template.gates);
+    console.log('🎯 addGate function:', addGate);
+    console.log('🎯 clearCircuit function:', clearCircuit);
+    
+    if (!addGate) {
+      console.error('❌ addGate function is not available!');
+      return;
+    }
+    
+    if (!clearCircuit) {
+      console.error('❌ clearCircuit function is not available!');
+      return;
+    }
+    
     clearCircuit();
+    console.log('🧹 Circuit cleared');
     
     if (!template.gates || template.gates.length === 0) {
       console.error('❌ Template has no gates!', template);

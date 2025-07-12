@@ -136,8 +136,13 @@ export function CircuitTemplates({
               onClick={() => {
                 console.log('🎯 Load button clicked for template:', template.name);
                 console.log('🎯 Full template object:', template);
-                console.log('🎯 onLoadTemplate function:', onLoadTemplate);
-                onLoadTemplate(template);
+                console.log('🎯 onLoadTemplate function exists:', !!onLoadTemplate);
+                console.log('🎯 Template gates:', template.gates);
+                if (onLoadTemplate) {
+                  onLoadTemplate(template);
+                } else {
+                  console.error('❌ onLoadTemplate function is missing!');
+                }
               }}
               className="flex-1 font-mono text-xs bg-quantum-glow text-black hover:bg-quantum-glow/80"
             >
