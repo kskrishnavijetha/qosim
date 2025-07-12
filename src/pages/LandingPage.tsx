@@ -216,6 +216,111 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Demo Section */}
+      <section className="py-20 bg-gradient-to-br from-quantum-void/5 to-quantum-matrix/5 relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,hsl(var(--quantum-glow))/5,transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl md:text-4xl font-bold mb-4">
+                See QOSim in{" "}
+                <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
+                  Action
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Watch how easy it is to create a quantum circuit, simulate it in real-time, 
+                and export to QASM format - all in under 60 seconds.
+              </p>
+            </div>
+            
+            {/* Demo video container */}
+            <div className="relative group">
+              {/* Glowing border effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-quantum-glow via-quantum-neon to-quantum-plasma rounded-2xl blur-sm opacity-30 group-hover:opacity-50 transition-opacity"></div>
+              
+              {/* Video container */}
+              <div className="relative bg-gradient-to-br from-quantum-void/20 to-background border border-quantum-neon/30 rounded-2xl p-2 backdrop-blur-sm">
+                <div className="aspect-video rounded-xl overflow-hidden bg-quantum-void/40 flex items-center justify-center relative">
+                  {/* Placeholder for YouTube embed or GIF */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/10 to-quantum-neon/10"></div>
+                  
+                  {/* YouTube embed placeholder - replace with actual video */}
+                  <iframe
+                    className="w-full h-full rounded-xl"
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=1&showinfo=0&rel=0"
+                    title="QOSim Demo: Create, Simulate, Export Quantum Circuits"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                  
+                  {/* Fallback content if video doesn't load */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-quantum-void/80 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-glow/20 to-quantum-neon/20 rounded-full flex items-center justify-center">
+                        <svg className="w-8 h-8 text-quantum-glow" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                      <p className="text-quantum-glow font-medium">Demo Video</p>
+                      <p className="text-sm text-muted-foreground mt-1">Circuit Creation → Simulation → QASM Export</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Feature highlights below video */}
+              <div className="grid md:grid-cols-3 gap-6 mt-8">
+                <div className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-glow/20 to-quantum-glow/10 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-quantum-glow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-quantum-glow mb-1">Lightning Fast</h3>
+                  <p className="text-sm text-muted-foreground">Build circuits in seconds</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-neon/20 to-quantum-neon/10 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-quantum-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-quantum-neon mb-1">Real-time Preview</h3>
+                  <p className="text-sm text-muted-foreground">See results instantly</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-plasma/20 to-quantum-plasma/10 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-quantum-plasma" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-quantum-plasma mb-1">Easy Export</h3>
+                  <p className="text-sm text-muted-foreground">QASM, Qiskit, Cirq ready</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* CTA */}
+            <div className="text-center mt-12">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8"
+                onClick={() => scrollToSection('early-access')}
+              >
+                Try It Yourself
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* About Section */}
       <section id="about" className="py-24 bg-gradient-to-br from-quantum-void/10 to-quantum-matrix/10 relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--quantum-plasma))/10,transparent_50%)]"></div>
