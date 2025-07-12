@@ -134,7 +134,9 @@ export function CircuitTemplates({
             <Button
               size="sm"
               onClick={() => {
-                console.log('Load button clicked for template:', template.name);
+                console.log('🎯 Load button clicked for template:', template.name);
+                console.log('🎯 Full template object:', template);
+                console.log('🎯 onLoadTemplate function:', onLoadTemplate);
                 onLoadTemplate(template);
               }}
               className="flex-1 font-mono text-xs bg-quantum-glow text-black hover:bg-quantum-glow/80"
