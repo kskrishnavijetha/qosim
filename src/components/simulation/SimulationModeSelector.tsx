@@ -208,9 +208,12 @@ export function SimulationModeSelector({
                   )}
 
                   <Button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       console.log('🔄 SimulationModeSelector: Button clicked for mode', mode.id);
-                      if (currentMode !== mode.id) {
+                      // Only change mode if it's different and not disabled
+                      if (currentMode !== mode.id && (!mode.requiresConfig || isCloudConfigured)) {
                         onModeChange(mode.id);
                       }
                     }}

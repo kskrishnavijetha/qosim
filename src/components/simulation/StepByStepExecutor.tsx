@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +66,6 @@ export function StepByStepExecutor({
     const stepResult = onSimulationStep();
     if (stepResult) {
       setStepData(stepResult);
-      setCurrentStep(prev => prev + 1);
     }
     return stepResult;
   }, [onSimulationStep]);
@@ -78,45 +77,67 @@ export function StepByStepExecutor({
     setIsPlaying(false);
   }, [onSimulationReset]);
 
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const currentStepRef = useRef(currentStep);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
       console.log('🔄 StepByStepExecutor: Pausing execution');
       setIsPlaying(false);
       onSimulationPause();
+      if (intervalId) {
+        clearInterval(intervalId);
+        setIntervalId(null);
+      }
     } else {
       console.log('🔄 StepByStepExecutor: Starting execution');
       setIsPlaying(true);
       onSimulationResume();
       
-      // Auto-step execution with proper state tracking
-      const autoStep = () => {
-        // Check current step against circuit length before proceeding
-        if (currentStep >= circuit.length) {
-          console.log('🔄 StepByStepExecutor: Reached end of circuit, stopping');
+      // Use interval for consistent stepping
+      const id = setInterval(() => {
+        const currentStepValue = currentStepRef.current;
+        console.log('🔄 StepByStepExecutor: Stepping at currentStep:', currentStepValue, 'Circuit length:', circuit.length);
+        
+        if (currentStepValue >= circuit.length) {
+          console.log('🔄 StepByStepExecutor: Reached end, stopping');
           setIsPlaying(false);
+          clearInterval(id);
+          setIntervalId(null);
           return;
         }
         
         const result = handleStep();
-        console.log('🔄 StepByStepExecutor: Step result:', result, 'Current step:', currentStep);
+        console.log('🔄 StepByStepExecutor: Step result:', result);
         
-        if (result && currentStep < circuit.length - 1) {
-          // Continue auto-stepping if we're still playing and haven't reached the end
-          setTimeout(() => {
-            if (isPlaying) {
-              autoStep();
+        if (result) {
+          setCurrentStep(prev => {
+            const nextStep = prev + 1;
+            currentStepRef.current = nextStep;
+            if (nextStep >= circuit.length) {
+              console.log('🔄 StepByStepExecutor: Will reach end after this step');
+              setIsPlaying(false);
+              clearInterval(id);
+              setIntervalId(null);
             }
-          }, playbackSpeed[0]);
+            return nextStep;
+          });
         } else {
-          console.log('🔄 StepByStepExecutor: Auto-step finished');
+          console.log('🔄 StepByStepExecutor: Step failed, stopping');
           setIsPlaying(false);
+          clearInterval(id);
+          setIntervalId(null);
         }
-      };
+      }, playbackSpeed[0]);
       
-      // Start the auto-stepping process
-      setTimeout(autoStep, playbackSpeed[0]);
+      setIntervalId(id);
     }
-  }, [isPlaying, handleStep, playbackSpeed, currentStep, circuit.length, onSimulationPause, onSimulationResume]);
+  }, [isPlaying, handleStep, playbackSpeed, circuit.length, onSimulationPause, onSimulationResume, intervalId]);
 
   const progress = circuit.length > 0 ? (currentStep / circuit.length) * 100 : 0;
 
