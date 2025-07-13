@@ -8,6 +8,7 @@ import { FilesPanel } from "./panels/FilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
+import { SDKDemoPanel } from "./panels/SDKDemoPanel";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -24,6 +25,8 @@ export function QuantumDashboard() {
         return <FilesPanel />;
       case "logs":
         return <LogsPanel />;
+      case "sdk":
+        return <SDKDemoPanel />;
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
