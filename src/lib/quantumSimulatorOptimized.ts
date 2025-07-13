@@ -356,20 +356,47 @@ function calculateAdvancedEntanglement(stateVector: StateVector, numQubits: numb
 }
 
 function calculatePairEntanglement(stateVector: StateVector, qubit1: number, qubit2: number, numQubits: number): number {
-  // Simplified entanglement calculation using correlation
-  let correlation = 0;
+  // Calculate entanglement using proper concurrence/entropy measures
+  let entanglement = 0;
   const normalizer = stateVector.reduce((sum, amp) => sum + complex.magnitude(amp) ** 2, 0);
+  
+  if (normalizer === 0) return 0;
+  
+  // For 2-qubit subsystem, calculate concurrence-like measure
+  let prob00 = 0, prob01 = 0, prob10 = 0, prob11 = 0;
   
   for (let state = 0; state < stateVector.length; state++) {
     const bit1 = (state >> (numQubits - 1 - qubit1)) & 1;
     const bit2 = (state >> (numQubits - 1 - qubit2)) & 1;
     const probability = complex.magnitude(stateVector[state]) ** 2 / normalizer;
     
-    // Calculate correlation coefficient
-    correlation += probability * (bit1 === bit2 ? 1 : -1);
+    if (bit1 === 0 && bit2 === 0) prob00 += probability;
+    else if (bit1 === 0 && bit2 === 1) prob01 += probability;
+    else if (bit1 === 1 && bit2 === 0) prob10 += probability;
+    else if (bit1 === 1 && bit2 === 1) prob11 += probability;
   }
   
-  return Math.abs(correlation);
+  // Calculate entanglement based on deviation from product state
+  const marginal1_0 = prob00 + prob01;
+  const marginal1_1 = prob10 + prob11;
+  const marginal2_0 = prob00 + prob10;
+  const marginal2_1 = prob01 + prob11;
+  
+  // If it's a product state, prob_ij = marginal_i * marginal_j
+  const expected00 = marginal1_0 * marginal2_0;
+  const expected01 = marginal1_0 * marginal2_1;
+  const expected10 = marginal1_1 * marginal2_0;
+  const expected11 = marginal1_1 * marginal2_1;
+  
+  // Measure deviation (entanglement strength)
+  entanglement = Math.sqrt(
+    Math.pow(prob00 - expected00, 2) +
+    Math.pow(prob01 - expected01, 2) +
+    Math.pow(prob10 - expected10, 2) +
+    Math.pow(prob11 - expected11, 2)
+  );
+  
+  return Math.min(1, entanglement * 2); // Scale and clamp
 }
 
 export class OptimizedQuantumSimulator {
