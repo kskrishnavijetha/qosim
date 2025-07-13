@@ -1,73 +1,93 @@
-# Welcome to your Lovable project
+# QOSim SDK
 
-## Project info
+A powerful JavaScript SDK for quantum circuit simulation, QASM import/export, and visualization. Build quantum algorithms programmatically with a clean, intuitive API.
 
-**URL**: https://lovable.dev/projects/8d0eb367-5d10-4190-9030-a9a449389a1b
+## 🚀 Quick Start
 
-## How can I edit this code?
+```javascript
+import { QOSimSimulator } from './src/qosim-core.js';
 
-There are several ways of editing your application.
+// Create a Bell state
+const sim = new QOSimSimulator(2);
+sim.addGate('H', 0);
+sim.addGate('CNOT', 0, 1);
+sim.run();
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/8d0eb367-5d10-4190-9030-a9a449389a1b) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+console.log(sim.getBasisStates());
+// Output: |00⟩: 0.5000, |11⟩: 0.5000
 ```
 
-**Edit a file directly in GitHub**
+## 📦 Core Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Quantum Circuit Simulation
+- **Statevector simulation** up to 20 qubits
+- **All standard gates**: H, X, Y, Z, S, T, CNOT, Toffoli
+- **Parametric gates**: RX, RY, RZ with custom angles
+- **Measurement simulation** with probabilities
 
-**Use GitHub Codespaces**
+### QASM Support
+- **Import** OpenQASM 2.0 files
+- **Export** circuits to QASM format
+- **Full compatibility** with IBM Qiskit
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Visualization
+- **Circuit diagrams** with HTML5 Canvas
+- **State vector visualization** with amplitude and phase
+- **Embeddable components** for web applications
 
-## What technologies are used for this project?
+## 🧪 Running Examples
 
-This project is built with:
+```bash
+# Run example scripts
+node examples/bell-state.js        # Bell state creation
+node examples/grover-search.js     # Grover's search algorithm
+node examples/quantum-fourier-transform.js  # QFT
+node examples/error-correction.js  # Quantum error correction
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📖 API Reference
 
-## How can I deploy this project?
+### `QOSimSimulator(numQubits)`
+```javascript
+const sim = new QOSimSimulator(3); // 3-qubit system
 
-Simply open [Lovable](https://lovable.dev/projects/8d0eb367-5d10-4190-9030-a9a449389a1b) and click on Share -> Publish.
+// Single-qubit gates
+sim.addGate('H', 0);        // Hadamard
+sim.addGate('X', 1);        // Pauli-X
+sim.addGate('RX', 0, Math.PI/2);  // X-rotation
 
-## Can I connect a custom domain to my Lovable project?
+// Multi-qubit gates
+sim.addGate('CNOT', 0, 1);  // CNOT
+sim.addGate('CCX', 0, 1, 2); // Toffoli
 
-Yes, you can!
+// Run and get results
+sim.run();
+const states = sim.getBasisStates();
+const probs = sim.getProbabilities();
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🔄 QASM Integration
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```javascript
+import { loadQASM, exportQASM } from './src/qosim-qasm.js';
+
+// Import from QASM
+const sim = loadQASM(qasmCode);
+
+// Export to QASM
+const qasm = exportQASM(sim);
+```
+
+## 🎨 Visualization
+
+```javascript
+import { CircuitVisualizer, StateVectorVisualizer } from './src/qosim-visualizer.js';
+
+// Circuit diagrams
+const circuitViz = new CircuitVisualizer('canvas-container');
+circuitViz.render(sim);
+
+// State vector plots
+const stateViz = new StateVectorVisualizer('state-container');
+stateViz.render(sim);
+```
