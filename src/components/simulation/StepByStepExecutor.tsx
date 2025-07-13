@@ -80,26 +80,43 @@ export function StepByStepExecutor({
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
+      console.log('🔄 StepByStepExecutor: Pausing execution');
       setIsPlaying(false);
       onSimulationPause();
     } else {
+      console.log('🔄 StepByStepExecutor: Starting execution');
       setIsPlaying(true);
       onSimulationResume();
       
-      // Auto-step execution
+      // Auto-step execution with proper state tracking
       const autoStep = () => {
-        if (isPlaying) {
-          const result = handleStep();
-          if (result) {
-            setTimeout(autoStep, playbackSpeed[0]);
-          } else {
-            setIsPlaying(false);
-          }
+        // Check current step against circuit length before proceeding
+        if (currentStep >= circuit.length) {
+          console.log('🔄 StepByStepExecutor: Reached end of circuit, stopping');
+          setIsPlaying(false);
+          return;
+        }
+        
+        const result = handleStep();
+        console.log('🔄 StepByStepExecutor: Step result:', result, 'Current step:', currentStep);
+        
+        if (result && currentStep < circuit.length - 1) {
+          // Continue auto-stepping if we're still playing and haven't reached the end
+          setTimeout(() => {
+            if (isPlaying) {
+              autoStep();
+            }
+          }, playbackSpeed[0]);
+        } else {
+          console.log('🔄 StepByStepExecutor: Auto-step finished');
+          setIsPlaying(false);
         }
       };
+      
+      // Start the auto-stepping process
       setTimeout(autoStep, playbackSpeed[0]);
     }
-  }, [isPlaying, handleStep, playbackSpeed, onSimulationPause, onSimulationResume]);
+  }, [isPlaying, handleStep, playbackSpeed, currentStep, circuit.length, onSimulationPause, onSimulationResume]);
 
   const progress = circuit.length > 0 ? (currentStep / circuit.length) * 100 : 0;
 

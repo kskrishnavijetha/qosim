@@ -210,7 +210,9 @@ export function SimulationModeSelector({
                   <Button
                     onClick={() => {
                       console.log('🔄 SimulationModeSelector: Button clicked for mode', mode.id);
-                      onModeChange(mode.id);
+                      if (currentMode !== mode.id) {
+                        onModeChange(mode.id);
+                      }
                     }}
                     disabled={mode.requiresConfig && !isCloudConfigured}
                     className="w-full quantum-button"
