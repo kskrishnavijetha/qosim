@@ -18,27 +18,41 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
 
   // Real-time updates when simulation result changes
   useEffect(() => {
-    console.log('🎯 EntanglementVisualization: simulationResult received', { 
+    console.log('🎯🔍 EntanglementVisualization: simulationResult received', { 
       hasResult: !!simulationResult,
       hasEntanglement: !!simulationResult?.entanglement,
+      resultType: typeof simulationResult,
       simulationResult 
     });
     
-    if (simulationResult?.entanglement) {
-      console.log('🎯 EntanglementVisualization: Processing entanglement data', {
+    if (simulationResult) {
+      console.log('🎯🔍 EntanglementVisualization: Simulation result details', {
         mode: simulationResult.mode,
-        entanglement: simulationResult.entanglement,
-        numPairs: simulationResult.entanglement.pairs?.length || 0,
-        totalEntanglement: simulationResult.entanglement.totalEntanglement,
-        pairs: simulationResult.entanglement.pairs
+        executionTime: simulationResult.executionTime,
+        fidelity: simulationResult.fidelity,
+        hasEntanglement: !!simulationResult.entanglement,
+        entanglementData: simulationResult.entanglement
       });
-      setLastUpdate(Date.now());
-      setAnimationKey(prev => prev + 1); // Force re-animation
+      
+      if (simulationResult.entanglement) {
+        console.log('🎯🔍 EntanglementVisualization: Processing entanglement data', {
+          mode: simulationResult.mode,
+          entanglement: simulationResult.entanglement,
+          numPairs: simulationResult.entanglement.pairs?.length || 0,
+          totalEntanglement: simulationResult.entanglement.totalEntanglement,
+          pairs: simulationResult.entanglement.pairs,
+          threads: simulationResult.entanglement.entanglementThreads
+        });
+        setLastUpdate(Date.now());
+        setAnimationKey(prev => prev + 1); // Force re-animation
+      } else {
+        console.log('🎯🔍 EntanglementVisualization: No entanglement data available', { 
+          hasEntanglement: !!simulationResult?.entanglement,
+          entanglementValue: simulationResult?.entanglement
+        });
+      }
     } else {
-      console.log('🎯 EntanglementVisualization: No entanglement data available', { 
-        simulationResult,
-        hasEntanglement: !!simulationResult?.entanglement 
-      });
+      console.log('🎯🔍 EntanglementVisualization: No simulation result');
     }
   }, [simulationResult]);
 

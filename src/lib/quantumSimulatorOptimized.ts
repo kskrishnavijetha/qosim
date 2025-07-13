@@ -319,17 +319,21 @@ function calculateAdvancedEntanglement(stateVector: StateVector, numQubits: numb
   let totalEntanglement = 0;
   
   // Calculate pairwise entanglement with more sensitive detection
+  console.log(`🧬 calculateAdvancedEntanglement: Starting analysis for ${numQubits} qubits`);
   for (let q1 = 0; q1 < numQubits; q1++) {
     for (let q2 = q1 + 1; q2 < numQubits; q2++) {
       const entanglementStrength = calculatePairEntanglement(stateVector, q1, q2, numQubits);
+      console.log(`🧬 Pair ${q1}-${q2}: entanglement strength = ${entanglementStrength}`);
       
       // Lower threshold for better entanglement detection
       if (entanglementStrength > 0.001) {
         pairs.push({ qubit1: q1, qubit2: q2, strength: entanglementStrength });
         totalEntanglement += entanglementStrength;
+        console.log(`🧬 Added entangled pair ${q1}-${q2} with strength ${entanglementStrength}`);
       }
     }
   }
+  console.log(`🧬 calculateAdvancedEntanglement: Found ${pairs.length} entangled pairs, total: ${totalEntanglement}`)
   
   // Find entanglement threads (multi-qubit entanglement)
   for (let i = 0; i < numQubits; i++) {
@@ -358,11 +362,13 @@ function calculateAdvancedEntanglement(stateVector: StateVector, numQubits: numb
 
 function calculatePairEntanglement(stateVector: StateVector, qubit1: number, qubit2: number, numQubits: number): number {
   console.log(`🧬 calculatePairEntanglement: Computing for qubits ${qubit1}-${qubit2} of ${numQubits} total qubits`);
+  console.log(`🧬 State vector sample:`, stateVector.slice(0, 8).map(amp => ({ real: amp.real.toFixed(4), imag: amp.imag.toFixed(4) })));
   
   // Calculate entanglement using proper concurrence/entropy measures
   let entanglement = 0;
   const normalizer = stateVector.reduce((sum, amp) => sum + complex.magnitude(amp) ** 2, 0);
   
+  console.log(`🧬 Normalizer: ${normalizer}`);
   if (normalizer === 0) {
     console.log('🧬 calculatePairEntanglement: Zero normalizer, returning 0');
     return 0;
