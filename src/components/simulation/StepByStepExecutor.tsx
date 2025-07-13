@@ -95,14 +95,22 @@ export function StepByStepExecutor({
         setIntervalId(null);
       }
     } else {
-      console.log('🔄 StepByStepExecutor: Starting execution');
+      console.log('🔄 StepByStepExecutor: Starting execution with current step:', currentStep, 'circuit length:', circuit.length);
+      
+      if (currentStep >= circuit.length) {
+        console.log('🔄 StepByStepExecutor: Already at end, resetting to start');
+        setCurrentStep(0);
+        currentStepRef.current = 0;
+        handleReset();
+      }
+      
       setIsPlaying(true);
       onSimulationResume();
       
       // Use interval for consistent stepping
       const id = setInterval(() => {
         const currentStepValue = currentStepRef.current;
-        console.log('🔄 StepByStepExecutor: Stepping at currentStep:', currentStepValue, 'Circuit length:', circuit.length);
+        console.log('🔄 StepByStepExecutor: Auto-stepping at currentStep:', currentStepValue, 'Circuit length:', circuit.length);
         
         if (currentStepValue >= circuit.length) {
           console.log('🔄 StepByStepExecutor: Reached end, stopping');
@@ -113,31 +121,28 @@ export function StepByStepExecutor({
         }
         
         const result = handleStep();
-        console.log('🔄 StepByStepExecutor: Step result:', result);
+        console.log('🔄 StepByStepExecutor: Auto-step result:', result);
         
-        if (result) {
-          setCurrentStep(prev => {
-            const nextStep = prev + 1;
-            currentStepRef.current = nextStep;
-            if (nextStep >= circuit.length) {
-              console.log('🔄 StepByStepExecutor: Will reach end after this step');
+        setCurrentStep(prev => {
+          const nextStep = prev + 1;
+          console.log('🔄 StepByStepExecutor: Updating step from', prev, 'to', nextStep);
+          currentStepRef.current = nextStep;
+          
+          if (nextStep >= circuit.length) {
+            console.log('🔄 StepByStepExecutor: Will reach end after this step');
+            setTimeout(() => {
               setIsPlaying(false);
               clearInterval(id);
               setIntervalId(null);
-            }
-            return nextStep;
-          });
-        } else {
-          console.log('🔄 StepByStepExecutor: Step failed, stopping');
-          setIsPlaying(false);
-          clearInterval(id);
-          setIntervalId(null);
-        }
+            }, 100);
+          }
+          return nextStep;
+        });
       }, playbackSpeed[0]);
       
       setIntervalId(id);
     }
-  }, [isPlaying, handleStep, playbackSpeed, circuit.length, onSimulationPause, onSimulationResume, intervalId]);
+  }, [isPlaying, handleStep, playbackSpeed, circuit.length, onSimulationPause, onSimulationResume, intervalId, currentStep, handleReset]);
 
   const progress = circuit.length > 0 ? (currentStep / circuit.length) * 100 : 0;
 

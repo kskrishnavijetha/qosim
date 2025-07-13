@@ -356,11 +356,16 @@ function calculateAdvancedEntanglement(stateVector: StateVector, numQubits: numb
 }
 
 function calculatePairEntanglement(stateVector: StateVector, qubit1: number, qubit2: number, numQubits: number): number {
+  console.log(`🧬 calculatePairEntanglement: Computing for qubits ${qubit1}-${qubit2} of ${numQubits} total qubits`);
+  
   // Calculate entanglement using proper concurrence/entropy measures
   let entanglement = 0;
   const normalizer = stateVector.reduce((sum, amp) => sum + complex.magnitude(amp) ** 2, 0);
   
-  if (normalizer === 0) return 0;
+  if (normalizer === 0) {
+    console.log('🧬 calculatePairEntanglement: Zero normalizer, returning 0');
+    return 0;
+  }
   
   // For 2-qubit subsystem, calculate concurrence-like measure
   let prob00 = 0, prob01 = 0, prob10 = 0, prob11 = 0;
@@ -375,6 +380,8 @@ function calculatePairEntanglement(stateVector: StateVector, qubit1: number, qub
     else if (bit1 === 1 && bit2 === 0) prob10 += probability;
     else if (bit1 === 1 && bit2 === 1) prob11 += probability;
   }
+  
+  console.log(`🧬 Probabilities for qubits ${qubit1}-${qubit2}:`, { prob00, prob01, prob10, prob11 });
   
   // Calculate entanglement based on deviation from product state
   const marginal1_0 = prob00 + prob01;
@@ -396,7 +403,10 @@ function calculatePairEntanglement(stateVector: StateVector, qubit1: number, qub
     Math.pow(prob11 - expected11, 2)
   );
   
-  return Math.min(1, entanglement * 2); // Scale and clamp
+  const finalEntanglement = Math.min(1, entanglement * 2); // Scale and clamp
+  console.log(`🧬 calculatePairEntanglement: Final entanglement for qubits ${qubit1}-${qubit2}: ${finalEntanglement}`);
+  
+  return finalEntanglement;
 }
 
 export class OptimizedQuantumSimulator {
@@ -732,8 +742,19 @@ export class OptimizedQuantumSimulator {
   }
   
   private getOptimizedResult(executionTime: number): OptimizedSimulationResult {
+    console.log('🎯 getOptimizedResult: Starting result generation', { 
+      executionTime, 
+      stateVectorLength: this.stateVector.length,
+      mode: this.currentMode 
+    });
+    
     const measurementProbabilities = this.stateVector.map(amp => complex.magnitude(amp) ** 2);
     const entanglement = calculateAdvancedEntanglement(this.stateVector, this.numQubits);
+    
+    console.log('🎯 getOptimizedResult: Entanglement calculated', { 
+      pairsCount: entanglement.pairs.length,
+      totalEntanglement: entanglement.totalEntanglement
+    });
     
     // Calculate individual qubit states
     const qubitStates = [];
@@ -781,7 +802,7 @@ export class OptimizedQuantumSimulator {
     const totalProb = measurementProbabilities.reduce((sum, prob) => sum + prob, 0);
     const fidelity = Math.min(1, totalProb);
     
-    return {
+    const result = {
       stateVector: this.stateVector,
       measurementProbabilities,
       qubitStates,
@@ -791,6 +812,15 @@ export class OptimizedQuantumSimulator {
       fidelity,
       mode: this.currentMode
     };
+    
+    console.log('🎯 getOptimizedResult: Final result', { 
+      hasEntanglement: !!result.entanglement,
+      entanglementPairs: result.entanglement?.pairs?.length || 0,
+      mode: result.mode,
+      fidelity: result.fidelity
+    });
+    
+    return result;
   }
   
   getStepResults(): SimulationStepData[] {
