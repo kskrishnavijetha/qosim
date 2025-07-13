@@ -318,12 +318,13 @@ function calculateAdvancedEntanglement(stateVector: StateVector, numQubits: numb
   const threads: Array<{ qubits: number[]; strength: number }> = [];
   let totalEntanglement = 0;
   
-  // Calculate pairwise entanglement
+  // Calculate pairwise entanglement with more sensitive detection
   for (let q1 = 0; q1 < numQubits; q1++) {
     for (let q2 = q1 + 1; q2 < numQubits; q2++) {
       const entanglementStrength = calculatePairEntanglement(stateVector, q1, q2, numQubits);
       
-      if (entanglementStrength > 0.01) {
+      // Lower threshold for better entanglement detection
+      if (entanglementStrength > 0.001) {
         pairs.push({ qubit1: q1, qubit2: q2, strength: entanglementStrength });
         totalEntanglement += entanglementStrength;
       }
@@ -748,12 +749,14 @@ export class OptimizedQuantumSimulator {
       mode: this.currentMode 
     });
     
-    const measurementProbabilities = this.stateVector.map(amp => complex.magnitude(amp) ** 2);
+  const measurementProbabilities = this.stateVector.map(amp => complex.magnitude(amp) ** 2);
     const entanglement = calculateAdvancedEntanglement(this.stateVector, this.numQubits);
     
     console.log('🎯 getOptimizedResult: Entanglement calculated', { 
       pairsCount: entanglement.pairs.length,
-      totalEntanglement: entanglement.totalEntanglement
+      totalEntanglement: entanglement.totalEntanglement,
+      stateVectorMagnitude: this.stateVector.map(amp => complex.magnitude(amp)),
+      entanglementPairs: entanglement.pairs
     });
     
     // Calculate individual qubit states

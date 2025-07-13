@@ -42,8 +42,29 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
     }
   }, [simulationResult]);
 
-  if (!simulationResult?.entanglement) {
+  // Show even if no entanglement but simulation exists
+  if (!simulationResult) {
     return <EntanglementEmptyState />;
+  }
+
+  // If no entanglement data, show empty state with simulation info
+  if (!simulationResult.entanglement || simulationResult.entanglement.pairs.length === 0) {
+    return (
+      <Card className="quantum-panel neon-border">
+        <EntanglementHeader 
+          lastUpdate={lastUpdate}
+          mode={simulationResult.mode}
+          executionTime={simulationResult.executionTime}
+          fidelity={simulationResult.fidelity}
+        />
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            <p className="font-mono">No entanglement detected</p>
+            <p className="text-sm mt-2">Try adding gates like CNOT, CZ, or Toffoli to create entanglement</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const { entanglement, mode, executionTime, fidelity } = simulationResult;
