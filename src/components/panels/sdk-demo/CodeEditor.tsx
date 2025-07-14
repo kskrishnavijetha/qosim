@@ -4,28 +4,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Code, Play, Download, Copy } from "lucide-react";
 import { sdkExamples } from "./SDKExamples";
+import { pythonSDKExamples } from "./PythonSDKExamples";
 
 interface CodeEditorProps {
   selectedExample: string;
   customCode: string;
   isRunning: boolean;
+  selectedSDK: 'javascript' | 'python';
   onExampleChange: (value: string) => void;
   onCodeChange: (value: string) => void;
   onRunExample: () => void;
   onCopyCode: (code: string) => void;
   onDownloadSDK: () => void;
+  onSDKChange: (sdk: 'javascript' | 'python') => void;
 }
 
 export function CodeEditor({
   selectedExample,
   customCode,
   isRunning,
+  selectedSDK,
   onExampleChange,
   onCodeChange,
   onRunExample,
   onCopyCode,
   onDownloadSDK,
+  onSDKChange,
 }: CodeEditorProps) {
+  const currentExamples = selectedSDK === 'javascript' ? sdkExamples : pythonSDKExamples;
   return (
     <Card className="quantum-panel neon-border flex flex-col">
       <CardHeader>
@@ -47,41 +53,58 @@ export function CodeEditor({
           </div>
         </div>
         <CardDescription className="text-quantum-particle">
-          Select an example or write custom quantum circuits
+          Select SDK and example or write custom quantum circuits
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col space-y-4">
-        <Select value={selectedExample} onValueChange={onExampleChange}>
-          <SelectTrigger className="quantum-panel neon-border">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="quantum-panel neon-border">
-            {Object.entries(sdkExamples).map(([key, example]) => (
-              <SelectItem key={key} value={key}>
-                {example.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm text-quantum-neon mb-2 block">SDK Language</label>
+            <Select value={selectedSDK} onValueChange={onSDKChange}>
+              <SelectTrigger className="quantum-panel neon-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="quantum-panel neon-border">
+                <SelectItem value="javascript">JavaScript SDK</SelectItem>
+                <SelectItem value="python">Python SDK</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-sm text-quantum-neon mb-2 block">Example</label>
+            <Select value={selectedExample} onValueChange={onExampleChange}>
+              <SelectTrigger className="quantum-panel neon-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="quantum-panel neon-border">
+                {Object.entries(currentExamples).map(([key, example]) => (
+                  <SelectItem key={key} value={key}>
+                    {example.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <div className="flex flex-col gap-4 flex-1">
           <div className="flex items-center justify-between">
             <p className="text-sm text-quantum-neon">
-              {sdkExamples[selectedExample as keyof typeof sdkExamples].description}
+              {currentExamples[selectedExample as keyof typeof currentExamples]?.description || "Custom code"}
             </p>
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => onCopyCode(sdkExamples[selectedExample as keyof typeof sdkExamples].code)}
+              onClick={() => onCopyCode(currentExamples[selectedExample as keyof typeof currentExamples]?.code || customCode)}
             >
               <Copy className="w-4 h-4" />
             </Button>
           </div>
           <Textarea
-            value={customCode || sdkExamples[selectedExample as keyof typeof sdkExamples].code}
+            value={customCode || currentExamples[selectedExample as keyof typeof currentExamples]?.code || ""}
             onChange={(e) => onCodeChange(e.target.value)}
             className="font-mono text-sm quantum-panel neon-border h-[300px] resize-none"
-            placeholder="Write your quantum circuit code here..."
+            placeholder={`Write your ${selectedSDK === 'javascript' ? 'JavaScript' : 'Python'} quantum circuit code here...`}
           />
           <Button 
             onClick={onRunExample} 
@@ -89,7 +112,7 @@ export function CodeEditor({
             className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
           >
             <Play className="w-4 h-4 mr-2" />
-            {isRunning ? "Running Simulation..." : "Run Quantum Circuit"}
+            {isRunning ? "Running Simulation..." : `Run ${selectedSDK === 'javascript' ? 'JavaScript' : 'Python'} Circuit`}
           </Button>
         </div>
       </CardContent>

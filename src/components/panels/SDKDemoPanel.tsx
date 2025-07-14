@@ -6,6 +6,7 @@ import { SimulationOutput } from "./sdk-demo/SimulationOutput";
 import { SDKFeatures } from "./sdk-demo/SDKFeatures";
 import { SDKPlayground } from "@/components/sdk/SDKPlayground";
 import { sdkExamples } from "./sdk-demo/SDKExamples";
+import { pythonSDKExamples } from "./sdk-demo/PythonSDKExamples";
 import { quantumSimulation, QuantumSimulationResult } from "@/lib/realQuantumSimulation";
 
 export function SDKDemoPanel() {
@@ -14,6 +15,7 @@ export function SDKDemoPanel() {
   const [output, setOutput] = useState("");
   const [simulationResult, setSimulationResult] = useState<QuantumSimulationResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedSDK, setSelectedSDK] = useState<'javascript' | 'python'>('javascript');
   const { toast } = useToast();
 
   const runExample = async () => {
@@ -22,7 +24,8 @@ export function SDKDemoPanel() {
     setSimulationResult(null);
     
     try {
-      const example = sdkExamples[selectedExample as keyof typeof sdkExamples];
+      const currentExamples = selectedSDK === 'javascript' ? sdkExamples : pythonSDKExamples;
+      const example = currentExamples[selectedExample as keyof typeof currentExamples];
       let result: QuantumSimulationResult;
       
       // Run real quantum simulation based on selected example
@@ -72,7 +75,7 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
       setIsRunning(false);
       toast({
         title: "Quantum Simulation Complete",
-        description: `${example.name} executed successfully in ${result.executionTime.toFixed(1)}ms`,
+        description: `${example?.name || 'Custom code'} executed successfully in ${result.executionTime.toFixed(1)}ms`,
       });
       
     } catch (error) {
@@ -110,7 +113,7 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
             QOSim SDK Demo
           </h1>
           <p className="text-quantum-neon font-mono mt-2">
-            Interactive quantum circuit programming with JavaScript
+            Interactive quantum circuit programming with {selectedSDK === 'javascript' ? 'JavaScript' : 'Python'}
           </p>
         </div>
         <Badge variant="outline" className="neon-border text-quantum-glow">
@@ -134,11 +137,13 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
           selectedExample={selectedExample}
           customCode={customCode}
           isRunning={isRunning}
+          selectedSDK={selectedSDK}
           onExampleChange={setSelectedExample}
           onCodeChange={setCustomCode}
           onRunExample={runExample}
           onCopyCode={copyToClipboard}
           onDownloadSDK={downloadSDK}
+          onSDKChange={setSelectedSDK}
         />
         
         {/* Show output here only when no simulation result */}
