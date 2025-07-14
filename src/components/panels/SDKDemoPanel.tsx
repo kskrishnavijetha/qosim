@@ -117,6 +117,17 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
         </Badge>
       </div>
 
+      {/* Results Section - Top Priority */}
+      {simulationResult && (
+        <div className="w-full">
+          <SimulationOutput
+            output={output}
+            isRunning={isRunning}
+            simulationResult={simulationResult}
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
         <CodeEditor
           selectedExample={selectedExample}
@@ -129,11 +140,14 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
           onDownloadSDK={downloadSDK}
         />
         
-        <SimulationOutput
-          output={output}
-          isRunning={isRunning}
-          simulationResult={simulationResult}
-        />
+        {/* Show output here only when no simulation result */}
+        {!simulationResult && (
+          <SimulationOutput
+            output={output}
+            isRunning={isRunning}
+            simulationResult={simulationResult}
+          />
+        )}
       </div>
 
       <SDKFeatures />
