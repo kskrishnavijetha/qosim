@@ -125,6 +125,16 @@ export class QOSimSimulator {
         throw new Error('CNOT gate requires exactly 2 qubits (control, target)');
       }
       this.gates.push(new QuantumGate('CNOT', args));
+    } else if (gateName === 'CZ') {
+      if (args.length !== 2) {
+        throw new Error('CZ gate requires exactly 2 qubits');
+      }
+      this.gates.push(new QuantumGate('CZ', args));
+    } else if (gateName === 'SWAP') {
+      if (args.length !== 2) {
+        throw new Error('SWAP gate requires exactly 2 qubits');
+      }
+      this.gates.push(new QuantumGate('SWAP', args));
     } else if (gateName === 'CCX' || gateName === 'TOFFOLI') {
       if (args.length !== 3) {
         throw new Error('Toffoli gate requires exactly 3 qubits (control1, control2, target)');
@@ -189,6 +199,37 @@ export class QOSimSimulator {
     this.stateVector = newStateVector;
   }
 
+  applyCZ(controlQubit, targetQubit) {
+    for (let state = 0; state < this.stateVector.length; state++) {
+      const controlBit = (state >> controlQubit) & 1;
+      const targetBit = (state >> targetQubit) & 1;
+      
+      if (controlBit === 1 && targetBit === 1) {
+        // Apply phase flip
+        this.stateVector[state] = new Complex(-this.stateVector[state].real, -this.stateVector[state].imag);
+      }
+    }
+  }
+
+  applySWAP(qubit1, qubit2) {
+    const newStateVector = [...this.stateVector];
+
+    for (let state = 0; state < this.stateVector.length; state++) {
+      const bit1 = (state >> qubit1) & 1;
+      const bit2 = (state >> qubit2) & 1;
+      
+      if (bit1 !== bit2) {
+        // Swap the qubits
+        const swappedState = state ^ (1 << qubit1) ^ (1 << qubit2);
+        newStateVector[swappedState] = this.stateVector[state];
+      } else {
+        newStateVector[state] = this.stateVector[state];
+      }
+    }
+
+    this.stateVector = newStateVector;
+  }
+
   applyToffoli(control1, control2, target) {
     const newStateVector = [...this.stateVector];
 
@@ -212,6 +253,10 @@ export class QOSimSimulator {
     for (const gate of this.gates) {
       if (gate.name === 'CNOT') {
         this.applyCNOT(gate.qubits[0], gate.qubits[1]);
+      } else if (gate.name === 'CZ') {
+        this.applyCZ(gate.qubits[0], gate.qubits[1]);
+      } else if (gate.name === 'SWAP') {
+        this.applySWAP(gate.qubits[0], gate.qubits[1]);
       } else if (gate.name === 'CCX') {
         this.applyToffoli(gate.qubits[0], gate.qubits[1], gate.qubits[2]);
       } else {
@@ -283,3 +328,10 @@ export class QOSimSimulator {
 }
 
 export { Complex, QuantumGate };
+
+// Make classes globally available for the simulation service
+if (typeof window !== 'undefined') {
+  window.QOSimSimulator = QOSimSimulator;
+  window.Complex = Complex;
+  window.QuantumGate = QuantumGate;
+}

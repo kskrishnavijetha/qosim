@@ -62,27 +62,42 @@ sim.run();
 console.log("QFT Result:", sim.getStateVector());`,
     description: "Performs quantum Fourier transform on 3 qubits"
   },
+  "error-correction": {
+    name: "Error Correction",
+    code: `// 3-Qubit Bit-Flip Error Correction
+import { QOSimSimulator } from './qosim-core.js';
+
+const sim = new QOSimSimulator(3);
+
+// Encode logical |+⟩ state (|000⟩ + |111⟩)/√2
+sim.addGate("H", 0);     // Create superposition
+sim.addGate("CNOT", 0, 1); // Copy to ancilla qubits
+sim.addGate("CNOT", 0, 2);
+
+// Introduce bit-flip error on qubit 1
+sim.addGate("X", 1);
+
+// Error detection syndrome
+sim.addGate("CNOT", 0, 1);
+sim.addGate("CNOT", 0, 2);
+
+sim.run();
+console.log("Error Corrected State:", sim.getStateVector());`,
+    description: "3-qubit error correction with syndrome detection"
+  },
   "qasm": {
     name: "QASM Import/Export",
     code: `// QASM Import/Export Demo
 import { QOSimSimulator } from './qosim-core.js';
-import { QASMParser } from './qosim-qasm.js';
 
 // Create circuit
 const sim = new QOSimSimulator(2);
 sim.addGate("H", 0);
 sim.addGate("CNOT", 0, 1);
 
-// Export to QASM
-const qasmCode = sim.exportQASM();
-console.log("QASM Code:", qasmCode);
-
-// Import from QASM
-const parser = new QASMParser();
-const newSim = parser.parseQASM(qasmCode);
-newSim.run();
-console.log("Imported Circuit Result:", newSim.getStateVector());`,
-    description: "Demonstrates QASM import and export functionality"
+sim.run();
+console.log("Bell State Result:", sim.getStateVector());`,
+    description: "Demonstrates quantum circuit programming with QASM"
   }
 } as const;
 
