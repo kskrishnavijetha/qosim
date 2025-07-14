@@ -82,6 +82,9 @@ const LandingPage = () => {
               Patent Pending
             </Badge>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/python-sdk">Python SDK</Link>
+              </Button>
               <Button variant="outline" asChild>
                 <Link to="/auth">Sign In</Link>
               </Button>
