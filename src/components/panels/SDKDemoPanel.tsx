@@ -151,6 +151,16 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
       </div>
 
       <SDKFeatures />
+      
+      {/* SDK Playground Integration */}
+      <div className="mt-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">SDK Playground</h3>
+          <p className="text-sm text-muted-foreground">
+            Interactive testing environment for the QOSim JavaScript SDK
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
