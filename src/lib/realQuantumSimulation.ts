@@ -36,7 +36,7 @@ export class RealQuantumSimulation {
 
       console.log('Loading QOSim core...');
       const script = document.createElement('script');
-      script.src = '/src/qosim-core.js';
+      script.src = '/qosim-core.js';
       script.type = 'module';
       script.onload = () => {
         console.log('QOSim script loaded, checking for classes...');
