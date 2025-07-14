@@ -99,7 +99,7 @@ class QuantumGate {
 }
 
 class QOSimSimulator {
-  constructor(numQubits) {
+  constructor(numQubits = 3) {
     if (numQubits < 1 || numQubits > 20) {
       throw new Error('Number of qubits must be between 1 and 20');
     }
@@ -110,7 +110,15 @@ class QOSimSimulator {
     this.reset();
   }
 
-  reset() {
+  reset(numQubits) {
+    // Update number of qubits if provided
+    if (numQubits !== undefined) {
+      if (numQubits < 1 || numQubits > 20) {
+        throw new Error('Number of qubits must be between 1 and 20');
+      }
+      this.numQubits = numQubits;
+    }
+    
     // Initialize |00...0⟩ state
     const stateSize = 2 ** this.numQubits;
     this.stateVector = new Array(stateSize).fill(null).map(() => new Complex(0));
