@@ -35,21 +35,21 @@ export function QuantumDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-quantum-void text-foreground flex">
+    <div className="min-h-screen bg-quantum-void text-foreground flex relative">
       {/* Sidebar Navigation */}
-      <div className="shrink-0">
+      <div className="shrink-0 z-10">
         <QuantumSidebar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col lg:flex-row min-w-0">
+      <div className="flex-1 flex flex-col lg:flex-row min-w-0 overflow-hidden">
         {/* Dynamic Panel */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-auto">
           {renderPanel()}
         </div>
         
         {/* Console Panel */}
-        <div className="shrink-0">
+        <div className="shrink-0 hidden lg:block">
           <QuantumConsole />
         </div>
       </div>
