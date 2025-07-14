@@ -224,8 +224,8 @@ console.log("Imported Circuit Result:", newSim.getStateVector());`,
               </SelectContent>
             </Select>
 
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col gap-4 flex-1">
+              <div className="flex items-center justify-between">
                 <p className="text-sm text-quantum-neon">
                   {examples[selectedExample as keyof typeof examples].description}
                 </p>
@@ -240,19 +240,18 @@ console.log("Imported Circuit Result:", newSim.getStateVector());`,
               <Textarea
                 value={customCode || examples[selectedExample as keyof typeof examples].code}
                 onChange={(e) => setCustomCode(e.target.value)}
-                className="flex-1 font-mono text-sm quantum-panel neon-border min-h-[300px] resize-none"
+                className="font-mono text-sm quantum-panel neon-border h-[300px] resize-none"
                 placeholder="Write your quantum circuit code here..."
               />
+              <Button 
+                onClick={runExample} 
+                disabled={isRunning}
+                className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                {isRunning ? "Running Simulation..." : "Run Quantum Circuit"}
+              </Button>
             </div>
-
-            <Button 
-              onClick={runExample} 
-              disabled={isRunning}
-              className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              {isRunning ? "Running Simulation..." : "Run Quantum Circuit"}
-            </Button>
           </CardContent>
         </Card>
 
