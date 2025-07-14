@@ -98,7 +98,7 @@ class QuantumGate {
   }
 }
 
-export class QOSimSimulator {
+class QOSimSimulator {
   constructor(numQubits) {
     if (numQubits < 1 || numQubits > 20) {
       throw new Error('Number of qubits must be between 1 and 20');
@@ -327,11 +327,14 @@ export class QOSimSimulator {
   }
 }
 
-export { Complex, QuantumGate };
-
 // Make classes globally available for the simulation service
 if (typeof window !== 'undefined') {
   window.QOSimSimulator = QOSimSimulator;
   window.Complex = Complex;
   window.QuantumGate = QuantumGate;
+}
+
+// For module environments
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { QOSimSimulator, Complex, QuantumGate };
 }
