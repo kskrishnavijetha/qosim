@@ -44,14 +44,14 @@ export function SimulationOutput({ output, isRunning, simulationResult }: Simula
 
       {/* Visual Output */}
       {simulationResult && (
-        <div className="space-y-6">
-          <div className="w-full">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-1">
             <BlochSphereVisualization 
               qubitStates={simulationResult.stateVector}
               measurements={simulationResult.measurements}
             />
           </div>
-          <div className="w-full">
+          <div className="flex-1">
             <StateVectorMatrix 
               stateVector={simulationResult.stateVector}
               probabilities={simulationResult.probabilities}
