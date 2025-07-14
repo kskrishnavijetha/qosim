@@ -1,4 +1,4 @@
-import { IntegrationsRoadmap } from "@/components/IntegrationsRoadmap";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Code, Download, FileText, Zap } from "lucide-react";
@@ -100,8 +100,6 @@ const IntegrationsPage = () => {
           </div>
         </div>
 
-        {/* Integrations Roadmap */}
-        <IntegrationsRoadmap />
       </div>
     </div>
   );

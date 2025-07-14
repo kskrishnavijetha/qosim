@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu } from "lucide-react";
+import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu, Download, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -714,6 +714,140 @@ const LandingPage = () => {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* JavaScript SDK Section */}
+      <section className="py-20 bg-gradient-to-br from-quantum-void/5 to-quantum-matrix/5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_60%,hsl(var(--quantum-glow))/5,transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
+                  JavaScript SDK
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Build quantum circuits directly in the browser or integrate with your JavaScript applications
+              </p>
+            </div>
+            
+            <div className="grid lg:grid-cols-2 gap-8 items-start">
+              {/* SDK Features */}
+              <div className="space-y-6">
+                <Card className="border-quantum-glow/20 hover:border-quantum-glow/40 transition-colors">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-quantum-glow/20 to-quantum-glow/10 rounded-lg flex items-center justify-center">
+                        <Code className="w-6 h-6 text-quantum-glow" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">QOSim JavaScript SDK</CardTitle>
+                        <p className="text-sm text-muted-foreground">Browser & Node.js support</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">
+                      Create quantum circuits programmatically with our comprehensive JavaScript SDK. Perfect for web applications, Node.js backends, and educational tools.
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
+                        <span>Quantum gate operations</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
+                        <span>Circuit visualization</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
+                        <span>State vector simulation</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 bg-quantum-energy rounded-full"></div>
+                        <span>QASM export/import</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                      <Button variant="outline" size="sm" asChild className="flex-1">
+                        <a href="/qosim-core.js" download>
+                          <Download className="w-4 h-4 mr-2" />
+                          Download Core
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild className="flex-1">
+                        <a href="/qosim-visualizer.js" download>
+                          <Download className="w-4 h-4 mr-2" />
+                          Download Visualizer
+                        </a>
+                      </Button>
+                    </div>
+                    
+                    <Button variant="outline" size="sm" asChild className="w-full">
+                      <a href="/qosim-getting-started.pdf" target="_blank">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Getting Started Guide
+                      </a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Code Example */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-quantum-void/30 to-quantum-matrix/30 border border-quantum-glow/30 rounded-lg p-6 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-quantum-glow">Quick Start Example</h3>
+                    <Badge variant="outline" className="border-quantum-neon text-quantum-neon text-xs">
+                      JavaScript
+                    </Badge>
+                  </div>
+                  
+                  <div className="bg-background/50 rounded-md p-4 font-mono text-sm overflow-x-auto">
+                    <div className="text-muted-foreground">
+                      <div className="text-quantum-glow">// Import QOSim SDK</div>
+                      <div><span className="text-quantum-neon">import</span> &#123; QuantumCircuit &#125; <span className="text-quantum-neon">from</span> <span className="text-quantum-plasma">'qosim-core'</span>;</div>
+                      <br />
+                      <div className="text-quantum-glow">// Create a Bell state circuit</div>
+                      <div><span className="text-quantum-neon">const</span> circuit = <span className="text-quantum-neon">new</span> <span className="text-quantum-plasma">QuantumCircuit</span>(2);</div>
+                      <div>circuit.<span className="text-quantum-energy">hadamard</span>(0);</div>
+                      <div>circuit.<span className="text-quantum-energy">cnot</span>(0, 1);</div>
+                      <br />
+                      <div className="text-quantum-glow">// Simulate and get results</div>
+                      <div><span className="text-quantum-neon">const</span> result = circuit.<span className="text-quantum-energy">simulate</span>();</div>
+                      <div>console.<span className="text-quantum-energy">log</span>(result.<span className="text-quantum-plasma">stateVector</span>);</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex gap-2">
+                    <Button size="sm" className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black">
+                      <Eye className="w-4 h-4 mr-2" />
+                      Try in Playground
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      Copy Code
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-gradient-to-br from-quantum-glow/10 to-quantum-glow/5 rounded-lg border border-quantum-glow/20">
+                    <div className="text-2xl font-bold text-quantum-glow">15KB</div>
+                    <div className="text-sm text-muted-foreground">Minified Size</div>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-quantum-neon/10 to-quantum-neon/5 rounded-lg border border-quantum-neon/20">
+                    <div className="text-2xl font-bold text-quantum-neon">Zero</div>
+                    <div className="text-sm text-muted-foreground">Dependencies</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
