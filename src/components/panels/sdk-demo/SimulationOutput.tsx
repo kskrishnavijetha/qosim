@@ -11,7 +11,7 @@ interface SimulationOutputProps {
 
 export function SimulationOutput({ output, isRunning, simulationResult }: SimulationOutputProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 h-full overflow-y-auto">
       {/* Results Summary */}
       <Card className="quantum-panel neon-border">
         <CardHeader>
@@ -44,17 +44,21 @@ export function SimulationOutput({ output, isRunning, simulationResult }: Simula
 
       {/* Visual Output */}
       {simulationResult && (
-        <>
-          <BlochSphereVisualization 
-            qubitStates={simulationResult.stateVector}
-            measurements={simulationResult.measurements}
-          />
-          <StateVectorMatrix 
-            stateVector={simulationResult.stateVector}
-            probabilities={simulationResult.probabilities}
-            basisStates={simulationResult.basisStates}
-          />
-        </>
+        <div className="space-y-6">
+          <div className="w-full">
+            <BlochSphereVisualization 
+              qubitStates={simulationResult.stateVector}
+              measurements={simulationResult.measurements}
+            />
+          </div>
+          <div className="w-full">
+            <StateVectorMatrix 
+              stateVector={simulationResult.stateVector}
+              probabilities={simulationResult.probabilities}
+              basisStates={simulationResult.basisStates}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
