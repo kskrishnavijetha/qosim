@@ -5,6 +5,7 @@ import { CodeEditor } from "./sdk-demo/CodeEditor";
 import { SimulationOutput } from "./sdk-demo/SimulationOutput";
 import { SDKFeatures } from "./sdk-demo/SDKFeatures";
 import { SDKPlayground } from "@/components/sdk/SDKPlayground";
+import { PythonSDKPlayground } from "@/components/sdk/PythonSDKPlayground";
 import { sdkExamples } from "./sdk-demo/SDKExamples";
 import { pythonSDKExamples } from "./sdk-demo/PythonSDKExamples";
 import { quantumSimulation, QuantumSimulationResult } from "@/lib/realQuantumSimulation";
@@ -161,12 +162,18 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
       {/* SDK Playground Integration */}
       <div className="mt-6">
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-quantum-glow">SDK Playground</h3>
+          <h3 className="text-lg font-semibold mb-2 text-quantum-glow">
+            {selectedSDK === 'javascript' ? 'JavaScript' : 'Python'} SDK Playground
+          </h3>
           <p className="text-sm text-quantum-neon">
             Interactive testing environment with export functionality
           </p>
         </div>
-        <SDKPlayground />
+        {selectedSDK === 'javascript' ? (
+          <SDKPlayground />
+        ) : (
+          <PythonSDKPlayground />
+        )}
       </div>
     </div>
   );

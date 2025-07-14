@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Code, Play, Download, Copy } from "lucide-react";
 import { sdkExamples } from "./SDKExamples";
 import { pythonSDKExamples } from "./PythonSDKExamples";
+import { SDKPlayground } from "@/components/sdk/SDKPlayground";
+import { PythonSDKPlayground } from "@/components/sdk/PythonSDKPlayground";
 
 interface CodeEditorProps {
   selectedExample: string;
