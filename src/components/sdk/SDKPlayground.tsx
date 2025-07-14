@@ -182,9 +182,23 @@ export function SDKPlayground({ className }: SDKPlaygroundProps) {
     
     try {
       const exported = sdk.exportCircuit(currentCircuit, format);
+      
+      // Copy to clipboard
       navigator.clipboard.writeText(exported);
-      toast.success('Exported', { description: `${format.toUpperCase()} copied to clipboard` });
-      addOutput(`Circuit exported to ${format.toUpperCase()}`);
+      
+      // Also download as file
+      const blob = new Blob([exported], { 
+        type: format === 'json' ? 'application/json' : 'text/plain' 
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentCircuit.name.replace(/\s+/g, '_').toLowerCase()}.${format === 'python' ? 'py' : format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      toast.success('Exported', { description: `${format.toUpperCase()} copied to clipboard and downloaded` });
+      addOutput(`Circuit exported to ${format.toUpperCase()} format`);
     } catch (error) {
       toast.error('Export Failed', { description: String(error) });
     }
@@ -379,7 +393,7 @@ return result;`}
                       variant="outline"
                       className="flex flex-col items-center gap-2 h-auto p-4"
                     >
-                      <Copy className="h-5 w-5" />
+                      <Download className="h-5 w-5" />
                       <div>
                         <div className="font-semibold">JSON</div>
                         <div className="text-xs opacity-80">Circuit data</div>
@@ -391,7 +405,7 @@ return result;`}
                       variant="outline"
                       className="flex flex-col items-center gap-2 h-auto p-4"
                     >
-                      <Copy className="h-5 w-5" />
+                      <Download className="h-5 w-5" />
                       <div>
                         <div className="font-semibold">QASM</div>
                         <div className="text-xs opacity-80">OpenQASM 2.0</div>
@@ -403,7 +417,7 @@ return result;`}
                       variant="outline"
                       className="flex flex-col items-center gap-2 h-auto p-4"
                     >
-                      <Copy className="h-5 w-5" />
+                      <Download className="h-5 w-5" />
                       <div>
                         <div className="font-semibold">Python</div>
                         <div className="text-xs opacity-80">SDK code</div>
