@@ -26,29 +26,40 @@ export interface QuantumSimulationResult {
 }
 
 export class RealQuantumSimulation {
-  private loadQuantumCore(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.QOSimSimulator) {
-        resolve();
-        return;
-      }
+  private async loadQuantumCore(): Promise<void> {
+    if (window.QOSimSimulator) {
+      return;
+    }
 
-      const script = document.createElement('script');
-      script.src = '/src/qosim-core.js';
-      script.type = 'module';
-      script.onload = () => {
-        // Wait a bit for the module to be available
-        setTimeout(() => {
-          if (window.QOSimSimulator) {
-            resolve();
-          } else {
-            reject(new Error('QOSim core failed to load'));
-          }
-        }, 100);
-      };
-      script.onerror = () => reject(new Error('Failed to load QOSim core'));
-      document.head.appendChild(script);
-    });
+    try {
+      // Import the module dynamically with proper TypeScript handling
+      const module = await import('../../qosim-core.js' as any);
+      
+      // Make classes globally available
+      window.QOSimSimulator = module.QOSimSimulator;
+      window.Complex = module.Complex;
+      window.QuantumGate = module.QuantumGate;
+      
+    } catch (error) {
+      // Fallback: try to load via script tag if module import fails
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '/src/qosim-core.js';
+        script.type = 'module';
+        script.onload = () => {
+          // Wait for global variables to be available
+          setTimeout(() => {
+            if (window.QOSimSimulator) {
+              resolve();
+            } else {
+              reject(new Error('QOSim core failed to initialize'));
+            }
+          }, 100);
+        };
+        script.onerror = () => reject(new Error('Failed to load QOSim core script'));
+        document.head.appendChild(script);
+      });
+    }
   }
 
   async simulateBellState(): Promise<QuantumSimulationResult> {
