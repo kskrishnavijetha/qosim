@@ -29,24 +29,32 @@ export class RealQuantumSimulation {
   private loadQuantumCore(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (window.QOSimSimulator) {
+        console.log('QOSim core already loaded');
         resolve();
         return;
       }
 
+      console.log('Loading QOSim core...');
       const script = document.createElement('script');
       script.src = '/src/qosim-core.js';
       script.type = 'module';
       script.onload = () => {
+        console.log('QOSim script loaded, checking for classes...');
         // Wait for global variables to be available
         setTimeout(() => {
           if (window.QOSimSimulator) {
+            console.log('QOSim core initialized successfully');
             resolve();
           } else {
-            reject(new Error('QOSim core failed to initialize'));
+            console.error('QOSimSimulator not found on window object');
+            reject(new Error('QOSim core failed to initialize - classes not found'));
           }
         }, 100);
       };
-      script.onerror = () => reject(new Error('Failed to load QOSim core script'));
+      script.onerror = (error) => {
+        console.error('Failed to load QOSim script:', error);
+        reject(new Error('Failed to load QOSim core script'));
+      };
       document.head.appendChild(script);
     });
   }

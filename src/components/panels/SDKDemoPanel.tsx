@@ -75,11 +75,12 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
       });
       
     } catch (error) {
+      console.error('Quantum simulation error:', error);
       setIsRunning(false);
       setOutput(`Error: ${error.message}`);
       toast({
-        title: "Simulation Error",
-        description: "Failed to execute the quantum circuit",
+        title: "Simulation Error", 
+        description: `Failed to execute: ${error.message}`,
         variant: "destructive",
       });
     }
