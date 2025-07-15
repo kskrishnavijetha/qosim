@@ -10,6 +10,7 @@ import ThankYou from "./pages/ThankYou";
 import Index from "./pages/Index";
 import IntegrationsPage from "./pages/IntegrationsPage";
 import PythonSDKPage from "./pages/PythonSDKPage";
+import SDKDocumentation from "./pages/SDKDocumentation";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import { SharedCircuit } from "./pages/SharedCircuit";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/app" element={<Index />} />
               <Route path="/integrations" element={<IntegrationsPage />} />
               <Route path="/python-sdk" element={<PythonSDKPage />} />
+              <Route path="/sdk-docs" element={<SDKDocumentation />} />
               <Route path="/shared/:fileId" element={<SharedCircuit />} />
               <Route path="/embed/:fileId" element={<EmbedCircuit />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
