@@ -66,7 +66,7 @@ const IntegrationsPage = () => {
                   </div>
                   <div className="pt-2">
                     <Button variant="outline" size="sm" asChild className="w-full">
-                      <Link to="/sdk-docs">
+                      <Link to="/sdk">
                         <FileText className="w-4 h-4 mr-2" />
                         View Documentation
                       </Link>
@@ -100,7 +100,7 @@ const IntegrationsPage = () => {
                       </a>
                     </Button>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to="/sdk-docs">
+                      <Link to="/python-sdk">
                         <FileText className="w-4 h-4 mr-2" />
                         View Documentation
                       </Link>
@@ -130,12 +130,20 @@ const IntegrationsPage = () => {
                   <p className="text-muted-foreground">
                     Learn the basics of quantum circuit simulation with QOSim.
                   </p>
-                  <Button variant="outline" asChild className="w-full">
-                    <a href="/qosim-getting-started.pdf" target="_blank">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF
-                    </a>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" asChild className="w-full">
+                      <a href="/qosim-getting-started.pdf" download>
+                        <Download className="w-4 h-4 mr-2" />
+                        Download PDF
+                      </a>
+                    </Button>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link to="/sdk">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Online
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -150,12 +158,20 @@ const IntegrationsPage = () => {
                   <p className="text-muted-foreground">
                     Step-by-step tutorials for building quantum algorithms.
                   </p>
-                  <Button variant="outline" asChild className="w-full">
-                    <a href="/qosim-tutorials.pdf" target="_blank">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF
-                    </a>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" asChild className="w-full">
+                      <a href="/qosim-tutorials.pdf" download>
+                        <Download className="w-4 h-4 mr-2" />
+                        Download PDF
+                      </a>
+                    </Button>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link to="/tutorials">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Online
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -170,12 +186,20 @@ const IntegrationsPage = () => {
                   <p className="text-muted-foreground">
                     Comprehensive API reference and examples for both SDKs.
                   </p>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link to="/sdk-docs">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Online
-                    </Link>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" asChild className="w-full">
+                      <Link to="/sdk">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Documentation
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link to="/docs/api">
+                        <Book className="w-4 h-4 mr-2" />
+                        API Reference
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
