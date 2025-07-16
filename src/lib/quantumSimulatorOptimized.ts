@@ -735,18 +735,51 @@ export class OptimizedQuantumSimulator {
   }
   
   private applyCNOT(controlQubit: number, targetQubit: number): void {
+    console.log(`🚀 Applying CNOT: control=${controlQubit}, target=${targetQubit}`);
+    console.log(`🚀 State before CNOT:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
+    
     const cnotMatrix = buildOptimizedCNOTMatrix(controlQubit, targetQubit, this.numQubits);
     this.stateVector = this.vectorMatrixMultiply(this.stateVector, cnotMatrix);
+    
+    console.log(`🚀 State after CNOT:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
   }
   
   private applyToffoli(control1: number, control2: number, target: number): void {
+    console.log(`🚀 Applying Toffoli: control1=${control1}, control2=${control2}, target=${target}`);
+    console.log(`🚀 State before Toffoli:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
+    
     const toffoliMatrix = buildToffoliMatrix(control1, control2, target, this.numQubits);
     this.stateVector = this.vectorMatrixMultiply(this.stateVector, toffoliMatrix);
+    
+    console.log(`🚀 State after Toffoli:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
   }
   
   private applySWAP(qubit1: number, qubit2: number): void {
+    console.log(`🚀 Applying SWAP: qubit1=${qubit1}, qubit2=${qubit2}`);
+    console.log(`🚀 State before SWAP:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
+    
     const swapMatrix = buildSWAPMatrix(qubit1, qubit2, this.numQubits);
     this.stateVector = this.vectorMatrixMultiply(this.stateVector, swapMatrix);
+    
+    console.log(`🚀 State after SWAP:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
   }
   
   private buildGateMatrix(gateMatrix: Complex[][], targetQubit: number): Complex[][] {
@@ -885,8 +918,19 @@ export class OptimizedQuantumSimulator {
   
   // === MISSING METHODS IMPLEMENTATION ===
   private applyCZ(controlQubit: number, targetQubit: number): void {
+    console.log(`🚀 Applying CZ: control=${controlQubit}, target=${targetQubit}`);
+    console.log(`🚀 State before CZ:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
+    
     const czMatrix = buildCZMatrix(controlQubit, targetQubit, this.numQubits);
     this.stateVector = this.vectorMatrixMultiply(this.stateVector, czMatrix);
+    
+    console.log(`🚀 State after CZ:`, this.stateVector.slice(0, 8).map(amp => ({ 
+      real: amp.real.toFixed(4), 
+      imag: amp.imag.toFixed(4) 
+    })));
   }
   
   private applyFredkin(control: number, target1: number, target2: number): void {
