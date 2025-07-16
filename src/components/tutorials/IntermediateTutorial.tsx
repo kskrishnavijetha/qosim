@@ -21,33 +21,33 @@ export function IntermediateTutorial({ onProgressUpdate }: IntermediateTutorialP
       description: 'Understanding quantum search and amplitude amplification',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Grover's Algorithm is a quantum search algorithm that can search an unsorted database quadratically faster than any classical algorithm.
           </p>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <div className="bg-muted p-4 rounded-lg border">
+            <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
               <Zap className="h-4 w-4" />
               Quantum Advantage
             </h4>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <p className="text-sm font-medium mb-1">Classical Search</p>
+                <p className="text-sm font-medium mb-1 text-foreground">Classical Search</p>
                 <p className="text-xs text-muted-foreground">O(N) operations</p>
-                <p className="text-xs">Check each item one by one</p>
+                <p className="text-xs text-foreground">Check each item one by one</p>
               </div>
               <div>
-                <p className="text-sm font-medium mb-1">Grover's Algorithm</p>
+                <p className="text-sm font-medium mb-1 text-foreground">Grover's Algorithm</p>
                 <p className="text-xs text-muted-foreground">O(√N) operations</p>
-                <p className="text-xs">Quadratic speedup!</p>
+                <p className="text-xs text-foreground">Quadratic speedup!</p>
               </div>
             </div>
           </div>
-          <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <div className="bg-muted p-4 rounded-lg border">
+            <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
               <AlertCircle className="h-4 w-4" />
               Real-World Applications
             </h4>
-            <ul className="space-y-1 text-sm">
+            <ul className="space-y-1 text-sm text-foreground">
               <li>• Database searching</li>
               <li>• Cryptography and code breaking</li>
               <li>• Optimization problems</li>
@@ -255,18 +255,18 @@ console.log('Final probabilities:', result.probabilities);
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Search className="h-5 w-5" />
             Intermediate: Grover's Search Algorithm
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Master quantum search algorithms and understand amplitude amplification
           </CardDescription>
           <div className="flex items-center gap-4 mt-4">
             <div className="flex-1">
               <Progress value={progress} className="h-2" />
             </div>
-            <span className="text-sm font-medium">{completedSteps.size}/{steps.length} completed</span>
+            <span className="text-sm font-medium text-foreground">{completedSteps.size}/{steps.length} completed</span>
           </div>
         </CardHeader>
       </Card>
@@ -295,11 +295,11 @@ console.log('Final probabilities:', result.probabilities);
                   <div className="flex-1 text-left">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{index + 1}</Badge>
-                      <h3 className="font-semibold">{step.title}</h3>
+                      <h3 className="font-semibold text-foreground">{step.title}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 text-foreground" />
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -307,12 +307,12 @@ console.log('Final probabilities:', result.probabilities);
                   {step.content}
                   {step.codeExample && (
                     <div className="mt-4">
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
                         <Code className="h-4 w-4" />
                         Code Example
                       </h4>
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                        <code>{step.codeExample}</code>
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm border">
+                        <code className="text-foreground">{step.codeExample}</code>
                       </pre>
                     </div>
                   )}
@@ -324,14 +324,14 @@ console.log('Final probabilities:', result.probabilities);
       </Accordion>
 
       {progress === 100 && (
-        <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
+        <Card className="border-blue-200 dark:border-blue-800">
           <CardContent className="p-6 text-center">
             <Search className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">Intermediate Level Complete! 🔍</h3>
-            <p className="text-sm text-blue-600 mb-4">
+            <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">Intermediate Level Complete! 🔍</h3>
+            <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
               You've mastered quantum search algorithms. Ready for advanced SDK integration?
             </p>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Continue to Advanced
             </Button>
           </CardContent>

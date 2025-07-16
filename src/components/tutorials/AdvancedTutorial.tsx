@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,18 +20,18 @@ export function AdvancedTutorial({ onProgressUpdate }: AdvancedTutorialProps) {
       description: 'Install and configure the QOSim SDK in your web application',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Learn how to integrate the QOSim SDK into your web applications for quantum circuit simulation.
           </p>
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Installation</h4>
+          <div className="bg-muted p-4 rounded-lg border">
+            <h4 className="font-semibold mb-2 text-foreground">Installation</h4>
             <pre className="bg-black text-green-400 p-3 rounded text-sm font-mono">
               npm install @qosim/sdk
             </pre>
           </div>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Project Structure</h4>
-            <div className="text-sm font-mono space-y-1">
+          <div className="bg-muted p-4 rounded-lg border">
+            <h4 className="font-semibold mb-2 text-foreground">Project Structure</h4>
+            <div className="text-sm font-mono space-y-1 text-foreground">
               <div>my-quantum-app/</div>
               <div>├── src/</div>
               <div>│   ├── components/</div>
@@ -566,18 +565,18 @@ export const trackQuantumPerformance = async (operation, circuit) => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Globe className="h-5 w-5" />
             Advanced: QOSim SDK Integration
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Build production-ready quantum web applications with the QOSim SDK
           </CardDescription>
           <div className="flex items-center gap-4 mt-4">
             <div className="flex-1">
               <Progress value={progress} className="h-2" />
             </div>
-            <span className="text-sm font-medium">{completedSteps.size}/{steps.length} completed</span>
+            <span className="text-sm font-medium text-foreground">{completedSteps.size}/{steps.length} completed</span>
           </div>
         </CardHeader>
       </Card>
@@ -606,11 +605,11 @@ export const trackQuantumPerformance = async (operation, circuit) => {
                   <div className="flex-1 text-left">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{index + 1}</Badge>
-                      <h3 className="font-semibold">{step.title}</h3>
+                      <h3 className="font-semibold text-foreground">{step.title}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 text-foreground" />
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -618,12 +617,12 @@ export const trackQuantumPerformance = async (operation, circuit) => {
                   {step.content}
                   {step.codeExample && (
                     <div className="mt-4">
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
                         <Code className="h-4 w-4" />
                         Code Example
                       </h4>
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                        <code>{step.codeExample}</code>
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm border">
+                        <code className="text-foreground">{step.codeExample}</code>
                       </pre>
                     </div>
                   )}
@@ -635,15 +634,15 @@ export const trackQuantumPerformance = async (operation, circuit) => {
       </Accordion>
 
       {progress === 100 && (
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+        <Card className="border-purple-200 dark:border-purple-800">
           <CardContent className="p-6 text-center">
             <Rocket className="h-12 w-12 text-purple-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-purple-800 mb-2">Advanced Level Complete! 🚀</h3>
-            <p className="text-sm text-purple-600 mb-4">
+            <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-200 mb-2">Advanced Level Complete! 🚀</h3>
+            <p className="text-sm text-purple-600 dark:text-purple-400 mb-4">
               You're now ready to build production quantum applications with QOSim SDK!
             </p>
             <div className="flex gap-3 justify-center">
-              <Button className="bg-purple-600 hover:bg-purple-700">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Explore Examples
               </Button>
