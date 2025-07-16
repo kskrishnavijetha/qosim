@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Download, Code, Book, ExternalLink, Zap, Shield, Cpu } from 'lucide-react';
+import { ArrowLeft, Download, Code, Book, BookOpen, ExternalLink, Zap, Shield, Cpu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function SDKDocumentation() {
@@ -36,8 +36,14 @@ export default function SDKDocumentation() {
           
           {/* Quick Links */}
           <div className="flex items-center justify-center gap-4 flex-wrap">
-            <Link to="/docs/api">
+            <Link to="/tutorials">
               <Button variant="default" className="gap-2">
+                <BookOpen className="h-4 w-4" />
+                Learn with Tutorials
+              </Button>
+            </Link>
+            <Link to="/docs/api">
+              <Button variant="outline" className="gap-2">
                 <Book className="h-4 w-4" />
                 API Reference
               </Button>

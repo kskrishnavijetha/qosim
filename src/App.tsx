@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import LandingPage from "./pages/LandingPage";
@@ -16,14 +16,15 @@ import IntegrationsPage from "./pages/IntegrationsPage";
 import SDKDocumentation from "./pages/SDKDocumentation";
 import PythonSDKPage from "./pages/PythonSDKPage";
 import APIReference from "./pages/APIReference";
+import TutorialsPage from "./pages/TutorialsPage";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
+      <TooltipProvider>
+        <AuthProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -35,14 +36,15 @@ function App() {
               <Route path="/embed/:id" element={<EmbedCircuit />} />
               <Route path="/thank-you" element={<ThankYou />} />
               <Route path="/integrations" element={<IntegrationsPage />} />
-              <Route path="/docs" element={<SDKDocumentation />} />
-              <Route path="/docs/api" element={<APIReference />} />
+              <Route path="/sdk" element={<SDKDocumentation />} />
               <Route path="/python-sdk" element={<PythonSDKPage />} />
+              <Route path="/docs/api" element={<APIReference />} />
+              <Route path="/tutorials" element={<TutorialsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
