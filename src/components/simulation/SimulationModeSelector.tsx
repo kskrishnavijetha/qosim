@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,7 +75,27 @@ export function SimulationModeSelector({
     onCloudConfigChange({ ...cloudConfig, useNoisySimulation });
   };
 
-  console.log('SimulationModeSelector render - isCloudConfigured:', isCloudConfigured, 'cloudConfig:', cloudConfig);
+  const handleModeSelection = async (mode: EnhancedSimulationMode) => {
+    console.log('🔄 SimulationModeSelector: Mode selection triggered', mode);
+    console.log('🔄 Current mode:', currentMode, 'New mode:', mode);
+    
+    // Don't trigger if it's the same mode
+    if (currentMode === mode) {
+      console.log('🔄 Same mode selected, no change needed');
+      return;
+    }
+    
+    // Check if cloud mode requires configuration
+    if (mode === 'cloud' && !isCloudConfigured) {
+      console.log('🔄 Cloud mode selected but not configured');
+      return;
+    }
+    
+    console.log('🔄 Calling onModeChange with:', mode);
+    await onModeChange(mode);
+  };
+
+  console.log('SimulationModeSelector render - currentMode:', currentMode, 'isCloudConfigured:', isCloudConfigured, 'cloudConfig:', cloudConfig);
 
   return (
     <Card className="quantum-panel neon-border">
@@ -82,13 +103,13 @@ export function SimulationModeSelector({
         <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
           <Settings className="w-5 h-5" />
           Quantum Simulation Backend
+          <Badge variant="outline" className="ml-auto text-xs">
+            {modes.find(m => m.id === currentMode)?.name || 'Unknown'}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={currentMode} onValueChange={(mode) => {
-          console.log('🔄 SimulationModeSelector: Tab changed to', mode);
-          onModeChange(mode as EnhancedSimulationMode);
-        }}>
+        <Tabs value={currentMode} onValueChange={handleModeSelection}>
           <TabsList className="grid w-full grid-cols-4 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
@@ -127,6 +148,11 @@ export function SimulationModeSelector({
                           </Badge>
                         ))}
                       </div>
+                      {currentMode === mode.id && (
+                        <Badge variant="default" className="mt-2 bg-quantum-glow text-black">
+                          Currently Active
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
@@ -208,14 +234,11 @@ export function SimulationModeSelector({
                   )}
 
                   <Button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       console.log('🔄 SimulationModeSelector: Button clicked for mode', mode.id);
-                      // Only change mode if it's different and not disabled
-                      if (currentMode !== mode.id && (!mode.requiresConfig || isCloudConfigured)) {
-                        onModeChange(mode.id);
-                      }
+                      await handleModeSelection(mode.id);
                     }}
                     disabled={mode.requiresConfig && !isCloudConfigured}
                     className="w-full quantum-button"

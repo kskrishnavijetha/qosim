@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
-import { type OptimizedSimulationResult, type SimulationStepData } from '@/lib/quantumSimulatorOptimized';
+import { type OptimizedSimulationResult, type SimulationStepData, optimizedQuantumSimulator } from '@/lib/quantumSimulatorOptimized';
 import { type CloudSimulationConfig, quantumSimulationManager } from '@/lib/quantumSimulationService';
 import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
 
@@ -54,12 +54,9 @@ export function useCircuitState() {
     console.log('🔄 Circuit hash:', circuitHash.substring(0, 50) + '...');
     
     try {
-      // Always reset the simulation manager for fresh state
-      enhancedQuantumSimulationManager.reset();
-      
-      // Set the mode BEFORE simulation to ensure it's applied
-      console.log('🔄 Setting simulation mode to:', simulationMode);
-      enhancedQuantumSimulationManager.setMode(simulationMode);
+      // Set the mode on the optimized simulator to ensure consistency
+      optimizedQuantumSimulator.setMode(simulationMode);
+      console.log('🔄 Set mode on optimizedQuantumSimulator to:', simulationMode);
       
       // Convert our Gate interface to QuantumGate interface
       const quantumGates: QuantumGate[] = gates.map(gate => ({
@@ -73,17 +70,31 @@ export function useCircuitState() {
       
       console.log('🔄 Converted quantum gates:', quantumGates);
       
-      // Run the enhanced quantum simulation
-      console.log('🔄 Calling enhancedQuantumSimulationManager.simulate...');
+      // Use the appropriate simulation method based on mode
+      let result: OptimizedSimulationResult;
       
-      const result = await enhancedQuantumSimulationManager.simulate(quantumGates, 5);
+      if (simulationMode === 'cloud' && isCloudConfigured) {
+        console.log('🔄 Using cloud simulation...');
+        result = await quantumSimulationManager.simulate(quantumGates, 5) as OptimizedSimulationResult;
+      } else if (simulationMode === 'step-by-step') {
+        console.log('🔄 Using step-by-step simulation...');
+        result = await optimizedQuantumSimulator.simulateAsync(quantumGates);
+      } else {
+        console.log('🔄 Using optimized simulation with mode:', simulationMode);
+        result = await optimizedQuantumSimulator.simulateAsync(quantumGates);
+      }
+      
+      // Ensure the mode is set correctly in the result
+      result.mode = simulationMode;
+      
       console.log('🔄 Simulation result received:', result);
       console.log('🔄 Result mode should be:', simulationMode, 'actual mode in result:', result.mode);
       
       // Track simulation analytics
       trackEvent('circuit_simulated', { 
         gateCount: gates.length, 
-        numQubits: 5 
+        numQubits: 5,
+        mode: simulationMode
       });
       
       console.log('🔄 Setting simulation result with timestamp:', Date.now());
@@ -91,17 +102,43 @@ export function useCircuitState() {
     } catch (error) {
       console.error('❌ Error in simulateQuantumState:', error);
       console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
+      // Set a fallback result to show the error
+      const fallbackResult: OptimizedSimulationResult = {
+        stateVector: [],
+        measurementProbabilities: [],
+        qubitStates: [],
+        entanglement: { pairs: [], totalEntanglement: 0, entanglementThreads: [] },
+        executionTime: 0,
+        fidelity: 0,
+        mode: simulationMode
+      };
+      setSimulationResult(fallbackResult);
     }
-  }, [simulationMode]);
+  }, [simulationMode, cloudConfig]);
 
-  const handleModeChange = useCallback((mode: EnhancedSimulationMode) => {
+  const handleModeChange = useCallback(async (mode: EnhancedSimulationMode) => {
+    console.log('🔄 handleModeChange called with mode:', mode);
+    console.log('🔄 Previous mode was:', simulationMode);
+    
+    // Update the simulation mode state
     setSimulationMode(mode);
+    
+    // Update all relevant simulation managers
     enhancedQuantumSimulationManager.setMode(mode);
+    quantumSimulationManager.setMode(mode);
+    optimizedQuantumSimulator.setMode(mode);
+    
+    console.log('🔄 Mode updated on all simulators to:', mode);
+    
     // Re-simulate with new mode if circuit exists
     if (circuit.length > 0) {
-      simulateQuantumState(circuit);
+      console.log('🔄 Re-simulating circuit with new mode:', mode);
+      await simulateQuantumState(circuit);
+    } else {
+      console.log('🔄 No circuit to re-simulate');
     }
-  }, [circuit, simulateQuantumState]);
+  }, [circuit, simulateQuantumState, simulationMode]);
 
   const handleCloudConfigChange = useCallback((config: CloudSimulationConfig) => {
     setCloudConfig(config);
@@ -184,25 +221,27 @@ export function useCircuitState() {
 
   // Step-by-step execution methods
   const handleStepModeToggle = useCallback((enabled: boolean) => {
-    enhancedQuantumSimulationManager.enableStepMode(enabled);
+    optimizedQuantumSimulator.enableStepMode(enabled);
   }, []);
 
   const handleSimulationStep = useCallback((): SimulationStepData | null => {
-    return enhancedQuantumSimulationManager.step();
+    return optimizedQuantumSimulator.step();
   }, []);
 
   const handleSimulationReset = useCallback(() => {
-    enhancedQuantumSimulationManager.reset();
+    optimizedQuantumSimulator.reset();
     setSimulationResult(null);
   }, []);
 
   const handleSimulationPause = useCallback(() => {
-    enhancedQuantumSimulationManager.pause();
+    optimizedQuantumSimulator.pause();
   }, []);
 
   const handleSimulationResume = useCallback(() => {
-    enhancedQuantumSimulationManager.resume();
+    optimizedQuantumSimulator.resume();
   }, []);
+
+  const isCloudConfigured = !!cloudConfig.ibmqToken && cloudConfig.ibmqToken.trim().length > 0;
 
   return {
     circuit,
@@ -224,7 +263,7 @@ export function useCircuitState() {
     handleSimulationReset,
     handleSimulationPause,
     handleSimulationResume,
-    isCloudConfigured: !!cloudConfig.ibmqToken && cloudConfig.ibmqToken.trim().length > 0,
+    isCloudConfigured,
     canUndo
   };
 }
