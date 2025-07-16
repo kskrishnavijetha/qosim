@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ export function IntermediateTutorial({ onProgressUpdate }: IntermediateTutorialP
           <p className="text-foreground">
             Grover's Algorithm is a quantum search algorithm that can search an unsorted database quadratically faster than any classical algorithm.
           </p>
-          <div className="bg-muted p-4 rounded-lg border">
+          <div className="bg-card p-4 rounded-lg border border-border">
             <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
               <Zap className="h-4 w-4" />
               Quantum Advantage
@@ -42,7 +41,7 @@ export function IntermediateTutorial({ onProgressUpdate }: IntermediateTutorialP
               </div>
             </div>
           </div>
-          <div className="bg-muted p-4 rounded-lg border">
+          <div className="bg-card p-4 rounded-lg border border-border">
             <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
               <AlertCircle className="h-4 w-4" />
               Real-World Applications
@@ -64,23 +63,23 @@ export function IntermediateTutorial({ onProgressUpdate }: IntermediateTutorialP
       description: 'Understanding how to mark the target item',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             The oracle function is a "black box" that can recognize the target item we're searching for. It marks the target by flipping its phase.
           </p>
-          <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-2">Oracle Properties:</h4>
-            <ul className="space-y-2 text-sm">
+          <div className="border border-border rounded-lg p-4 bg-card">
+            <h4 className="font-semibold mb-2 text-foreground">Oracle Properties:</h4>
+            <ul className="space-y-2 text-sm text-foreground">
               <li><strong>Input:</strong> A quantum state (superposition of all possible items)</li>
               <li><strong>Action:</strong> Flip the phase of the target item: |target⟩ → -|target⟩</li>
               <li><strong>Output:</strong> Modified quantum state with marked target</li>
             </ul>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Example: 2-Qubit Search</h4>
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Example: 2-Qubit Search</h4>
             <p className="text-sm text-muted-foreground mb-2">
               Searching for item |11⟩ in database of 4 items (|00⟩, |01⟩, |10⟩, |11⟩)
             </p>
-            <div className="font-mono text-xs space-y-1">
+            <div className="font-mono text-xs space-y-1 text-foreground">
               <div>Before oracle: ½(|00⟩ + |01⟩ + |10⟩ + |11⟩)</div>
               <div>After oracle:  ½(|00⟩ + |01⟩ + |10⟩ - |11⟩)</div>
             </div>
@@ -95,20 +94,20 @@ export function IntermediateTutorial({ onProgressUpdate }: IntermediateTutorialP
       description: 'Amplifying the marked item\'s amplitude',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             The diffusion operator (also called "inversion about average") amplifies the amplitude of the marked item while decreasing others.
           </p>
-          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">How it Works:</h4>
-            <ol className="space-y-2 text-sm list-decimal list-inside">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">How it Works:</h4>
+            <ol className="space-y-2 text-sm list-decimal list-inside text-foreground">
               <li>Calculate the average amplitude of all states</li>
               <li>Reflect each amplitude about this average</li>
               <li>This amplifies the marked state and reduces others</li>
             </ol>
           </div>
-          <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-2">Diffusion Operator Circuit:</h4>
-            <ol className="space-y-1 text-sm list-decimal list-inside">
+          <div className="border border-border rounded-lg p-4 bg-card">
+            <h4 className="font-semibold mb-2 text-foreground">Diffusion Operator Circuit:</h4>
+            <ol className="space-y-1 text-sm list-decimal list-inside text-foreground">
               <li>Apply H gates to all qubits</li>
               <li>Apply X gates to all qubits</li>
               <li>Apply multi-controlled Z gate</li>
@@ -126,24 +125,24 @@ export function IntermediateTutorial({ onProgressUpdate }: IntermediateTutorialP
       description: 'Build the complete algorithm step by step',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Let's implement a complete 2-qubit Grover's search to find the state |11⟩.
           </p>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Algorithm Steps:</h4>
-            <ol className="space-y-2 text-sm list-decimal list-inside">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Algorithm Steps:</h4>
+            <ol className="space-y-2 text-sm list-decimal list-inside text-foreground">
               <li><strong>Initialize:</strong> Put all qubits in superposition with H gates</li>
               <li><strong>Oracle:</strong> Mark the target state |11⟩</li>
               <li><strong>Diffusion:</strong> Apply the diffusion operator</li>
               <li><strong>Measure:</strong> The target state now has high probability</li>
             </ol>
           </div>
-          <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
               <AlertCircle className="h-4 w-4" />
               Number of Iterations
             </h4>
-            <p className="text-sm">
+            <p className="text-sm text-foreground">
               For N items, optimal iterations ≈ π/4 × √N
               <br />
               For 4 items (2 qubits): ~1 iteration
@@ -198,34 +197,34 @@ console.log('Final probabilities:', result.probabilities);
       description: 'Understanding the quantum speedup and success probability',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Let's analyze what makes Grover's algorithm so powerful and understand the results.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Before Grover</h4>
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <h4 className="font-semibold mb-2 text-foreground">Before Grover</h4>
               <p className="text-sm text-muted-foreground mb-2">Uniform superposition:</p>
-              <div className="space-y-1 text-xs font-mono">
+              <div className="space-y-1 text-xs font-mono text-foreground">
                 <div>|00⟩: 25%</div>
                 <div>|01⟩: 25%</div>
                 <div>|10⟩: 25%</div>
                 <div>|11⟩: 25%</div>
               </div>
             </div>
-            <div className="border rounded-lg p-4 bg-green-50 dark:bg-green-950">
-              <h4 className="font-semibold mb-2">After Grover</h4>
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <h4 className="font-semibold mb-2 text-foreground">After Grover</h4>
               <p className="text-sm text-muted-foreground mb-2">Amplified target:</p>
-              <div className="space-y-1 text-xs font-mono">
+              <div className="space-y-1 text-xs font-mono text-foreground">
                 <div>|00⟩: ~8%</div>
                 <div>|01⟩: ~8%</div>
                 <div>|10⟩: ~8%</div>
-                <div className="font-bold text-green-700">|11⟩: ~75%</div>
+                <div className="font-bold text-green-600">|11⟩: ~75%</div>
               </div>
             </div>
           </div>
-          <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Success Probability</h4>
-            <p className="text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Success Probability</h4>
+            <p className="text-sm text-foreground">
               Grover's algorithm doesn't guarantee 100% success, but provides high probability of finding the target.
               The success probability depends on the number of iterations and problem size.
             </p>
@@ -311,7 +310,7 @@ console.log('Final probabilities:', result.probabilities);
                         <Code className="h-4 w-4" />
                         Code Example
                       </h4>
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm border">
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm border border-border">
                         <code className="text-foreground">{step.codeExample}</code>
                       </pre>
                     </div>

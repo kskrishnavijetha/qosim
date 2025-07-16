@@ -23,13 +23,13 @@ export function AdvancedTutorial({ onProgressUpdate }: AdvancedTutorialProps) {
           <p className="text-foreground">
             Learn how to integrate the QOSim SDK into your web applications for quantum circuit simulation.
           </p>
-          <div className="bg-muted p-4 rounded-lg border">
+          <div className="bg-card p-4 rounded-lg border border-border">
             <h4 className="font-semibold mb-2 text-foreground">Installation</h4>
             <pre className="bg-black text-green-400 p-3 rounded text-sm font-mono">
               npm install @qosim/sdk
             </pre>
           </div>
-          <div className="bg-muted p-4 rounded-lg border">
+          <div className="bg-card p-4 rounded-lg border border-border">
             <h4 className="font-semibold mb-2 text-foreground">Project Structure</h4>
             <div className="text-sm font-mono space-y-1 text-foreground">
               <div>my-quantum-app/</div>
@@ -67,21 +67,21 @@ console.log('QOSim SDK initialized successfully!');`,
       description: 'Build a React component for quantum circuit visualization',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Create interactive React components that leverage the QOSim SDK for real-time quantum simulation.
           </p>
-          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Component Features</h4>
-            <ul className="space-y-1 text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Component Features</h4>
+            <ul className="space-y-1 text-sm text-foreground">
               <li>• Real-time circuit building interface</li>
               <li>• Live probability visualization</li>
               <li>• Interactive gate placement</li>
               <li>• Simulation results display</li>
             </ul>
           </div>
-          <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Best Practices</h4>
-            <ul className="space-y-1 text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Best Practices</h4>
+            <ul className="space-y-1 text-sm text-foreground">
               <li>• Use React hooks for state management</li>
               <li>• Implement proper error handling</li>
               <li>• Optimize re-renders with useMemo</li>
@@ -159,7 +159,7 @@ const QuantumCircuitBuilder = () => {
         <div className="flex-1 bg-gray-200 rounded-full h-4">
           <div 
             className="bg-blue-500 h-4 rounded-full transition-all duration-300"
-            style={{ width: \`\${(results.probabilities[index] * 100).toFixed(1)}%\` }}
+            style={{ width: \`\\${(results.probabilities[index] * 100).toFixed(1)}%\\` }}
           />
         </div>
         <span className="text-sm w-12">
@@ -256,22 +256,22 @@ export default QuantumCircuitBuilder;`,
       description: 'Explore circuit export, cloud storage, and optimization',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Leverage advanced SDK features for production quantum applications.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Circuit Export</h4>
-              <ul className="space-y-1 text-sm">
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <h4 className="font-semibold mb-2 text-foreground">Circuit Export</h4>
+              <ul className="space-y-1 text-sm text-foreground">
                 <li>• QASM format</li>
                 <li>• JSON serialization</li>
                 <li>• Python/Qiskit</li>
                 <li>• Custom formats</li>
               </ul>
             </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Cloud Storage</h4>
-              <ul className="space-y-1 text-sm">
+            <div className="border border-border rounded-lg p-4 bg-card">
+              <h4 className="font-semibold mb-2 text-foreground">Cloud Storage</h4>
+              <ul className="space-y-1 text-sm text-foreground">
                 <li>• Save/load circuits</li>
                 <li>• User authentication</li>
                 <li>• Version control</li>
@@ -279,9 +279,9 @@ export default QuantumCircuitBuilder;`,
               </ul>
             </div>
           </div>
-          <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Performance Optimization</h4>
-            <ul className="space-y-1 text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Performance Optimization</h4>
+            <ul className="space-y-1 text-sm text-foreground">
               <li>• Lazy loading for large circuits</li>
               <li>• Web Workers for simulation</li>
               <li>• Circuit compression</li>
@@ -364,29 +364,29 @@ const batchSimulate = async (circuits) => {
       description: 'Deploy your quantum web application to production',
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-foreground">
             Learn best practices for deploying quantum web applications with the QOSim SDK.
           </p>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Build Optimization</h4>
-            <ul className="space-y-2 text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Build Optimization</h4>
+            <ul className="space-y-2 text-sm text-foreground">
               <li><strong>Code Splitting:</strong> Load quantum features on-demand</li>
               <li><strong>Tree Shaking:</strong> Include only used SDK functions</li>
               <li><strong>Minification:</strong> Compress quantum simulation code</li>
               <li><strong>CDN:</strong> Serve SDK from fast content delivery network</li>
             </ul>
           </div>
-          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Environment Configuration</h4>
-            <ul className="space-y-2 text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Environment Configuration</h4>
+            <ul className="space-y-2 text-sm text-foreground">
               <li><strong>Development:</strong> Full debugging, local simulation</li>
               <li><strong>Staging:</strong> Production-like testing environment</li>
               <li><strong>Production:</strong> Optimized performance, cloud simulation</li>
             </ul>
           </div>
-          <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Monitoring & Analytics</h4>
-            <ul className="space-y-2 text-sm">
+          <div className="bg-card p-4 rounded-lg border border-border">
+            <h4 className="font-semibold mb-2 text-foreground">Monitoring & Analytics</h4>
+            <ul className="space-y-2 text-sm text-foreground">
               <li><strong>Performance:</strong> Track simulation execution times</li>
               <li><strong>Usage:</strong> Monitor gate usage patterns</li>
               <li><strong>Errors:</strong> Catch and report quantum simulation errors</li>
@@ -621,7 +621,7 @@ export const trackQuantumPerformance = async (operation, circuit) => {
                         <Code className="h-4 w-4" />
                         Code Example
                       </h4>
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm border">
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm border border-border">
                         <code className="text-foreground">{step.codeExample}</code>
                       </pre>
                     </div>
