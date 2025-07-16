@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,12 +32,12 @@ export function BeginnerTutorial({ onProgressUpdate }: BeginnerTutorialProps) {
           <p className="text-muted-foreground">
             Quantum computing harnesses quantum mechanical phenomena like superposition and entanglement to process information in ways that classical computers cannot.
           </p>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
               <Lightbulb className="h-4 w-4" />
               Key Concepts
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-foreground">
               <li><strong>Qubit:</strong> The basic unit of quantum information (can be 0, 1, or both simultaneously)</li>
               <li><strong>Superposition:</strong> A qubit can exist in multiple states at once</li>
               <li><strong>Entanglement:</strong> Qubits can be correlated in ways that don't exist classically</li>
@@ -59,21 +58,21 @@ export function BeginnerTutorial({ onProgressUpdate }: BeginnerTutorialProps) {
             A qubit is like a classical bit, but with quantum properties. While a classical bit is either 0 or 1, a qubit can be in a superposition of both states.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Classical Bit</h4>
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold mb-2 text-foreground">Classical Bit</h4>
               <p className="text-sm text-muted-foreground">Always in a definite state: 0 or 1</p>
               <div className="mt-2 flex gap-2">
                 <Badge variant="outline">0</Badge>
-                <span>or</span>
+                <span className="text-foreground">or</span>
                 <Badge variant="outline">1</Badge>
               </div>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Quantum Bit (Qubit)</h4>
+            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold mb-2 text-foreground">Quantum Bit (Qubit)</h4>
               <p className="text-sm text-muted-foreground">Can be in superposition: α|0⟩ + β|1⟩</p>
               <div className="mt-2 flex gap-2">
                 <Badge variant="secondary">|0⟩</Badge>
-                <span>+</span>
+                <span className="text-foreground">+</span>
                 <Badge variant="secondary">|1⟩</Badge>
               </div>
             </div>
@@ -93,17 +92,17 @@ export function BeginnerTutorial({ onProgressUpdate }: BeginnerTutorialProps) {
           </p>
           <div className="space-y-3">
             <div className="border rounded-lg p-3">
-              <h4 className="font-semibold mb-2">Pauli-X Gate (NOT Gate)</h4>
+              <h4 className="font-semibold mb-2 text-foreground">Pauli-X Gate (NOT Gate)</h4>
               <p className="text-sm text-muted-foreground mb-2">Flips the state of a qubit: |0⟩ → |1⟩ and |1⟩ → |0⟩</p>
               <Badge variant="outline" className="font-mono">X</Badge>
             </div>
             <div className="border rounded-lg p-3">
-              <h4 className="font-semibold mb-2">Hadamard Gate</h4>
+              <h4 className="font-semibold mb-2 text-foreground">Hadamard Gate</h4>
               <p className="text-sm text-muted-foreground mb-2">Creates superposition: |0⟩ → (|0⟩ + |1⟩)/√2</p>
               <Badge variant="outline" className="font-mono">H</Badge>
             </div>
             <div className="border rounded-lg p-3">
-              <h4 className="font-semibold mb-2">CNOT Gate</h4>
+              <h4 className="font-semibold mb-2 text-foreground">CNOT Gate</h4>
               <p className="text-sm text-muted-foreground mb-2">Controlled operation: flips target if control is |1⟩</p>
               <Badge variant="outline" className="font-mono">CNOT</Badge>
             </div>
@@ -121,9 +120,9 @@ export function BeginnerTutorial({ onProgressUpdate }: BeginnerTutorialProps) {
           <p className="text-muted-foreground">
             Let's create your first quantum circuit! We'll build a simple circuit that puts a qubit in superposition.
           </p>
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Step-by-Step Instructions:</h4>
-            <ol className="space-y-2 text-sm list-decimal list-inside">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h4 className="font-semibold mb-2 text-foreground">Step-by-Step Instructions:</h4>
+            <ol className="space-y-2 text-sm list-decimal list-inside text-foreground">
               <li>Open the QOSim circuit builder</li>
               <li>Drag a Hadamard (H) gate onto qubit 0</li>
               <li>Add a measurement gate</li>
@@ -131,7 +130,7 @@ export function BeginnerTutorial({ onProgressUpdate }: BeginnerTutorialProps) {
               <li>Observe the 50/50 probability distribution</li>
             </ol>
           </div>
-          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
+          <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
             <h4 className="font-semibold mb-2 text-green-800 dark:text-green-200">Try it yourself!</h4>
             <p className="text-sm text-green-700 dark:text-green-300">
               Go to the main QOSim app and follow the instructions above. This creates your first quantum superposition!
@@ -178,7 +177,7 @@ console.log('Probabilities:', result.probabilities);
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Play className="h-5 w-5" />
             Beginner: Your First Steps in Quantum Computing
           </CardTitle>
@@ -189,7 +188,7 @@ console.log('Probabilities:', result.probabilities);
             <div className="flex-1">
               <Progress value={progress} className="h-2" />
             </div>
-            <span className="text-sm font-medium">{completedSteps.size}/{steps.length} completed</span>
+            <span className="text-sm font-medium text-foreground">{completedSteps.size}/{steps.length} completed</span>
           </div>
         </CardHeader>
       </Card>
@@ -218,7 +217,7 @@ console.log('Probabilities:', result.probabilities);
                   <div className="flex-1 text-left">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{index + 1}</Badge>
-                      <h3 className="font-semibold">{step.title}</h3>
+                      <h3 className="font-semibold text-foreground">{step.title}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
                   </div>
@@ -230,12 +229,12 @@ console.log('Probabilities:', result.probabilities);
                   {step.content}
                   {step.codeExample && (
                     <div className="mt-4">
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
                         <Code className="h-4 w-4" />
                         Code Example
                       </h4>
                       <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                        <code>{step.codeExample}</code>
+                        <code className="text-foreground">{step.codeExample}</code>
                       </pre>
                     </div>
                   )}
@@ -247,11 +246,11 @@ console.log('Probabilities:', result.probabilities);
       </Accordion>
 
       {progress === 100 && (
-        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
           <CardContent className="p-6 text-center">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-green-800 mb-2">Beginner Level Complete! 🎉</h3>
-            <p className="text-sm text-green-600 mb-4">
+            <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">Beginner Level Complete! 🎉</h3>
+            <p className="text-sm text-green-600 dark:text-green-400 mb-4">
               You've mastered the basics of quantum computing. Ready for intermediate concepts?
             </p>
             <Button className="bg-green-600 hover:bg-green-700">

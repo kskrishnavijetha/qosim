@@ -31,30 +31,30 @@ export default function TutorialsPage() {
   const overallProgress = Math.round((progress.beginner + progress.intermediate + progress.advanced) / 3);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link to="/app">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to App
+              <span className="text-foreground">Back to App</span>
             </Button>
           </Link>
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Quantum Computing Tutorials
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-xl text-muted-foreground mb-6">
             Learn quantum computing from basics to advanced algorithms with hands-on QOSim examples
           </p>
           
           {/* Overall Progress */}
           <div className="max-w-md mx-auto mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Overall Progress</span>
+              <span className="text-sm font-medium text-foreground">Overall Progress</span>
               <span className="text-sm text-muted-foreground">{overallProgress}%</span>
             </div>
             <Progress value={overallProgress} className="h-2" />
@@ -82,17 +82,17 @@ export default function TutorialsPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="beginner" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
-              Beginner
+              <span className="text-foreground">Beginner</span>
               <Badge variant="secondary" className="ml-2">{progress.beginner}%</Badge>
             </TabsTrigger>
             <TabsTrigger value="intermediate" className="flex items-center gap-2">
               <Code className="h-4 w-4" />
-              Intermediate
+              <span className="text-foreground">Intermediate</span>
               <Badge variant="secondary" className="ml-2">{progress.intermediate}%</Badge>
             </TabsTrigger>
             <TabsTrigger value="advanced" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
-              Advanced
+              <span className="text-foreground">Advanced</span>
               <Badge variant="secondary" className="ml-2">{progress.advanced}%</Badge>
             </TabsTrigger>
           </TabsList>
@@ -119,12 +119,12 @@ export default function TutorialsPage() {
         {/* Completion Badge */}
         {overallProgress === 100 && (
           <div className="text-center mt-8">
-            <Card className="inline-block p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+            <Card className="inline-block p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
               <div className="flex items-center gap-3">
                 <Trophy className="h-8 w-8 text-yellow-500" />
                 <div>
-                  <h3 className="text-lg font-semibold text-green-800">Congratulations!</h3>
-                  <p className="text-sm text-green-600">You've completed all quantum computing tutorials!</p>
+                  <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Congratulations!</h3>
+                  <p className="text-sm text-green-600 dark:text-green-400">You've completed all quantum computing tutorials!</p>
                 </div>
               </div>
             </Card>
