@@ -918,9 +918,6 @@ const LandingPage = () => {
               <h3 className="font-semibold mb-3">Product</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/app" className="hover:text-foreground transition-colors">Launch App</Link></li>
-                <li><a href="/qosim-getting-started.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Tutorials</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Examples</a></li>
               </ul>
             </div>
             
@@ -945,9 +942,9 @@ const LandingPage = () => {
             <div>
               <h3 className="font-semibold mb-3">Contact</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="mailto:hello@qosim.com" className="hover:text-foreground transition-colors flex items-center gap-2">
+                <li><a href="mailto:support@qosim.app" className="hover:text-foreground transition-colors flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  hello@qosim.com
+                  support@qosim.app
                 </a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">Support</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
@@ -959,7 +956,7 @@ const LandingPage = () => {
           <Separator className="my-8" />
           
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-            <p>&copy; 2024 QOSim. All rights reserved.</p>
+            <p>&copy; 2025 QOSim. All rights reserved.</p>
             <div className="flex items-center gap-4 mt-4 md:mt-0">
               <Badge variant="outline" className="border-quantum-neon text-quantum-neon">
                 <Shield className="w-3 h-3 mr-1" />
