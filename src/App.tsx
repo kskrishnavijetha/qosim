@@ -17,6 +17,7 @@ import SDKDocumentation from "./pages/SDKDocumentation";
 import PythonSDKPage from "./pages/PythonSDKPage";
 import APIReference from "./pages/APIReference";
 import TutorialsPage from "./pages/TutorialsPage";
+import { LearnWithTutorials } from "./components/tutorials/LearnWithTutorials";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ function App() {
               <Route path="/python-sdk" element={<PythonSDKPage />} />
               <Route path="/docs/api" element={<APIReference />} />
               <Route path="/tutorials" element={<TutorialsPage />} />
+              <Route path="/learn" element={<LearnWithTutorials />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
