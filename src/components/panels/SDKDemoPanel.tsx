@@ -9,6 +9,7 @@ import { PythonSDKPlayground } from "@/components/sdk/PythonSDKPlayground";
 import { sdkExamples } from "./sdk-demo/SDKExamples";
 import { pythonSDKExamples } from "./sdk-demo/PythonSDKExamples";
 import { quantumSimulation, QuantumSimulationResult } from "@/lib/realQuantumSimulation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function SDKDemoPanel() {
   const [selectedExample, setSelectedExample] = useState("bell-state");
@@ -18,6 +19,7 @@ export function SDKDemoPanel() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedSDK, setSelectedSDK] = useState<'javascript' | 'python'>('javascript');
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const runExample = async () => {
     setIsRunning(true);
@@ -107,22 +109,22 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
   };
 
   return (
-    <div className="flex flex-col h-full bg-quantum-void p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full bg-quantum-void p-3 lg:p-6 space-y-4 lg:space-y-6">
+      <div className={`flex justify-between ${isMobile ? 'flex-col gap-3' : 'items-center'}`}>
         <div>
-          <h1 className="text-3xl font-bold text-quantum-glow quantum-float">
+          <h1 className={`font-bold text-quantum-glow quantum-float ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
             QOSim SDK Demo
           </h1>
-          <p className="text-quantum-neon font-mono mt-2">
+          <p className={`text-quantum-neon font-mono mt-2 ${isMobile ? 'text-sm' : ''}`}>
             Interactive quantum circuit programming with {selectedSDK === 'javascript' ? 'JavaScript' : 'Python'}
           </p>
         </div>
-        <Badge variant="outline" className="neon-border text-quantum-glow">
+        <Badge variant="outline" className="neon-border text-quantum-glow self-start">
           SDK v1.0.0
         </Badge>
       </div>
 
-      {/* Results Section - Top Priority */}
+      {/* Results Section - Top Priority on Mobile */}
       {simulationResult && (
         <div className="w-full">
           <SimulationOutput
@@ -133,7 +135,7 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+      <div className={`gap-4 lg:gap-6 flex-1 ${isMobile ? 'flex flex-col' : 'grid grid-cols-1 lg:grid-cols-2'}`}>
         <CodeEditor
           selectedExample={selectedExample}
           customCode={customCode}
@@ -160,12 +162,12 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
       <SDKFeatures />
       
       {/* SDK Playground Integration */}
-      <div className="mt-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-quantum-glow">
+      <div className="space-y-4">
+        <div>
+          <h3 className={`font-semibold text-quantum-glow ${isMobile ? 'text-base' : 'text-lg'}`}>
             {selectedSDK === 'javascript' ? 'JavaScript' : 'Python'} SDK Playground
           </h3>
-          <p className="text-sm text-quantum-neon">
+          <p className={`text-quantum-neon ${isMobile ? 'text-xs' : 'text-sm'}`}>
             Interactive testing environment with export functionality
           </p>
         </div>

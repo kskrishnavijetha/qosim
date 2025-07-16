@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2, User, LogOut, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -5,6 +6,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +32,7 @@ const navigationItems = [
 
 export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) {
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await signOut();
@@ -41,20 +44,23 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
   };
 
   return (
-    <div className="w-64 bg-quantum-void border-r neon-border quantum-panel h-full flex flex-col">
-      <div className="p-4 lg:p-6 flex-1">
-        <div className="flex items-center gap-3 mb-8">
+    <div className={cn(
+      "bg-quantum-void border-r neon-border quantum-panel h-full flex flex-col",
+      isMobile ? "w-72" : "w-64"
+    )}>
+      <div className="p-3 lg:p-6 flex-1">
+        <div className="flex items-center gap-3 mb-6 lg:mb-8">
           <div className="relative">
-            <Activity className="w-8 h-8 text-quantum-glow particle-animation" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-quantum-neon rounded-full quantum-orbit"></div>
+            <Activity className="w-6 h-6 lg:w-8 lg:h-8 text-quantum-glow particle-animation" />
+            <div className="absolute -top-1 -right-1 w-2 h-2 lg:w-3 lg:h-3 bg-quantum-neon rounded-full quantum-orbit"></div>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-quantum-glow quantum-float">Quantum OS</h1>
+            <h1 className="text-lg lg:text-xl font-bold text-quantum-glow quantum-float">Quantum OS</h1>
             <p className="text-xs text-quantum-neon font-mono">Simulator v2.1.0</p>
           </div>
         </div>
         
-        <nav className="space-y-3">
+        <nav className="space-y-2 lg:space-y-3">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -64,22 +70,22 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-500 relative group",
+                  "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
                   "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
                   isActive 
                     ? "bg-quantum-matrix text-quantum-glow quantum-glow neon-border scale-105" 
                     : "text-muted-foreground hover:text-quantum-neon"
                 )}
               >
-                <div className="relative">
-                  <Icon className={cn("w-5 h-5 transition-all duration-300", 
+                <div className="relative shrink-0">
+                  <Icon className={cn("w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300", 
                     isActive ? "quantum-float" : "group-hover:scale-110"
                   )} />
                   {isActive && (
-                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-quantum-glow rounded-full particle-animation"></div>
+                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-quantum-glow rounded-full particle-animation"></div>
                   )}
                 </div>
-                <span className="font-mono font-medium">{item.label}</span>
+                <span className="font-mono font-medium text-sm lg:text-base truncate">{item.label}</span>
                 
                 {/* Hover effect line */}
                 <div className={cn(
@@ -91,12 +97,16 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
           })}
         </nav>
         
-        <div className="mt-8 p-4 quantum-panel rounded-lg">
+        {/* System Status - Hide on small mobile screens */}
+        <div className={cn(
+          "mt-6 lg:mt-8 p-3 lg:p-4 quantum-panel rounded-lg",
+          isMobile ? "hidden sm:block" : ""
+        )}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-quantum-neon">System Status</h3>
+            <h3 className="text-xs lg:text-sm font-semibold text-quantum-neon">System Status</h3>
             <ThemeToggle />
           </div>
-          <div className="space-y-2 text-xs font-mono">
+          <div className="space-y-1 lg:space-y-2 text-xs font-mono">
             <div className="flex justify-between">
               <span>Qubits:</span>
               <span className="text-quantum-glow">128/256</span>
@@ -114,19 +124,19 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
       </div>
 
       {/* User Profile Section */}
-      <div className="p-4 border-t border-quantum-matrix">
+      <div className="p-3 lg:p-4 border-t border-quantum-matrix">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="w-full p-2 h-auto hover:bg-quantum-matrix">
-              <div className="flex items-center gap-3 w-full">
-                <Avatar className="w-8 h-8 neon-border">
+              <div className="flex items-center gap-2 lg:gap-3 w-full min-w-0">
+                <Avatar className="w-6 h-6 lg:w-8 lg:h-8 neon-border shrink-0">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-quantum-matrix text-quantum-glow text-xs">
                     {getInitials(user?.user_metadata?.display_name || user?.email)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium text-quantum-glow truncate">
+                  <p className="text-xs lg:text-sm font-medium text-quantum-glow truncate">
                     {user?.user_metadata?.display_name || user?.email?.split('@')[0]}
                   </p>
                   <p className="text-xs text-quantum-neon truncate">

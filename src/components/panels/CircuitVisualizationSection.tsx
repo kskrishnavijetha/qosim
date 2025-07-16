@@ -8,6 +8,7 @@ import { CircuitValidator } from '@/components/simulation/CircuitValidator';
 import { QuantumTestSuite } from '@/components/testing/QuantumTestSuite';
 import { Gate } from '@/hooks/useCircuitState';
 import { OptimizedSimulationResult, SimulationStepData } from '@/lib/quantumSimulatorOptimized';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -34,10 +35,12 @@ export function CircuitVisualizationSection({
   onSimulationResume = () => {},
   onCircuitLoad
 }: CircuitVisualizationSectionProps) {
+  const isMobile = useIsMobile();
+
   return (
     <>
       {/* Circuit Validation and Step Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+      <div className={`grid gap-4 lg:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         <CircuitValidator circuit={circuit} numQubits={numQubits} />
         <StepByStepExecutor
           circuit={circuit}
@@ -51,7 +54,7 @@ export function CircuitVisualizationSection({
       </div>
 
       {/* Live Quantum State Visualization */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+      <div className={`grid gap-4 lg:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         <QuantumStateVisualization 
           simulationResult={simulationResult} 
           NUM_QUBITS={numQubits} 
@@ -78,8 +81,10 @@ export function CircuitVisualizationSection({
         />
       )}
 
-      {/* Existing Circuits */}
-      <ExistingCircuitsList />
+      {/* Existing Circuits - Stack on mobile */}
+      <div className={isMobile ? '' : ''}>
+        <ExistingCircuitsList />
+      </div>
     </>
   );
 }
