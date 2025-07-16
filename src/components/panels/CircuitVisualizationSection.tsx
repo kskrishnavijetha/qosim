@@ -1,26 +1,21 @@
-import React from 'react';
-import { QuantumStateVisualization } from '@/components/circuits/QuantumStateVisualization';
-import { EntanglementVisualization } from '@/components/simulation/EntanglementVisualization';
-import { GateSuggestionsPanel } from '@/components/circuits/GateSuggestionsPanel';
-import { ExistingCircuitsList } from '@/components/circuits/ExistingCircuitsList';
-import { StepByStepExecutor } from '@/components/simulation/StepByStepExecutor';
-import { CircuitValidator } from '@/components/simulation/CircuitValidator';
-import { QuantumTestSuite } from '@/components/testing/QuantumTestSuite';
-import { Gate } from '@/hooks/useCircuitState';
-import { OptimizedSimulationResult, SimulationStepData } from '@/lib/quantumSimulatorOptimized';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { useState } from "react";
+import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
+import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
+import { EntanglementVisualization } from "@/components/simulation/EntanglementVisualization";
+import { DebugConsole } from "@/components/simulation/DebugConsole";
+import { OutputConsole } from "@/components/simulation/OutputConsole";
+import { Gate } from "@/hooks/useCircuitState";
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
   numQubits: number;
   circuit: Gate[];
   onSuggestionClick: (suggestion: any) => void;
-  onStepModeToggle?: (enabled: boolean) => void;
-  onSimulationStep?: () => SimulationStepData | null;
-  onSimulationReset?: () => void;
-  onSimulationPause?: () => void;
-  onSimulationResume?: () => void;
-  onCircuitLoad?: (gates: Omit<import('@/hooks/useCircuitState').Gate, 'id'>[]) => void;
+  onStepModeToggle: (enabled: boolean) => void;
+  onSimulationStep: () => void;
+  onSimulationReset: () => void;
+  onSimulationPause: () => void;
+  onSimulationResume: () => void;
 }
 
 export function CircuitVisualizationSection({
@@ -28,63 +23,49 @@ export function CircuitVisualizationSection({
   numQubits,
   circuit,
   onSuggestionClick,
-  onStepModeToggle = () => {},
-  onSimulationStep = () => null,
-  onSimulationReset = () => {},
-  onSimulationPause = () => {},
-  onSimulationResume = () => {},
-  onCircuitLoad
+  onStepModeToggle,
+  onSimulationStep,
+  onSimulationReset,
+  onSimulationPause,
+  onSimulationResume
 }: CircuitVisualizationSectionProps) {
-  const isMobile = useIsMobile();
+  const [isOutputCollapsed, setIsOutputCollapsed] = useState(false);
+  const [isDebugCollapsed, setIsDebugCollapsed] = useState(true);
 
   return (
-    <>
-      {/* Circuit Validation and Step Controls */}
-      <div className={`grid gap-4 lg:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
-        <CircuitValidator circuit={circuit} numQubits={numQubits} />
-        <StepByStepExecutor
-          circuit={circuit}
-          simulationResult={simulationResult}
-          onStepModeToggle={onStepModeToggle}
-          onSimulationStep={onSimulationStep}
-          onSimulationReset={onSimulationReset}
-          onSimulationPause={onSimulationPause}
-          onSimulationResume={onSimulationResume}
-        />
-      </div>
+    <div className="space-y-4 lg:space-y-6">
+      {/* Output Console - New collapsible console */}
+      <OutputConsole
+        simulationResult={simulationResult}
+        isCollapsed={isOutputCollapsed}
+        onToggleCollapse={setIsOutputCollapsed}
+      />
 
-      {/* Live Quantum State Visualization */}
-      <div className={`grid gap-4 lg:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+      {/* Existing visualization components */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         <QuantumStateVisualization 
           simulationResult={simulationResult} 
           NUM_QUBITS={numQubits} 
         />
-
-        {/* Entanglement Analysis */}
-        <EntanglementVisualization
+        
+        <EntanglementVisualization 
           simulationResult={simulationResult}
           numQubits={numQubits}
         />
       </div>
 
-      {/* AI Suggestions Panel */}
-      <GateSuggestionsPanel 
-        circuit={circuit}
-        onSuggestionClick={onSuggestionClick}
+      {/* Debug Console - Optional advanced debugging */}
+      <DebugConsole
+        simulationResult={simulationResult}
+        onStepMode={onStepModeToggle}
+        onStep={onSimulationStep}
+        onPause={onSimulationPause}
+        onResume={onSimulationResume}
+        onReset={onSimulationReset}
+        isStepMode={false}
+        isPaused={false}
+        currentStep={0}
       />
-
-      {/* Quantum Test Suite */}
-      {onCircuitLoad && (
-        <QuantumTestSuite 
-          circuit={circuit}
-          onCircuitLoad={onCircuitLoad}
-        />
-      )}
-
-      {/* Existing Circuits - Stack on mobile */}
-      <div className={isMobile ? '' : ''}>
-        <ExistingCircuitsList />
-      </div>
-    </>
+    </div>
   );
 }
