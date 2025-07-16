@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -159,7 +160,7 @@ const QuantumCircuitBuilder = () => {
         <div className="flex-1 bg-gray-200 rounded-full h-4">
           <div 
             className="bg-blue-500 h-4 rounded-full transition-all duration-300"
-            style={{ width: \`\\${(results.probabilities[index] * 100).toFixed(1)}%\\` }}
+            style={{ width: \`\${(results.probabilities[index] * 100).toFixed(1)}%\` }}
           />
         </div>
         <span className="text-sm w-12">
