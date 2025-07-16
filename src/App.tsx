@@ -40,8 +40,7 @@ function App() {
               <Route path="/sdk" element={<SDKDocumentation />} />
               <Route path="/python-sdk" element={<PythonSDKPage />} />
               <Route path="/docs/api" element={<APIReference />} />
-              <Route path="/tutorials" element={<LearnWithTutorials />} />
-              <Route path="/tutorials-detailed" element={<TutorialsPage />} />
+              <Route path="/tutorials" element={<TutorialsPage />} />
               <Route path="/learn" element={<LearnWithTutorials />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
