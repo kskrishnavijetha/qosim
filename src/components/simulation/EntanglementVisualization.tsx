@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
@@ -22,7 +23,7 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
       hasResult: !!simulationResult,
       hasEntanglement: !!simulationResult?.entanglement,
       resultType: typeof simulationResult,
-      simulationResult 
+      timestamp: Date.now()
     });
     
     if (simulationResult) {
@@ -40,11 +41,20 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
           entanglement: simulationResult.entanglement,
           numPairs: simulationResult.entanglement.pairs?.length || 0,
           totalEntanglement: simulationResult.entanglement.totalEntanglement,
-          pairs: simulationResult.entanglement.pairs,
+          pairs: simulationResult.entanglement.pairs.map(p => `Q${p.qubit1}-Q${p.qubit2}: ${(p.strength * 100).toFixed(1)}%`),
           threads: simulationResult.entanglement.entanglementThreads
         });
+        
+        // Update state and trigger animation
         setLastUpdate(Date.now());
-        setAnimationKey(prev => prev + 1); // Force re-animation
+        setAnimationKey(prev => prev + 1);
+        
+        // Additional logging for debugging
+        if (simulationResult.entanglement.pairs.length === 0) {
+          console.log('🎯🔍 EntanglementVisualization: ⚠️ No entangled pairs found despite having entanglement object');
+          console.log('🎯🔍 State vector sample:', simulationResult.stateVector?.slice(0, 8));
+          console.log('🎯🔍 Measurement probabilities:', simulationResult.measurementProbabilities?.slice(0, 8));
+        }
       } else {
         console.log('🎯🔍 EntanglementVisualization: No entanglement data available', { 
           hasEntanglement: !!simulationResult?.entanglement,
@@ -56,13 +66,27 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
     }
   }, [simulationResult]);
 
-  // Show even if no entanglement but simulation exists
+  // Show empty state if no simulation result
   if (!simulationResult) {
+    console.log('🎯🔍 EntanglementVisualization: Rendering empty state (no simulation result)');
     return <EntanglementEmptyState />;
   }
 
-  // If no entanglement data, show empty state with simulation info
-  if (!simulationResult.entanglement || simulationResult.entanglement.pairs.length === 0) {
+  // Enhanced check for entanglement
+  const hasEntanglement = simulationResult.entanglement && 
+    simulationResult.entanglement.pairs && 
+    simulationResult.entanglement.pairs.length > 0;
+    
+  console.log('🎯🔍 EntanglementVisualization: Entanglement check', {
+    hasEntanglement,
+    entanglementObject: !!simulationResult.entanglement,
+    pairsArray: !!simulationResult.entanglement?.pairs,
+    pairsLength: simulationResult.entanglement?.pairs?.length || 0,
+    totalEntanglement: simulationResult.entanglement?.totalEntanglement || 0
+  });
+
+  // If no entanglement detected, show informative message
+  if (!hasEntanglement) {
     return (
       <Card className="quantum-panel neon-border">
         <EntanglementHeader 
@@ -72,9 +96,37 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
           fidelity={simulationResult.fidelity}
         />
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <p className="font-mono">No entanglement detected</p>
-            <p className="text-sm mt-2">Try adding gates like CNOT, CZ, or Toffoli to create entanglement</p>
+          <div className="text-center py-8 space-y-4">
+            <div className="text-6xl opacity-20">⚛️</div>
+            <div>
+              <p className="font-mono text-lg text-muted-foreground">No quantum entanglement detected</p>
+              <p className="text-sm mt-2 text-muted-foreground">
+                Try adding entangling gates like:
+              </p>
+              <div className="flex justify-center gap-2 mt-3 flex-wrap">
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">CNOT</span>
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">CZ</span>
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">Toffoli</span>
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">SWAP</span>
+              </div>
+            </div>
+            
+            {/* Debug information for development */}
+            {process.env.NODE_ENV === 'development' && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-xs text-muted-foreground">Debug Info</summary>
+                <pre className="text-xs mt-2 p-2 bg-quantum-void/20 rounded overflow-auto">
+                  {JSON.stringify({
+                    hasEntanglementObject: !!simulationResult.entanglement,
+                    totalEntanglement: simulationResult.entanglement?.totalEntanglement,
+                    pairsCount: simulationResult.entanglement?.pairs?.length,
+                    stateVectorNorm: simulationResult.stateVector?.reduce((sum, amp) => 
+                      sum + (amp.real * amp.real + amp.imag * amp.imag), 0
+                    ).toFixed(6)
+                  }, null, 2)}
+                </pre>
+              </details>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -83,6 +135,12 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
 
   const { entanglement, mode, executionTime, fidelity } = simulationResult;
   const { pairs, totalEntanglement } = entanglement;
+
+  console.log('🎯🔍 EntanglementVisualization: Rendering entanglement visualization with', {
+    pairsCount: pairs.length,
+    totalEntanglement,
+    animationKey
+  });
 
   return (
     <Card className="quantum-panel neon-border">
