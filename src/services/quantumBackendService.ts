@@ -1,4 +1,3 @@
-
 /**
  * Quantum Backend Service
  * Integrates with multiple quantum computing backends including Qiskit, QuTiP simulation, and local simulators
@@ -58,16 +57,12 @@ export class QuantumBackendService {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('quantum_api_key')
-          .eq('user_id', user.id)
-          .single();
-        
-        this.apiKey = profile?.quantum_api_key || null;
+        // For now, we'll skip the API key check since the column doesn't exist yet
+        // This can be added later when user preferences are implemented
+        console.log('User authenticated, ready for quantum backend access');
       }
     } catch (error) {
-      console.warn('Could not load quantum API key:', error);
+      console.warn('Could not initialize quantum API:', error);
     }
   }
 

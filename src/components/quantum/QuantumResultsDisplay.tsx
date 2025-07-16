@@ -254,7 +254,7 @@ export function QuantumResultsDisplay({ result }: QuantumResultsDisplayProps) {
                       <div className="flex justify-between">
                         <span className="text-quantum-particle">Amplitude:</span>
                         <span className="text-quantum-neon font-mono">
-                          {formatComplex(qubit.amplitude)}
+                          {qubit.amplitude.real.toFixed(4)} + {qubit.amplitude.imag.toFixed(4)}i
                         </span>
                       </div>
                       

@@ -40,10 +40,10 @@ function BlochSphereVisualization({ data }: { data: BlochSphereData }) {
     }
   });
 
-  // Axis vectors
-  const xAxis = [[-1.2, 0, 0], [1.2, 0, 0]];
-  const yAxis = [[0, -1.2, 0], [0, 1.2, 0]];
-  const zAxis = [[0, 0, -1.2], [0, 0, 1.2]];
+  // Axis vectors - fix TypeScript errors by properly typing as Vector3 tuples
+  const xAxis: [number, number, number][] = [[-1.2, 0, 0], [1.2, 0, 0]];
+  const yAxis: [number, number, number][] = [[0, -1.2, 0], [0, 1.2, 0]];
+  const zAxis: [number, number, number][] = [[0, 0, -1.2], [0, 0, 1.2]];
 
   return (
     <group>
@@ -77,7 +77,7 @@ function BlochSphereVisualization({ data }: { data: BlochSphereData }) {
       
       {/* State vector */}
       <Line
-        points={[[0, 0, 0], [data.x, data.y, data.z]]}
+        points={[[0, 0, 0], [data.x, data.y, data.z]] as [number, number, number][]}
         color="hsl(var(--quantum-plasma))"
         lineWidth={4}
       />
@@ -202,7 +202,7 @@ export function EnhancedBlochSphere({
               <div className="space-y-2">
                 <span className="text-quantum-particle text-sm">Amplitude:</span>
                 <div className="text-quantum-glow font-mono text-sm">
-                  {selectedState.amplitude.real.toFixed(4)} + {SelectedState.amplitude.imag.toFixed(4)}i
+                  {selectedState.amplitude.real.toFixed(4)} + {selectedState.amplitude.imag.toFixed(4)}i
                 </div>
               </div>
             </div>
