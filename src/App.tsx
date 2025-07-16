@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
@@ -37,6 +37,8 @@ function App() {
               <Route path="/embed/:id" element={<EmbedCircuit />} />
               <Route path="/thank-you" element={<ThankYou />} />
               <Route path="/integrations" element={<IntegrationsPage />} />
+              <Route path="/documentation" element={<Navigate to="/integrations" replace />} />
+              <Route path="/docs" element={<Navigate to="/integrations" replace />} />
               <Route path="/sdk" element={<SDKDocumentation />} />
               <Route path="/python-sdk" element={<PythonSDKPage />} />
               <Route path="/docs/api" element={<APIReference />} />
