@@ -132,7 +132,7 @@ export function OutputGraphicalFormat({ simulationResult }: OutputGraphicalForma
                 <div className="flex flex-wrap gap-1">
                   {entanglement.pairs.map((pair, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
-                      Q{pair.qubits[0]}-Q{pair.qubits[1]}
+                      Q{pair.qubit1}-Q{pair.qubit2}
                       <span className="text-quantum-glow ml-1">
                         {(pair.strength * 100).toFixed(0)}%
                       </span>

@@ -92,7 +92,7 @@ export function OutputSimulationLogs({ simulationResult }: OutputSimulationLogsP
           id: `pair-${timestamp}-${index}`,
           timestamp: timestamp + 4 + index,
           level: 'quantum',
-          message: `Entangled pair detected: Q${pair.qubits[0]} ↔ Q${pair.qubits[1]} (${(pair.strength * 100).toFixed(1)}%)`,
+          message: `Entangled pair detected: Q${pair.qubit1} ↔ Q${pair.qubit2} (${(pair.strength * 100).toFixed(1)}%)`,
           data: { pair }
         });
       });
