@@ -16,28 +16,54 @@ export function useQuantumBackend() {
     if (isExecuting) return null;
     
     setIsExecuting(true);
-    console.log('🚀 Executing quantum circuit with backend:', backend);
+    console.log('🚀 Executing quantum circuit with backend:', backend, 'shots:', shots);
+    console.log('🚀 Circuit gates:', circuit.map(g => `${g.type}(${g.qubit})`).join(', '));
     
     try {
-      // Convert circuit gates to backend format
+      // Convert circuit gates to backend format with proper qubit indexing
+      const maxQubit = Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || []))));
+      
       const quantumCircuit: QuantumCircuit = {
-        gates: circuit.map(gate => ({
-          type: gate.type,
-          qubit: gate.qubit || 0,
-          controlQubit: gate.qubits?.[0],
-          angle: gate.angle,
-          parameters: gate.params ? { params: gate.params } : undefined
-        })),
-        qubits: Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))),
+        gates: circuit.map(gate => {
+          const backendGate: any = {
+            type: gate.type,
+            qubit: gate.qubit || 0,
+            angle: gate.angle
+          };
+          
+          // Handle multi-qubit gates
+          if (gate.type === 'CNOT' && gate.qubits && gate.qubits.length >= 2) {
+            backendGate.controlQubit = gate.qubits[0];
+            backendGate.qubit = gate.qubits[1];
+          }
+          
+          if (gate.params) {
+            backendGate.parameters = { params: gate.params };
+          }
+          
+          return backendGate;
+        }),
+        qubits: Math.max(5, maxQubit + 1),
         shots
       };
 
+      console.log('🚀 Quantum circuit prepared:', quantumCircuit);
+
       const result = await quantumBackendService.executeCircuit(quantumCircuit, backend, shots);
       
-      setLastResult(result);
-      setExecutionHistory(prev => [result, ...prev.slice(0, 9)]); // Keep last 10 results
+      console.log('✅ Backend execution completed:', {
+        backend: result.backend,
+        executionTime: result.executionTime,
+        stateVectorLength: result.stateVector.length,
+        measurementStates: Object.keys(result.measurementProbabilities).length,
+        hasEntanglement: !!result.entanglement,
+        entanglementPairs: result.entanglement?.pairs.length || 0,
+        totalEntanglement: result.entanglement?.totalEntanglement || 0
+      });
       
-      console.log('✅ Quantum circuit execution completed:', result);
+      setLastResult(result);
+      setExecutionHistory(prev => [result, ...prev.slice(0, 9)]);
+      
       return result;
       
     } catch (error) {
