@@ -1,3 +1,4 @@
+
 import React, { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { MemoizedGate } from "./MemoizedGate";
@@ -28,7 +29,6 @@ interface VirtualizedCircuitGridProps {
   circuitRef: React.RefObject<HTMLDivElement>;
   NUM_QUBITS: number;
   GRID_SIZE: number;
-  isMobile?: boolean;
 }
 
 const MOBILE_VIEWPORT_WIDTH = 300;
@@ -42,11 +42,11 @@ export function VirtualizedCircuitGrid({
   onDeleteGate, 
   circuitRef, 
   NUM_QUBITS, 
-  GRID_SIZE,
-  isMobile = false
+  GRID_SIZE 
 }: VirtualizedCircuitGridProps) {
   const [scrollLeft, setScrollLeft] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const VIEWPORT_WIDTH = isMobile ? MOBILE_VIEWPORT_WIDTH : DESKTOP_VIEWPORT_WIDTH;
 
