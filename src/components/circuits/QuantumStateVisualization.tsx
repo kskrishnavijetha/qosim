@@ -1,15 +1,40 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
+import { QuantumBackendResult } from "@/services/quantumBackendService";
 import { quantumSimulator } from "@/lib/quantumSimulator";
 
 interface QuantumStateVisualizationProps {
   simulationResult: OptimizedSimulationResult | null;
   NUM_QUBITS: number;
+  backendResult?: QuantumBackendResult | null;
 }
 
-export function QuantumStateVisualization({ simulationResult, NUM_QUBITS }: QuantumStateVisualizationProps) {
-  console.log('🔬 QuantumStateVisualization: Rendering with', { simulationResult, NUM_QUBITS });
+export function QuantumStateVisualization({ 
+  simulationResult, 
+  NUM_QUBITS, 
+  backendResult 
+}: QuantumStateVisualizationProps) {
+  console.log('🔬 QuantumStateVisualization: Rendering with', { 
+    simulationResult, 
+    NUM_QUBITS, 
+    backendResult,
+    hasBackendResult: !!backendResult 
+  });
+
+  // Use backend result if available, otherwise use simulation result
+  const displayResult = backendResult ? {
+    qubitStates: backendResult.qubitStates,
+    measurementProbabilities: Array.isArray(backendResult.measurementProbabilities) 
+      ? backendResult.measurementProbabilities 
+      : Object.values(backendResult.measurementProbabilities || {}),
+    stateVector: backendResult.stateVector,
+    executionTime: backendResult.executionTime,
+    fidelity: 1.0,
+    mode: backendResult.backend
+  } : simulationResult;
+  
   const getBlochSphereStyle = (qubitState: { 
     amplitude: { real: number; imag: number }; 
     phase: number; 
@@ -28,12 +53,19 @@ export function QuantumStateVisualization({ simulationResult, NUM_QUBITS }: Quan
   return (
     <Card className="quantum-panel neon-border">
       <CardHeader>
-        <CardTitle className="text-lg font-mono text-quantum-glow">Live Quantum State Simulation</CardTitle>
+        <CardTitle className="text-lg font-mono text-quantum-glow">
+          Live Quantum State Simulation
+          {backendResult && (
+            <span className="text-sm text-quantum-neon ml-2">
+              ({backendResult.backend.toUpperCase()})
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-5 gap-4">
           {Array.from({ length: NUM_QUBITS }).map((_, i) => {
-            const qubitState = simulationResult?.qubitStates[i] || {
+            const qubitState = displayResult?.qubitStates[i] || {
               state: '|0⟩',
               amplitude: { real: 1, imag: 0 },
               phase: 0,
@@ -60,16 +92,19 @@ export function QuantumStateVisualization({ simulationResult, NUM_QUBITS }: Quan
         </div>
         
         {/* State Vector Display */}
-        {simulationResult && (
+        {displayResult && (
           <div className="mt-6 p-4 bg-quantum-matrix rounded-lg">
             <h4 className="text-sm font-mono text-quantum-neon mb-2">State Vector</h4>
             <div className="text-xs font-mono text-muted-foreground max-h-20 overflow-y-auto">
-              {quantumSimulator.getStateString()}
+              {backendResult ? 
+                `Backend Result (${backendResult.backend})` : 
+                quantumSimulator.getStateString()
+              }
             </div>
             <div className="mt-2">
               <h5 className="text-xs font-mono text-quantum-particle">Measurement Probabilities</h5>
               <div className="text-xs font-mono text-muted-foreground">
-                {simulationResult.measurementProbabilities
+                {displayResult.measurementProbabilities
                   .map((prob, i) => prob > 0.001 ? `|${i.toString(2).padStart(NUM_QUBITS, '0')}⟩: ${(prob * 100).toFixed(1)}%` : null)
                   .filter(Boolean)
                   .join(', ')}

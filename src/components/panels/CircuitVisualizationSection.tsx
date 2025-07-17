@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
@@ -74,6 +75,19 @@ export function CircuitVisualizationSection({
       default: return <Smartphone className="w-4 h-4" />;
     }
   };
+
+  // Use backend result if available, otherwise fall back to simulation result
+  const displayResult = lastResult ? {
+    qubitStates: lastResult.qubitStates,
+    measurementProbabilities: Array.isArray(lastResult.measurementProbabilities) 
+      ? lastResult.measurementProbabilities 
+      : Object.values(lastResult.measurementProbabilities || {}),
+    stateVector: lastResult.stateVector,
+    executionTime: lastResult.executionTime,
+    fidelity: 1.0, // Backend results are considered high fidelity
+    mode: lastResult.backend,
+    entanglement: lastResult.entanglement
+  } as OptimizedSimulationResult : simulationResult;
 
   return (
     <div className="space-y-4 lg:space-y-6">
@@ -155,7 +169,7 @@ export function CircuitVisualizationSection({
 
       {/* Output Console - New collapsible console */}
       <OutputConsole
-        simulationResult={simulationResult}
+        simulationResult={displayResult}
         isCollapsed={isOutputCollapsed}
         onToggleCollapse={setIsOutputCollapsed}
       />
@@ -163,12 +177,13 @@ export function CircuitVisualizationSection({
       {/* Existing visualization components */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         <QuantumStateVisualization 
-          simulationResult={simulationResult} 
-          NUM_QUBITS={numQubits} 
+          simulationResult={displayResult} 
+          NUM_QUBITS={numQubits}
+          backendResult={lastResult}
         />
         
         <EntanglementVisualization 
-          simulationResult={simulationResult}
+          simulationResult={displayResult}
           numQubits={numQubits}
           circuit={circuit}
         />
@@ -176,7 +191,7 @@ export function CircuitVisualizationSection({
 
       {/* Debug Console - Optional advanced debugging */}
       <DebugConsole
-        simulationResult={simulationResult}
+        simulationResult={displayResult}
         onStepMode={onStepModeToggle}
         onStep={onSimulationStep}
         onPause={onSimulationPause}
