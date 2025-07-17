@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,9 @@ import { CustomGate } from '@/lib/customGates';
 
 interface GatePaletteProps {
   onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
+  onGateTouchStart?: (e: React.TouchEvent, gateType: string) => void;
   customGates?: CustomGate[];
+  isMobile?: boolean;
 }
 
 const gateCategories = [
@@ -35,7 +38,20 @@ const gateCategories = [
   }
 ];
 
-export function GatePalette({ onGateMouseDown, customGates = [] }: GatePaletteProps) {
+export function GatePalette({ 
+  onGateMouseDown, 
+  onGateTouchStart, 
+  customGates = [], 
+  isMobile = false 
+}: GatePaletteProps) {
+  const handleGateInteraction = (e: React.MouseEvent | React.TouchEvent, gateType: string) => {
+    if ('touches' in e && onGateTouchStart) {
+      onGateTouchStart(e, gateType);
+    } else if ('button' in e) {
+      onGateMouseDown(e, gateType);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Custom Gates */}
@@ -44,6 +60,8 @@ export function GatePalette({ onGateMouseDown, customGates = [] }: GatePalettePr
           <CustomGatePalette 
             customGates={customGates}
             onGateMouseDown={onGateMouseDown}
+            onGateTouchStart={onGateTouchStart}
+            isMobile={isMobile}
           />
           <Separator />
         </>
@@ -52,22 +70,27 @@ export function GatePalette({ onGateMouseDown, customGates = [] }: GatePalettePr
       {/* Standard Gates */}
       <Card className="quantum-panel">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base lg:text-lg font-mono text-quantum-glow">Gate Palette</CardTitle>
+          <CardTitle className={`font-mono text-quantum-glow ${isMobile ? 'text-base' : 'text-lg'}`}>
+            Gate Palette
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {gateCategories.map((category, index) => (
             <div key={index} className="space-y-2">
               <h4 className="text-sm font-bold text-quantum-glow">{category.title}</h4>
-              <div className="grid grid-cols-3 gap-2">
+              <div className={`grid gap-2 ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}>
                 {category.gates.map(gate => (
                   <Button
                     key={gate.type}
                     variant="secondary"
-                    className="w-full h-10 flex items-center justify-center"
-                    onMouseDown={(e) => onGateMouseDown(e, gate.type)}
+                    className={`flex items-center justify-center select-none ${
+                      isMobile ? 'h-12 text-xs' : 'h-10'
+                    }`}
+                    onMouseDown={(e) => handleGateInteraction(e, gate.type)}
+                    onTouchStart={(e) => handleGateInteraction(e, gate.type)}
                   >
-                    {gate.icon && <gate.icon className="w-4 h-4 mr-2" />}
-                    {gate.name}
+                    {gate.icon && <gate.icon className={`mr-2 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />}
+                    <span className={isMobile ? 'text-xs' : ''}>{gate.name}</span>
                   </Button>
                 ))}
               </div>
