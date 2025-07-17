@@ -74,6 +74,19 @@ export function CircuitsPanel() {
   const NUM_QUBITS = 5;
   const GRID_SIZE = isMobile ? 40 : 50;
 
+  // Enhanced gate addition with collaboration broadcasting
+  const handleGateAdd = (gate: any) => {
+    addGate(gate);
+    if (currentCircuitId) {
+      broadcastChange('gate_added', {
+        gateType: gate.type,
+        qubit: gate.qubit,
+        position: gate.position,
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
   const {
     dragState,
     circuitRef,
@@ -96,19 +109,6 @@ export function CircuitsPanel() {
   });
 
   const { broadcastChange } = useRealtimeCollaboration(currentCircuitId);
-
-  // Enhanced gate addition with collaboration broadcasting
-  const handleGateAdd = (gate: any) => {
-    addGate(gate);
-    if (currentCircuitId) {
-      broadcastChange('gate_added', {
-        gateType: gate.type,
-        qubit: gate.qubit,
-        position: gate.position,
-        timestamp: new Date().toISOString()
-      });
-    }
-  };
 
   // Enhanced gate deletion with collaboration broadcasting
   const handleGateDelete = (gateId: string) => {
@@ -289,7 +289,6 @@ export function CircuitsPanel() {
               </CollapsibleContent>
             </Collapsible>
 
-            {/* Algorithm Results Display */}
             {algorithmResult && (
               <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
                 <h3 className="text-lg font-mono text-quantum-glow mb-3">Algorithm Result</h3>
@@ -320,7 +319,6 @@ export function CircuitsPanel() {
           </div>
         </div>
 
-        {/* Mobile Controls at Bottom */}
         <MobileSimulationControls
           onUndo={undo}
           onClear={clearCircuit}
@@ -334,7 +332,6 @@ export function CircuitsPanel() {
           isCloudConfigured={isCloudConfigured}
         />
 
-        {/* Export Dialog */}
         <ExportDialog
           open={showExportDialog}
           onOpenChange={setShowExportDialog}
@@ -343,7 +340,6 @@ export function CircuitsPanel() {
           numQubits={NUM_QUBITS}
         />
 
-        {/* Dragging Gate */}
         <DraggingGate dragState={dragState} />
       </div>
     );

@@ -1,10 +1,10 @@
-
 export interface CustomGate {
   id: string;
   name: string;
   description?: string;
   matrix: (number | [number, number])[][]; // Each element can be real number or [real, imaginary] complex
   size: 2 | 4 | 8; // 2^n where n is number of qubits
+  qubits: number; // Number of qubits this gate operates on
   color: string;
   createdAt: string;
 }
@@ -193,30 +193,35 @@ export const COMMON_GATES: Partial<CustomGate>[] = [
     name: 'Pauli-X',
     description: 'Bit flip gate',
     matrix: [[0, 1], [1, 0]],
-    size: 2
+    size: 2,
+    qubits: 1
   },
   {
     name: 'Pauli-Y',
     description: 'Bit and phase flip gate',
     matrix: [[0, [0, -1]], [[0, 1], 0]],
-    size: 2
+    size: 2,
+    qubits: 1
   },
   {
     name: 'Pauli-Z',
     description: 'Phase flip gate',
     matrix: [[1, 0], [0, -1]],
-    size: 2
+    size: 2,
+    qubits: 1
   },
   {
     name: 'Hadamard',
     description: 'Creates superposition',
     matrix: [[0.7071, 0.7071], [0.7071, -0.7071]],
-    size: 2
+    size: 2,
+    qubits: 1
   },
   {
     name: 'CNOT',
     description: 'Controlled NOT gate',
     matrix: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]],
-    size: 4
+    size: 4,
+    qubits: 2
   }
 ];
