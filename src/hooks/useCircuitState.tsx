@@ -152,13 +152,10 @@ export function useCircuitState() {
     let finalGate = newGate;
     
     if (newGate.type === 'BELL' && !newGate.qubits) {
-      // Default Bell state on qubits 0 and 1
       finalGate = { ...newGate, qubits: [0, 1] };
     } else if (newGate.type === 'GHZ' && !newGate.qubits) {
-      // Default GHZ state on qubits 0, 1, and 2
       finalGate = { ...newGate, qubits: [0, 1, 2] };
     } else if (newGate.type === 'W' && !newGate.qubits) {
-      // Default W state on qubits 0, 1, and 2
       finalGate = { ...newGate, qubits: [0, 1, 2] };
     }
     
@@ -167,11 +164,10 @@ export function useCircuitState() {
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
     
-    // Track analytics
+    // Track analytics - fix the type issue
     trackEvent('gate_added', { 
       gateType: finalGate.type, 
       qubit: finalGate.qubit, 
-      qubits: finalGate.qubits,
       position: finalGate.position 
     });
     gateUsageTracker.increment(finalGate.type);

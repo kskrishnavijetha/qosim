@@ -3,10 +3,27 @@ import { Complex } from './complexNumbers';
 export interface QuantumBackendResult {
   stateVector: { real: number; imaginary: number; magnitude: number; phase: number }[];
   measurementProbabilities: Record<string, number>;
-  qubitStates: Array<{ qubit: number; probability0: number; probability1: number }>;
-  blochSphereData: Array<{ qubit: number; x: number; y: number; z: number }>;
+  qubitStates: Array<{ 
+    qubit: number; 
+    state: string;
+    amplitude: { real: number; imag: number };
+    probability: number;
+    phase: number;
+    probability0: number; 
+    probability1: number; 
+  }>;
+  blochSphereData: Array<{ 
+    qubit: number; 
+    x: number; 
+    y: number; 
+    z: number;
+    theta: number;
+    phi: number;
+  }>;
   executionTime: number;
   backend: string;
+  jobId?: string;
+  counts?: Record<string, number>;
   entanglement?: {
     pairs: Array<{ qubit1: number; qubit2: number; strength: number }>;
     totalEntanglement: number;
@@ -96,20 +113,16 @@ class QuantumBackendService {
             stateVector = this.applyToffoli(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, gate.qubits?.[2] || 2, numQubits);
             break;
           case 'BELL':
-            // Create Bell state |00⟩ + |11⟩
             stateVector = this.createBellState(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, numQubits);
             break;
           case 'GHZ':
-            // Create GHZ state |000⟩ + |111⟩
             stateVector = this.createGHZState(stateVector, gate.qubits || [0, 1, 2], numQubits);
             break;
           case 'W':
-            // Create W state |001⟩ + |010⟩ + |100⟩
             stateVector = this.createWState(stateVector, gate.qubits || [0, 1, 2], numQubits);
             break;
         }
         
-        // Normalize state vector after each gate
         stateVector = this.normalizeStateVector(stateVector);
       }
 
@@ -121,6 +134,9 @@ class QuantumBackendService {
       const qubitStates = this.calculateQubitStates(stateVector, numQubits);
       const blochSphereData = this.calculateBlochSphereData(stateVector, numQubits);
       const entanglement = this.calculateEntanglement(stateVector, numQubits);
+
+      // Generate counts for shot simulation
+      const counts = this.simulateShots(measurementProbabilities, shots);
 
       console.log('🚀 Entanglement calculation result:', {
         totalEntanglement: entanglement.totalEntanglement,
@@ -142,13 +158,37 @@ class QuantumBackendService {
         blochSphereData,
         entanglement,
         executionTime,
-        backend
+        backend,
+        jobId: `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        counts
       };
 
     } catch (error) {
       console.error('❌ QuantumBackendService error:', error);
       throw error;
     }
+  }
+
+  private simulateShots(probabilities: Record<string, number>, shots: number): Record<string, number> {
+    const counts: Record<string, number> = {};
+    const states = Object.keys(probabilities);
+    const probs = Object.values(probabilities);
+    
+    // Simulate measurement shots
+    for (let i = 0; i < shots; i++) {
+      const rand = Math.random();
+      let cumProb = 0;
+      
+      for (let j = 0; j < states.length; j++) {
+        cumProb += probs[j];
+        if (rand <= cumProb) {
+          counts[states[j]] = (counts[states[j]] || 0) + 1;
+          break;
+        }
+      }
+    }
+    
+    return counts;
   }
 
   private applyHadamard(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
@@ -438,12 +478,22 @@ class QuantumBackendService {
     return probabilities;
   }
 
-  private calculateQubitStates(stateVector: Complex[], numQubits: number): Array<{ qubit: number; probability0: number; probability1: number }> {
+  private calculateQubitStates(stateVector: Complex[], numQubits: number): Array<{ 
+    qubit: number; 
+    state: string;
+    amplitude: { real: number; imag: number };
+    probability: number;
+    phase: number;
+    probability0: number; 
+    probability1: number; 
+  }> {
     const qubitStates = [];
     
     for (let qubit = 0; qubit < numQubits; qubit++) {
       let prob0 = 0;
       let prob1 = 0;
+      let amplitude0 = new Complex(0, 0);
+      let amplitude1 = new Complex(0, 0);
       
       for (let i = 0; i < stateVector.length; i++) {
         const qubitBit = (i >> qubit) & 1;
@@ -451,22 +501,42 @@ class QuantumBackendService {
         
         if (qubitBit === 0) {
           prob0 += probability;
+          amplitude0 = amplitude0.add(stateVector[i]);
         } else {
           prob1 += probability;
+          amplitude1 = amplitude1.add(stateVector[i]);
         }
       }
       
-      qubitStates.push({ qubit, probability0: prob0, probability1: prob1 });
+      const dominantState = prob0 > prob1 ? '0' : '1';
+      const dominantAmplitude = prob0 > prob1 ? amplitude0 : amplitude1;
+      const dominantProb = Math.max(prob0, prob1);
+      
+      qubitStates.push({ 
+        qubit, 
+        state: dominantState,
+        amplitude: { real: dominantAmplitude.real, imag: dominantAmplitude.imaginary },
+        probability: dominantProb,
+        phase: dominantAmplitude.phase(),
+        probability0: prob0, 
+        probability1: prob1 
+      });
     }
     
     return qubitStates;
   }
 
-  private calculateBlochSphereData(stateVector: Complex[], numQubits: number): Array<{ qubit: number; x: number; y: number; z: number }> {
+  private calculateBlochSphereData(stateVector: Complex[], numQubits: number): Array<{ 
+    qubit: number; 
+    x: number; 
+    y: number; 
+    z: number;
+    theta: number;
+    phi: number;
+  }> {
     const blochData = [];
     
     for (let qubit = 0; qubit < numQubits; qubit++) {
-      // Calculate Pauli expectation values
       let x = 0, y = 0, z = 0;
       
       for (let i = 0; i < stateVector.length; i++) {
@@ -474,14 +544,12 @@ class QuantumBackendService {
         const flippedIndex = i ^ (1 << qubit);
         const prob = stateVector[i].magnitude() ** 2;
         
-        // Z component: <Z> = P(0) - P(1)
         if (qubitBit === 0) {
           z += prob;
         } else {
           z -= prob;
         }
         
-        // X and Y components require off-diagonal terms
         if (i < flippedIndex) {
           const offDiagonal = stateVector[i].conjugate().multiply(stateVector[flippedIndex]);
           x += 2 * offDiagonal.real;
@@ -489,7 +557,11 @@ class QuantumBackendService {
         }
       }
       
-      blochData.push({ qubit, x, y, z });
+      // Convert to spherical coordinates
+      const theta = Math.acos(z);
+      const phi = Math.atan2(y, x);
+      
+      blochData.push({ qubit, x, y, z, theta, phi });
     }
     
     return blochData;
