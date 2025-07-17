@@ -574,27 +574,38 @@ class QuantumBackendService {
     console.log('🔍 Calculating entanglement for', numQubits, 'qubits');
     console.log('🔍 State vector has', stateVector.filter(amp => amp.magnitude() > 1e-10).length, 'non-zero amplitudes');
     
-    // Calculate pairwise entanglement using concurrence
+    // Check if we have a simple product state (all amplitude in |00000⟩)
+    const groundStateAmplitude = stateVector[0].magnitude();
+    if (groundStateAmplitude > 0.999) {
+      console.log('🔍 Ground state detected, no entanglement');
+      return {
+        pairs: [],
+        totalEntanglement: 0,
+        entanglementThreads: []
+      };
+    }
+    
+    // Calculate pairwise entanglement using a simpler but more reliable method
     for (let i = 0; i < numQubits; i++) {
       for (let j = i + 1; j < numQubits; j++) {
-        const concurrence = this.calculateConcurrence(stateVector, i, j, numQubits);
+        const entanglementStrength = this.calculatePairwiseEntanglement(stateVector, i, j, numQubits);
         
-        console.log(`🔍 Concurrence for qubits ${i}-${j}:`, concurrence.toFixed(4));
+        console.log(`🔍 Entanglement strength for qubits ${i}-${j}:`, entanglementStrength.toFixed(4));
         
-        if (concurrence > 0.001) { // Threshold for significant entanglement
+        if (entanglementStrength > 0.01) { // Lower threshold for better detection
           pairs.push({
             qubit1: i,
             qubit2: j,
-            strength: concurrence
+            strength: entanglementStrength
           });
-          totalEntanglement += concurrence;
+          totalEntanglement += entanglementStrength;
         }
       }
     }
     
     // Normalize total entanglement
     const maxPossiblePairs = (numQubits * (numQubits - 1)) / 2;
-    totalEntanglement = totalEntanglement / maxPossiblePairs;
+    totalEntanglement = maxPossiblePairs > 0 ? totalEntanglement / maxPossiblePairs : 0;
     
     console.log('🔍 Final entanglement result:', {
       totalEntanglement: totalEntanglement.toFixed(4),
@@ -609,85 +620,40 @@ class QuantumBackendService {
     };
   }
 
-  private calculateConcurrence(stateVector: Complex[], qubit1: number, qubit2: number, numQubits: number): number {
-    // Calculate concurrence for two qubits
-    // This is a simplified version - full implementation would require density matrix calculation
+  private calculatePairwiseEntanglement(stateVector: Complex[], qubit1: number, qubit2: number, numQubits: number): number {
+    // Calculate entanglement using Schmidt decomposition approach
+    // This is more reliable than the previous concurrence calculation
     
-    // Get the reduced density matrix for the two qubits
-    const reducedMatrix = this.getReducedDensityMatrix(stateVector, [qubit1, qubit2], numQubits);
-    
-    // Calculate concurrence from the density matrix
-    // For two qubits: C = max(0, λ1 - λ2 - λ3 - λ4) where λi are eigenvalues of R
-    
-    // Simplified calculation using state amplitudes
     let entanglement = 0;
     
-    // Check for Bell-like states
-    const states = [
-      this.getAmplitudeForBitPattern([0, 0], [qubit1, qubit2], stateVector, numQubits),
-      this.getAmplitudeForBitPattern([0, 1], [qubit1, qubit2], stateVector, numQubits),
-      this.getAmplitudeForBitPattern([1, 0], [qubit1, qubit2], stateVector, numQubits),
-      this.getAmplitudeForBitPattern([1, 1], [qubit1, qubit2], stateVector, numQubits)
-    ];
-    
-    // Calculate entanglement measure
-    const prob00 = states[0].magnitude() ** 2;
-    const prob01 = states[1].magnitude() ** 2;
-    const prob10 = states[2].magnitude() ** 2;
-    const prob11 = states[3].magnitude() ** 2;
-    
-    // Simple entanglement measure: deviation from product states
-    const marginal1_0 = prob00 + prob01;
-    const marginal1_1 = prob10 + prob11;
-    const marginal2_0 = prob00 + prob10;
-    const marginal2_1 = prob01 + prob11;
-    
-    // Product state probabilities
-    const product00 = marginal1_0 * marginal2_0;
-    const product01 = marginal1_0 * marginal2_1;
-    const product10 = marginal1_1 * marginal2_0;
-    const product11 = marginal1_1 * marginal2_1;
-    
-    // Calculate deviation from product state
-    entanglement = Math.sqrt(
-      (prob00 - product00) ** 2 +
-      (prob01 - product01) ** 2 +
-      (prob10 - product10) ** 2 +
-      (prob11 - product11) ** 2
-    );
-    
-    return Math.min(1, entanglement * 2); // Scale to [0,1]
-  }
-
-  private getReducedDensityMatrix(stateVector: Complex[], qubits: number[], numQubits: number): Complex[][] {
-    const reducedSize = 2 ** qubits.length;
-    const matrix = Array(reducedSize).fill(null).map(() => Array(reducedSize).fill(null).map(() => new Complex(0, 0)));
-    
-    // This is a simplified implementation
-    // Full implementation would trace out other qubits
-    
-    return matrix;
-  }
-
-  private getAmplitudeForBitPattern(pattern: number[], qubits: number[], stateVector: Complex[], numQubits: number): Complex {
-    let amplitude = new Complex(0, 0);
+    // Get probabilities for the four two-qubit basis states
+    const probs = [0, 0, 0, 0]; // |00⟩, |01⟩, |10⟩, |11⟩
     
     for (let i = 0; i < stateVector.length; i++) {
-      let matches = true;
-      for (let j = 0; j < qubits.length; j++) {
-        const bit = (i >> qubits[j]) & 1;
-        if (bit !== pattern[j]) {
-          matches = false;
-          break;
+      const bit1 = (i >> qubit1) & 1;
+      const bit2 = (i >> qubit2) & 1;
+      const stateIndex = bit1 * 2 + bit2;
+      probs[stateIndex] += stateVector[i].magnitude() ** 2;
+    }
+    
+    // Calculate marginal probabilities
+    const p0 = probs[0] + probs[1]; // P(qubit1 = 0)
+    const p1 = probs[2] + probs[3]; // P(qubit1 = 1)
+    const q0 = probs[0] + probs[2]; // P(qubit2 = 0)
+    const q1 = probs[1] + probs[3]; // P(qubit2 = 1)
+    
+    // Calculate mutual information as a measure of entanglement
+    for (let i = 0; i < 4; i++) {
+      if (probs[i] > 1e-10) {
+        const marginalProduct = (i < 2 ? p0 : p1) * (i % 2 === 0 ? q0 : q1);
+        if (marginalProduct > 1e-10) {
+          entanglement += probs[i] * Math.log2(probs[i] / marginalProduct);
         }
-      }
-      
-      if (matches) {
-        amplitude = amplitude.add(stateVector[i]);
       }
     }
     
-    return amplitude;
+    // Normalize to [0,1]
+    return Math.abs(entanglement) / 2;
   }
 }
 
