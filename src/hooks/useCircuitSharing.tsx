@@ -187,7 +187,14 @@ export function useCircuitSharing() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSharedCircuits(data || []);
+      
+      // Type assertion to ensure proper typing
+      const typedData = (data || []).map(item => ({
+        ...item,
+        permission_level: item.permission_level as 'view' | 'edit' | 'admin'
+      }));
+      
+      setSharedCircuits(typedData);
     } catch (error) {
       console.error('Error fetching shared circuits:', error);
     } finally {
