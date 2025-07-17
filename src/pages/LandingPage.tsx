@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu, Download, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { ProductRoadmap } from "@/components/ProductRoadmap";
 
 const LandingPage = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +26,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'about', 'features', 'use-cases', 'early-access'];
+      const sections = ['hero', 'about', 'features', 'use-cases', 'roadmap', 'early-access'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -62,6 +63,7 @@ const LandingPage = () => {
               { id: 'about', label: 'Product' },
               { id: 'features', label: 'Features' },
               { id: 'use-cases', label: 'Use Cases' },
+              { id: 'roadmap', label: 'Roadmap' },
               { id: 'early-access', label: 'Early Access' }
             ].map((item) => (
               <button
@@ -895,6 +897,11 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Product Roadmap Section */}
+      <div id="roadmap">
+        <ProductRoadmap />
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-border/40 py-12 bg-muted/20">
