@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,18 +42,18 @@ interface RoadmapModule {
 }
 
 const roadmapData: RoadmapModule[] = [
-  // Month 1-2 (Foundation & Core)
+  // Month 1-2 (Foundation & Core) - Most completed
   {
     id: 'qfs-core',
     name: 'Quantum Foundation Stack (QFS)',
     description: 'Revolutionary quantum-native file system with memory mapping',
     icon: <Database className="w-5 h-5" />,
     priority: 'High',
-    status: 'In Progress',
+    status: 'Completed',
     timeline: 'Month 1-2',
     dependencies: [],
     deliverables: ['Quantum file indexing', 'Memory mapping system', 'State persistence'],
-    progress: 65,
+    progress: 100,
     quarter: 'Q1',
     month: 1
   },
@@ -64,11 +63,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'Core operating system for quantum computing environments',
     icon: <Cpu className="w-5 h-5" />,
     priority: 'High',
-    status: 'In Progress',
+    status: 'Completed',
     timeline: 'Month 1-2',
     dependencies: ['qfs-core'],
     deliverables: ['Process scheduler', 'Resource manager', 'System calls API'],
-    progress: 45,
+    progress: 100,
     quarter: 'Q1',
     month: 1
   },
@@ -78,27 +77,27 @@ const roadmapData: RoadmapModule[] = [
     description: 'Comprehensive Python library for quantum circuit development',
     icon: <Code className="w-5 h-5" />,
     priority: 'High',
-    status: 'Testing',
+    status: 'Completed',
     timeline: 'Month 1-2',
     dependencies: [],
     deliverables: ['Circuit builder API', 'Simulation engine', 'Export utilities'],
-    progress: 85,
+    progress: 100,
     quarter: 'Q1',
     month: 1
   },
   
-  // Month 2-3 (SDKs & Integration)
+  // Month 2-3 (SDKs & Integration) - Mostly completed
   {
     id: 'javascript-sdk',
     name: 'JavaScript SDK',
     description: 'Browser and Node.js quantum computing toolkit',
     icon: <Code className="w-5 h-5" />,
     priority: 'High',
-    status: 'In Progress',
+    status: 'Completed',
     timeline: 'Month 2-3',
     dependencies: ['python-sdk'],
     deliverables: ['Web components', 'Visualization library', 'NPM package'],
-    progress: 70,
+    progress: 100,
     quarter: 'Q1',
     month: 2
   },
@@ -108,11 +107,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'Seamless integration between quantum and classical computing',
     icon: <Zap className="w-5 h-5" />,
     priority: 'High',
-    status: 'Planning',
+    status: 'Testing',
     timeline: 'Month 2-3',
     dependencies: ['quantum-os-kernel'],
     deliverables: ['Classical interface', 'Quantum bridge', 'Optimization engine'],
-    progress: 25,
+    progress: 85,
     quarter: 'Q1',
     month: 2
   },
@@ -122,27 +121,27 @@ const roadmapData: RoadmapModule[] = [
     description: 'Advanced quantum circuit compilation and optimization',
     icon: <Layers className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'Completed',
     timeline: 'Month 2-3',
     dependencies: ['python-sdk', 'javascript-sdk'],
     deliverables: ['QASM compiler', 'Circuit optimizer', 'Error correction'],
-    progress: 15,
+    progress: 100,
     quarter: 'Q1',
     month: 2
   },
 
-  // Month 3-4 (Advanced Features)
+  // Month 3-4 (Advanced Features) - Some completed
   {
     id: 'quantum-neural-networks',
     name: 'Quantum Neural Networks (QNN)',
     description: 'AI-powered quantum machine learning framework',
     icon: <Brain className="w-5 h-5" />,
     priority: 'High',
-    status: 'Planning',
+    status: 'Testing',
     timeline: 'Month 3-4',
     dependencies: ['hybrid-simulator'],
     deliverables: ['QNN architecture', 'Training algorithms', 'Model deployment'],
-    progress: 10,
+    progress: 90,
     quarter: 'Q2',
     month: 3
   },
@@ -152,11 +151,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'High-performance quantum computing library for Rust',
     icon: <Code className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'Completed',
     timeline: 'Month 3-4',
     dependencies: ['python-sdk', 'javascript-sdk'],
     deliverables: ['Core library', 'Performance benchmarks', 'Memory safety'],
-    progress: 5,
+    progress: 100,
     quarter: 'Q2',
     month: 3
   },
@@ -166,27 +165,27 @@ const roadmapData: RoadmapModule[] = [
     description: 'Complete suite for quantum machine learning applications',
     icon: <Target className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'In Progress',
     timeline: 'Month 3-4',
     dependencies: ['quantum-neural-networks'],
     deliverables: ['Pre-trained models', 'Training pipeline', 'Evaluation metrics'],
-    progress: 0,
+    progress: 75,
     quarter: 'Q2',
     month: 3
   },
 
-  // Month 4-5 (Infrastructure & Performance)
+  // Month 4-5 (Infrastructure & Performance) - Mixed progress
   {
     id: 'gpu-tpu-acceleration',
     name: 'GPU/TPU Acceleration',
     description: 'Hardware acceleration for quantum simulations',
     icon: <Zap className="w-5 h-5" />,
     priority: 'High',
-    status: 'Planning',
+    status: 'In Progress',
     timeline: 'Month 4-5',
     dependencies: ['hybrid-simulator'],
     deliverables: ['CUDA integration', 'TPU support', 'Performance optimization'],
-    progress: 0,
+    progress: 60,
     quarter: 'Q2',
     month: 4
   },
@@ -196,11 +195,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'Live monitoring and analytics for quantum processors',
     icon: <Globe className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'Completed',
     timeline: 'Month 4-5',
     dependencies: ['quantum-os-kernel'],
     deliverables: ['Telemetry dashboard', 'Performance metrics', 'Alert system'],
-    progress: 0,
+    progress: 100,
     quarter: 'Q2',
     month: 4
   },
@@ -210,27 +209,27 @@ const roadmapData: RoadmapModule[] = [
     description: 'Streamlined deployment for quantum applications',
     icon: <Rocket className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'Testing',
     timeline: 'Month 4-5',
     dependencies: ['quantum-os-kernel', 'qfs-core'],
     deliverables: ['Container support', 'Auto-scaling', 'CI/CD integration'],
-    progress: 0,
+    progress: 80,
     quarter: 'Q2',
     month: 4
   },
 
-  // Month 5-6 (Community & Ecosystem)
+  // Month 5-6 (Community & Ecosystem) - Some completed
   {
     id: 'cloud-sandbox',
     name: 'Secure Cloud Sandbox',
     description: 'Isolated quantum computing environments in the cloud',
     icon: <Shield className="w-5 h-5" />,
     priority: 'High',
-    status: 'Planning',
+    status: 'Testing',
     timeline: 'Month 5-6',
     dependencies: ['deployment-engine'],
     deliverables: ['Sandbox environments', 'Security protocols', 'Resource limits'],
-    progress: 0,
+    progress: 85,
     quarter: 'Q2',
     month: 5
   },
@@ -240,11 +239,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'Collaborative platform for quantum developers',
     icon: <Users className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'In Progress',
     timeline: 'Month 5-6',
     dependencies: ['cloud-sandbox'],
     deliverables: ['Developer forums', 'Code sharing', 'Collaboration tools'],
-    progress: 0,
+    progress: 70,
     quarter: 'Q2',
     month: 5
   },
@@ -254,11 +253,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'Automated documentation generation for quantum projects',
     icon: <BookOpen className="w-5 h-5" />,
     priority: 'Medium',
-    status: 'Planning',
+    status: 'Completed',
     timeline: 'Month 5-6',
     dependencies: ['python-sdk', 'javascript-sdk', 'rust-sdk'],
     deliverables: ['Auto-generation', 'Interactive examples', 'API references'],
-    progress: 0,
+    progress: 100,
     quarter: 'Q2',
     month: 5
   },
@@ -268,11 +267,11 @@ const roadmapData: RoadmapModule[] = [
     description: 'Platform for sharing and monetizing quantum applications',
     icon: <Store className="w-5 h-5" />,
     priority: 'Low',
-    status: 'Planning',
+    status: 'In Progress',
     timeline: 'Month 6',
     dependencies: ['community-hub', 'deployment-engine'],
     deliverables: ['App store', 'Payment system', 'Revenue sharing'],
-    progress: 0,
+    progress: 45,
     quarter: 'Q2',
     month: 6
   }
@@ -313,6 +312,7 @@ export const ProductRoadmap = () => {
   
   const completedModules = roadmapData.filter(m => m.status === 'Completed').length;
   const inProgressModules = roadmapData.filter(m => m.status === 'In Progress').length;
+  const testingModules = roadmapData.filter(m => m.status === 'Testing').length;
   const overallProgress = Math.round((roadmapData.reduce((sum, m) => sum + m.progress, 0) / roadmapData.length));
 
   return (
@@ -323,7 +323,7 @@ export const ProductRoadmap = () => {
         <div className="text-center mb-16">
           <Badge variant="outline" className="border-quantum-plasma text-quantum-plasma mb-4">
             <Calendar className="w-4 h-4 mr-2" />
-            6-Month Development Plan
+            6-Month Development Plan - Major Progress Achieved!
           </Badge>
           
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -333,12 +333,12 @@ export const ProductRoadmap = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Our ambitious 6-month journey to revolutionize quantum computing with 20 core modules, 
-            from foundational SDKs to advanced quantum neural networks and marketplace integration.
+            Our ambitious 6-month journey to revolutionize quantum computing with 20 core modules. 
+            Significant milestones achieved with {completedModules} modules completed and {testingModules} in testing phase!
           </p>
           
           {/* Progress Overview */}
-          <div className="grid md:grid-cols-4 gap-6 mt-12 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-5 gap-6 mt-12 max-w-5xl mx-auto">
             <Card className="border-quantum-glow/20">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-quantum-glow">{overallProgress}%</div>
@@ -353,13 +353,19 @@ export const ProductRoadmap = () => {
             </Card>
             <Card className="border-quantum-plasma/20">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-quantum-plasma">{inProgressModules}</div>
-                <div className="text-sm text-muted-foreground">In Progress</div>
+                <div className="text-2xl font-bold text-quantum-plasma">{testingModules}</div>
+                <div className="text-sm text-muted-foreground">Testing</div>
               </CardContent>
             </Card>
             <Card className="border-quantum-energy/20">
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-quantum-energy">20</div>
+                <div className="text-2xl font-bold text-quantum-energy">{inProgressModules}</div>
+                <div className="text-sm text-muted-foreground">In Progress</div>
+              </CardContent>
+            </Card>
+            <Card className="border-quantum-particle/20">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-quantum-particle">20</div>
                 <div className="text-sm text-muted-foreground">Total Modules</div>
               </CardContent>
             </Card>
@@ -379,13 +385,13 @@ export const ProductRoadmap = () => {
               <Card className="border-quantum-glow/30 bg-gradient-to-br from-quantum-glow/5 to-transparent">
                 <CardHeader>
                   <CardTitle className="text-xl text-quantum-glow flex items-center">
-                    <Star className="w-5 h-5 mr-2" />
-                    Q1 2025: Foundation & Core (Months 1-3)
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Q1 2025: Foundation & Core (Months 1-3) ✅
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-sm text-muted-foreground mb-4">
-                    Building the foundational infrastructure and core SDKs
+                    Foundational infrastructure and core SDKs - Mostly Completed!
                   </div>
                   {q1Modules.map((module) => (
                     <div key={module.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
@@ -408,13 +414,13 @@ export const ProductRoadmap = () => {
               <Card className="border-quantum-neon/30 bg-gradient-to-br from-quantum-neon/5 to-transparent">
                 <CardHeader>
                   <CardTitle className="text-xl text-quantum-neon flex items-center">
-                    <Star className="w-5 h-5 mr-2" />
+                    <Clock className="w-5 h-5 mr-2" />
                     Q2 2025: Advanced Features & Ecosystem (Months 4-6)
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-sm text-muted-foreground mb-4">
-                    Advanced AI features, performance optimization, and community tools
+                    Advanced AI features, performance optimization, and community tools - Strong Progress!
                   </div>
                   {q2Modules.map((module) => (
                     <div key={module.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
@@ -440,25 +446,25 @@ export const ProductRoadmap = () => {
               <CardHeader>
                 <CardTitle className="text-xl flex items-center">
                   <Target className="w-5 h-5 mr-2 text-quantum-plasma" />
-                  Key Milestones & Early Access Plans
+                  Key Milestones & Launch Status
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-6">
-                  <div className="text-center p-4 bg-gradient-to-br from-quantum-glow/10 to-transparent rounded-lg">
-                    <div className="text-lg font-semibold text-quantum-glow mb-2">Month 2</div>
-                    <div className="text-sm text-muted-foreground">Python SDK Early Access</div>
-                    <div className="text-xs text-quantum-glow mt-1">Beta Release</div>
+                  <div className="text-center p-4 bg-gradient-to-br from-green-500/20 to-transparent rounded-lg border border-green-500/30">
+                    <div className="text-lg font-semibold text-green-400 mb-2">Month 2 ✅</div>
+                    <div className="text-sm text-muted-foreground">Python SDK Released</div>
+                    <div className="text-xs text-green-400 mt-1">Public Beta Available</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-quantum-neon/10 to-transparent rounded-lg">
-                    <div className="text-lg font-semibold text-quantum-neon mb-2">Month 4</div>
-                    <div className="text-sm text-muted-foreground">QNN Framework Launch</div>
-                    <div className="text-xs text-quantum-neon mt-1">Public Alpha</div>
+                  <div className="text-center p-4 bg-gradient-to-br from-yellow-500/20 to-transparent rounded-lg border border-yellow-500/30">
+                    <div className="text-lg font-semibold text-yellow-400 mb-2">Month 4 🚧</div>
+                    <div className="text-sm text-muted-foreground">QNN Framework Testing</div>
+                    <div className="text-xs text-yellow-400 mt-1">Alpha Testing Phase</div>
                   </div>
                   <div className="text-center p-4 bg-gradient-to-br from-quantum-plasma/10 to-transparent rounded-lg">
                     <div className="text-lg font-semibold text-quantum-plasma mb-2">Month 6</div>
                     <div className="text-sm text-muted-foreground">Full Platform Release</div>
-                    <div className="text-xs text-quantum-plasma mt-1">General Availability</div>
+                    <div className="text-xs text-quantum-plasma mt-1">On Track for GA</div>
                   </div>
                 </div>
               </CardContent>
@@ -530,7 +536,10 @@ export const ProductRoadmap = () => {
                             {module.icon}
                             <span className="text-sm font-medium">{module.name}</span>
                           </div>
-                          <ChevronRight className="w-4 h-4" />
+                          <div className="flex items-center gap-1">
+                            {getStatusIcon(module.status)}
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
                         </div>
                       </button>
                     ))}
@@ -615,17 +624,26 @@ export const ProductRoadmap = () => {
         <div className="text-center mt-16">
           <Card className="max-w-2xl mx-auto border-quantum-energy/30 bg-gradient-to-br from-quantum-energy/10 to-transparent">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Join the Early Access Program</h3>
+              <h3 className="text-2xl font-bold mb-4">Experience Our Completed Features</h3>
               <p className="text-muted-foreground mb-6">
-                Be the first to experience these groundbreaking features as they're released. 
-                Get exclusive access to beta versions and shape the future of quantum computing.
+                With {completedModules} modules already completed and {testingModules} in testing, 
+                you can start building with our Python SDK, JavaScript toolkit, and Quantum Compiler today!
               </p>
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma"
-              >
-                Get Early Access
-              </Button>
+              <div className="flex gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma"
+                >
+                  Start Building Now
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-quantum-glow text-quantum-glow hover:bg-quantum-glow/10"
+                >
+                  View Documentation
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
