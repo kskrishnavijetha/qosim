@@ -186,6 +186,8 @@ export function CircuitsPanel() {
           onSimulationReset={handleSimulationReset}
           onSimulationPause={handleSimulationPause}
           onSimulationResume={handleSimulationResume}
+          onGateAdd={addGate}
+          onGateMouseDown={handleMouseDown}
         />
 
         {/* Export Dialog */}

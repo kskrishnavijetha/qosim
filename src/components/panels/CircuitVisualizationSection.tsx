@@ -1,15 +1,12 @@
-import React, { useState } from "react";
-import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
-import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
-import { EntanglementVisualization } from "@/components/simulation/EntanglementVisualization";
-import { DebugConsole } from "@/components/simulation/DebugConsole";
-import { OutputConsole } from "@/components/simulation/OutputConsole";
-import { Gate } from "@/hooks/useCircuitState";
-import { QuantumResultsDisplay } from "@/components/quantum/QuantumResultsDisplay";
-import { useQuantumBackend } from "@/hooks/useQuantumBackend";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Zap, Cpu, Cloud, Smartphone } from "lucide-react";
+
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { EntanglementVisualization } from '@/components/simulation/EntanglementVisualization';
+import { OutputGraphicalFormat } from '@/components/simulation/output/OutputGraphicalFormat';
+import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
+import { Gate } from '@/hooks/useCircuitState';
+import { Play, Pause, RotateCcw, StepForward } from 'lucide-react';
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -17,10 +14,12 @@ interface CircuitVisualizationSectionProps {
   circuit: Gate[];
   onSuggestionClick: (suggestion: any) => void;
   onStepModeToggle: (enabled: boolean) => void;
-  onSimulationStep: () => void;
+  onSimulationStep: () => any;
   onSimulationReset: () => void;
   onSimulationPause: () => void;
   onSimulationResume: () => void;
+  onGateAdd?: (gate: Gate) => void;
+  onGateMouseDown?: (e: React.MouseEvent, gateType: string) => void;
 }
 
 export function CircuitVisualizationSection({
@@ -32,159 +31,85 @@ export function CircuitVisualizationSection({
   onSimulationStep,
   onSimulationReset,
   onSimulationPause,
-  onSimulationResume
+  onSimulationResume,
+  onGateAdd,
+  onGateMouseDown
 }: CircuitVisualizationSectionProps) {
-  const [isOutputCollapsed, setIsOutputCollapsed] = useState(false);
-  const [isDebugCollapsed, setIsDebugCollapsed] = useState(true);
-  const [selectedBackend, setSelectedBackend] = useState<'qiskit' | 'qutip' | 'braket' | 'local'>('local');
-  const [shots, setShots] = useState(1024);
-
-  const {
-    isExecuting,
-    lastResult,
-    executeCircuit,
-    executeOnQiskit,
-    executeOnBraket,
-    executeOnQuTiP
-  } = useQuantumBackend();
-
-  const handleBackendExecution = async () => {
-    if (circuit.length === 0) return;
-
-    switch (selectedBackend) {
-      case 'qiskit':
-        await executeOnQiskit(circuit, shots);
-        break;
-      case 'braket':
-        await executeOnBraket(circuit, shots);
-        break;
-      case 'qutip':
-        await executeOnQuTiP(circuit);
-        break;
-      default:
-        await executeCircuit(circuit, 'local', shots);
-    }
-  };
-
-  const getBackendIcon = (backend: string) => {
-    switch (backend) {
-      case 'qiskit': return <Cpu className="w-4 h-4" />;
-      case 'braket': return <Cloud className="w-4 h-4" />;
-      case 'qutip': return <Zap className="w-4 h-4" />;
-      default: return <Smartphone className="w-4 h-4" />;
-    }
-  };
+  // Default handlers if not provided
+  const handleGateAdd = onGateAdd || (() => {});
+  const handleGateMouseDown = onGateMouseDown || (() => {});
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Backend Execution Controls */}
-      <div className="quantum-panel neon-border rounded-lg p-4">
-        <h3 className="text-lg font-mono text-quantum-glow mb-4">Quantum Backend Execution</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div>
-            <label className="text-sm text-quantum-neon mb-2 block">Backend</label>
-            <Select value={selectedBackend} onValueChange={(value: any) => setSelectedBackend(value)}>
-              <SelectTrigger className="quantum-panel neon-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="quantum-panel neon-border">
-                <SelectItem value="local">
-                  <div className="flex items-center gap-2">
-                    <Smartphone className="w-4 h-4" />
-                    Local Simulator
-                  </div>
-                </SelectItem>
-                <SelectItem value="qiskit">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4" />
-                    IBM Qiskit
-                  </div>
-                </SelectItem>
-                <SelectItem value="braket">
-                  <div className="flex items-center gap-2">
-                    <Cloud className="w-4 h-4" />
-                    AWS Braket
-                  </div>
-                </SelectItem>
-                <SelectItem value="qutip">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
-                    QuTiP Simulator
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {selectedBackend !== 'qutip' && (
-            <div>
-              <label className="text-sm text-quantum-neon mb-2 block">Shots</label>
-              <Select value={shots.toString()} onValueChange={(value) => setShots(parseInt(value))}>
-                <SelectTrigger className="quantum-panel neon-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="quantum-panel neon-border">
-                  <SelectItem value="100">100 shots</SelectItem>
-                  <SelectItem value="1024">1,024 shots</SelectItem>
-                  <SelectItem value="4096">4,096 shots</SelectItem>
-                  <SelectItem value="8192">8,192 shots</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          <div className="md:col-span-2">
-            <Button 
-              onClick={handleBackendExecution}
-              disabled={isExecuting || circuit.length === 0}
-              className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+      {/* Step Controls */}
+      <Card className="quantum-panel neon-border animate-in fade-in slide-in-from-bottom" style={{ animationDelay: '600ms' }}>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base lg:text-lg font-mono text-quantum-glow">Step-by-Step Execution</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => onStepModeToggle(true)}
+              size="sm"
+              variant="outline"
+              className="quantum-glow"
             >
-              <div className="flex items-center gap-2">
-                {getBackendIcon(selectedBackend)}
-                {isExecuting ? 'Executing...' : `Execute on ${selectedBackend.toUpperCase()}`}
-              </div>
+              <Play className="w-4 h-4 mr-2" />
+              Enable Step Mode
+            </Button>
+            <Button
+              onClick={onSimulationStep}
+              size="sm"
+              variant="outline"
+              className="quantum-glow"
+            >
+              <StepForward className="w-4 h-4 mr-2" />
+              Next Step
+            </Button>
+            <Button
+              onClick={onSimulationReset}
+              size="sm"
+              variant="outline"
+              className="quantum-glow"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset
+            </Button>
+            <Button
+              onClick={onSimulationPause}
+              size="sm"
+              variant="outline"
+              className="quantum-glow"
+            >
+              <Pause className="w-4 h-4 mr-2" />
+              Pause
             </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Quantum Results Display */}
-      {lastResult && (
-        <QuantumResultsDisplay result={lastResult} />
-      )}
-
-      {/* Output Console - New collapsible console */}
-      <OutputConsole
-        simulationResult={simulationResult}
-        isCollapsed={isOutputCollapsed}
-        onToggleCollapse={setIsOutputCollapsed}
-      />
-
-      {/* Existing visualization components */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-        <QuantumStateVisualization 
-          simulationResult={simulationResult} 
-          NUM_QUBITS={numQubits} 
-        />
-        
-        <EntanglementVisualization 
+      {/* Entanglement Analysis */}
+      <div className="animate-in fade-in slide-in-from-bottom" style={{ animationDelay: '700ms' }}>
+        <EntanglementVisualization
           simulationResult={simulationResult}
           numQubits={numQubits}
+          circuit={circuit}
+          onGateAdd={handleGateAdd}
+          onGateMouseDown={handleGateMouseDown}
         />
       </div>
 
-      {/* Debug Console - Optional advanced debugging */}
-      <DebugConsole
-        simulationResult={simulationResult}
-        onStepMode={onStepModeToggle}
-        onStep={onSimulationStep}
-        onPause={onSimulationPause}
-        onResume={onSimulationResume}
-        onReset={onSimulationReset}
-        isStepMode={false}
-        isPaused={false}
-        currentStep={0}
-      />
+      {/* Simulation Results */}
+      {simulationResult && (
+        <Card className="quantum-panel neon-border animate-in fade-in slide-in-from-bottom" style={{ animationDelay: '800ms' }}>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base lg:text-lg font-mono text-quantum-glow">Quantum State Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <OutputGraphicalFormat simulationResult={simulationResult} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
