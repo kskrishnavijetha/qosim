@@ -76,17 +76,24 @@ export function CircuitVisualizationSection({
     }
   };
 
-  // Use backend result if available, otherwise fall back to simulation result
+  // Convert backend result to OptimizedSimulationResult format if available
   const displayResult = lastResult ? {
     qubitStates: lastResult.qubitStates,
     measurementProbabilities: Array.isArray(lastResult.measurementProbabilities) 
       ? lastResult.measurementProbabilities 
       : Object.values(lastResult.measurementProbabilities || {}),
-    stateVector: lastResult.stateVector,
+    stateVector: lastResult.stateVector.map(amp => ({
+      real: amp.real,
+      imag: amp.imaginary || 0 // Convert 'imaginary' to 'imag' for compatibility
+    })),
     executionTime: lastResult.executionTime,
     fidelity: 1.0, // Backend results are considered high fidelity
-    mode: lastResult.backend,
-    entanglement: lastResult.entanglement
+    mode: lastResult.backend as any,
+    entanglement: lastResult.entanglement || {
+      pairs: [],
+      totalEntanglement: 0,
+      entanglementThreads: []
+    }
   } as OptimizedSimulationResult : simulationResult;
 
   return (
