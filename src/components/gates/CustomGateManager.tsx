@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ export function CustomGateManager({ onGateCreated, onGateDeleted, customGates }:
   const [validationResult, setValidationResult] = useState<{
     isValid: boolean;
     errors: string[];
-    matrix?: number[][];
+    matrix?: (number | [number, number])[][];
   } | null>(null);
   const [previewGate, setPreviewGate] = useState<CustomGate | null>(null);
 
