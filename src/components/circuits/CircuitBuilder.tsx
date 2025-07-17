@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GatePalette } from './GatePalette';
 import { CircuitGrid } from './CircuitGrid';
 import { Gate } from '@/hooks/useCircuitState';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
+import { CustomGate } from '@/lib/customGates';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DragState {
@@ -24,6 +24,7 @@ interface CircuitBuilderProps {
   circuitRef: React.RefObject<HTMLDivElement>;
   numQubits: number;
   gridSize: number;
+  customGates?: CustomGate[];
 }
 
 export function CircuitBuilder({
@@ -34,7 +35,8 @@ export function CircuitBuilder({
   onGateMouseDown,
   circuitRef,
   numQubits,
-  gridSize
+  gridSize,
+  customGates = []
 }: CircuitBuilderProps) {
   const isMobile = useIsMobile();
 
@@ -46,7 +48,10 @@ export function CircuitBuilder({
       <CardContent className="p-3 lg:p-6">
         <div className={`flex gap-3 lg:gap-6 ${isMobile ? 'flex-col' : 'flex-col lg:flex-row'}`}>
           <div className={`${isMobile ? 'w-full' : 'lg:shrink-0'}`}>
-            <GatePalette onGateMouseDown={onGateMouseDown} />
+            <GatePalette 
+              onGateMouseDown={onGateMouseDown} 
+              customGates={customGates}
+            />
           </div>
           <div className="flex-1 min-w-0">
             <CircuitGrid 
