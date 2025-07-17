@@ -3,6 +3,7 @@ import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
 import { SimulationModeSelector } from "@/components/simulation/SimulationModeSelector";
 import { ExportDialog } from "@/components/dialogs/ExportDialog";
+import { QuantumAlgorithmsPanel } from "@/components/algorithms/QuantumAlgorithmsPanel";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
@@ -14,6 +15,7 @@ import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
 
 export function CircuitsPanel() {
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
   
   const {
     circuit,
@@ -73,7 +75,16 @@ export function CircuitsPanel() {
     priorityThreshold: 30000
   });
 
-  // Legacy simple exports (kept for quick access)
+  // Handle algorithm-generated circuits
+  const handleAlgorithmCircuit = (gates: any[]) => {
+    clearCircuit();
+    gates.forEach(gate => addGate(gate));
+  };
+
+  const handleAlgorithmExecution = (result: any) => {
+    setAlgorithmResult(result);
+  };
+
   const exportToJSON = () => {
     const data = generateCircuitData(circuit);
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -155,6 +166,12 @@ export function CircuitsPanel() {
           onLoadTemplate={handleTemplateLoad}
         />
 
+        {/* Quantum Algorithms Panel */}
+        <QuantumAlgorithmsPanel
+          onCircuitGenerated={handleAlgorithmCircuit}
+          onAlgorithmExecuted={handleAlgorithmExecution}
+        />
+
         {/* Circuit Builder */}
         <CircuitBuilder
           circuit={circuit}
@@ -199,6 +216,35 @@ export function CircuitsPanel() {
 
         {/* Dragging Gate */}
         <DraggingGate dragState={dragState} />
+
+        {/* Algorithm Results Display */}
+        {algorithmResult && (
+          <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
+            <h3 className="text-lg font-mono text-quantum-glow mb-3">Algorithm Execution Result</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Circuit Name:</span>
+                <div className="text-quantum-neon">{algorithmResult.circuit?.name}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Description:</span>
+                <div className="text-quantum-particle">{algorithmResult.description}</div>
+              </div>
+              {algorithmResult.successProbability && (
+                <div>
+                  <span className="text-muted-foreground">Success Probability:</span>
+                  <div className="text-quantum-energy">{(algorithmResult.successProbability * 100).toFixed(2)}%</div>
+                </div>
+              )}
+              {algorithmResult.expectedEntanglement && (
+                <div>
+                  <span className="text-muted-foreground">Expected Entanglement:</span>
+                  <div className="text-quantum-energy">{(algorithmResult.expectedEntanglement * 100).toFixed(2)}%</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
