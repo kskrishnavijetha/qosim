@@ -170,6 +170,7 @@ export function CircuitVisualizationSection({
         <EntanglementVisualization 
           simulationResult={simulationResult}
           numQubits={numQubits}
+          circuit={circuit}
         />
       </div>
 
