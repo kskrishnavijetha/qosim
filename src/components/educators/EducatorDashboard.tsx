@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, BookOpen, BarChart3, Settings, Plus, School } from 'lucide-react';
-import { ClassroomList } from './ClassroomList';
+import ClassroomList from './ClassroomList';
 import { StudentAnalytics } from './StudentAnalytics';
-import { LMSIntegrations } from './LMSIntegrations';
+import LMSIntegrations from './LMSIntegrations';
 
 interface EducatorDashboardProps {
   profile: any;
@@ -161,7 +161,7 @@ export function EducatorDashboard({ profile }: EducatorDashboardProps) {
           </TabsContent>
 
           <TabsContent value="classrooms" className="mt-6">
-            <ClassroomList />
+            <ClassroomList educatorId={profile.id} />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">
@@ -169,7 +169,7 @@ export function EducatorDashboard({ profile }: EducatorDashboardProps) {
           </TabsContent>
 
           <TabsContent value="integrations" className="mt-6">
-            <LMSIntegrations />
+            <LMSIntegrations educatorId={profile.id} />
           </TabsContent>
         </Tabs>
       </div>

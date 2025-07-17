@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GraduationCap, Users, BookOpen, Settings, BarChart3, Zap, CheckCircle, Globe } from 'lucide-react';
-import { EducatorSignupForm } from '@/components/educators/EducatorSignupForm';
+import EducatorSignupForm from '@/components/educators/EducatorSignupForm';
 import { EducatorDashboard } from '@/components/educators/EducatorDashboard';
 import { useEducatorProfile } from '@/hooks/useEducatorProfile';
 
@@ -29,7 +28,13 @@ const EducatorsPage = () => {
 
   // If user is logged in but no educator profile, show signup form
   if (user && showSignup) {
-    return <EducatorSignupForm onComplete={() => setShowSignup(false)} />;
+    return (
+      <div className="min-h-screen bg-quantum-void py-16">
+        <div className="max-w-4xl mx-auto px-4">
+          <EducatorSignupForm />
+        </div>
+      </div>
+    );
   }
 
   return (

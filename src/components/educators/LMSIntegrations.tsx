@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,8 @@ const LMSIntegrations: React.FC<LMSIntegrationsProps> = ({ educatorId }) => {
     try {
       await createIntegration({
         lms_type: selectedLMS,
-        integration_data: connectionData
+        integration_data: connectionData,
+        is_active: true
       });
       
       setConnectionData({ api_url: '', api_key: '', course_id: '' });

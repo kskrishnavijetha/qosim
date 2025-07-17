@@ -13,7 +13,11 @@ type LMSIntegration = {
   updated_at: string;
 };
 
-type LMSIntegrationInsert = Omit<LMSIntegration, 'id' | 'educator_id' | 'created_at' | 'updated_at'>;
+type LMSIntegrationInsert = {
+  lms_type: 'canvas' | 'moodle' | 'blackboard' | 'google_classroom' | 'schoology';
+  integration_data: Record<string, any>;
+  is_active?: boolean;
+};
 
 export const useLMSIntegrations = (educatorId: string) => {
   const [integrations, setIntegrations] = useState<LMSIntegration[]>([]);
@@ -44,7 +48,7 @@ export const useLMSIntegrations = (educatorId: string) => {
     }
   };
 
-  const createIntegration = async (integrationData: LMSIntegrationInsert & { lms_type: 'canvas' | 'moodle' | 'blackboard' | 'google_classroom' | 'schoology' }) => {
+  const createIntegration = async (integrationData: LMSIntegrationInsert) => {
     try {
       const { data, error } = await supabase
         .from('lms_integrations')
