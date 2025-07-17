@@ -84,6 +84,14 @@ const LandingPage = () => {
             >
               Roadmap
             </button>
+            <a
+              href="/educators"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm transition-colors hover:text-quantum-glow text-muted-foreground"
+            >
+              For Educators
+            </a>
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -94,6 +102,11 @@ const LandingPage = () => {
             <div className="flex gap-2">
               <Button variant="outline" asChild>
                 <Link to="/integrations">SDKs</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/educators" target="_blank" rel="noopener noreferrer">
+                  For Educators
+                </a>
               </Button>
               <Button variant="outline" asChild>
                 <Link to="/auth">Sign In</Link>
@@ -686,16 +699,20 @@ const LandingPage = () => {
           </div>
           
           <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
-            <Card className="p-4 sm:p-6 text-center border-quantum-neon/20">
+            <Card className="p-4 sm:p-6 text-center border-quantum-neon/20 cursor-pointer hover:shadow-lg transition-all hover:border-quantum-glow/50 group" onClick={() => window.open('/educators', '_blank')}>
               <CardHeader className="p-0 pb-4">
-                <GraduationCap className="w-12 h-12 sm:w-16 sm:h-16 text-quantum-glow mx-auto mb-3 sm:mb-4" />
-                <CardTitle className="text-lg sm:text-xl">Educators</CardTitle>
+                <GraduationCap className="w-12 h-12 sm:w-16 sm:h-16 text-quantum-glow mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform" />
+                <CardTitle className="text-lg sm:text-xl group-hover:text-quantum-glow transition-colors">Educators</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <p className="text-sm sm:text-base text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground group-hover:text-foreground transition-colors">
                   Teach quantum computing concepts with interactive visualizations.
                   Perfect for universities and online courses.
                 </p>
+                <div className="mt-4 inline-flex items-center text-quantum-glow text-sm font-medium">
+                  Get Free Classroom Plan 
+                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </div>
               </CardContent>
             </Card>
             
@@ -724,6 +741,84 @@ const LandingPage = () => {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Educator Spotlight Section */}
+      <section className="py-24 bg-gradient-to-br from-quantum-glow/5 to-quantum-neon/5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,hsl(var(--quantum-glow))/10,transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="mb-8">
+              <Badge variant="outline" className="border-quantum-glow text-quantum-glow mb-4">
+                <GraduationCap className="w-4 h-4 mr-2" />
+                For Educators
+              </Badge>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6">
+                Transform Your{" "}
+                <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
+                  Quantum Classroom
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                Join thousands of educators worldwide using QOSim to make quantum computing 
+                accessible and engaging for students at all levels.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <div className="bg-gradient-to-br from-quantum-void/20 to-background border border-quantum-glow/30 rounded-lg p-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-glow/20 to-quantum-glow/10 rounded-full flex items-center justify-center">
+                  <Users className="w-8 h-8 text-quantum-glow" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Free Classroom Plan</h3>
+                <p className="text-muted-foreground text-sm">
+                  Up to 30 students • 500 simulations/month • LMS integrations
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-quantum-neon/20 to-background border border-quantum-neon/30 rounded-lg p-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-neon/20 to-quantum-neon/10 rounded-full flex items-center justify-center">
+                  <CircuitBoard className="w-8 h-8 text-quantum-neon" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Interactive Learning</h3>
+                <p className="text-muted-foreground text-sm">
+                  Visual quantum circuits • Real-time simulation • Student analytics
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-quantum-plasma/20 to-background border border-quantum-plasma/30 rounded-lg p-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-plasma/20 to-quantum-plasma/10 rounded-full flex items-center justify-center">
+                  <Database className="w-8 h-8 text-quantum-plasma" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">LMS Integration</h3>
+                <p className="text-muted-foreground text-sm">
+                  Canvas • Moodle • Blackboard • Google Classroom
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma"
+                onClick={() => window.open('/educators', '_blank')}
+              >
+                <GraduationCap className="w-5 h-5 mr-2" />
+                Get Free Educator Account
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black"
+                onClick={() => window.open('/educators', '_blank')}
+              >
+                Learn More
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>

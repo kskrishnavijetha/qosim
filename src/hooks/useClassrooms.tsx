@@ -1,120 +1,107 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { Tables } from '@/integrations/supabase/types';
 
-export interface Classroom {
-  id: string;
-  educator_id: string;
-  name: string;
-  description?: string;
-  subject?: string;
-  semester?: string;
-  access_code: string;
-  is_active: boolean;
-  max_students: number;
-  created_at: string;
-  updated_at: string;
-}
+type Classroom = Tables<'classrooms'>;
+type ClassroomInsert = Omit<Classroom, 'id' | 'created_at' | 'updated_at' | 'access_code'>;
 
-export function useClassrooms() {
-  const { user } = useAuth();
+export const useClassrooms = (educatorId: string) => {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (educatorId) {
+      fetchClassrooms();
+    }
+  }, [educatorId]);
 
   const fetchClassrooms = async () => {
-    if (!user) return;
-
-    setLoading(true);
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('classrooms')
         .select('*')
-        .order('updated_at', { ascending: false });
+        .eq('educator_id', educatorId)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setClassrooms(data || []);
-    } catch (error) {
-      console.error('Error fetching classrooms:', error);
-      toast.error('Failed to load classrooms');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch classrooms');
     } finally {
       setLoading(false);
     }
   };
 
-  const createClassroom = async (classroomData: Partial<Classroom>) => {
-    if (!user) {
-      throw new Error('User not authenticated');
+  const createClassroom = async (classroomData: Partial<ClassroomInsert> & { name: string }) => {
+    try {
+      const { data, error } = await supabase
+        .from('classrooms')
+        .insert({
+          educator_id: educatorId,
+          name: classroomData.name,
+          description: classroomData.description || null,
+          subject: classroomData.subject || null,
+          semester: classroomData.semester || null,
+          max_students: classroomData.max_students || 30,
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setClassrooms(prev => [data, ...prev]);
+      return data;
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to create classroom');
     }
-
-    // First get the educator profile
-    const { data: profile } = await supabase
-      .from('educator_profiles')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!profile) {
-      throw new Error('Educator profile not found');
-    }
-
-    const { data, error } = await supabase
-      .from('classrooms')
-      .insert({
-        educator_id: profile.id,
-        ...classroomData,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    setClassrooms(prev => [data, ...prev]);
-    return data;
   };
 
-  const updateClassroom = async (id: string, updates: Partial<Classroom>) => {
-    const { data, error } = await supabase
-      .from('classrooms')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+  const updateClassroom = async (id: string, updates: Partial<ClassroomInsert>) => {
+    try {
+      const { data, error } = await supabase
+        .from('classrooms')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (error) throw error;
-
-    setClassrooms(prev => 
-      prev.map(classroom => classroom.id === id ? data : classroom)
-    );
-    return data;
+      if (error) throw error;
+      
+      setClassrooms(prev => prev.map(classroom => 
+        classroom.id === id ? data : classroom
+      ));
+      return data;
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to update classroom');
+    }
   };
 
   const deleteClassroom = async (id: string) => {
-    const { error } = await supabase
-      .from('classrooms')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('classrooms')
+        .delete()
+        .eq('id', id);
 
-    if (error) throw error;
-
-    setClassrooms(prev => prev.filter(classroom => classroom.id !== id));
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchClassrooms();
-    } else {
-      setClassrooms([]);
+      if (error) throw error;
+      
+      setClassrooms(prev => prev.filter(classroom => classroom.id !== id));
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to delete classroom');
     }
-  }, [user]);
+  };
 
   return {
     classrooms,
     loading,
+    error,
     createClassroom,
     updateClassroom,
     deleteClassroom,
-    refetch: fetchClassrooms,
+    refetch: fetchClassrooms
   };
-}
+};
