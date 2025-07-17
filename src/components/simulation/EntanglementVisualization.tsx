@@ -41,11 +41,17 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
     return <EntanglementEmptyState />;
   }
 
-  // Check for entanglement with proper validation
+  // Check for entanglement with more lenient validation
   const hasEntanglement = simulationResult.entanglement && 
     simulationResult.entanglement.pairs && 
     simulationResult.entanglement.pairs.length > 0 &&
-    simulationResult.entanglement.totalEntanglement > 0.001;
+    simulationResult.entanglement.pairs.some(pair => pair.strength > 0.001);
+
+  console.log('🎯🔍 EntanglementVisualization: Entanglement check', {
+    hasEntanglement,
+    pairs: simulationResult.entanglement?.pairs || [],
+    totalEntanglement: simulationResult.entanglement?.totalEntanglement || 0
+  });
 
   if (!hasEntanglement) {
     return (
@@ -67,17 +73,25 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
               <div className="flex justify-center gap-2 mt-3 flex-wrap">
                 <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">CNOT</span>
                 <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">CZ</span>
-                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">Bell State</span>
-                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">GHZ State</span>
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">BELL</span>
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">GHZ</span>
+                <span className="px-3 py-1 bg-quantum-matrix/20 rounded font-mono text-xs border border-quantum-neon/30">TOFFOLI</span>
               </div>
             </div>
             
             {simulationResult.entanglement && (
               <div className="mt-4 text-xs text-quantum-particle">
-                Total entanglement: {(simulationResult.entanglement.totalEntanglement * 100).toFixed(3)}%
-                {simulationResult.entanglement.pairs.length > 0 && (
+                Total entanglement: {((simulationResult.entanglement.totalEntanglement || 0) * 100).toFixed(3)}%
+                {simulationResult.entanglement.pairs && simulationResult.entanglement.pairs.length > 0 && (
                   <div className="mt-1">
                     Weak pairs detected: {simulationResult.entanglement.pairs.length}
+                    <div className="mt-2 space-y-1">
+                      {simulationResult.entanglement.pairs.map((pair, idx) => (
+                        <div key={idx} className="text-xs">
+                          Q{pair.qubit1} ↔ Q{pair.qubit2}: {(pair.strength * 100).toFixed(3)}%
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -94,7 +108,8 @@ export function EntanglementVisualization({ simulationResult, numQubits }: Entan
   console.log('🎯🔍 EntanglementVisualization: Rendering with entanglement', {
     pairsCount: pairs.length,
     totalEntanglement,
-    threadsCount: entanglementThreads?.length || 0
+    threadsCount: entanglementThreads?.length || 0,
+    pairDetails: pairs.map(p => ({ q1: p.qubit1, q2: p.qubit2, strength: p.strength }))
   });
 
   return (

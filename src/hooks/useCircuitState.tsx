@@ -147,20 +147,36 @@ export function useCircuitState() {
 
   const addGate = useCallback((newGate: Gate) => {
     console.log('🔄 Adding gate:', newGate);
-    const newCircuit = [...circuit, newGate];
+    
+    // Handle composite gates that need multiple qubits
+    let finalGate = newGate;
+    
+    if (newGate.type === 'BELL' && !newGate.qubits) {
+      // Default Bell state on qubits 0 and 1
+      finalGate = { ...newGate, qubits: [0, 1] };
+    } else if (newGate.type === 'GHZ' && !newGate.qubits) {
+      // Default GHZ state on qubits 0, 1, and 2
+      finalGate = { ...newGate, qubits: [0, 1, 2] };
+    } else if (newGate.type === 'W' && !newGate.qubits) {
+      // Default W state on qubits 0, 1, and 2
+      finalGate = { ...newGate, qubits: [0, 1, 2] };
+    }
+    
+    const newCircuit = [...circuit, finalGate];
     console.log('🔄 New circuit length:', newCircuit.length);
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
     
     // Track analytics
     trackEvent('gate_added', { 
-      gateType: newGate.type, 
-      qubit: newGate.qubit, 
-      position: newGate.position 
+      gateType: finalGate.type, 
+      qubit: finalGate.qubit, 
+      qubits: finalGate.qubits,
+      position: finalGate.position 
     });
-    gateUsageTracker.increment(newGate.type);
+    gateUsageTracker.increment(finalGate.type);
     trackEvent('circuit_modified', { 
-      gateType: newGate.type, 
+      gateType: finalGate.type, 
       numGates: newCircuit.length 
     });
     

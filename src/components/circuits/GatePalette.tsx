@@ -1,3 +1,4 @@
+
 import React, { memo } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -29,12 +30,21 @@ export const GatePalette = memo(function GatePalette({ onGateMouseDown }: GatePa
     // === 🟨 MULTI-QUBIT GATES ===
     { type: 'CNOT', name: 'CNOT', color: 'bg-quantum-plasma', description: 'Controlled NOT - flips target if control is |1⟩', category: 'Multi' },
     { type: 'CZ', name: 'CZ', color: 'bg-red-500', description: 'Controlled Z - applies Z to target if control is |1⟩', category: 'Multi' },
+    { type: 'CY', name: 'CY', color: 'bg-red-400', description: 'Controlled Y - applies Y to target if control is |1⟩', category: 'Multi' },
+    { type: 'CH', name: 'CH', color: 'bg-red-300', description: 'Controlled Hadamard - applies H to target if control is |1⟩', category: 'Multi' },
     { type: 'SWAP', name: 'SWAP', color: 'bg-green-500', description: 'Swaps states of two qubits', category: 'Multi' },
+    { type: 'ISWAP', name: 'iSWAP', color: 'bg-green-400', description: 'SWAP with additional i phase', category: 'Multi' },
     { type: 'TOFFOLI', name: 'Toffoli', color: 'bg-pink-500', description: 'CCX gate - controlled-controlled-X', category: 'Multi' },
     { type: 'FREDKIN', name: 'Fredkin', color: 'bg-yellow-500', description: 'CSWAP - controlled swap gate', category: 'Multi' },
     
-    // === 🟪 SPECIAL/COMPOSITE GATES ===
+    // === 🟪 COMPOSITE/STATE GATES ===
+    { type: 'BELL', name: 'Bell State', color: 'bg-violet-500', description: 'Creates Bell state - maximally entangled 2-qubit state', category: 'Composite' },
+    { type: 'GHZ', name: 'GHZ State', color: 'bg-violet-400', description: 'Creates GHZ state - 3-qubit entangled state', category: 'Composite' },
+    { type: 'W', name: 'W State', color: 'bg-violet-300', description: 'Creates W state - symmetric 3-qubit entangled state', category: 'Composite' },
     { type: 'QFT', name: 'QFT', color: 'bg-violet-600', description: 'Quantum Fourier Transform', category: 'Composite' },
+    { type: 'IQFT', name: 'iQFT', color: 'bg-violet-700', description: 'Inverse Quantum Fourier Transform', category: 'Composite' },
+    
+    // === ⚡ SPECIAL GATES ===
     { type: 'M', name: 'Measure', color: 'bg-destructive', description: 'Measurement gate - collapses superposition', category: 'Special' },
     { type: 'RESET', name: 'Reset', color: 'bg-gray-600', description: 'Reset qubit to |0⟩ state', category: 'Special' },
     { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier - no operation', category: 'Special' },
