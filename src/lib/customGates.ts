@@ -3,7 +3,7 @@ export interface CustomGate {
   id: string;
   name: string;
   description?: string;
-  matrix: number[][]; // Each element can be real number or [real, imaginary] complex
+  matrix: (number | [number, number])[][]; // Each element can be real number or [real, imaginary] complex
   size: 2 | 4 | 8; // 2^n where n is number of qubits
   color: string;
   createdAt: string;
@@ -50,7 +50,7 @@ export function formatComplexNumber(value: any, compact = false): string {
   }
 }
 
-export function parseMatrixInput(input: string, expectedSize: number): number[][] {
+export function parseMatrixInput(input: string, expectedSize: number): (number | [number, number])[][] {
   try {
     // Remove whitespace and parse JSON
     const parsed = JSON.parse(input.trim());
@@ -91,10 +91,10 @@ export function parseMatrixInput(input: string, expectedSize: number): number[][
   }
 }
 
-export function validateUnitaryMatrix(matrix: number[][]): {
+export function validateUnitaryMatrix(matrix: (number | [number, number])[][]): {
   isValid: boolean;
   errors: string[];
-  matrix?: number[][];
+  matrix?: (number | [number, number])[][];
 } {
   const errors: string[] = [];
   const n = matrix.length;
