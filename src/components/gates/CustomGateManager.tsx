@@ -46,6 +46,7 @@ export function CustomGateManager({ onGateCreated, onGateDeleted, customGates }:
             description: gateDescription,
             matrix: validation.matrix,
             size: selectedSize,
+            qubits: Math.log2(selectedSize),
             color: '#3b82f6',
             createdAt: new Date().toISOString()
           });
@@ -95,6 +96,7 @@ export function CustomGateManager({ onGateCreated, onGateDeleted, customGates }:
       description: gateDescription,
       matrix: validationResult.matrix,
       size: selectedSize,
+      qubits: Math.log2(selectedSize),
       color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
       createdAt: new Date().toISOString()
     };
