@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -136,6 +137,23 @@ export function useCircuits() {
     );
   };
 
+  const loadCircuit = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('circuits')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error loading circuit:', error);
+      toast.error('Failed to load circuit');
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchCircuits();
@@ -151,6 +169,7 @@ export function useCircuits() {
     updateCircuit,
     deleteCircuit,
     duplicateCircuit,
+    loadCircuit,
     refetch: fetchCircuits,
   };
 }

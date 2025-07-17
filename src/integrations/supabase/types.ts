@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      circuit_activity_log: {
+        Row: {
+          action_data: Json
+          action_type: string
+          circuit_id: string
+          id: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          action_data?: Json
+          action_type: string
+          circuit_id: string
+          id?: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          action_data?: Json
+          action_type?: string
+          circuit_id?: string
+          id?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circuit_activity_log_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "circuits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circuit_collaborators: {
+        Row: {
+          accepted_at: string | null
+          circuit_id: string
+          id: string
+          invited_at: string
+          invited_by: string
+          is_active: boolean
+          permission_level: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          circuit_id: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          is_active?: boolean
+          permission_level?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          circuit_id?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          is_active?: boolean
+          permission_level?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circuit_collaborators_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "circuits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circuits: {
         Row: {
           circuit_data: Json
@@ -298,6 +374,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      shared_circuits: {
+        Row: {
+          circuit_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          permission_level: string
+          share_token: string
+          updated_at: string
+        }
+        Insert: {
+          circuit_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          permission_level?: string
+          share_token?: string
+          updated_at?: string
+        }
+        Update: {
+          circuit_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          permission_level?: string
+          share_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_circuits_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "circuits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

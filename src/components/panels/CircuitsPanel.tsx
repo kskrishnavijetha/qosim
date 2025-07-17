@@ -1,14 +1,17 @@
+
 import React, { useState, useEffect } from "react";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
 import { SimulationModeSelector } from "@/components/simulation/SimulationModeSelector";
 import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { QuantumAlgorithmsPanel } from "@/components/algorithms/QuantumAlgorithmsPanel";
+import { CollaborationStatus } from "@/components/collaboration/CollaborationStatus";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
 import { useDeferredQFSLoader } from "@/hooks/useDeferredQFSLoader";
+import { useRealtimeCollaboration } from "@/hooks/useRealtimeCollaboration";
 import { CircuitPanelHeader } from "./CircuitPanelHeader";
 import { LearningModeSection } from "./LearningModeSection";
 import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
@@ -16,6 +19,7 @@ import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
 export function CircuitsPanel() {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  const [currentCircuitId, setCurrentCircuitId] = useState<string | null>(null);
   
   const {
     circuit,
@@ -75,10 +79,38 @@ export function CircuitsPanel() {
     priorityThreshold: 30000
   });
 
+  const { broadcastChange } = useRealtimeCollaboration(currentCircuitId);
+
+  // Enhanced gate addition with collaboration broadcasting
+  const handleGateAdd = (gate: any) => {
+    addGate(gate);
+    if (currentCircuitId) {
+      broadcastChange('gate_added', {
+        gateType: gate.type,
+        qubit: gate.qubit,
+        position: gate.position,
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  // Enhanced gate deletion with collaboration broadcasting
+  const handleGateDelete = (gateId: string) => {
+    const gateToDelete = circuit.find(g => g.id === gateId);
+    deleteGate(gateId);
+    if (currentCircuitId && gateToDelete) {
+      broadcastChange('gate_removed', {
+        gateId,
+        gateType: gateToDelete.type,
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
   // Handle algorithm-generated circuits
   const handleAlgorithmCircuit = (gates: any[]) => {
     clearCircuit();
-    gates.forEach(gate => addGate(gate));
+    gates.forEach(gate => handleGateAdd(gate));
   };
 
   const handleAlgorithmExecution = (result: any) => {
@@ -153,7 +185,11 @@ export function CircuitsPanel() {
           onExportQASM={exportToQASM}
           onShowExportDialog={() => setShowExportDialog(true)}
           canUndo={canUndo}
+          circuit={circuit}
         />
+
+        {/* Collaboration Status */}
+        <CollaborationStatus circuitId={currentCircuitId} />
 
         <LearningModeSection
           isLearningMode={isLearningMode}
@@ -177,7 +213,7 @@ export function CircuitsPanel() {
           circuit={circuit}
           dragState={dragState}
           simulationResult={simulationResult}
-          onDeleteGate={deleteGate}
+          onDeleteGate={handleGateDelete}
           onGateMouseDown={handleMouseDown}
           circuitRef={circuitRef}
           numQubits={NUM_QUBITS}
