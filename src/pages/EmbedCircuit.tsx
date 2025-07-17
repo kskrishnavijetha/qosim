@@ -1,9 +1,10 @@
+
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { CircuitGrid } from "@/components/circuits/CircuitGrid";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
 
-export function EmbedCircuit() {
+export default function EmbedCircuit() {
   const { fileId } = useParams();
   const [searchParams] = useSearchParams();
   const permission = searchParams.get("permission") || "view";

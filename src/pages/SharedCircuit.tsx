@@ -8,7 +8,7 @@ import { CircuitGrid } from "@/components/circuits/CircuitGrid";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
 import { useToast } from "@/hooks/use-toast";
 
-export function SharedCircuit() {
+export default function SharedCircuit() {
   const { fileId } = useParams();
   const [searchParams] = useSearchParams();
   const permission = searchParams.get("permission") || "view";
