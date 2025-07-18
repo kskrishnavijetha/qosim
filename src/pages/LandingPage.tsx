@@ -95,11 +95,8 @@ const LandingPage = () => {
               <Button variant="outline" asChild>
                 <Link to="/integrations">SDKs</Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
               <Button asChild>
-                <Link to="/app">Launch App</Link>
+                <Link to="/auth">Launch App</Link>
               </Button>
             </div>
           </div>
@@ -179,7 +176,7 @@ const LandingPage = () => {
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
-                <Link to="/app">
+                <Link to="/auth">
                   View Live Preview
                 </Link>
               </Button>
@@ -927,7 +924,7 @@ const LandingPage = () => {
             <div>
               <h3 className="font-semibold mb-3">Product</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/app" className="hover:text-foreground transition-colors">Launch App</Link></li>
+                <li><Link to="/auth" className="hover:text-foreground transition-colors">Launch App</Link></li>
               </ul>
             </div>
             

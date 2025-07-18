@@ -123,6 +123,139 @@ export type Database = {
         }
         Relationships: []
       }
+      classrooms: {
+        Row: {
+          access_code: string
+          created_at: string
+          description: string | null
+          educator_id: string
+          id: string
+          is_active: boolean
+          max_students: number
+          name: string
+          semester: string | null
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_code?: string
+          created_at?: string
+          description?: string | null
+          educator_id: string
+          id?: string
+          is_active?: boolean
+          max_students?: number
+          name: string
+          semester?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_code?: string
+          created_at?: string
+          description?: string | null
+          educator_id?: string
+          id?: string
+          is_active?: boolean
+          max_students?: number
+          name?: string
+          semester?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classrooms_educator_id_fkey"
+            columns: ["educator_id"]
+            isOneToOne: false
+            referencedRelation: "educator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      educator_profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          id: string
+          institution_name: string | null
+          institution_type: string | null
+          max_simulations_per_month: number
+          max_students: number
+          plan_type: string
+          subjects: string[] | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          id?: string
+          institution_name?: string | null
+          institution_type?: string | null
+          max_simulations_per_month?: number
+          max_students?: number
+          plan_type?: string
+          subjects?: string[] | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          id?: string
+          institution_name?: string | null
+          institution_type?: string | null
+          max_simulations_per_month?: number
+          max_students?: number
+          plan_type?: string
+          subjects?: string[] | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+        }
+        Relationships: []
+      }
+      lms_integrations: {
+        Row: {
+          created_at: string
+          educator_id: string
+          id: string
+          integration_data: Json
+          is_active: boolean
+          lms_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          educator_id: string
+          id?: string
+          integration_data?: Json
+          is_active?: boolean
+          lms_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          educator_id?: string
+          id?: string
+          integration_data?: Json
+          is_active?: boolean
+          lms_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_integrations_educator_id_fkey"
+            columns: ["educator_id"]
+            isOneToOne: false
+            referencedRelation: "educator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memory_states: {
         Row: {
           bank_id: string
@@ -415,6 +548,76 @@ export type Database = {
             columns: ["circuit_id"]
             isOneToOne: false
             referencedRelation: "circuits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_activity: {
+        Row: {
+          activity_data: Json
+          activity_type: string
+          id: string
+          student_enrollment_id: string
+          timestamp: string
+        }
+        Insert: {
+          activity_data?: Json
+          activity_type: string
+          id?: string
+          student_enrollment_id: string
+          timestamp?: string
+        }
+        Update: {
+          activity_data?: Json
+          activity_type?: string
+          id?: string
+          student_enrollment_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_activity_student_enrollment_id_fkey"
+            columns: ["student_enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "student_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_enrollments: {
+        Row: {
+          classroom_id: string
+          enrollment_date: string
+          id: string
+          is_active: boolean
+          student_email: string
+          student_name: string
+          student_user_id: string
+        }
+        Insert: {
+          classroom_id: string
+          enrollment_date?: string
+          id?: string
+          is_active?: boolean
+          student_email: string
+          student_name: string
+          student_user_id: string
+        }
+        Update: {
+          classroom_id?: string
+          enrollment_date?: string
+          id?: string
+          is_active?: boolean
+          student_email?: string
+          student_name?: string
+          student_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
             referencedColumns: ["id"]
           },
         ]
