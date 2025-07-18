@@ -1,7 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Users, BookOpen, Github, Settings, ArrowRight, GraduationCap, Sparkles, Clock, Shield, Code, Globe, ChevronRight } from "lucide-react";
+import { Zap, Users, BookOpen, Github, Settings, ArrowRight, GraduationCap, Sparkles, Clock, Shield, Code, Globe, ChevronRight, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
