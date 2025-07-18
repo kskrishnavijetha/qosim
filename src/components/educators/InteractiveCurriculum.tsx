@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Play, Users, Clock, CheckCircle, Lock, Star } from "lucide-react";
+import { BookOpen, Play, Users, Clock, CheckCircle, Lock, Star, ArrowRight } from "lucide-react";
 
 const curriculumData = {
   fundamentals: [
@@ -134,64 +133,84 @@ const getTypeIcon = (type: string) => {
 
 export function InteractiveCurriculum() {
   const [activeTab, setActiveTab] = useState('fundamentals');
+  const [startedLessons, setStartedLessons] = useState<number[]>([]);
 
-  const renderLessonCard = (lesson: any) => (
-    <Card key={lesson.id} className="bg-quantum-matrix border-quantum-circuit hover:border-quantum-glow/50 transition-colors">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-white text-lg mb-2">{lesson.title}</CardTitle>
-            <p className="text-quantum-silver text-sm">{lesson.description}</p>
-          </div>
-          <div className="flex items-center gap-2 ml-4">
-            <Badge className={getDifficultyColor(lesson.difficulty)}>
-              {lesson.difficulty}
-            </Badge>
-            <Badge variant="outline" className="border-quantum-circuit text-quantum-glow">
-              {getTypeIcon(lesson.type)}
-              <span className="ml-1">{lesson.type}</span>
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-4 text-quantum-silver">
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span>{lesson.duration}</span>
+  const handleStartLesson = (lessonId: number) => {
+    if (!startedLessons.includes(lessonId)) {
+      setStartedLessons(prev => [...prev, lessonId]);
+    }
+    // Here you would typically navigate to the actual lesson content
+    console.log(`Starting lesson ${lessonId}`);
+  };
+
+  const renderLessonCard = (lesson: any) => {
+    const isStarted = startedLessons.includes(lesson.id);
+    
+    return (
+      <Card key={lesson.id} className="bg-quantum-matrix border-quantum-circuit hover:border-quantum-glow/50 transition-colors">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <CardTitle className="text-white text-lg">{lesson.title}</CardTitle>
+                {isStarted && (
+                  <Badge className="bg-quantum-glow/20 text-quantum-glow">
+                    In Progress
+                  </Badge>
+                )}
+              </div>
+              <p className="text-quantum-silver text-sm mb-3">{lesson.description}</p>
+              <div className="flex items-center gap-2">
+                <Badge className={getDifficultyColor(lesson.difficulty)}>
+                  {lesson.difficulty}
+                </Badge>
+                <Badge variant="outline" className="border-quantum-circuit text-quantum-glow">
+                  {getTypeIcon(lesson.type)}
+                  <span className="ml-1">{lesson.type}</span>
+                </Badge>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{lesson.students} students</span>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-4 text-quantum-silver">
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>{lesson.duration}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{lesson.students} students</span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-quantum-silver">Completion Rate</span>
-            <span className="text-quantum-glow">{lesson.completion}%</span>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-quantum-silver">Completion Rate</span>
+              <span className="text-quantum-glow">{lesson.completion}%</span>
+            </div>
+            <Progress value={lesson.completion} className="h-2" />
           </div>
-          <Progress value={lesson.completion} className="h-2" />
-        </div>
-        
-        <div className="flex gap-2">
-          <Button size="sm" className="bg-quantum-glow hover:bg-quantum-glow/80 text-quantum-void">
-            Assign to Class
-          </Button>
-          <Button size="sm" variant="outline" className="border-quantum-circuit text-quantum-glow">
-            Preview
-          </Button>
-          <Button size="sm" variant="outline" className="border-quantum-circuit text-quantum-glow">
-            <Star className="w-4 h-4 mr-1" />
-            Customize
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+          
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => handleStartLesson(lesson.id)}
+              className="bg-quantum-glow hover:bg-quantum-glow/80 text-quantum-void flex-1"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              {isStarted ? 'Continue Lesson' : 'Begin Lesson'}
+            </Button>
+            <Button size="sm" variant="outline" className="border-quantum-circuit text-quantum-glow">
+              Preview
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -205,6 +224,32 @@ export function InteractiveCurriculum() {
         </Button>
       </div>
 
+      {/* Quick Start Banner for New Educators */}
+      <Card className="bg-gradient-to-r from-quantum-glow/10 to-quantum-neon/10 border-quantum-glow/30">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-2">Ready to Start Teaching?</h3>
+              <p className="text-quantum-silver mb-4">
+                Begin with our most popular lesson: "Introduction to Quantum Computing" - perfect for new students!
+              </p>
+              <Button 
+                onClick={() => handleStartLesson(1)}
+                className="bg-quantum-glow hover:bg-quantum-glow/80 text-quantum-void"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start First Lesson Now
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+            <div className="hidden md:block">
+              <BookOpen className="w-16 h-16 text-quantum-glow/50" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stats Cards */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <Card className="bg-quantum-matrix border-quantum-circuit">
           <CardContent className="p-6">
@@ -222,10 +267,10 @@ export function InteractiveCurriculum() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-quantum-silver text-sm">Avg. Completion</p>
-                <p className="text-2xl font-bold text-white">78%</p>
+                <p className="text-quantum-silver text-sm">Lessons Started</p>
+                <p className="text-2xl font-bold text-white">{startedLessons.length}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-quantum-glow" />
+              <Play className="w-8 h-8 text-quantum-glow" />
             </div>
           </CardContent>
         </Card>
@@ -234,10 +279,10 @@ export function InteractiveCurriculum() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-quantum-silver text-sm">Total Students</p>
-                <p className="text-2xl font-bold text-white">156</p>
+                <p className="text-quantum-silver text-sm">Avg. Completion</p>
+                <p className="text-2xl font-bold text-white">78%</p>
               </div>
-              <Users className="w-8 h-8 text-quantum-glow" />
+              <CheckCircle className="w-8 h-8 text-quantum-glow" />
             </div>
           </CardContent>
         </Card>
