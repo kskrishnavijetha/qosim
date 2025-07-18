@@ -6,12 +6,14 @@ import { SimulationModeSelector } from "@/components/simulation/SimulationModeSe
 import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { QuantumAlgorithmsPanel } from "@/components/algorithms/QuantumAlgorithmsPanel";
 import { CollaborationStatus } from "@/components/collaboration/CollaborationStatus";
+import { CustomGateManager } from "@/components/gates/CustomGateManager";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
 import { useTemplateLoader } from "@/hooks/useTemplateLoader";
 import { useDeferredQFSLoader } from "@/hooks/useDeferredQFSLoader";
 import { useRealtimeCollaboration } from "@/hooks/useRealtimeCollaboration";
+import { useCustomGates } from "@/hooks/useCustomGates";
 import { CircuitPanelHeader } from "./CircuitPanelHeader";
 import { LearningModeSection } from "./LearningModeSection";
 import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
@@ -54,6 +56,14 @@ export function CircuitsPanel() {
     completeTemplate,
     resetTutorial
   } = useLearningMode();
+
+  const {
+    customGates,
+    addCustomGate,
+    removeCustomGate,
+    getCustomGate,
+    isCustomGate
+  } = useCustomGates();
 
   const NUM_QUBITS = 5;
   const GRID_SIZE = 50;
@@ -200,6 +210,12 @@ export function CircuitsPanel() {
           templates={templates}
           onSelectTemplate={selectTemplate}
           onLoadTemplate={handleTemplateLoad}
+        />
+
+        {/* Custom Gate Manager */}
+        <CustomGateManager
+          onGateCreated={addCustomGate}
+          existingGates={customGates}
         />
 
         {/* Quantum Algorithms Panel */}

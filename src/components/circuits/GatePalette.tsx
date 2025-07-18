@@ -1,12 +1,15 @@
 
 import React, { memo } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useCustomGates } from "@/hooks/useCustomGates";
 
 interface GatePaletteProps {
   onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
 }
 
 export const GatePalette = memo(function GatePalette({ onGateMouseDown }: GatePaletteProps) {
+  const { customGates } = useCustomGates();
+
   const gateTypes = [
     // === 🟩 SINGLE-QUBIT GATES ===
     { type: 'I', name: 'Identity', color: 'bg-slate-400', description: 'Identity gate - no change to qubit state', category: 'Single' },
@@ -50,24 +53,36 @@ export const GatePalette = memo(function GatePalette({ onGateMouseDown }: GatePa
     { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier - no operation', category: 'Special' },
   ];
 
+  // Add custom gates to the list
+  const customGateTypes = customGates.map(gate => ({
+    type: gate.id,
+    name: gate.name,
+    color: 'bg-quantum-particle',
+    description: gate.description || 'Custom unitary gate',
+    category: 'Custom'
+  }));
+
+  const allGateTypes = [...gateTypes, ...customGateTypes];
+
   // Group gates by category
-  const groupedGates = gateTypes.reduce((acc, gate) => {
+  const groupedGates = allGateTypes.reduce((acc, gate) => {
     if (!acc[gate.category]) {
       acc[gate.category] = [];
     }
     acc[gate.category].push(gate);
     return acc;
-  }, {} as Record<string, typeof gateTypes>);
+  }, {} as Record<string, typeof allGateTypes>);
 
   const categoryIcons = {
     'Single': '🟩',
     'Parametric': '🟦', 
     'Multi': '🟨',
     'Composite': '🟪',
-    'Special': '⚡'
+    'Special': '⚡',
+    'Custom': '🔧'
   };
 
-  const categoryOrder = ['Single', 'Parametric', 'Multi', 'Composite', 'Special'];
+  const categoryOrder = ['Single', 'Parametric', 'Multi', 'Composite', 'Special', 'Custom'];
 
   return (
     <div className="w-64 space-y-4 max-h-[600px] overflow-y-auto">
@@ -91,7 +106,7 @@ export const GatePalette = memo(function GatePalette({ onGateMouseDown }: GatePa
                     <div
                       className={`w-12 h-12 ${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer hover:scale-110 transition-all duration-300 quantum-glow animate-in fade-in`}
                       onMouseDown={(e) => onGateMouseDown(e, gate.type)}
-                      style={{ animationDelay: `${gateTypes.indexOf(gate) * 50}ms` }}
+                      style={{ animationDelay: `${allGateTypes.indexOf(gate) * 50}ms` }}
                     >
                       {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
                     </div>
