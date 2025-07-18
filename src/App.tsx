@@ -17,7 +17,6 @@ import TutorialsPage from "./pages/TutorialsPage";
 import ThankYou from "./pages/ThankYou";
 import SharedCircuit from "./pages/SharedCircuit";
 import EmbedCircuit from "./pages/EmbedCircuit";
-import EducatorsPage from "./pages/EducatorsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,7 +38,6 @@ const App = () => (
             <Route path="/python-sdk" element={<PythonSDKPage />} />
             <Route path="/api" element={<APIReference />} />
             <Route path="/tutorials" element={<TutorialsPage />} />
-            <Route path="/educators" element={<EducatorsPage />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/circuit/:id" element={<SharedCircuit />} />
             <Route path="/embed/:id" element={<EmbedCircuit />} />
