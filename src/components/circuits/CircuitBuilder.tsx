@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { ResponsiveCircuitBuilder } from '../mobile/ResponsiveCircuitBuilder';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GatePalette } from './GatePalette';
+import { CircuitGrid } from './CircuitGrid';
 import { Gate } from '@/hooks/useCircuitState';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
-import { CustomGate } from '@/lib/customGates';
-import { useTouchDragDrop } from '@/hooks/useTouchDragDrop';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DragState {
@@ -21,11 +21,9 @@ interface CircuitBuilderProps {
   simulationResult: OptimizedSimulationResult | null;
   onDeleteGate: (gateId: string) => void;
   onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
-  onGateAdd: (gate: Gate) => void;
   circuitRef: React.RefObject<HTMLDivElement>;
   numQubits: number;
   gridSize: number;
-  customGates?: CustomGate[];
 }
 
 export function CircuitBuilder({
@@ -34,33 +32,35 @@ export function CircuitBuilder({
   simulationResult,
   onDeleteGate,
   onGateMouseDown,
-  onGateAdd,
   circuitRef,
   numQubits,
-  gridSize,
-  customGates = []
+  gridSize
 }: CircuitBuilderProps) {
   const isMobile = useIsMobile();
-  
-  // Use touch drag drop for mobile devices
-  const { handleTouchStart } = useTouchDragDrop({
-    onGateAdd,
-    numQubits,
-    gridSize
-  });
 
   return (
-    <ResponsiveCircuitBuilder
-      circuit={circuit}
-      dragState={dragState}
-      simulationResult={simulationResult}
-      onDeleteGate={onDeleteGate}
-      onGateMouseDown={onGateMouseDown}
-      onGateTouchStart={handleTouchStart}
-      circuitRef={circuitRef}
-      numQubits={numQubits}
-      gridSize={gridSize}
-      customGates={customGates}
-    />
+    <Card className="quantum-panel neon-border animate-in fade-in slide-in-from-bottom" style={{ animationDelay: '400ms' }}>
+      <CardHeader className="pb-3 lg:pb-6">
+        <CardTitle className="text-base lg:text-lg font-mono text-quantum-glow">Circuit Designer</CardTitle>
+      </CardHeader>
+      <CardContent className="p-3 lg:p-6">
+        <div className={`flex gap-3 lg:gap-6 ${isMobile ? 'flex-col' : 'flex-col lg:flex-row'}`}>
+          <div className={`${isMobile ? 'w-full' : 'lg:shrink-0'}`}>
+            <GatePalette onGateMouseDown={onGateMouseDown} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <CircuitGrid 
+              circuit={circuit}
+              dragState={dragState}
+              simulationResult={simulationResult}
+              onDeleteGate={onDeleteGate}
+              circuitRef={circuitRef}
+              NUM_QUBITS={numQubits}
+              GRID_SIZE={isMobile ? Math.max(gridSize * 0.8, 35) : gridSize}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

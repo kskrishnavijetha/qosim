@@ -4,7 +4,6 @@ import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@
 import { type OptimizedSimulationResult, type SimulationStepData, optimizedQuantumSimulator } from '@/lib/quantumSimulatorOptimized';
 import { type CloudSimulationConfig, quantumSimulationManager } from '@/lib/quantumSimulationService';
 import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
-import { useCustomGates } from './useCustomGates';
 
 export interface Gate {
   id: string;
@@ -30,9 +29,6 @@ export function useCircuitState() {
       return {};
     }
   });
-
-  // Add custom gates hook
-  const { customGates, addCustomGate, deleteCustomGate, getCustomGate } = useCustomGates();
 
   // Persist cloud config to localStorage
   useEffect(() => {
@@ -62,34 +58,15 @@ export function useCircuitState() {
       optimizedQuantumSimulator.setMode(simulationMode);
       console.log('🔄 Set mode on optimizedQuantumSimulator to:', simulationMode);
       
-      // Convert our Gate interface to QuantumGate interface, handling custom gates
-      const quantumGates: QuantumGate[] = gates.map(gate => {
-        // Check if this is a custom gate
-        if (gate.type.startsWith('custom_')) {
-          const customGate = getCustomGate(gate.type);
-          if (customGate) {
-            return {
-              id: gate.id,
-              type: 'CUSTOM',
-              qubit: gate.qubit,
-              qubits: gate.qubits,
-              position: gate.position,
-              angle: gate.angle,
-              customMatrix: customGate.matrix,
-              customName: customGate.name
-            };
-          }
-        }
-        
-        return {
-          id: gate.id,
-          type: gate.type,
-          qubit: gate.qubit,
-          qubits: gate.qubits,
-          position: gate.position,
-          angle: gate.angle
-        };
-      });
+      // Convert our Gate interface to QuantumGate interface
+      const quantumGates: QuantumGate[] = gates.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubit,
+        qubits: gate.qubits,
+        position: gate.position,
+        angle: gate.angle
+      }));
       
       console.log('🔄 Converted quantum gates:', quantumGates);
       
@@ -138,7 +115,7 @@ export function useCircuitState() {
       };
       setSimulationResult(fallbackResult);
     }
-  }, [simulationMode, cloudConfig, getCustomGate]);
+  }, [simulationMode, cloudConfig]);
 
   const handleModeChange = useCallback(async (mode: EnhancedSimulationMode) => {
     console.log('🔄 handleModeChange called with mode:', mode);
@@ -180,22 +157,6 @@ export function useCircuitState() {
       finalGate = { ...newGate, qubits: [0, 1, 2] };
     } else if (newGate.type === 'W' && !newGate.qubits) {
       finalGate = { ...newGate, qubits: [0, 1, 2] };
-    } else if (newGate.type.startsWith('custom_')) {
-      // Handle custom gates - determine qubit requirements based on matrix size
-      const customGate = getCustomGate(newGate.type);
-      if (customGate) {
-        const qubitsNeeded = Math.log2(customGate.size);
-        if (qubitsNeeded === 1) {
-          // Single qubit custom gate
-          finalGate = { ...newGate };
-        } else if (qubitsNeeded === 2) {
-          // Two qubit custom gate
-          finalGate = { ...newGate, qubits: newGate.qubits || [0, 1] };
-        } else if (qubitsNeeded === 3) {
-          // Three qubit custom gate
-          finalGate = { ...newGate, qubits: newGate.qubits || [0, 1, 2] };
-        }
-      }
     }
     
     const newCircuit = [...circuit, finalGate];
@@ -220,7 +181,7 @@ export function useCircuitState() {
     console.log('🔄 Generated circuit data:', circuitData);
     console.log('🔄 About to call simulateQuantumState with circuit length:', newCircuit.length);
     simulateQuantumState(newCircuit);
-  }, [circuit, simulateQuantumState, getCustomGate]);
+  }, [circuit, simulateQuantumState]);
 
   const deleteGate = useCallback((gateId: string) => {
     const gateToDelete = circuit.find(g => g.id === gateId);
@@ -301,7 +262,6 @@ export function useCircuitState() {
     simulationResult,
     simulationMode,
     cloudConfig,
-    customGates,
     addGate,
     deleteGate,
     undo,
@@ -316,9 +276,6 @@ export function useCircuitState() {
     handleSimulationPause,
     handleSimulationResume,
     isCloudConfigured,
-    canUndo,
-    addCustomGate,
-    deleteCustomGate,
-    getCustomGate
+    canUndo
   };
 }

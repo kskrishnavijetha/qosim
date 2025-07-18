@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu, Download, FileText, BookOpen, ExternalLink } from "lucide-react";
+import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu, Download, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -25,10 +25,6 @@ const LandingPage = () => {
 
   const openRoadmapInNewTab = () => {
     window.open('/roadmap', '_blank');
-  };
-
-  const openTutorialsInNewTab = () => {
-    window.open('/tutorials', '_blank');
   };
 
   useEffect(() => {
@@ -69,13 +65,12 @@ const LandingPage = () => {
               { id: 'hero', label: 'Home' },
               { id: 'about', label: 'Product' },
               { id: 'features', label: 'Features' },
-              { id: 'tutorials', label: 'Tutorials' },
               { id: 'use-cases', label: 'Use Cases' },
               { id: 'early-access', label: 'Early Access' }
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => item.id === 'tutorials' ? openTutorialsInNewTab() : scrollToSection(item.id)}
+                onClick={() => scrollToSection(item.id)}
                 className={`text-sm transition-colors hover:text-quantum-glow ${
                   activeSection === item.id ? 'text-quantum-glow' : 'text-muted-foreground'
                 }`}
@@ -100,8 +95,11 @@ const LandingPage = () => {
               <Button variant="outline" asChild>
                 <Link to="/integrations">SDKs</Link>
               </Button>
+              <Button variant="outline" asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
               <Button asChild>
-                <Link to="/auth">Launch App</Link>
+                <Link to="/app">Launch App</Link>
               </Button>
             </div>
           </div>
@@ -181,7 +179,7 @@ const LandingPage = () => {
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
-                <Link to="/auth">
+                <Link to="/app">
                   View Live Preview
                 </Link>
               </Button>
@@ -346,160 +344,6 @@ const LandingPage = () => {
               >
                 Try It Yourself
               </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Tutorial Section */}
-      <section id="tutorials" className="py-24 bg-gradient-to-br from-quantum-void/10 to-quantum-matrix/10 relative">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,hsl(var(--quantum-glow))/10,transparent_70%)]"></div>
-        
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                Learn{" "}
-                <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
-                  Step by Step
-                </span>
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                Master quantum computing from basics to advanced algorithms with our comprehensive tutorial series.
-                Build real quantum circuits and understand the theory behind them.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Beginner Tutorial Card */}
-              <Card className="border-quantum-glow/30 bg-gradient-to-br from-quantum-void/20 to-background hover:border-quantum-glow/50 transition-all duration-300 group">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-glow/20 to-quantum-neon/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <BookOpen className="w-8 h-8 text-quantum-glow" />
-                  </div>
-                  <CardTitle className="text-xl">Beginner</CardTitle>
-                  <CardDescription>Start your quantum journey</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span>Your first quantum circuit</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span>Understanding qubits & superposition</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span>Basic quantum gates</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span>Bell state creation</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-quantum-glow/20">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>5 lessons</span>
-                      <span>~1 hour</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Intermediate Tutorial Card */}
-              <Card className="border-quantum-neon/30 bg-gradient-to-br from-quantum-matrix/20 to-background hover:border-quantum-neon/50 transition-all duration-300 group">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-neon/20 to-quantum-plasma/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Code className="w-8 h-8 text-quantum-neon" />
-                  </div>
-                  <CardTitle className="text-xl">Intermediate</CardTitle>
-                  <CardDescription>Build complex quantum systems</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span>Quantum entanglement circuits</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span>Multi-qubit operations</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span>Quantum teleportation</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span>Export to Qiskit/QASM</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-quantum-neon/20">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>6 lessons</span>
-                      <span>~1.5 hours</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Advanced Tutorial Card */}
-              <Card className="border-quantum-plasma/30 bg-gradient-to-br from-quantum-particle/20 to-background hover:border-quantum-plasma/50 transition-all duration-300 group">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-plasma/20 to-quantum-particle/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Zap className="w-8 h-8 text-quantum-plasma" />
-                  </div>
-                  <CardTitle className="text-xl">Advanced</CardTitle>
-                  <CardDescription>Master quantum algorithms</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span>Grover's search algorithm</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span>Quantum Fourier Transform</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span>Error correction codes</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span>Real hardware deployment</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-quantum-plasma/20">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>4 lessons</span>
-                      <span>~1.5 hours</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* CTA Section */}
-            <div className="text-center mt-12">
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
-                onClick={openTutorialsInNewTab}
-              >
-                Start Learning Journey
-                <ExternalLink className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
-              
-              <p className="text-sm text-muted-foreground mt-4">
-                Opens in a new tab • No account required to start
-              </p>
             </div>
           </div>
         </div>
@@ -1083,7 +927,7 @@ const LandingPage = () => {
             <div>
               <h3 className="font-semibold mb-3">Product</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/auth" className="hover:text-foreground transition-colors">Launch App</Link></li>
+                <li><Link to="/app" className="hover:text-foreground transition-colors">Launch App</Link></li>
               </ul>
             </div>
             
