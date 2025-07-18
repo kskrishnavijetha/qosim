@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
@@ -71,7 +70,8 @@ export function CircuitsPanel() {
   const {
     dragState,
     circuitRef,
-    handleMouseDown
+    handleMouseDown,
+    handleTouchStart
   } = useCircuitDragDrop({
     onGateAdd: addGate,
     numQubits: NUM_QUBITS,
@@ -231,6 +231,7 @@ export function CircuitsPanel() {
           simulationResult={simulationResult}
           onDeleteGate={handleGateDelete}
           onGateMouseDown={handleMouseDown}
+          onGateTouchStart={handleTouchStart}
           circuitRef={circuitRef}
           numQubits={NUM_QUBITS}
           gridSize={GRID_SIZE}

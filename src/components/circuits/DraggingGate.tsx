@@ -1,4 +1,7 @@
+
 import React from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface DragState {
   isDragging: boolean;
@@ -23,17 +26,22 @@ const gateTypes = [
 ];
 
 export function DraggingGate({ dragState }: DraggingGateProps) {
+  const isMobile = useIsMobile();
+  
   if (!dragState.isDragging) return null;
 
   return (
     <div
-      className={`fixed w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black pointer-events-none z-50 quantum-glow animate-pulse shadow-2xl ${
-        gateTypes.find(g => g.type === dragState.gateType)?.color || 'bg-secondary'
-      }`}
+      className={cn(
+        "fixed rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black pointer-events-none z-50 quantum-glow animate-pulse shadow-2xl transition-transform",
+        gateTypes.find(g => g.type === dragState.gateType)?.color || 'bg-secondary',
+        isMobile ? "w-8 h-8 scale-110" : "w-10 h-10 scale-110"
+      )}
       style={{
-        left: dragState.dragPosition.x - 20,
-        top: dragState.dragPosition.y - 20,
-        transform: 'rotate(5deg) scale(1.1)'
+        left: dragState.dragPosition.x - (isMobile ? 16 : 20),
+        top: dragState.dragPosition.y - (isMobile ? 16 : 20),
+        transform: isMobile ? 'rotate(2deg) scale(1.2)' : 'rotate(5deg) scale(1.1)',
+        touchAction: 'none'
       }}
     >
       {dragState.gateType}
