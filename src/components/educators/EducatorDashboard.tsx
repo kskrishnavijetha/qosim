@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, BookOpen, BarChart3, Settings, Plus, School } from 'lucide-react';
+import { Users, BookOpen, BarChart3, Settings, Plus, School, GraduationCap } from 'lucide-react';
 import ClassroomList from './ClassroomList';
 import { StudentAnalytics } from './StudentAnalytics';
 import LMSIntegrations from './LMSIntegrations';
+import { InteractiveCurriculum } from './InteractiveCurriculum';
 
 interface EducatorDashboardProps {
   profile: any;
@@ -96,9 +97,12 @@ export function EducatorDashboard({ profile }: EducatorDashboardProps) {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 bg-quantum-matrix">
+          <TabsList className="grid w-full grid-cols-5 bg-quantum-matrix">
             <TabsTrigger value="overview" className="text-quantum-silver data-[state=active]:text-quantum-glow">
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="curriculum" className="text-quantum-silver data-[state=active]:text-quantum-glow">
+              Curriculum
             </TabsTrigger>
             <TabsTrigger value="classrooms" className="text-quantum-silver data-[state=active]:text-quantum-glow">
               Classrooms
@@ -147,17 +151,24 @@ export function EducatorDashboard({ profile }: EducatorDashboardProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button variant="outline" className="w-full justify-start border-quantum-circuit text-quantum-glow">
+                    <GraduationCap className="w-4 h-4 mr-2" />
                     Create New Assignment
                   </Button>
                   <Button variant="outline" className="w-full justify-start border-quantum-circuit text-quantum-glow">
+                    <BarChart3 className="w-4 h-4 mr-2" />
                     Export Student Progress
                   </Button>
                   <Button variant="outline" className="w-full justify-start border-quantum-circuit text-quantum-glow">
+                    <Users className="w-4 h-4 mr-2" />
                     Schedule Virtual Office Hours
                   </Button>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="curriculum" className="mt-6">
+            <InteractiveCurriculum />
           </TabsContent>
 
           <TabsContent value="classrooms" className="mt-6">
