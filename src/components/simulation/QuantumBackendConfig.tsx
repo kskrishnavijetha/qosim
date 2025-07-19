@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Key, Cloud, Cpu, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Key, Cloud, Cpu, CheckCircle, AlertCircle, ExternalLink, Info } from 'lucide-react';
 
 interface QuantumBackendConfigProps {
   onConfigSave: (config: BackendConfig) => void;
@@ -116,10 +117,19 @@ export function QuantumBackendConfig({ onConfigSave }: QuantumBackendConfigProps
           Quantum Cloud Backend Configuration
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Configure your API keys for real quantum cloud backends
+          Configure your API keys to access real quantum hardware and cloud simulators
         </p>
       </CardHeader>
       <CardContent>
+        {/* Important Info Alert */}
+        <Alert className="mb-6 border-blue-500/20 bg-blue-500/10">
+          <Info className="h-4 w-4 text-blue-500" />
+          <AlertDescription className="text-blue-700">
+            <strong>API Keys Required:</strong> To use IBM Quantum or AWS Braket, you need to obtain API credentials from the respective platforms. 
+            These keys are stored locally and never shared.
+          </AlertDescription>
+        </Alert>
+
         <Tabs defaultValue="ibm" className="w-full">
           <TabsList className="grid w-full grid-cols-2 quantum-tabs">
             <TabsTrigger value="ibm" className="flex items-center gap-2">
@@ -136,24 +146,50 @@ export function QuantumBackendConfig({ onConfigSave }: QuantumBackendConfigProps
 
           <TabsContent value="ibm" className="space-y-4">
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-              <h3 className="font-mono text-blue-400 font-semibold mb-2">IBM Quantum Platform</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Access real IBM quantum computers and high-performance simulators
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-mono text-blue-400 font-semibold">IBM Quantum Platform</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => window.open('https://quantum-computing.ibm.com/account', '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Get API Key
+                </Button>
+              </div>
+              
+              <Alert className="mb-4 border-amber-500/20 bg-amber-500/10">
+                <Key className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-700">
+                  <strong>Step 1:</strong> Visit IBM Quantum Platform → Account → Copy your API token<br/>
+                  <strong>Step 2:</strong> Paste the token below and test the connection
+                </AlertDescription>
+              </Alert>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                Access real IBM quantum computers and high-performance simulators with up to 127 qubits
               </p>
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ibm-token" className="text-sm font-mono">
+                  <Label htmlFor="ibm-token" className="text-sm font-mono flex items-center gap-2">
+                    <Key className="w-4 h-4" />
                     API Token *
                   </Label>
                   <Input
                     id="ibm-token"
                     type="password"
-                    placeholder="Your IBM Quantum API token..."
+                    placeholder="Enter your IBM Quantum API token (starts with '...')"
                     value={ibmConfig.apiToken}
                     onChange={(e) => setIbmConfig(prev => ({ ...prev, apiToken: e.target.value }))}
                     className="font-mono"
                   />
+                  {!ibmConfig.apiToken && (
+                    <p className="text-xs text-amber-600">
+                      ⚠️ API token is required to execute circuits on IBM Quantum
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -207,15 +243,6 @@ export function QuantumBackendConfig({ onConfigSave }: QuantumBackendConfigProps
                     {getStatusIcon(testResults.ibm)}
                     Test Connection
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                    onClick={() => window.open('https://quantum-computing.ibm.com/account', '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Get API Key
-                  </Button>
                 </div>
               </div>
             </div>
@@ -223,39 +250,72 @@ export function QuantumBackendConfig({ onConfigSave }: QuantumBackendConfigProps
 
           <TabsContent value="aws" className="space-y-4">
             <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
-              <h3 className="font-mono text-orange-400 font-semibold mb-2">AWS Braket</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Access quantum devices from IonQ, Rigetti, and AWS simulators
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-mono text-orange-400 font-semibold">AWS Braket</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => window.open('https://console.aws.amazon.com/iam/home#/security_credentials', '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Get AWS Keys
+                </Button>
+              </div>
+
+              <Alert className="mb-4 border-amber-500/20 bg-amber-500/10">
+                <Key className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-700">
+                  <strong>Step 1:</strong> Visit AWS Console → IAM → Security Credentials<br/>
+                  <strong>Step 2:</strong> Create Access Keys → Copy Access Key ID & Secret Key<br/>
+                  <strong>Step 3:</strong> Enable Braket service in your AWS account
+                </AlertDescription>
+              </Alert>
+              
+              <p className="text-sm text-muted-foreground mb-4">
+                Access quantum devices from IonQ, Rigetti, and AWS high-performance simulators
               </p>
               
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="aws-key" className="text-sm font-mono">
+                    <Label htmlFor="aws-key" className="text-sm font-mono flex items-center gap-2">
+                      <Key className="w-4 h-4" />
                       Access Key ID *
                     </Label>
                     <Input
                       id="aws-key"
                       type="password"
-                      placeholder="Your AWS Access Key ID..."
+                      placeholder="AKIA..."
                       value={awsConfig.accessKeyId}
                       onChange={(e) => setAwsConfig(prev => ({ ...prev, accessKeyId: e.target.value }))}
                       className="font-mono"
                     />
+                    {!awsConfig.accessKeyId && (
+                      <p className="text-xs text-amber-600">
+                        ⚠️ Access Key ID is required
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="aws-secret" className="text-sm font-mono">
+                    <Label htmlFor="aws-secret" className="text-sm font-mono flex items-center gap-2">
+                      <Key className="w-4 h-4" />
                       Secret Access Key *
                     </Label>
                     <Input
                       id="aws-secret"
                       type="password"
-                      placeholder="Your AWS Secret Access Key..."
+                      placeholder="Enter your AWS Secret Access Key..."
                       value={awsConfig.secretAccessKey}
                       onChange={(e) => setAwsConfig(prev => ({ ...prev, secretAccessKey: e.target.value }))}
                       className="font-mono"
                     />
+                    {!awsConfig.secretAccessKey && (
+                      <p className="text-xs text-amber-600">
+                        ⚠️ Secret Access Key is required
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -309,15 +369,6 @@ export function QuantumBackendConfig({ onConfigSave }: QuantumBackendConfigProps
                     {getStatusIcon(testResults.aws)}
                     Test Connection
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                    onClick={() => window.open('https://console.aws.amazon.com/iam/home#/security_credentials', '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Get AWS Keys
-                  </Button>
                 </div>
               </div>
             </div>
@@ -330,8 +381,15 @@ export function QuantumBackendConfig({ onConfigSave }: QuantumBackendConfigProps
             className="w-full bg-quantum-glow hover:bg-quantum-glow/80 text-black"
             disabled={!ibmConfig.apiToken && (!awsConfig.accessKeyId || !awsConfig.secretAccessKey)}
           >
+            <Key className="w-4 h-4 mr-2" />
             Save Backend Configuration
           </Button>
+          
+          {!ibmConfig.apiToken && (!awsConfig.accessKeyId || !awsConfig.secretAccessKey) && (
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              Please enter API credentials for at least one backend to continue
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
