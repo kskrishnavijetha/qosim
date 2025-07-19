@@ -10,6 +10,7 @@ export interface EnhancedSimulationResult extends SimulationResult {
   entanglement?: {
     pairs: Array<{ qubit1: number; qubit2: number; strength: number }>;
     totalEntanglement: number;
+    entanglementThreads: Array<{ qubits: number[]; strength: number }>;
   };
   fidelity?: number;
   noiseModel?: string;
@@ -168,6 +169,7 @@ class QiskitCloudService {
 
   private calculateEntanglement(stateVector: StateVector, numQubits: number) {
     const pairs: Array<{ qubit1: number; qubit2: number; strength: number }> = [];
+    const entanglementThreads: Array<{ qubits: number[]; strength: number }> = [];
     let totalEntanglement = 0;
     
     // Calculate pairwise entanglement using proper quantum measures
@@ -182,10 +184,31 @@ class QiskitCloudService {
       }
     }
     
+    // Calculate multi-qubit entanglement threads for 3+ qubit systems
+    if (numQubits >= 3) {
+      for (let i = 0; i < numQubits - 2; i++) {
+        const threadQubits = [i, i + 1, i + 2];
+        const threadStrength = this.calculateMultiQubitEntanglement(stateVector, threadQubits, numQubits);
+        
+        if (threadStrength > 0.05) {
+          entanglementThreads.push({ qubits: threadQubits, strength: threadStrength });
+        }
+      }
+    }
+    
     // Normalize total entanglement
     totalEntanglement = Math.min(1, totalEntanglement);
     
-    return { pairs, totalEntanglement };
+    return { pairs, totalEntanglement, entanglementThreads };
+  }
+
+  private calculateMultiQubitEntanglement(stateVector: StateVector, qubits: number[], numQubits: number): number {
+    // Simplified multi-qubit entanglement calculation
+    const reducedDensity = this.calculateReducedDensityMatrix(stateVector, qubits, numQubits);
+    const entropy = this.calculateVonNeumannEntropy(reducedDensity);
+    
+    // Convert entropy to entanglement strength for multi-qubit systems
+    return Math.min(1, entropy / Math.log(Math.pow(2, qubits.length)));
   }
 
   private calculatePairEntanglement(stateVector: StateVector, qubit1: number, qubit2: number, numQubits: number): number {
@@ -364,7 +387,12 @@ export class QuantumSimulationManager {
     const enhancedResult = {
       ...result,
       mode: 'fast' as EnhancedSimulationMode,
-      executionTime
+      executionTime,
+      entanglement: {
+        pairs: [],
+        totalEntanglement: 0,
+        entanglementThreads: []
+      }
     };
     
     console.log('Fast simulation - enhanced result:', enhancedResult);
