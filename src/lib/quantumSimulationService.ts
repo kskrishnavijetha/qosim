@@ -8,6 +8,11 @@ export interface CloudSimulationConfig {
   backend?: string;
   shots?: number;
   useNoisySimulation?: boolean;
+  // AWS Braket configuration
+  awsAccessKeyId?: string;
+  awsSecretAccessKey?: string;
+  awsRegion?: string;
+  awsDevice?: string;
 }
 
 export interface EnhancedSimulationResult extends SimulationResult {
