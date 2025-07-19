@@ -4,16 +4,39 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { CircuitBuilder } from '../circuits/CircuitBuilder';
-import { SimulationVisualizer } from '../visualization/SimulationVisualizer';
 import { BlochSphere } from '../BlochSphere';
 import { SimulationRunner } from './SimulationRunner';
 import { useCircuitState } from '@/hooks/useCircuitState';
+import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { Zap } from 'lucide-react';
 import { FastQuantumSimulator } from '../simulation/FastQuantumSimulator';
 
 export function QuantumAlgorithmsSDK() {
   const [activeTab, setActiveTab] = useState("circuit-builder");
-  const { circuit, simulationResult } = useCircuitState();
+  const { circuit, simulationResult, addGate, deleteGate } = useCircuitState();
+
+  const NUM_QUBITS = 5;
+  const GRID_SIZE = 50;
+
+  const {
+    dragState,
+    circuitRef,
+    handleMouseDown,
+    handleTouchStart
+  } = useCircuitDragDrop({
+    onGateAdd: addGate,
+    numQubits: NUM_QUBITS,
+    gridSize: GRID_SIZE
+  });
+
+  // Generate a default qubit state for Bloch sphere visualization
+  const defaultQubitState = {
+    amplitude0: { real: 1, imag: 0 },
+    amplitude1: { real: 0, imag: 0 },
+    probability0: 1,
+    probability1: 0,
+    phase: 0
+  };
 
   return (
     <div className="min-h-screen bg-quantum-void text-quantum-neon p-6">
@@ -39,7 +62,7 @@ export function QuantumAlgorithmsSDK() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 quantum-tabs">
+          <TabsList className="grid w-full grid-cols-4 quantum-tabs">
             <TabsTrigger value="circuit-builder" className="quantum-tab">
               Circuit Builder
             </TabsTrigger>
@@ -56,7 +79,17 @@ export function QuantumAlgorithmsSDK() {
           </TabsList>
 
           <TabsContent value="circuit-builder" className="space-y-6">
-            <CircuitBuilder />
+            <CircuitBuilder
+              circuit={circuit}
+              dragState={dragState}
+              simulationResult={simulationResult}
+              onDeleteGate={deleteGate}
+              onGateMouseDown={handleMouseDown}
+              onGateTouchStart={handleTouchStart}
+              circuitRef={circuitRef}
+              numQubits={NUM_QUBITS}
+              gridSize={GRID_SIZE}
+            />
           </TabsContent>
 
           <TabsContent value="simulation" className="space-y-6">
@@ -65,13 +98,13 @@ export function QuantumAlgorithmsSDK() {
               onSimulationComplete={(result) => console.log('Simulation Complete:', result)}
               simulationResult={simulationResult}
             />
-            {simulationResult && (
-              <SimulationVisualizer simulationResult={simulationResult} />
-            )}
           </TabsContent>
 
           <TabsContent value="bloch-sphere">
-            <BlochSphere />
+            <BlochSphere 
+              qubitState={defaultQubitState}
+              size={400}
+            />
           </TabsContent>
 
           <TabsContent value="fast-simulator" className="space-y-6">
