@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
@@ -143,14 +142,12 @@ export function CircuitVisualizationSection({
                   <div className="flex items-center gap-2">
                     <Cpu className="w-4 h-4" />
                     IBM Quantum
-                    {!isBackendConfigured('qiskit') && <span className="text-red-400 text-xs">(Setup Required)</span>}
                   </div>
                 </SelectItem>
                 <SelectItem value="braket">
                   <div className="flex items-center gap-2">
                     <Cloud className="w-4 h-4" />
                     AWS Braket
-                    {!isBackendConfigured('braket') && <span className="text-red-400 text-xs">(Setup Required)</span>}
                   </div>
                 </SelectItem>
                 <SelectItem value="qutip">

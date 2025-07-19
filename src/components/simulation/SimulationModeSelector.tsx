@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Zap, Brain, Cloud, Settings, Key, AlertTriangle } from 'lucide-react';
+import { Zap, Brain, Cloud, Settings, Key, AlertTriangle, Cpu } from 'lucide-react';
 import { EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
 import { CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
@@ -44,10 +44,20 @@ export function SimulationModeSelector({
     {
       id: 'cloud' as EnhancedSimulationMode,
       name: 'IBM Quantum',
-      icon: Cloud,
+      icon: Cpu,
       description: 'Real quantum simulation via IBM Qiskit Runtime',
       features: ['Real backend simulation', 'Noise models', 'Hardware constraints'],
-      requiresConfig: true
+      requiresConfig: true,
+      configType: 'ibm'
+    },
+    {
+      id: 'braket' as EnhancedSimulationMode,
+      name: 'AWS Braket',
+      icon: Cloud,
+      description: 'AWS quantum computing service with multiple providers',
+      features: ['IonQ devices', 'Rigetti QPUs', 'AWS simulators'],
+      requiresConfig: true,
+      configType: 'aws'
     },
     {
       id: 'step-by-step' as EnhancedSimulationMode,
@@ -74,6 +84,38 @@ export function SimulationModeSelector({
     onCloudConfigChange({ ...cloudConfig, useNoisySimulation });
   };
 
+  const handleAWSKeyChange = (accessKeyId: string) => {
+    onCloudConfigChange({ ...cloudConfig, awsAccessKeyId: accessKeyId });
+  };
+
+  const handleAWSSecretChange = (secretAccessKey: string) => {
+    onCloudConfigChange({ ...cloudConfig, awsSecretAccessKey: secretAccessKey });
+  };
+
+  const handleAWSRegionChange = (region: string) => {
+    onCloudConfigChange({ ...cloudConfig, awsRegion: region });
+  };
+
+  const handleAWSDeviceChange = (device: string) => {
+    onCloudConfigChange({ ...cloudConfig, awsDevice: device });
+  };
+
+  const isIBMConfigured = () => {
+    return cloudConfig.ibmqToken && cloudConfig.ibmqToken.length > 20;
+  };
+
+  const isAWSConfigured = () => {
+    return cloudConfig.awsAccessKeyId && cloudConfig.awsSecretAccessKey && 
+           cloudConfig.awsAccessKeyId.length > 10 && cloudConfig.awsSecretAccessKey.length > 20;
+  };
+
+  const isModeConfigured = (mode: any) => {
+    if (!mode.requiresConfig) return true;
+    if (mode.configType === 'ibm') return isIBMConfigured();
+    if (mode.configType === 'aws') return isAWSConfigured();
+    return false;
+  };
+
   const handleModeSelection = async (mode: EnhancedSimulationMode) => {
     console.log('🔄 SimulationModeSelector: Mode selection triggered', mode);
     
@@ -82,8 +124,9 @@ export function SimulationModeSelector({
       return;
     }
     
-    if (mode === 'cloud' && !isCloudConfigured) {
-      console.log('🔄 Cloud mode selected but not configured');
+    const selectedMode = modes.find(m => m.id === mode);
+    if (selectedMode?.requiresConfig && !isModeConfigured(selectedMode)) {
+      console.log('🔄 Mode selected but not configured');
       return;
     }
     
@@ -104,10 +147,10 @@ export function SimulationModeSelector({
       </CardHeader>
       <CardContent>
         <Tabs value={currentMode} onValueChange={handleModeSelection}>
-          <TabsList className="grid w-full grid-cols-4 quantum-tabs">
+          <TabsList className="grid w-full grid-cols-5 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
-              const needsSetup = mode.requiresConfig && !isCloudConfigured;
+              const needsSetup = mode.requiresConfig && !isModeConfigured(mode);
               
               return (
                 <TabsTrigger 
@@ -117,8 +160,8 @@ export function SimulationModeSelector({
                   disabled={needsSetup}
                 >
                   <Icon className="w-4 h-4" />
-                  {mode.name}
-                  {needsSetup && <Badge variant="outline" className="text-xs">Setup Required</Badge>}
+                  <span className="hidden sm:inline">{mode.name}</span>
+                  {needsSetup && <Badge variant="outline" className="text-xs hidden lg:inline">Setup</Badge>}
                 </TabsTrigger>
               );
             })}
@@ -163,7 +206,7 @@ export function SimulationModeSelector({
                           <div className="text-sm text-yellow-500">
                             <p className="font-medium">Real API Keys Required</p>
                             <p className="text-xs opacity-90 mt-1">
-                              To use IBM Quantum or AWS Braket, you need to provide your actual API keys from these services.
+                              Enter your IBM Quantum API token to access real quantum computers.
                             </p>
                           </div>
                         </div>
@@ -239,18 +282,106 @@ export function SimulationModeSelector({
                     </div>
                   )}
 
+                  {mode.id === 'braket' && (
+                    <div className="space-y-4 p-4 border border-quantum-neon/20 rounded-lg">
+                      <div className="flex items-center gap-2 text-quantum-particle">
+                        <Key className="w-4 h-4" />
+                        <Label className="font-mono">AWS Braket Configuration</Label>
+                      </div>
+
+                      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 mb-4">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5" />
+                          <div className="text-sm text-orange-500">
+                            <p className="font-medium">AWS Credentials Required</p>
+                            <p className="text-xs opacity-90 mt-1">
+                              Enter your AWS Access Keys to access Braket quantum devices.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="aws-access-key" className="text-sm font-mono">
+                            AWS Access Key ID *
+                          </Label>
+                          <Input
+                            id="aws-access-key"
+                            type="password"
+                            placeholder="Enter your AWS Access Key ID..."
+                            value={cloudConfig.awsAccessKeyId || ''}
+                            onChange={(e) => handleAWSKeyChange(e.target.value)}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="aws-secret-key" className="text-sm font-mono">
+                            AWS Secret Access Key *
+                          </Label>
+                          <Input
+                            id="aws-secret-key"
+                            type="password"
+                            placeholder="Enter your AWS Secret Access Key..."
+                            value={cloudConfig.awsSecretAccessKey || ''}
+                            onChange={(e) => handleAWSSecretChange(e.target.value)}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="aws-region" className="text-sm font-mono">
+                            Region
+                          </Label>
+                          <Input
+                            id="aws-region"
+                            placeholder="us-east-1"
+                            value={cloudConfig.awsRegion || 'us-east-1'}
+                            onChange={(e) => handleAWSRegionChange(e.target.value)}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="aws-device" className="text-sm font-mono">
+                            Device
+                          </Label>
+                          <Input
+                            id="aws-device"
+                            placeholder="arn:aws:braket:::device/quantum-simulator/amazon/sv1"
+                            value={cloudConfig.awsDevice || 'arn:aws:braket:::device/quantum-simulator/amazon/sv1'}
+                            onChange={(e) => handleAWSDeviceChange(e.target.value)}
+                            className="font-mono text-xs"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Get credentials from{' '}
+                            <a 
+                              href="https://console.aws.amazon.com/iam/home#/security_credentials" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-quantum-neon hover:underline"
+                            >
+                              AWS Console
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <Button
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       await handleModeSelection(mode.id);
                     }}
-                    disabled={mode.requiresConfig && !isCloudConfigured}
+                    disabled={mode.requiresConfig && !isModeConfigured(mode)}
                     className="w-full quantum-button"
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
                     {currentMode === mode.id ? 'Currently Active' : 
-                     (mode.requiresConfig && !isCloudConfigured) ? 'Enter API Key First' : 
+                     (mode.requiresConfig && !isModeConfigured(mode)) ? 'Enter API Keys First' : 
                      `Switch to ${mode.name}`}
                   </Button>
                 </div>
