@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Zap, Brain, Cloud, Settings, Key, AlertTriangle, Cpu } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Zap, Brain, Cloud, Settings, Key, AlertTriangle, Cpu, ExternalLink, CheckCircle } from 'lucide-react';
 import { EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
 import { CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
@@ -126,12 +127,18 @@ export function SimulationModeSelector({
     
     const selectedMode = modes.find(m => m.id === mode);
     if (selectedMode?.requiresConfig && !isModeConfigured(selectedMode)) {
-      console.log('🔄 Mode selected but not configured');
+      console.log('🔄 Mode selected but not configured - API keys needed');
       return;
     }
     
     console.log('🔄 Calling onModeChange with:', mode);
     await onModeChange(mode);
+  };
+
+  const getTabStatus = (mode: any) => {
+    if (!mode.requiresConfig) return null;
+    if (isModeConfigured(mode)) return 'configured';
+    return 'setup';
   };
 
   return (
@@ -150,18 +157,24 @@ export function SimulationModeSelector({
           <TabsList className="grid w-full grid-cols-5 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
-              const needsSetup = mode.requiresConfig && !isModeConfigured(mode);
+              const status = getTabStatus(mode);
               
               return (
                 <TabsTrigger 
                   key={mode.id} 
                   value={mode.id}
                   className="flex items-center gap-2 data-[state=active]:bg-quantum-glow/20"
-                  disabled={needsSetup}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{mode.name}</span>
-                  {needsSetup && <Badge variant="outline" className="text-xs hidden lg:inline">Setup</Badge>}
+                  {status === 'setup' && (
+                    <Badge variant="outline" className="text-xs bg-orange-500/20 text-orange-400 border-orange-500/50 hidden lg:inline">
+                      Setup
+                    </Badge>
+                  )}
+                  {status === 'configured' && (
+                    <CheckCircle className="w-3 h-3 text-green-500 hidden lg:inline" />
+                  )}
                 </TabsTrigger>
               );
             })}
@@ -169,6 +182,7 @@ export function SimulationModeSelector({
 
           {modes.map((mode) => {
             const Icon = mode.icon;
+            const isConfigured = isModeConfigured(mode);
             
             return (
               <TabsContent key={mode.id} value={mode.id} className="mt-4">
@@ -193,23 +207,42 @@ export function SimulationModeSelector({
                     </div>
                   </div>
 
+                  {/* API Keys Required Alert */}
+                  {mode.requiresConfig && !isConfigured && (
+                    <Alert className="border-orange-500/20 bg-orange-500/10">
+                      <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      <AlertDescription className="text-orange-400">
+                        <strong>API Keys Required:</strong> Enter your {mode.configType === 'ibm' ? 'IBM Quantum' : 'AWS'} credentials below to activate this backend.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Configuration Successful Alert */}
+                  {mode.requiresConfig && isConfigured && (
+                    <Alert className="border-green-500/20 bg-green-500/10">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <AlertDescription className="text-green-400">
+                        <strong>Ready to Use:</strong> {mode.name} is configured and ready for quantum circuit execution.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {mode.id === 'cloud' && (
                     <div className="space-y-4 p-4 border border-quantum-neon/20 rounded-lg">
-                      <div className="flex items-center gap-2 text-quantum-particle">
-                        <Key className="w-4 h-4" />
-                        <Label className="font-mono">IBM Quantum Configuration</Label>
-                      </div>
-
-                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5" />
-                          <div className="text-sm text-yellow-500">
-                            <p className="font-medium">Real API Keys Required</p>
-                            <p className="text-xs opacity-90 mt-1">
-                              Enter your IBM Quantum API token to access real quantum computers.
-                            </p>
-                          </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-quantum-particle">
+                          <Key className="w-4 h-4" />
+                          <Label className="font-mono">IBM Quantum Configuration</Label>
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open('https://quantum-computing.ibm.com/account', '_blank')}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Get API Key
+                        </Button>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,15 +259,7 @@ export function SimulationModeSelector({
                             className="font-mono text-xs"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Get your token from{' '}
-                            <a 
-                              href="https://quantum-computing.ibm.com/account" 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-quantum-neon hover:underline"
-                            >
-                              IBM Quantum Platform
-                            </a>
+                            Minimum 20 characters required for authentication
                           </p>
                         </div>
                         
@@ -250,7 +275,7 @@ export function SimulationModeSelector({
                             className="font-mono text-xs"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Available backends: ibmq_qasm_simulator, ibm_brisbane, ibm_kyoto
+                            Available: ibmq_qasm_simulator, ibm_brisbane, ibm_kyoto
                           </p>
                         </div>
                         
@@ -284,21 +309,20 @@ export function SimulationModeSelector({
 
                   {mode.id === 'braket' && (
                     <div className="space-y-4 p-4 border border-quantum-neon/20 rounded-lg">
-                      <div className="flex items-center gap-2 text-quantum-particle">
-                        <Key className="w-4 h-4" />
-                        <Label className="font-mono">AWS Braket Configuration</Label>
-                      </div>
-
-                      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 mb-4">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5" />
-                          <div className="text-sm text-orange-500">
-                            <p className="font-medium">AWS Credentials Required</p>
-                            <p className="text-xs opacity-90 mt-1">
-                              Enter your AWS Access Keys to access Braket quantum devices.
-                            </p>
-                          </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-quantum-particle">
+                          <Key className="w-4 h-4" />
+                          <Label className="font-mono">AWS Braket Configuration</Label>
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open('https://console.aws.amazon.com/iam/home#/security_credentials', '_blank')}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Get AWS Keys
+                        </Button>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,6 +338,9 @@ export function SimulationModeSelector({
                             onChange={(e) => handleAWSKeyChange(e.target.value)}
                             className="font-mono text-xs"
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Minimum 10 characters required
+                          </p>
                         </div>
                         
                         <div className="space-y-2">
@@ -328,6 +355,9 @@ export function SimulationModeSelector({
                             onChange={(e) => handleAWSSecretChange(e.target.value)}
                             className="font-mono text-xs"
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Minimum 20 characters required
+                          </p>
                         </div>
                         
                         <div className="space-y-2">
@@ -354,17 +384,6 @@ export function SimulationModeSelector({
                             onChange={(e) => handleAWSDeviceChange(e.target.value)}
                             className="font-mono text-xs"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Get credentials from{' '}
-                            <a 
-                              href="https://console.aws.amazon.com/iam/home#/security_credentials" 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-quantum-neon hover:underline"
-                            >
-                              AWS Console
-                            </a>
-                          </p>
                         </div>
                       </div>
                     </div>
@@ -376,13 +395,32 @@ export function SimulationModeSelector({
                       e.stopPropagation();
                       await handleModeSelection(mode.id);
                     }}
-                    disabled={mode.requiresConfig && !isModeConfigured(mode)}
-                    className="w-full quantum-button"
+                    disabled={mode.requiresConfig && !isConfigured}
+                    className={`w-full transition-all ${
+                      currentMode === mode.id 
+                        ? 'bg-quantum-glow text-black hover:bg-quantum-glow/80' 
+                        : isConfigured || !mode.requiresConfig
+                        ? 'bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border'
+                        : 'bg-orange-500/20 text-orange-400 border-orange-500/50 hover:bg-orange-500/30'
+                    }`}
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
-                    {currentMode === mode.id ? 'Currently Active' : 
-                     (mode.requiresConfig && !isModeConfigured(mode)) ? 'Enter API Keys First' : 
-                     `Switch to ${mode.name}`}
+                    {currentMode === mode.id ? (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" />
+                        Currently Active
+                      </div>
+                    ) : mode.requiresConfig && !isConfigured ? (
+                      <div className="flex items-center gap-2">
+                        <Key className="w-4 h-4" />
+                        Enter API Keys to Activate
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        Activate {mode.name}
+                      </div>
+                    )}
                   </Button>
                 </div>
               </TabsContent>
