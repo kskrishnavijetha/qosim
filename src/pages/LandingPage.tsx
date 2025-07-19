@@ -505,7 +505,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Tutorials Section - Remove the duplicate learn quantum section from here */}
+      {/* Tutorials Section */}
       <section id="tutorials" className="py-24 bg-gradient-to-br from-quantum-void/5 to-quantum-matrix/5 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_60%,hsl(var(--quantum-glow))/5,transparent_50%)]"></div>
         
@@ -513,9 +513,9 @@ const LandingPage = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                Learn{" "}
+                Interactive{" "}
                 <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
-                  Quantum Computing
+                  Tutorials
                 </span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
