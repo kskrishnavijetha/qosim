@@ -128,6 +128,7 @@ export function SimulationModeSelector({
     const selectedMode = modes.find(m => m.id === mode);
     if (selectedMode?.requiresConfig && !isModeConfigured(selectedMode)) {
       console.log('🔄 Mode selected but not configured - API keys needed');
+      // Still allow tab selection to show configuration interface
       return;
     }
     
@@ -153,7 +154,7 @@ export function SimulationModeSelector({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={currentMode} onValueChange={handleModeSelection}>
+        <Tabs defaultValue={currentMode} onValueChange={handleModeSelection}>
           <TabsList className="grid w-full grid-cols-5 quantum-tabs">
             {modes.map((mode) => {
               const Icon = mode.icon;
@@ -393,15 +394,18 @@ export function SimulationModeSelector({
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      await handleModeSelection(mode.id);
+                      console.log('🔄 Button clicked for mode:', mode.id, 'isConfigured:', isConfigured);
+                      if (isConfigured || !mode.requiresConfig) {
+                        await handleModeSelection(mode.id);
+                      }
                     }}
-                    disabled={mode.requiresConfig && !isConfigured}
+                    disabled={false}
                     className={`w-full transition-all ${
                       currentMode === mode.id 
                         ? 'bg-quantum-glow text-black hover:bg-quantum-glow/80' 
                         : isConfigured || !mode.requiresConfig
                         ? 'bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border'
-                        : 'bg-orange-500/20 text-orange-400 border-orange-500/50 hover:bg-orange-500/30'
+                        : 'bg-orange-500/20 text-orange-400 border-orange-500/50 hover:bg-orange-500/30 cursor-pointer'
                     }`}
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
