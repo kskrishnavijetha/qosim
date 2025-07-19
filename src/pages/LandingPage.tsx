@@ -33,7 +33,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'about', 'features', 'tutorials', 'use-cases', 'learn-quantum'];
+      const sections = ['hero', 'about', 'features', 'use-cases', 'learn-quantum'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -69,7 +69,6 @@ const LandingPage = () => {
               { id: 'hero', label: 'Home' },
               { id: 'about', label: 'Product' },
               { id: 'features', label: 'Features' },
-              { id: 'tutorials', label: 'Tutorials' },
               { id: 'use-cases', label: 'Use Cases' },
               { id: 'learn-quantum', label: 'Learn' }
             ].map((item) => (
@@ -83,6 +82,12 @@ const LandingPage = () => {
                 {item.label}
               </button>
             ))}
+            <button
+              onClick={openTutorialsInNewTab}
+              className="text-sm transition-colors hover:text-quantum-glow text-muted-foreground"
+            >
+              Tutorials
+            </button>
             <button
               onClick={openRoadmapInNewTab}
               className="text-sm transition-colors hover:text-quantum-glow text-muted-foreground"
@@ -501,216 +506,6 @@ const LandingPage = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tutorials Section */}
-      <section id="tutorials" className="py-24 bg-gradient-to-br from-quantum-void/5 to-quantum-matrix/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_60%,hsl(var(--quantum-glow))/5,transparent_50%)]"></div>
-        
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                Interactive{" "}
-                <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
-                  Tutorials
-                </span>
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-                Master quantum computing from fundamentals to advanced algorithms with our comprehensive, 
-                hands-on tutorials designed for all skill levels.
-              </p>
-              
-              <Button 
-                onClick={openTutorialsInNewTab}
-                size="lg" 
-                className="bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-8 py-3 text-lg group"
-              >
-                <BookOpen className="w-5 h-5 mr-2" />
-                Start Learning
-                <ExternalLink className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Beginner Level */}
-              <Card className="border-quantum-glow/30 bg-gradient-to-br from-quantum-void/20 to-background hover:border-quantum-glow/50 transition-all duration-300 group">
-                <CardHeader className="text-center pb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-glow/20 to-quantum-glow/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <BookOpen className="w-8 h-8 text-quantum-glow" />
-                  </div>
-                  <CardTitle className="text-xl text-quantum-glow mb-2">Beginner</CardTitle>
-                  <Badge variant="outline" className="border-quantum-glow text-quantum-glow">
-                    4 Lessons • 45 min
-                  </Badge>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span className="text-sm">What is a Qubit?</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span className="text-sm">Basic Quantum Gates</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span className="text-sm">Your First Circuit</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-glow rounded-full"></div>
-                      <span className="text-sm">Measurement & Results</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border/20">
-                    <p className="text-xs text-muted-foreground text-center">
-                      Perfect for complete beginners with no prior quantum knowledge
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Intermediate Level */}
-              <Card className="border-quantum-neon/30 bg-gradient-to-br from-quantum-matrix/20 to-background hover:border-quantum-neon/50 transition-all duration-300 group">
-                <CardHeader className="text-center pb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-neon/20 to-quantum-neon/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Code className="w-8 h-8 text-quantum-neon" />
-                  </div>
-                  <CardTitle className="text-xl text-quantum-neon mb-2">Intermediate</CardTitle>
-                  <Badge variant="outline" className="border-quantum-neon text-quantum-neon">
-                    6 Lessons • 90 min
-                  </Badge>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span className="text-sm">Quantum Entanglement</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span className="text-sm">Bell States & EPR Pairs</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span className="text-sm">Quantum Teleportation</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span className="text-sm">Superdense Coding</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span className="text-sm">Multi-qubit Systems</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-neon rounded-full"></div>
-                      <span className="text-sm">QASM Export</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border/20">
-                    <p className="text-xs text-muted-foreground text-center">
-                      Build complex quantum phenomena and export to real quantum computers
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Advanced Level */}
-              <Card className="border-quantum-plasma/30 bg-gradient-to-br from-quantum-particle/20 to-background hover:border-quantum-plasma/50 transition-all duration-300 group">
-                <CardHeader className="text-center pb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-quantum-plasma/20 to-quantum-plasma/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Zap className="w-8 h-8 text-quantum-plasma" />
-                  </div>
-                  <CardTitle className="text-xl text-quantum-plasma mb-2">Advanced</CardTitle>
-                  <Badge variant="outline" className="border-quantum-plasma text-quantum-plasma">
-                    8 Lessons • 2 hours
-                  </Badge>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Grover's Search Algorithm</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Quantum Fourier Transform</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Shor's Factoring Algorithm</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Variational Quantum Eigensolver</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Quantum Error Correction</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">QAOA & Optimization</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Quantum Machine Learning</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-quantum-plasma rounded-full"></div>
-                      <span className="text-sm">Custom Algorithm Design</span>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border/20">
-                    <p className="text-xs text-muted-foreground text-center">
-                      Industry-level algorithms used in real quantum computing applications
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Tutorial Features */}
-            <div className="mt-16 grid md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-glow/20 to-quantum-glow/10 rounded-full flex items-center justify-center">
-                  <PlayCircle className="w-6 h-6 text-quantum-glow" />
-                </div>
-                <h3 className="font-semibold text-quantum-glow mb-1">Interactive</h3>
-                <p className="text-sm text-muted-foreground">Hands-on circuits you build yourself</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-neon/20 to-quantum-neon/10 rounded-full flex items-center justify-center">
-                  <Eye className="w-6 h-6 text-quantum-neon" />
-                </div>
-                <h3 className="font-semibold text-quantum-neon mb-1">Visual</h3>
-                <p className="text-sm text-muted-foreground">See quantum states in real-time</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-plasma/20 to-quantum-plasma/10 rounded-full flex items-center justify-center">
-                  <Code className="w-6 h-6 text-quantum-plasma" />
-                </div>
-                <h3 className="font-semibold text-quantum-plasma mb-1">Export Ready</h3>
-                <p className="text-sm text-muted-foreground">Export to Qiskit, Cirq, and more</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-energy/20 to-quantum-energy/10 rounded-full flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-quantum-energy" />
-                </div>
-                <h3 className="font-semibold text-quantum-energy mb-1">Self-Paced</h3>
-                <p className="text-sm text-muted-foreground">Learn at your own speed</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
