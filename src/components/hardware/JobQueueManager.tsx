@@ -127,7 +127,7 @@ export function JobQueueManager({ jobs, onJobCancel, onJobResubmit, onJobRefresh
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Submitted:</span>
-            <span className="text-quantum-particle">{job.submittedAt.toLocaleTime()}</span>
+            <span className="text-quantum-particle">{job.submittedAt.toLocaleTimeString()}</span>
           </div>
           {job.status === 'running' && job.progress !== undefined && (
             <div className="space-y-1">
