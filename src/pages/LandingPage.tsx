@@ -33,7 +33,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'about', 'features', 'tutorials', 'use-cases', 'early-access'];
+      const sections = ['hero', 'about', 'features', 'tutorials', 'use-cases', 'learn-quantum'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -71,7 +71,7 @@ const LandingPage = () => {
               { id: 'features', label: 'Features' },
               { id: 'tutorials', label: 'Tutorials' },
               { id: 'use-cases', label: 'Use Cases' },
-              { id: 'early-access', label: 'Early Access' }
+              { id: 'learn-quantum', label: 'Learn' }
             ].map((item) => (
               <button
                 key={item.id}
@@ -176,9 +176,11 @@ const LandingPage = () => {
             </div>
             
             <div className="flex flex-col gap-4 sm:flex-row sm:gap-6 justify-center items-center pt-6">
-              <Button size="lg" className="w-full sm:w-auto group bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg">
-                Join Early Access
-                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+              <Button size="lg" className="w-full sm:w-auto group bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
+                <Link to="/auth">
+                  Join Early Access
+                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
                 <Link to="/auth">
@@ -342,7 +344,7 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
-                onClick={() => scrollToSection('early-access')}
+                onClick={() => scrollToSection('learn-quantum')}
               >
                 Try It Yourself
               </Button>
@@ -881,7 +883,7 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
-                onClick={() => scrollToSection('early-access')}
+                onClick={() => scrollToSection('learn-quantum')}
               >
                 Start Building Quantum Circuits
               </Button>
@@ -1074,17 +1076,17 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Early Access Section */}
-      <section id="early-access" className="py-24 relative overflow-hidden">
+      {/* Learn Quantum Computing Section - Replacing Early Access */}
+      <section id="learn-quantum" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/5 via-background to-quantum-neon/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--quantum-plasma))/10,transparent_70%)]"></div>
         
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Join the{" "}
+              Learn{" "}
               <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
-                Quantum Revolution
+                Quantum Computing
               </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
