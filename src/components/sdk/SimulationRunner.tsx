@@ -283,11 +283,11 @@ export function SimulationRunner({
                         <div className="w-24 bg-quantum-matrix rounded-full h-2">
                           <div 
                             className="bg-quantum-glow h-2 rounded-full"
-                            style={{ width: `${(count as number / shots) * 100}%` }}
+                            style={{ width: `${(Number(count) / shots) * 100}%` }}
                           />
                         </div>
                         <span className="text-xs font-mono text-quantum-energy">
-                          {((count as number / shots) * 100).toFixed(1)}%
+                          {((Number(count) / shots) * 100).toFixed(1)}%
                         </span>
                       </div>
                     </div>
