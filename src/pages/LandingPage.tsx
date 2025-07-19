@@ -1076,7 +1076,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Learn Quantum Computing Section - Simple CTA */}
+      {/* Learn Quantum Computing Section - Moved to bottom */}
       <section id="learn-quantum" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/5 via-background to-quantum-neon/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--quantum-plasma))/10,transparent_70%)]"></div>
