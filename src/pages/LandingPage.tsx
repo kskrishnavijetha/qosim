@@ -33,7 +33,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'about', 'features', 'use-cases', 'learn-quantum'];
+      const sections = ['hero', 'about', 'features', 'use-cases'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -69,8 +69,7 @@ const LandingPage = () => {
               { id: 'hero', label: 'Home' },
               { id: 'about', label: 'Product' },
               { id: 'features', label: 'Features' },
-              { id: 'use-cases', label: 'Use Cases' },
-              { id: 'learn-quantum', label: 'Learn' }
+              { id: 'use-cases', label: 'Use Cases' }
             ].map((item) => (
               <button
                 key={item.id}
@@ -349,9 +348,11 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
-                onClick={() => scrollToSection('learn-quantum')}
+                asChild
               >
-                Try It Yourself
+                <Link to="/auth">
+                  Try It Yourself
+                </Link>
               </Button>
             </div>
           </div>
@@ -678,9 +679,11 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
-                onClick={() => scrollToSection('learn-quantum')}
+                asChild
               >
-                Start Building Quantum Circuits
+                <Link to="/auth">
+                  Start Building Quantum Circuits
+                </Link>
               </Button>
             </div>
           </div>
