@@ -1,3 +1,4 @@
+
 // Enhanced quantum simulation service with multiple backend support
 import { Complex, StateVector, QuantumGate, SimulationResult, complex, quantumSimulator } from './quantumSimulator';
 import { CloudSimulationConfig } from './quantumSimulationService';
@@ -7,7 +8,7 @@ export type EnhancedSimulationMode = 'fast' | 'accurate' | 'cloud' | 'braket' | 
 export interface EnhancedSimulationResult extends SimulationResult {
   mode: EnhancedSimulationMode;
   executionTime: number;
-  entanglement?: {
+  entanglement: {
     pairs: Array<{ qubit1: number; qubit2: number; strength: number }>;
     totalEntanglement: number;
     entanglementThreads: Array<{ qubits: number[]; strength: number }>;
