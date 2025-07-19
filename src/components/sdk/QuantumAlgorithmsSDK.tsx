@@ -6,9 +6,10 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { CircuitBuilder } from '../circuits/CircuitBuilder';
 import { BlochSphere } from '../BlochSphere';
 import { SimulationRunner } from './SimulationRunner';
+import { CircuitExporter } from './CircuitExporter';
 import { useCircuitState } from '@/hooks/useCircuitState';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
-import { Zap } from 'lucide-react';
+import { Zap, FileText } from 'lucide-react';
 import { FastQuantumSimulator } from '../simulation/FastQuantumSimulator';
 
 export function QuantumAlgorithmsSDK() {
@@ -62,7 +63,7 @@ export function QuantumAlgorithmsSDK() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 quantum-tabs">
+          <TabsList className="grid w-full grid-cols-5 quantum-tabs">
             <TabsTrigger value="circuit-builder" className="quantum-tab">
               Circuit Builder
             </TabsTrigger>
@@ -75,6 +76,10 @@ export function QuantumAlgorithmsSDK() {
             <TabsTrigger value="fast-simulator" className="quantum-tab">
               <Zap className="w-4 h-4 mr-2" />
               Fast Simulator
+            </TabsTrigger>
+            <TabsTrigger value="export" className="quantum-tab">
+              <FileText className="w-4 h-4 mr-2" />
+              Export & Hardware
             </TabsTrigger>
           </TabsList>
 
@@ -109,6 +114,13 @@ export function QuantumAlgorithmsSDK() {
 
           <TabsContent value="fast-simulator" className="space-y-6">
             <FastQuantumSimulator />
+          </TabsContent>
+
+          <TabsContent value="export" className="space-y-6">
+            <CircuitExporter
+              circuit={circuit}
+              simulationResult={simulationResult}
+            />
           </TabsContent>
         </Tabs>
       </div>

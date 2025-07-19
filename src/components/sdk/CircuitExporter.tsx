@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Gate } from '@/hooks/useCircuitState';
-import { Download, Copy, FileText, Code, Braces, FileCode } from 'lucide-react';
+import { HardwareIntegration } from '../hardware/HardwareIntegration';
+import { Download, Copy, FileText, Code, Braces, FileCode, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CircuitExporterProps {
@@ -263,92 +263,109 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-mono text-quantum-glow">Circuit Export</h3>
-          <p className="text-sm text-quantum-particle">
-            Export circuits to various quantum computing frameworks
-          </p>
+    <Tabs defaultValue="export" className="w-full">
+      <TabsList className="grid w-full grid-cols-2 quantum-tabs">
+        <TabsTrigger value="export">Export Formats</TabsTrigger>
+        <TabsTrigger value="hardware" className="flex items-center gap-2">
+          <Cpu className="w-4 h-4" />
+          Hardware Integration
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="export" className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-mono text-quantum-glow">Circuit Export</h3>
+            <p className="text-sm text-quantum-particle">
+              Export circuits to various quantum computing frameworks
+            </p>
+          </div>
+          <Badge variant="secondary" className="bg-quantum-matrix text-quantum-neon">
+            {circuit.length} Gates
+          </Badge>
         </div>
-        <Badge variant="secondary" className="bg-quantum-matrix text-quantum-neon">
-          {circuit.length} Gates
-        </Badge>
-      </div>
 
-      {/* Export Configuration */}
-      <Card className="quantum-panel neon-border">
-        <CardHeader>
-          <CardTitle className="text-sm text-quantum-neon">Export Configuration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-quantum-particle">Project Name</Label>
-              <Input
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="quantum-panel neon-border mt-1"
-              />
+        {/* Export Configuration */}
+        <Card className="quantum-panel neon-border">
+          <CardHeader>
+            <CardTitle className="text-sm text-quantum-neon">Export Configuration</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-quantum-particle">Project Name</Label>
+                <Input
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  className="quantum-panel neon-border mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-quantum-particle">Export Format</Label>
+                <Tabs value={exportFormat} onValueChange={setExportFormat} className="mt-1">
+                  <TabsList className="grid w-full grid-cols-4 quantum-tabs">
+                    {exportFormats.map(format => (
+                      <TabsTrigger key={format.id} value={format.id} className="text-xs">
+                        {format.icon}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
             </div>
-            <div>
-              <Label className="text-quantum-particle">Export Format</Label>
-              <Tabs value={exportFormat} onValueChange={setExportFormat} className="mt-1">
-                <TabsList className="grid w-full grid-cols-4 quantum-tabs">
-                  {exportFormats.map(format => (
-                    <TabsTrigger key={format.id} value={format.id} className="text-xs">
-                      {format.icon}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleExport}
+                disabled={circuit.length === 0}
+                className="bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export {exportFormat.toUpperCase()}
+              </Button>
+              <Button
+                onClick={handleCopy}
+                disabled={circuit.length === 0}
+                variant="outline"
+                className="neon-border"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Code
+              </Button>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="flex gap-2">
-            <Button
-              onClick={handleExport}
-              disabled={circuit.length === 0}
-              className="bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export {exportFormat.toUpperCase()}
-            </Button>
-            <Button
-              onClick={handleCopy}
-              disabled={circuit.length === 0}
-              variant="outline"
-              className="neon-border"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Copy Code
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Preview */}
+        <Card className="quantum-panel neon-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm text-quantum-neon">
+                Preview - {exportFormats.find(f => f.id === exportFormat)?.name}
+              </CardTitle>
+              <Badge variant="outline" className="neon-border">
+                {exportFormats.find(f => f.id === exportFormat)?.description}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={getExportContent()}
+              readOnly
+              className="font-mono text-xs min-h-[400px] quantum-panel neon-border"
+              placeholder={circuit.length === 0 ? "Add gates to the circuit to see export preview..." : ""}
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
 
-      {/* Preview */}
-      <Card className="quantum-panel neon-border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm text-quantum-neon">
-              Preview - {exportFormats.find(f => f.id === exportFormat)?.name}
-            </CardTitle>
-            <Badge variant="outline" className="neon-border">
-              {exportFormats.find(f => f.id === exportFormat)?.description}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={getExportContent()}
-            readOnly
-            className="font-mono text-xs min-h-[400px] quantum-panel neon-border"
-            placeholder={circuit.length === 0 ? "Add gates to the circuit to see export preview..." : ""}
-          />
-        </CardContent>
-      </Card>
-    </div>
+      <TabsContent value="hardware">
+        <HardwareIntegration 
+          circuit={circuit}
+          simulationResult={simulationResult}
+        />
+      </TabsContent>
+    </Tabs>
   );
 }
