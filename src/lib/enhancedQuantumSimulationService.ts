@@ -1,4 +1,5 @@
 
+
 // Enhanced quantum simulation service with multiple backend support
 import { Complex, StateVector, QuantumGate, SimulationResult, complex, quantumSimulator } from './quantumSimulator';
 import { CloudSimulationConfig } from './quantumSimulationService';
@@ -13,7 +14,7 @@ export interface EnhancedSimulationResult extends SimulationResult {
     totalEntanglement: number;
     entanglementThreads: Array<{ qubits: number[]; strength: number }>;
   };
-  fidelity?: number;
+  fidelity: number;
   noiseModel?: string;
 }
 
@@ -393,7 +394,8 @@ export class QuantumSimulationManager {
         pairs: [],
         totalEntanglement: 0,
         entanglementThreads: []
-      }
+      },
+      fidelity: 1.0 // Default fidelity for fast simulation
     };
     
     console.log('Fast simulation - enhanced result:', enhancedResult);
