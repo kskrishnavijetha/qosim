@@ -1,6 +1,6 @@
 
 // Fast Classical Quantum Simulator supporting up to 30 qubits
-import { Complex } from './complexNumbers';
+import { Complex } from '@/services/complexNumbers';
 
 export interface NoiseModel {
   depolarizing?: number;

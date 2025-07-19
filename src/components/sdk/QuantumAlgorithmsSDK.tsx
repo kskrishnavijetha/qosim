@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
-import { CircuitBuilder } from '../circuit/CircuitBuilder';
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { CircuitBuilder } from '../circuits/CircuitBuilder';
 import { SimulationVisualizer } from '../visualization/SimulationVisualizer';
-import { BlochSphere } from '../visualization/BlochSphere';
+import { BlochSphere } from '../BlochSphere';
 import { SimulationRunner } from './SimulationRunner';
 import { useCircuitState } from '@/hooks/useCircuitState';
 import { Zap } from 'lucide-react';
@@ -28,7 +29,7 @@ export function QuantumAlgorithmsSDK() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <ModeToggle />
+            <ThemeToggle />
             <Button variant="secondary">
               <a href="https://github.com/Quantum-Tinkerers/quantum-lab" target="_blank" rel="noopener noreferrer">
                 GitHub
