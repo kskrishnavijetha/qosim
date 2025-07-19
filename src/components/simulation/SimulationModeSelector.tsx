@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Zap, Brain, Cloud, Settings, Key } from 'lucide-react';
+import { Zap, Brain, Cloud, Settings, Key, AlertTriangle } from 'lucide-react';
 import { EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
 import { CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
@@ -43,9 +43,9 @@ export function SimulationModeSelector({
     },
     {
       id: 'cloud' as EnhancedSimulationMode,
-      name: 'Qiskit Cloud',
+      name: 'IBM Quantum',
       icon: Cloud,
-      description: 'Real quantum simulation via IBM Qiskit',
+      description: 'Real quantum simulation via IBM Qiskit Runtime',
       features: ['Real backend simulation', 'Noise models', 'Hardware constraints'],
       requiresConfig: true
     },
@@ -59,7 +59,6 @@ export function SimulationModeSelector({
   ];
 
   const handleTokenChange = (token: string) => {
-    console.log('Token changed:', token, 'Length:', token.length);
     onCloudConfigChange({ ...cloudConfig, ibmqToken: token });
   };
 
@@ -77,15 +76,12 @@ export function SimulationModeSelector({
 
   const handleModeSelection = async (mode: EnhancedSimulationMode) => {
     console.log('🔄 SimulationModeSelector: Mode selection triggered', mode);
-    console.log('🔄 Current mode:', currentMode, 'New mode:', mode);
     
-    // Don't trigger if it's the same mode
     if (currentMode === mode) {
       console.log('🔄 Same mode selected, no change needed');
       return;
     }
     
-    // Check if cloud mode requires configuration
     if (mode === 'cloud' && !isCloudConfigured) {
       console.log('🔄 Cloud mode selected but not configured');
       return;
@@ -94,8 +90,6 @@ export function SimulationModeSelector({
     console.log('🔄 Calling onModeChange with:', mode);
     await onModeChange(mode);
   };
-
-  console.log('SimulationModeSelector render - currentMode:', currentMode, 'isCloudConfigured:', isCloudConfigured, 'cloudConfig:', cloudConfig);
 
   return (
     <Card className="quantum-panel neon-border">
@@ -160,22 +154,45 @@ export function SimulationModeSelector({
                     <div className="space-y-4 p-4 border border-quantum-neon/20 rounded-lg">
                       <div className="flex items-center gap-2 text-quantum-particle">
                         <Key className="w-4 h-4" />
-                        <Label className="font-mono">Cloud Configuration</Label>
+                        <Label className="font-mono">IBM Quantum Configuration</Label>
+                      </div>
+
+                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5" />
+                          <div className="text-sm text-yellow-500">
+                            <p className="font-medium">Real API Keys Required</p>
+                            <p className="text-xs opacity-90 mt-1">
+                              To use IBM Quantum or AWS Braket, you need to provide your actual API keys from these services.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="ibmq-token" className="text-sm font-mono">
-                            IBMQ API Token
+                            IBM Quantum API Token *
                           </Label>
                           <Input
                             id="ibmq-token"
                             type="password"
-                            placeholder="Enter your IBMQ token..."
+                            placeholder="Enter your IBM Quantum token..."
                             value={cloudConfig.ibmqToken || ''}
                             onChange={(e) => handleTokenChange(e.target.value)}
                             className="font-mono text-xs"
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Get your token from{' '}
+                            <a 
+                              href="https://quantum-computing.ibm.com/account" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-quantum-neon hover:underline"
+                            >
+                              IBM Quantum Platform
+                            </a>
+                          </p>
                         </div>
                         
                         <div className="space-y-2">
@@ -184,11 +201,14 @@ export function SimulationModeSelector({
                           </Label>
                           <Input
                             id="backend"
-                            placeholder="aer_simulator"
-                            value={cloudConfig.backend || 'aer_simulator'}
+                            placeholder="ibmq_qasm_simulator"
+                            value={cloudConfig.backend || 'ibmq_qasm_simulator'}
                             onChange={(e) => handleBackendChange(e.target.value)}
                             className="font-mono text-xs"
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Available backends: ibmq_qasm_simulator, ibm_brisbane, ibm_kyoto
+                          </p>
                         </div>
                         
                         <div className="space-y-2">
@@ -212,24 +232,10 @@ export function SimulationModeSelector({
                             onCheckedChange={handleNoiseToggle}
                           />
                           <Label htmlFor="noise-model" className="text-sm font-mono">
-                            Use Noise Model
+                            Use Hardware Noise Model
                           </Label>
                         </div>
                       </div>
-                      
-                      {!isCloudConfigured && (
-                        <div className="text-xs text-muted-foreground font-mono">
-                          💡 Get your free IBMQ token at{' '}
-                          <a 
-                            href="https://quantum-computing.ibm.com/" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-quantum-neon hover:underline"
-                          >
-                            quantum-computing.ibm.com
-                          </a>
-                        </div>
-                      )}
                     </div>
                   )}
 
@@ -237,7 +243,6 @@ export function SimulationModeSelector({
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('🔄 SimulationModeSelector: Button clicked for mode', mode.id);
                       await handleModeSelection(mode.id);
                     }}
                     disabled={mode.requiresConfig && !isCloudConfigured}
@@ -245,7 +250,7 @@ export function SimulationModeSelector({
                     variant={currentMode === mode.id ? "default" : "secondary"}
                   >
                     {currentMode === mode.id ? 'Currently Active' : 
-                     (mode.requiresConfig && !isCloudConfigured) ? 'Configure First' : 
+                     (mode.requiresConfig && !isCloudConfigured) ? 'Enter API Key First' : 
                      `Switch to ${mode.name}`}
                   </Button>
                 </div>

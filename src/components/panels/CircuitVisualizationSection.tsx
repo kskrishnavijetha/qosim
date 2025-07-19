@@ -5,12 +5,14 @@ import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVis
 import { EntanglementVisualization } from "@/components/simulation/EntanglementVisualization";
 import { DebugConsole } from "@/components/simulation/DebugConsole";
 import { OutputConsole } from "@/components/simulation/OutputConsole";
+import { QuantumBackendConfig } from "@/components/simulation/QuantumBackendConfig";
 import { Gate } from "@/hooks/useCircuitState";
 import { QuantumResultsDisplay } from "@/components/quantum/QuantumResultsDisplay";
 import { useQuantumBackend } from "@/hooks/useQuantumBackend";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Zap, Cpu, Cloud, Smartphone } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Zap, Cpu, Cloud, Smartphone, Settings } from "lucide-react";
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -39,6 +41,8 @@ export function CircuitVisualizationSection({
   const [isDebugCollapsed, setIsDebugCollapsed] = useState(true);
   const [selectedBackend, setSelectedBackend] = useState<'qiskit' | 'qutip' | 'braket' | 'local'>('local');
   const [shots, setShots] = useState(1024);
+  const [showBackendConfig, setShowBackendConfig] = useState(false);
+  const [backendConfig, setBackendConfig] = useState<any>(null);
 
   const {
     isExecuting,
@@ -51,6 +55,12 @@ export function CircuitVisualizationSection({
 
   const handleBackendExecution = async () => {
     if (circuit.length === 0) return;
+
+    // Check if backend requires configuration
+    if ((selectedBackend === 'qiskit' || selectedBackend === 'braket') && !backendConfig) {
+      setShowBackendConfig(true);
+      return;
+    }
 
     switch (selectedBackend) {
       case 'qiskit':
@@ -67,6 +77,12 @@ export function CircuitVisualizationSection({
     }
   };
 
+  const handleBackendConfigSave = (config: any) => {
+    setBackendConfig(config);
+    setShowBackendConfig(false);
+    console.log('Backend configuration saved:', config);
+  };
+
   const getBackendIcon = (backend: string) => {
     switch (backend) {
       case 'qiskit': return <Cpu className="w-4 h-4" />;
@@ -74,6 +90,14 @@ export function CircuitVisualizationSection({
       case 'qutip': return <Zap className="w-4 h-4" />;
       default: return <Smartphone className="w-4 h-4" />;
     }
+  };
+
+  const isBackendConfigured = (backend: string) => {
+    if (backend === 'local' || backend === 'qutip') return true;
+    return backendConfig && (
+      (backend === 'qiskit' && backendConfig.ibmQuantum) ||
+      (backend === 'braket' && backendConfig.awsBraket)
+    );
   };
 
   // Convert backend result to OptimizedSimulationResult format if available
@@ -84,10 +108,10 @@ export function CircuitVisualizationSection({
       : Object.values(lastResult.measurementProbabilities || {}),
     stateVector: lastResult.stateVector.map(amp => ({
       real: amp.real,
-      imag: amp.imaginary || 0 // Convert 'imaginary' to 'imag' for compatibility
+      imag: amp.imaginary || 0
     })),
     executionTime: lastResult.executionTime,
-    fidelity: 1.0, // Backend results are considered high fidelity
+    fidelity: 1.0,
     mode: lastResult.backend as any,
     entanglement: lastResult.entanglement || {
       pairs: [],
@@ -101,7 +125,7 @@ export function CircuitVisualizationSection({
       {/* Backend Execution Controls */}
       <div className="quantum-panel neon-border rounded-lg p-4">
         <h3 className="text-lg font-mono text-quantum-glow mb-4">Quantum Backend Execution</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="text-sm text-quantum-neon mb-2 block">Backend</label>
             <Select value={selectedBackend} onValueChange={(value: any) => setSelectedBackend(value)}>
@@ -118,13 +142,15 @@ export function CircuitVisualizationSection({
                 <SelectItem value="qiskit">
                   <div className="flex items-center gap-2">
                     <Cpu className="w-4 h-4" />
-                    IBM Qiskit
+                    IBM Quantum
+                    {!isBackendConfigured('qiskit') && <span className="text-red-400 text-xs">(Setup Required)</span>}
                   </div>
                 </SelectItem>
                 <SelectItem value="braket">
                   <div className="flex items-center gap-2">
                     <Cloud className="w-4 h-4" />
                     AWS Braket
+                    {!isBackendConfigured('braket') && <span className="text-red-400 text-xs">(Setup Required)</span>}
                   </div>
                 </SelectItem>
                 <SelectItem value="qutip">
@@ -153,16 +179,37 @@ export function CircuitVisualizationSection({
               </Select>
             </div>
           )}
+
+          <div>
+            <Dialog open={showBackendConfig} onOpenChange={setShowBackendConfig}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full neon-border">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configure APIs
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl quantum-panel neon-border">
+                <DialogHeader>
+                  <DialogTitle className="text-quantum-glow font-mono">
+                    Quantum Backend Configuration
+                  </DialogTitle>
+                </DialogHeader>
+                <QuantumBackendConfig onConfigSave={handleBackendConfigSave} />
+              </DialogContent>
+            </Dialog>
+          </div>
           
           <div className="md:col-span-2">
             <Button 
               onClick={handleBackendExecution}
-              disabled={isExecuting || circuit.length === 0}
+              disabled={isExecuting || circuit.length === 0 || !isBackendConfigured(selectedBackend)}
               className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
             >
               <div className="flex items-center gap-2">
                 {getBackendIcon(selectedBackend)}
-                {isExecuting ? 'Executing...' : `Execute on ${selectedBackend.toUpperCase()}`}
+                {isExecuting ? 'Executing...' : 
+                 !isBackendConfigured(selectedBackend) ? 'Configure API Keys First' :
+                 `Execute on ${selectedBackend.toUpperCase()}`}
               </div>
             </Button>
           </div>
@@ -174,7 +221,7 @@ export function CircuitVisualizationSection({
         <QuantumResultsDisplay result={lastResult} />
       )}
 
-      {/* Output Console - New collapsible console */}
+      {/* Output Console */}
       <OutputConsole
         simulationResult={displayResult}
         isCollapsed={isOutputCollapsed}
@@ -196,7 +243,7 @@ export function CircuitVisualizationSection({
         />
       </div>
 
-      {/* Debug Console - Optional advanced debugging */}
+      {/* Debug Console */}
       <DebugConsole
         simulationResult={displayResult}
         onStepMode={onStepModeToggle}
