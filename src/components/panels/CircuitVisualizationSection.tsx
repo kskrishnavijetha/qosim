@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { QuantumStateVisualization } from "@/components/circuits/QuantumStateVisualization";
@@ -12,8 +11,7 @@ import { useQuantumBackend } from "@/hooks/useQuantumBackend";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Zap, Cpu, Cloud, Smartphone, Settings, Key, ExternalLink, AlertTriangle } from "lucide-react";
+import { Zap, Cpu, Cloud, Smartphone, Settings } from "lucide-react";
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -53,15 +51,6 @@ export function CircuitVisualizationSection({
     executeOnBraket,
     executeOnQuTiP
   } = useQuantumBackend();
-
-  const handleBackendChange = (value: any) => {
-    setSelectedBackend(value);
-    
-    // Automatically show config dialog for cloud backends that need API keys
-    if ((value === 'qiskit' || value === 'braket') && !isBackendConfigured(value)) {
-      setShowBackendConfig(true);
-    }
-  };
 
   const handleBackendExecution = async () => {
     if (circuit.length === 0) return;
@@ -110,33 +99,6 @@ export function CircuitVisualizationSection({
     );
   };
 
-  const getBackendStatusMessage = () => {
-    if (selectedBackend === 'local' || selectedBackend === 'qutip') {
-      return null;
-    }
-    
-    if (!isBackendConfigured(selectedBackend)) {
-      return (
-        <Alert className="border-amber-500/20 bg-amber-500/10">
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
-          <AlertDescription className="text-amber-700">
-            API keys required for {selectedBackend === 'qiskit' ? 'IBM Quantum' : 'AWS Braket'}. 
-            Click "Configure APIs" to enter your credentials.
-          </AlertDescription>
-        </Alert>
-      );
-    }
-    
-    return (
-      <Alert className="border-green-500/20 bg-green-500/10">
-        <Key className="h-4 w-4 text-green-500" />
-        <AlertDescription className="text-green-700">
-          {selectedBackend === 'qiskit' ? 'IBM Quantum' : 'AWS Braket'} API configured and ready.
-        </AlertDescription>
-      </Alert>
-    );
-  };
-
   // Convert backend result to OptimizedSimulationResult format if available
   const displayResult = lastResult ? {
     qubitStates: lastResult.qubitStates,
@@ -162,14 +124,10 @@ export function CircuitVisualizationSection({
       {/* Backend Execution Controls */}
       <div className="quantum-panel neon-border rounded-lg p-4">
         <h3 className="text-lg font-mono text-quantum-glow mb-4">Quantum Backend Execution</h3>
-        
-        {/* Backend Status Alert */}
-        {getBackendStatusMessage()}
-        
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="text-sm text-quantum-neon mb-2 block">Backend</label>
-            <Select value={selectedBackend} onValueChange={handleBackendChange}>
+            <Select value={selectedBackend} onValueChange={(value: any) => setSelectedBackend(value)}>
               <SelectTrigger className="quantum-panel neon-border">
                 <SelectValue />
               </SelectTrigger>
@@ -184,14 +142,12 @@ export function CircuitVisualizationSection({
                   <div className="flex items-center gap-2">
                     <Cpu className="w-4 h-4" />
                     IBM Quantum
-                    {!isBackendConfigured('qiskit') && <Key className="w-3 h-3 text-amber-500" />}
                   </div>
                 </SelectItem>
                 <SelectItem value="braket">
                   <div className="flex items-center gap-2">
                     <Cloud className="w-4 h-4" />
                     AWS Braket
-                    {!isBackendConfigured('braket') && <Key className="w-3 h-3 text-amber-500" />}
                   </div>
                 </SelectItem>
                 <SelectItem value="qutip">
@@ -221,15 +177,10 @@ export function CircuitVisualizationSection({
             </div>
           )}
 
-          {/* API Configuration Button */}
           <div>
             <Dialog open={showBackendConfig} onOpenChange={setShowBackendConfig}>
               <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full neon-border"
-                  disabled={selectedBackend === 'local' || selectedBackend === 'qutip'}
-                >
+                <Button variant="outline" className="w-full neon-border">
                   <Settings className="w-4 h-4 mr-2" />
                   Configure APIs
                 </Button>
@@ -245,7 +196,6 @@ export function CircuitVisualizationSection({
             </Dialog>
           </div>
           
-          {/* Execute Button */}
           <div className="md:col-span-2">
             <Button 
               onClick={handleBackendExecution}
@@ -255,46 +205,12 @@ export function CircuitVisualizationSection({
               <div className="flex items-center gap-2">
                 {getBackendIcon(selectedBackend)}
                 {isExecuting ? 'Executing...' : 
-                 !isBackendConfigured(selectedBackend) ? `Configure ${selectedBackend.toUpperCase()} API Keys` :
+                 !isBackendConfigured(selectedBackend) ? 'Configure API Keys First' :
                  `Execute on ${selectedBackend.toUpperCase()}`}
               </div>
             </Button>
           </div>
         </div>
-
-        {/* Quick API Key Links */}
-        {(selectedBackend === 'qiskit' || selectedBackend === 'braket') && !isBackendConfigured(selectedBackend) && (
-          <div className="mt-4 p-3 bg-quantum-matrix/50 rounded-lg border border-quantum-neon/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Key className="w-4 h-4 text-quantum-neon" />
-              <span className="text-sm font-mono text-quantum-neon">Need API Keys?</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedBackend === 'qiskit' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => window.open('https://quantum-computing.ibm.com/account', '_blank')}
-                >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  Get IBM Quantum API Key
-                </Button>
-              )}
-              {selectedBackend === 'braket' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => window.open('https://console.aws.amazon.com/iam/home#/security_credentials', '_blank')}
-                >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  Get AWS Credentials
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Quantum Results Display */}
