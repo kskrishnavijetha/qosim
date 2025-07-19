@@ -1076,7 +1076,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Learn Quantum Computing Section - Replacing Early Access */}
+      {/* Learn Quantum Computing Section - Simple CTA */}
       <section id="learn-quantum" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/5 via-background to-quantum-neon/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--quantum-plasma))/10,transparent_70%)]"></div>
@@ -1084,38 +1084,26 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Learn{" "}
+              Ready to{" "}
               <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
-                Quantum Computing
+                Get Started?
               </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-              Be among the first to experience the future of quantum computing. 
-              Get early access to QOSim and shape the quantum computing landscape.
+              Join thousands of quantum enthusiasts and start building quantum circuits today.
+              Experience the future of quantum computing with QOSim.
             </p>
             
-            <div className="bg-gradient-to-br from-quantum-void/30 to-quantum-matrix/30 border border-quantum-neon/30 rounded-2xl p-4 sm:p-8 backdrop-blur-sm">
-              <form onSubmit={handleWaitlistSignup} className="flex flex-col gap-3 sm:gap-4 max-w-lg mx-auto">
-                <Input
-                  type="email"
-                  placeholder="Enter your email for early access"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-background/50 border-quantum-glow/30 focus:border-quantum-glow px-3 py-2 sm:px-4 sm:py-3"
-                />
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 py-2.5 sm:px-8 sm:py-3 text-base sm:text-lg"
-                >
-                  Join Early Access
-                </Button>
-              </form>
-              
-              <p className="text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6">
-                🔒 No spam, quantum-secured privacy. Join 10,000+ quantum enthusiasts.
-              </p>
-            </div>
+            <Button 
+              size="lg" 
+              className="w-full sm:w-auto bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg"
+              asChild
+            >
+              <Link to="/auth">
+                Launch QOSim
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
