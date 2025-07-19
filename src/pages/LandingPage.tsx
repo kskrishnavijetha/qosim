@@ -505,7 +505,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Tutorials Section */}
+      {/* Tutorials Section - Remove the duplicate learn quantum section from here */}
       <section id="tutorials" className="py-24 bg-gradient-to-br from-quantum-void/5 to-quantum-matrix/5 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_60%,hsl(var(--quantum-glow))/5,transparent_50%)]"></div>
         
@@ -1076,7 +1076,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Learn Quantum Computing Section - Moved to bottom */}
+      {/* Learn Quantum Computing Section - ONLY at the bottom */}
       <section id="learn-quantum" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/5 via-background to-quantum-neon/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--quantum-plasma))/10,transparent_70%)]"></div>
