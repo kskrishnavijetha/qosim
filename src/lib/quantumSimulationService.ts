@@ -1,7 +1,7 @@
 // Enhanced quantum simulation service with cloud integration
 import { Complex, StateVector, QuantumGate, SimulationResult, complex, quantumSimulator } from './quantumSimulator';
 
-export type SimulationMode = 'fast' | 'accurate' | 'cloud' | 'step-by-step';
+export type SimulationMode = 'fast' | 'accurate' | 'cloud' | 'braket' | 'step-by-step';
 
 export interface CloudSimulationConfig {
   ibmqToken?: string;
@@ -349,6 +349,10 @@ export class QuantumSimulationManager {
           console.log('Running cloud simulation...');
           return this.cloudService.simulateCircuit(circuit, numQubits);
         
+        case 'braket':
+          console.log('Running AWS Braket simulation...');
+          return this.simulateBraket(circuit, numQubits);
+        
         default:
           console.log('Running default (fast) simulation...');
           return this.simulateFast(circuit, numQubits);
@@ -392,6 +396,25 @@ export class QuantumSimulationManager {
       executionTime,
       entanglement: this.cloudService['calculateEntanglement'](result.stateVector, numQubits),
       fidelity: this.cloudService['calculateFidelity'](result.stateVector)
+    };
+  }
+
+  private async simulateBraket(circuit: QuantumGate[], numQubits: number): Promise<EnhancedSimulationResult> {
+    const startTime = performance.now();
+    
+    // Mock AWS Braket simulation
+    await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
+    
+    const result = quantumSimulator.simulate(circuit);
+    const executionTime = performance.now() - startTime;
+    
+    return {
+      ...result,
+      mode: 'braket' as SimulationMode,
+      executionTime,
+      entanglement: this.cloudService['calculateEntanglement'](result.stateVector, numQubits),
+      fidelity: this.cloudService['calculateFidelity'](result.stateVector),
+      noiseModel: 'AWS Braket Noise Model'
     };
   }
 

@@ -338,6 +338,10 @@ export class QuantumSimulationManager {
           console.log('Running cloud simulation...');
           return this.cloudService.simulateCircuit(circuit, numQubits);
         
+        case 'braket':
+          console.log('Running AWS Braket simulation...');
+          return this.simulateBraket(circuit, numQubits);
+        
         default:
           console.log('Running default (fast) simulation...');
           return this.simulateFast(circuit, numQubits);
@@ -384,6 +388,25 @@ export class QuantumSimulationManager {
     };
   }
 
+  private async simulateBraket(circuit: QuantumGate[], numQubits: number): Promise<EnhancedSimulationResult> {
+    const startTime = performance.now();
+    
+    // Mock AWS Braket simulation
+    await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
+    
+    const result = quantumSimulator.simulate(circuit);
+    const executionTime = performance.now() - startTime;
+    
+    return {
+      ...result,
+      mode: 'braket' as EnhancedSimulationMode,
+      executionTime,
+      entanglement: this.cloudService['calculateEntanglement'](result.stateVector, numQubits),
+      fidelity: this.cloudService['calculateFidelity'](result.stateVector),
+      noiseModel: 'AWS Braket Noise Model'
+    };
+  }
+
   private async runAccurateSimulation(circuit: QuantumGate[], numQubits: number): Promise<SimulationResult> {
     // Simulate processing delay for accurate computation
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -401,5 +424,8 @@ export class QuantumSimulationManager {
   }
 }
 
-// Export singleton instance
+// Export singleton instance with the expected name
+export const enhancedQuantumSimulationManager = new QuantumSimulationManager();
+
+// Keep the existing export for backward compatibility
 export const quantumSimulationManager = new QuantumSimulationManager();
