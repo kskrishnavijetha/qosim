@@ -279,15 +279,15 @@ export function SimulationRunner({
                     <div key={state} className="flex items-center justify-between p-2 quantum-panel neon-border">
                       <span className="font-mono text-quantum-neon">|{state}⟩</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-quantum-particle">{count} shots</span>
+                        <span className="text-xs text-quantum-particle">{count as number} shots</span>
                         <div className="w-24 bg-quantum-matrix rounded-full h-2">
                           <div 
                             className="bg-quantum-glow h-2 rounded-full"
-                            style={{ width: `${(Number(count) / shots) * 100}%` }}
+                            style={{ width: `${((count as number) / shots) * 100}%` }}
                           />
                         </div>
                         <span className="text-xs font-mono text-quantum-energy">
-                          {((Number(count) / shots) * 100).toFixed(1)}%
+                          {(((count as number) / shots) * 100).toFixed(1)}%
                         </span>
                       </div>
                     </div>
