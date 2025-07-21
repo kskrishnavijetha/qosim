@@ -56,7 +56,11 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-quantum-glow to-quantum-neon rounded-md flex items-center justify-center">
-              <Cpu className="w-5 h-5 text-black" />
+              <img 
+                src="/lovable-uploads/9ba01b22-3dfc-4014-9b17-0ba4cbbca31e.png" 
+                alt="QOSim Logo" 
+                className="w-5 h-5"
+              />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
               QOSim
@@ -913,7 +917,11 @@ const LandingPage = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-quantum-glow to-quantum-neon rounded-md flex items-center justify-center">
-                  <Cpu className="w-5 h-5 text-black" />
+                  <img 
+                    src="/lovable-uploads/9ba01b22-3dfc-4014-9b17-0ba4cbbca31e.png" 
+                    alt="QOSim Logo" 
+                    className="w-5 h-5"
+                  />
                 </div>
                 <span className="text-xl font-bold bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
                   QOSim
