@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2, User, LogOut, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ import {
 interface QuantumSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onSDKSelect?: (sdkType: string) => void;
 }
 
 const navigationItems = [
@@ -25,11 +27,10 @@ const navigationItems = [
   { id: "memory", label: "Memory", icon: Database },
   { id: "files", label: "Files", icon: FileText },
   { id: "logs", label: "Runtime Logs", icon: Terminal },
-  { id: "sdk", label: "SDK Demo", icon: Code },
   { id: "integrations", label: "Integrations", icon: Share2 },
 ];
 
-export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) {
+export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
   const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
 
@@ -98,6 +99,45 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
               </button>
             );
           })}
+
+          {/* SDK Tools Dropdown - positioned above integrations */}
+          <div className="mt-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn(
+                  "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
+                  "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
+                  "text-muted-foreground hover:text-quantum-neon"
+                )}>
+                  <div className="relative shrink-0">
+                    <Code className="w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300 group-hover:scale-110" />
+                  </div>
+                  <span className="font-mono font-medium text-sm lg:text-base truncate">SDK Tools</span>
+                  
+                  {/* Hover effect line */}
+                  <div className={cn(
+                    "absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-quantum-glow to-quantum-neon rounded-r transition-all duration-300",
+                    "opacity-0 group-hover:opacity-50"
+                  )} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
+                <DropdownMenuItem 
+                  onClick={() => onSDKSelect?.('quantum-algorithms')}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  Quantum Algorithms SDK
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onTabChange("sdk")}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  SDK Demo Panel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </nav>
         
         {/* System Status - Hide on small mobile screens */}
