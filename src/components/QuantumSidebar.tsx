@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2, User, LogOut, Code } from "lucide-react";
+import { Database, FileText, Terminal, Share2, User, LogOut, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,8 +22,6 @@ interface QuantumSidebarProps {
 }
 
 const navigationItems = [
-  { id: "circuits", label: "Circuits", icon: GitBranch },
-  { id: "jobs", label: "Jobs", icon: Cpu },
   { id: "memory", label: "Memory", icon: Database },
   { id: "files", label: "Files", icon: FileText },
   { id: "logs", label: "Runtime Logs", icon: Terminal },
@@ -121,14 +119,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
-                <DropdownMenuItem 
-                  onClick={() => onSDKSelect?.('quantum-algorithms')}
-                  className="text-quantum-neon hover:bg-quantum-void/50"
-                >
-                  <Code className="w-4 h-4 mr-2" />
-                  Quantum Algorithms SDK
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-quantum-matrix" />
                 <DropdownMenuItem 
                   onClick={() => onTabChange("javascript-sdk")}
                   className="text-quantum-neon hover:bg-quantum-void/50"
