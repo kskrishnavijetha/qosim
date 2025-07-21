@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { VersionHistory } from "../circuits/VersionHistory";
 import { FileSystemStats } from "./FileSystemStats";
 import { QuantumProperties } from "./QuantumProperties";
 import { FileItem } from "./FileItem";
+import { FileViewer } from "./FileViewer";
 
 import { useQuantumFiles } from "@/hooks/useQuantumFiles";
 import { ShareDialog } from "../dialogs/ShareDialog";
@@ -18,6 +20,7 @@ export function FilesPanel() {
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareFile, setShareFile] = useState<any>(null);
+  const [showFileViewer, setShowFileViewer] = useState(false);
 
   // Transform files to legacy format for useFileOperations compatibility
   const legacyFiles = files.map(file => ({
@@ -53,6 +56,11 @@ export function FilesPanel() {
     handleDragEnd();
   };
 
+  const handleFileSelect = (fileId: string) => {
+    setSelectedFile(fileId);
+    setShowFileViewer(true);
+  };
+
   const handleContextAction = (action: string, fileId: string) => {
     if (action === "versions") {
       setSelectedFile(fileId);
@@ -65,12 +73,16 @@ export function FilesPanel() {
       }
     } else if (action === "delete") {
       deleteFile(fileId);
+    } else if (action === "view" || action === "open") {
+      handleFileSelect(fileId);
     }
   };
 
   const handleToggleFavorite = (fileId: string) => {
     toggleFavorite(fileId);
   };
+
+  const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -113,6 +125,7 @@ export function FilesPanel() {
                   onDragEnd={handleDragEnd}
                   onToggleFavorite={handleToggleFavorite}
                   onContextAction={handleContextAction}
+                  onFileSelect={handleFileSelect}
                 />
               ))}
             </div>
@@ -121,6 +134,23 @@ export function FilesPanel() {
 
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
+
+        {/* File Viewer Dialog */}
+        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
+          <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle className="text-quantum-glow">
+                {selectedFileData?.name}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedFileData && (
+              <FileViewer 
+                file={selectedFileData} 
+                onClose={() => setShowFileViewer(false)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Version History Dialog */}
         <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>

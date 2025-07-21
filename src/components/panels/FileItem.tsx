@@ -1,9 +1,10 @@
+
 import { FileText, Folder, Star, StarOff, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { CircuitPreview } from "../circuits/CircuitPreview";
-import { Edit, Copy, Share, History, Trash2 } from "lucide-react";
+import { Edit, Copy, Share, History, Trash2, Eye } from "lucide-react";
 
 interface File {
   id: string;
@@ -27,6 +28,7 @@ interface FileItemProps {
   onDragEnd: () => void;
   onToggleFavorite: (id: string) => void;
   onContextAction: (action: string, fileId: string) => void;
+  onFileSelect?: (fileId: string) => void;
 }
 
 export function FileItem({ 
@@ -37,7 +39,8 @@ export function FileItem({
   onDrop, 
   onDragEnd, 
   onToggleFavorite, 
-  onContextAction 
+  onContextAction,
+  onFileSelect 
 }: FileItemProps) {
   const getFileIcon = (type: string) => {
     switch (type) {
@@ -57,6 +60,12 @@ export function FileItem({
     }
   };
 
+  const handleFileClick = () => {
+    if (file.type !== "folder" && onFileSelect) {
+      onFileSelect(file.id);
+    }
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -66,11 +75,13 @@ export function FileItem({
           onDragOver={onDragOver}
           onDrop={(e) => onDrop(e, file.id)}
           onDragEnd={onDragEnd}
+          onClick={handleFileClick}
           className={`
             flex items-center justify-between p-3 rounded-lg transition-all duration-300
             hover:bg-quantum-matrix cursor-pointer group
             ${file.superposition ? 'border border-quantum-glow/30 holographic' : 'border border-transparent'}
             ${draggedItem === file.id ? 'opacity-50 scale-95' : ''}
+            ${file.type !== "folder" ? 'hover:border-quantum-glow/50' : ''}
           `}
         >
           <div className="flex items-center gap-3 flex-1">
@@ -139,6 +150,10 @@ export function FileItem({
       </ContextMenuTrigger>
       
       <ContextMenuContent className="quantum-panel border-quantum-glow/30">
+        <ContextMenuItem onClick={() => onContextAction("view", file.id)}>
+          <Eye className="w-4 h-4 mr-2" />
+          View
+        </ContextMenuItem>
         <ContextMenuItem onClick={() => onContextAction("rename", file.id)}>
           <Edit className="w-4 h-4 mr-2" />
           Rename
