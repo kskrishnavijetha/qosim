@@ -9,6 +9,7 @@ import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
+import { SDKDemoPanel } from "./panels/SDKDemoPanel";
 import { QuantumAlgorithmsSDK } from "./sdk/QuantumAlgorithmsSDK";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
@@ -47,6 +48,8 @@ export function QuantumDashboard() {
         return <EnhancedFilesPanel />;
       case "logs":
         return <LogsPanel />;
+      case "sdk":
+        return <SDKDemoPanel />;
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
@@ -84,7 +87,7 @@ export function QuantumDashboard() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-quantum-neon">
                   <Code className="w-4 h-4 mr-2" />
-                  SDKs
+                  SDK
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48 bg-quantum-matrix border-quantum-neon/20">
@@ -97,6 +100,15 @@ export function QuantumDashboard() {
                 >
                   <Code className="w-4 h-4 mr-2" />
                   Quantum Algorithms SDK
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setActiveTab("sdk");
+                    setShowSDK(false);
+                  }}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  SDK Demo Panel
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -169,7 +181,7 @@ export function QuantumDashboard() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="w-full justify-start text-quantum-neon border-quantum-neon/20 hover:bg-quantum-matrix">
                     <Code className="w-4 h-4 mr-2" />
-                    SDKs
+                    SDK Tools
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
@@ -182,6 +194,15 @@ export function QuantumDashboard() {
                   >
                     <Code className="w-4 h-4 mr-2" />
                     Quantum Algorithms SDK
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setActiveTab("sdk");
+                      setShowSDK(false);
+                    }}
+                    className="text-quantum-neon hover:bg-quantum-void/50"
+                  >
+                    SDK Demo Panel
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
