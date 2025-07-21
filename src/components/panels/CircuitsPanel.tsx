@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
@@ -7,7 +6,6 @@ import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { QuantumAlgorithmsPanel } from "@/components/algorithms/QuantumAlgorithmsPanel";
 import { CollaborationStatus } from "@/components/collaboration/CollaborationStatus";
 import { CustomGateManager } from "@/components/gates/CustomGateManager";
-import { QuantumAlgorithmsSDK } from "@/components/sdk/QuantumAlgorithmsSDK";
 import { AlgorithmTemplatesLibrary } from "@/components/sdk/AlgorithmTemplatesLibrary";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
@@ -19,8 +17,6 @@ import { useCustomGates } from "@/hooks/useCustomGates";
 import { CircuitPanelHeader } from "./CircuitPanelHeader";
 import { LearningModeSection } from "./LearningModeSection";
 import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cpu, Code } from "lucide-react";
 
 export function CircuitsPanel() {
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -204,130 +200,110 @@ export function CircuitsPanel() {
   return (
     <div className="h-full overflow-auto quantum-grid">
       <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
-        {/* Main Interface Tabs */}
-        <Tabs defaultValue="builder" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 quantum-tabs">
-            <TabsTrigger value="builder" className="flex items-center gap-2">
-              <Cpu className="h-4 w-4" />
-              Circuit Builder
-            </TabsTrigger>
-            <TabsTrigger value="sdk" className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              Algorithms SDK
-            </TabsTrigger>
-          </TabsList>
+        <CircuitPanelHeader
+          onUndo={undo}
+          onClear={clearCircuit}
+          onExportJSON={exportToJSON}
+          onExportQASM={exportToQASM}
+          onShowExportDialog={() => setShowExportDialog(true)}
+          canUndo={canUndo}
+          circuit={circuit}
+        />
 
-          <TabsContent value="builder" className="space-y-4 lg:space-y-6">
-            <CircuitPanelHeader
-              onUndo={undo}
-              onClear={clearCircuit}
-              onExportJSON={exportToJSON}
-              onExportQASM={exportToQASM}
-              onShowExportDialog={() => setShowExportDialog(true)}
-              canUndo={canUndo}
-              circuit={circuit}
-            />
+        {/* Collaboration Status */}
+        <CollaborationStatus circuitId={currentCircuitId} />
 
-            {/* Collaboration Status */}
-            <CollaborationStatus circuitId={currentCircuitId} />
+        <LearningModeSection
+          isLearningMode={isLearningMode}
+          onToggle={toggleLearningMode}
+          progress={progress}
+          currentStep={currentStep}
+          onReset={resetTutorial}
+          templates={templates}
+          onSelectTemplate={selectTemplate}
+          onLoadTemplate={handleTemplateLoad}
+        />
 
-            <LearningModeSection
-              isLearningMode={isLearningMode}
-              onToggle={toggleLearningMode}
-              progress={progress}
-              currentStep={currentStep}
-              onReset={resetTutorial}
-              templates={templates}
-              onSelectTemplate={selectTemplate}
-              onLoadTemplate={handleTemplateLoad}
-            />
+        {/* Algorithm Templates Library */}
+        <AlgorithmTemplatesLibrary
+          onAlgorithmLoad={handleAlgorithmTemplateLoad}
+          currentCircuit={circuit}
+        />
 
-            {/* Algorithm Templates Library */}
-            <AlgorithmTemplatesLibrary
-              onAlgorithmLoad={handleAlgorithmTemplateLoad}
-              currentCircuit={circuit}
-            />
+        {/* Custom Gate Manager */}
+        <CustomGateManager
+          onGateCreated={addCustomGate}
+          existingGates={customGates}
+        />
 
-            {/* Custom Gate Manager */}
-            <CustomGateManager
-              onGateCreated={addCustomGate}
-              existingGates={customGates}
-            />
+        {/* Quantum Algorithms Panel */}
+        <QuantumAlgorithmsPanel
+          onCircuitGenerated={handleAlgorithmCircuit}
+          onAlgorithmExecuted={handleAlgorithmExecution}
+        />
 
-            {/* Quantum Algorithms Panel */}
-            <QuantumAlgorithmsPanel
-              onCircuitGenerated={handleAlgorithmCircuit}
-              onAlgorithmExecuted={handleAlgorithmExecution}
-            />
+        {/* Circuit Builder */}
+        <CircuitBuilder
+          circuit={circuit}
+          dragState={dragState}
+          simulationResult={simulationResult}
+          onDeleteGate={handleGateDelete}
+          onGateMouseDown={handleMouseDown}
+          onGateTouchStart={handleTouchStart}
+          circuitRef={circuitRef}
+          numQubits={NUM_QUBITS}
+          gridSize={GRID_SIZE}
+        />
 
-            {/* Circuit Builder */}
-            <CircuitBuilder
-              circuit={circuit}
-              dragState={dragState}
-              simulationResult={simulationResult}
-              onDeleteGate={handleGateDelete}
-              onGateMouseDown={handleMouseDown}
-              onGateTouchStart={handleTouchStart}
-              circuitRef={circuitRef}
-              numQubits={NUM_QUBITS}
-              gridSize={GRID_SIZE}
-            />
+        {/* Simulation Mode Selector */}
+        <SimulationModeSelector
+          currentMode={simulationMode}
+          onModeChange={handleModeChange}
+          cloudConfig={cloudConfig}
+          onCloudConfigChange={handleCloudConfigChange}
+          isCloudConfigured={isCloudConfigured}
+        />
 
-            {/* Simulation Mode Selector */}
-            <SimulationModeSelector
-              currentMode={simulationMode}
-              onModeChange={handleModeChange}
-              cloudConfig={cloudConfig}
-              onCloudConfigChange={handleCloudConfigChange}
-              isCloudConfigured={isCloudConfigured}
-            />
+        <CircuitVisualizationSection
+          simulationResult={simulationResult}
+          numQubits={NUM_QUBITS}
+          circuit={circuit}
+          onSuggestionClick={handleSuggestionClick}
+          onStepModeToggle={handleStepModeToggle}
+          onSimulationStep={handleSimulationStep}
+          onSimulationReset={handleSimulationReset}
+          onSimulationPause={handleSimulationPause}
+          onSimulationResume={handleSimulationResume}
+        />
 
-            <CircuitVisualizationSection
-              simulationResult={simulationResult}
-              numQubits={NUM_QUBITS}
-              circuit={circuit}
-              onSuggestionClick={handleSuggestionClick}
-              onStepModeToggle={handleStepModeToggle}
-              onSimulationStep={handleSimulationStep}
-              onSimulationReset={handleSimulationReset}
-              onSimulationPause={handleSimulationPause}
-              onSimulationResume={handleSimulationResume}
-            />
-
-            {/* Algorithm Results Display */}
-            {algorithmResult && (
-              <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
-                <h3 className="text-lg font-mono text-quantum-glow mb-3">Algorithm Execution Result</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Circuit Name:</span>
-                    <div className="text-quantum-neon">{algorithmResult.circuit?.name}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Description:</span>
-                    <div className="text-quantum-particle">{algorithmResult.description}</div>
-                  </div>
-                  {algorithmResult.successProbability && (
-                    <div>
-                      <span className="text-muted-foreground">Success Probability:</span>
-                      <div className="text-quantum-energy">{(algorithmResult.successProbability * 100).toFixed(2)}%</div>
-                    </div>
-                  )}
-                  {algorithmResult.expectedEntanglement && (
-                    <div>
-                      <span className="text-muted-foreground">Expected Entanglement:</span>
-                      <div className="text-quantum-energy">{(algorithmResult.expectedEntanglement * 100).toFixed(2)}%</div>
-                    </div>
-                  )}
-                </div>
+        {/* Algorithm Results Display */}
+        {algorithmResult && (
+          <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
+            <h3 className="text-lg font-mono text-quantum-glow mb-3">Algorithm Execution Result</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Circuit Name:</span>
+                <div className="text-quantum-neon">{algorithmResult.circuit?.name}</div>
               </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="sdk">
-            <QuantumAlgorithmsSDK />
-          </TabsContent>
-        </Tabs>
+              <div>
+                <span className="text-muted-foreground">Description:</span>
+                <div className="text-quantum-particle">{algorithmResult.description}</div>
+              </div>
+              {algorithmResult.successProbability && (
+                <div>
+                  <span className="text-muted-foreground">Success Probability:</span>
+                  <div className="text-quantum-energy">{(algorithmResult.successProbability * 100).toFixed(2)}%</div>
+                </div>
+              )}
+              {algorithmResult.expectedEntanglement && (
+                <div>
+                  <span className="text-muted-foreground">Expected Entanglement:</span>
+                  <div className="text-quantum-energy">{(algorithmResult.expectedEntanglement * 100).toFixed(2)}%</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Export Dialog */}
         <ExportDialog

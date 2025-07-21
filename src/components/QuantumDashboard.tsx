@@ -10,21 +10,33 @@ import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
+import { QuantumAlgorithmsSDK } from "./sdk/QuantumAlgorithmsSDK";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronUp, ChevronDown, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./ui/resizable";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [consoleCollapsed, setConsoleCollapsed] = useState(true);
+  const [showSDK, setShowSDK] = useState(false);
   const isMobile = useIsMobile();
 
   const renderPanel = () => {
+    if (showSDK) {
+      return <QuantumAlgorithmsSDK />;
+    }
+
     switch (activeTab) {
       case "circuits":
         return <CircuitsPanel />;
@@ -63,20 +75,52 @@ export function QuantumDashboard() {
                   onTabChange={(tab) => {
                     setActiveTab(tab);
                     setShowSidebar(false);
+                    setShowSDK(false);
                   }} 
                 />
               </SheetContent>
             </Sheet>
             <h1 className="text-lg font-bold text-quantum-glow">Quantum OS</h1>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowConsole(!showConsole)}
-            className="text-quantum-neon"
-          >
-            Console
-          </Button>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-quantum-neon">
+                  <Code className="w-4 h-4 mr-2" />
+                  SDK
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 bg-quantum-matrix border-quantum-neon/20">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setShowSDK(true);
+                    setActiveTab("");
+                  }}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  Quantum Algorithms SDK
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setActiveTab("sdk");
+                    setShowSDK(false);
+                  }}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  SDK Demo Panel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConsole(!showConsole)}
+              className="text-quantum-neon"
+            >
+              Console
+            </Button>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -130,10 +174,48 @@ export function QuantumDashboard() {
       <ResizablePanelGroup direction="horizontal" className="min-h-screen">
         {/* Sidebar */}
         <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-          <QuantumSidebar 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
-          />
+          <div className="h-full flex flex-col">
+            {/* SDK Dropdown in Sidebar */}
+            <div className="p-4 border-b border-quantum-matrix">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full justify-start text-quantum-neon border-quantum-neon/20 hover:bg-quantum-matrix">
+                    <Code className="w-4 h-4 mr-2" />
+                    SDK Tools
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setShowSDK(true);
+                      setActiveTab("");
+                    }}
+                    className="text-quantum-neon hover:bg-quantum-void/50"
+                  >
+                    <Code className="w-4 h-4 mr-2" />
+                    Quantum Algorithms SDK
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setActiveTab("sdk");
+                      setShowSDK(false);
+                    }}
+                    className="text-quantum-neon hover:bg-quantum-void/50"
+                  >
+                    SDK Demo Panel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            <QuantumSidebar 
+              activeTab={activeTab} 
+              onTabChange={(tab) => {
+                setActiveTab(tab);
+                setShowSDK(false);
+              }} 
+            />
+          </div>
         </ResizablePanel>
         
         <ResizableHandle withHandle />
