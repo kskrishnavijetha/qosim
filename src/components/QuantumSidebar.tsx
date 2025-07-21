@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Database, FileText, Terminal, Share2, User, LogOut, Code } from "lucide-react";
+import { Database, FileText, Terminal, Share2, User, LogOut, Code, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +21,7 @@ interface QuantumSidebarProps {
 }
 
 const navigationItems = [
+  { id: "quantum-os", label: "Circuit Builder", icon: Cpu },
   { id: "memory", label: "Memory", icon: Database },
   { id: "files", label: "Files", icon: FileText },
   { id: "logs", label: "Runtime Logs", icon: Terminal },
