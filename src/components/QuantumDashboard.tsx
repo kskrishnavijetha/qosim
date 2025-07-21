@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
@@ -55,8 +54,10 @@ export function QuantumDashboard() {
         return <EnhancedFilesPanel />;
       case "logs":
         return <LogsPanel />;
-      case "sdk":
-        return <SDKDemoPanel />;
+      case "javascript-sdk":
+        return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
+      case "python-sdk":
+        return <SDKDemoPanel key="python" defaultSDK="python" />;
       case "integrations":
         return <IntegrationsRoadmap />;
       default:

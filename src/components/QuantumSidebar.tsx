@@ -27,7 +27,6 @@ const navigationItems = [
   { id: "memory", label: "Memory", icon: Database },
   { id: "files", label: "Files", icon: FileText },
   { id: "logs", label: "Runtime Logs", icon: Terminal },
-  { id: "integrations", label: "Integrations", icon: Share2 },
 ];
 
 export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
@@ -100,7 +99,7 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
             );
           })}
 
-          {/* SDK Tools Dropdown - positioned above integrations */}
+          {/* SDK Tools Dropdown */}
           <div className="mt-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -129,15 +128,52 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
                   <Code className="w-4 h-4 mr-2" />
                   Quantum Algorithms SDK
                 </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-quantum-matrix" />
                 <DropdownMenuItem 
-                  onClick={() => onTabChange("sdk")}
+                  onClick={() => onTabChange("javascript-sdk")}
                   className="text-quantum-neon hover:bg-quantum-void/50"
                 >
-                  SDK Demo Panel
+                  <Code className="w-4 h-4 mr-2" />
+                  JavaScript SDK
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onTabChange("python-sdk")}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  Python SDK
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Integrations */}
+          <button
+            onClick={() => onTabChange("integrations")}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
+              "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
+              activeTab === "integrations"
+                ? "bg-quantum-matrix text-quantum-glow quantum-glow neon-border scale-105" 
+                : "text-muted-foreground hover:text-quantum-neon"
+            )}
+          >
+            <div className="relative shrink-0">
+              <Share2 className={cn("w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300", 
+                activeTab === "integrations" ? "quantum-float" : "group-hover:scale-110"
+              )} />
+              {activeTab === "integrations" && (
+                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-quantum-glow rounded-full particle-animation"></div>
+              )}
+            </div>
+            <span className="font-mono font-medium text-sm lg:text-base truncate">Integrations</span>
+            
+            {/* Hover effect line */}
+            <div className={cn(
+              "absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-quantum-glow to-quantum-neon rounded-r transition-all duration-300",
+              activeTab === "integrations" ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+            )} />
+          </button>
         </nav>
         
         {/* System Status - Hide on small mobile screens */}

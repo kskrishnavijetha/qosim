@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CodeEditor } from "./sdk-demo/CodeEditor";
@@ -11,15 +11,23 @@ import { pythonSDKExamples } from "./sdk-demo/PythonSDKExamples";
 import { quantumSimulation, QuantumSimulationResult } from "@/lib/realQuantumSimulation";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export function SDKDemoPanel() {
+interface SDKDemoPanelProps {
+  defaultSDK?: 'javascript' | 'python';
+}
+
+export function SDKDemoPanel({ defaultSDK = 'javascript' }: SDKDemoPanelProps) {
   const [selectedExample, setSelectedExample] = useState("bell-state");
   const [customCode, setCustomCode] = useState("");
   const [output, setOutput] = useState("");
   const [simulationResult, setSimulationResult] = useState<QuantumSimulationResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [selectedSDK, setSelectedSDK] = useState<'javascript' | 'python'>('javascript');
+  const [selectedSDK, setSelectedSDK] = useState<'javascript' | 'python'>(defaultSDK);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setSelectedSDK(defaultSDK);
+  }, [defaultSDK]);
 
   const runExample = async () => {
     setIsRunning(true);
@@ -113,7 +121,7 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
       <div className={`flex justify-between ${isMobile ? 'flex-col gap-3' : 'items-center'}`}>
         <div>
           <h1 className={`font-bold text-quantum-glow quantum-float ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
-            QOSim SDK Demo
+            {selectedSDK === 'javascript' ? 'JavaScript SDK' : 'Python SDK'}
           </h1>
           <p className={`text-quantum-neon font-mono mt-2 ${isMobile ? 'text-sm' : ''}`}>
             Interactive quantum circuit programming with {selectedSDK === 'javascript' ? 'JavaScript' : 'Python'}
