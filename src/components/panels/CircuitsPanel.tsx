@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
@@ -7,6 +8,7 @@ import { QuantumAlgorithmsPanel } from "@/components/algorithms/QuantumAlgorithm
 import { CollaborationStatus } from "@/components/collaboration/CollaborationStatus";
 import { CustomGateManager } from "@/components/gates/CustomGateManager";
 import { QuantumAlgorithmsSDK } from "@/components/sdk/QuantumAlgorithmsSDK";
+import { AlgorithmTemplatesLibrary } from "@/components/sdk/AlgorithmTemplatesLibrary";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
@@ -126,6 +128,17 @@ export function CircuitsPanel() {
     gates.forEach(gate => handleGateAdd(gate));
   };
 
+  // Handle algorithm template loading
+  const handleAlgorithmTemplateLoad = (algorithmName: string, gates: any[]) => {
+    clearCircuit();
+    gates.forEach(gate => handleGateAdd(gate));
+    setAlgorithmResult({
+      circuit: { name: algorithmName, gates },
+      description: `${algorithmName} algorithm template loaded`,
+      templateLoaded: true
+    });
+  };
+
   const handleAlgorithmExecution = (result: any) => {
     setAlgorithmResult(result);
   };
@@ -227,6 +240,12 @@ export function CircuitsPanel() {
               templates={templates}
               onSelectTemplate={selectTemplate}
               onLoadTemplate={handleTemplateLoad}
+            />
+
+            {/* Algorithm Templates Library */}
+            <AlgorithmTemplatesLibrary
+              onAlgorithmLoad={handleAlgorithmTemplateLoad}
+              currentCircuit={circuit}
             />
 
             {/* Custom Gate Manager */}
