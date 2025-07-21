@@ -7,14 +7,16 @@ import { CircuitBuilder } from '../circuits/CircuitBuilder';
 import { BlochSphere } from '../BlochSphere';
 import { SimulationRunner } from './SimulationRunner';
 import { CircuitExporter } from './CircuitExporter';
+import { AlgorithmTemplatesLibrary } from './AlgorithmTemplatesLibrary';
 import { useCircuitState } from '@/hooks/useCircuitState';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
-import { Zap, FileText } from 'lucide-react';
+import { Zap, FileText, BookOpen } from 'lucide-react';
 import { FastQuantumSimulator } from '../simulation/FastQuantumSimulator';
 
 export function QuantumAlgorithmsSDK() {
   const [activeTab, setActiveTab] = useState("circuit-builder");
-  const { circuit, simulationResult, addGate, deleteGate } = useCircuitState();
+  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  const { circuit, simulationResult, addGate, deleteGate, clearCircuit } = useCircuitState();
 
   const NUM_QUBITS = 5;
   const GRID_SIZE = 50;
@@ -37,6 +39,17 @@ export function QuantumAlgorithmsSDK() {
     probability0: 1,
     probability1: 0,
     phase: 0
+  };
+
+  // Handle algorithm template loading
+  const handleAlgorithmTemplateLoad = (algorithmName: string, gates: any[]) => {
+    clearCircuit();
+    gates.forEach(gate => addGate(gate));
+    setAlgorithmResult({
+      circuit: { name: algorithmName, gates },
+      description: `${algorithmName} algorithm template loaded`,
+      templateLoaded: true
+    });
   };
 
   return (
@@ -63,9 +76,13 @@ export function QuantumAlgorithmsSDK() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 quantum-tabs">
+          <TabsList className="grid w-full grid-cols-6 quantum-tabs">
             <TabsTrigger value="circuit-builder" className="quantum-tab">
               Circuit Builder
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="quantum-tab">
+              <BookOpen className="w-4 h-4 mr-2" />
+              Templates
             </TabsTrigger>
             <TabsTrigger value="simulation" className="quantum-tab">
               Simulation
@@ -95,6 +112,34 @@ export function QuantumAlgorithmsSDK() {
               numQubits={NUM_QUBITS}
               gridSize={GRID_SIZE}
             />
+          </TabsContent>
+
+          <TabsContent value="templates" className="space-y-6">
+            <AlgorithmTemplatesLibrary
+              onAlgorithmLoad={handleAlgorithmTemplateLoad}
+              currentCircuit={circuit}
+            />
+            
+            {/* Algorithm Results Display */}
+            {algorithmResult && (
+              <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
+                <h3 className="text-lg font-mono text-quantum-glow mb-3">Template Loaded</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Algorithm:</span>
+                    <div className="text-quantum-neon">{algorithmResult.circuit?.name}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Gates:</span>
+                    <div className="text-quantum-particle">{algorithmResult.circuit?.gates.length || 0}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Description:</span>
+                    <div className="text-quantum-energy">{algorithmResult.description}</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="simulation" className="space-y-6">
