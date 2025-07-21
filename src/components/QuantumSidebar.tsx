@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Cpu, Database, FileText, GitBranch, Activity, Terminal, Share2, User, LogOut, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -51,7 +50,11 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
       <div className="p-3 lg:p-6 flex-1">
         <div className="flex items-center gap-3 mb-6 lg:mb-8">
           <div className="relative">
-            <Activity className="w-6 h-6 lg:w-8 lg:h-8 text-quantum-glow particle-animation" />
+            <img 
+              src="/lovable-uploads/9ba01b22-3dfc-4014-9b17-0ba4cbbca31e.png" 
+              alt="QOSim Logo" 
+              className="w-6 h-6 lg:w-8 lg:h-8 quantum-float"
+            />
             <div className="absolute -top-1 -right-1 w-2 h-2 lg:w-3 lg:h-3 bg-quantum-neon rounded-full quantum-orbit"></div>
           </div>
           <div>
