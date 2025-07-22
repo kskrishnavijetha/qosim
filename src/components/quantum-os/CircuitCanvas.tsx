@@ -2,23 +2,8 @@
 import React, { forwardRef, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
-interface Gate {
-  id: string;
-  type: string;
-  qubit?: number;
-  qubits?: number[];
-  position: number;
-  angle?: number;
-  params?: number[];
-}
-
-interface Circuit {
-  id: string;
-  name: string;
-  gates: Gate[];
-  qubits: number;
-  modified: boolean;
-}
+// Import types from the workspace hook to avoid conflicts
+import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;

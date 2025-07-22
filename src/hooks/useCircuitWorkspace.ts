@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-interface Gate {
+export interface Gate {
   id: string;
   type: string;
   qubit?: number;
@@ -13,7 +13,7 @@ interface Gate {
   params?: number[];
 }
 
-interface Circuit {
+export interface Circuit {
   id: string;
   name: string;
   gates: Gate[];
