@@ -82,6 +82,7 @@ export function FilesPanel() {
     toggleFavorite(fileId);
   };
 
+  // Get the actual QuantumFile object instead of transformed data
   const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
 
   return (
@@ -113,22 +114,32 @@ export function FilesPanel() {
             <CardTitle className="text-lg font-mono text-quantum-glow">File Browser</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {legacyFiles.map((file) => (
-                <FileItem
-                  key={file.id}
-                  file={file}
-                  draggedItem={draggedItem}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onDragEnd={handleDragEnd}
-                  onToggleFavorite={handleToggleFavorite}
-                  onContextAction={handleContextAction}
-                  onFileSelect={handleFileSelect}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Loading files...</p>
+              </div>
+            ) : legacyFiles.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No files found</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {legacyFiles.map((file) => (
+                  <FileItem
+                    key={file.id}
+                    file={file}
+                    draggedItem={draggedItem}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onDragEnd={handleDragEnd}
+                    onToggleFavorite={handleToggleFavorite}
+                    onContextAction={handleContextAction}
+                    onFileSelect={handleFileSelect}
+                  />
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -140,14 +151,18 @@ export function FilesPanel() {
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                {selectedFileData?.name}
+                {selectedFileData?.name || "File Viewer"}
               </DialogTitle>
             </DialogHeader>
-            {selectedFileData && (
+            {selectedFileData ? (
               <FileViewer 
                 file={selectedFileData} 
                 onClose={() => setShowFileViewer(false)}
               />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>File not found</p>
+              </div>
             )}
           </DialogContent>
         </Dialog>
