@@ -5,10 +5,12 @@ import { useToast } from '@/hooks/use-toast';
 interface Gate {
   id: string;
   type: string;
-  qubit: number;
+  qubit?: number;
+  qubits?: number[];
   position: number;
   angle?: number;
   controlQubit?: number;
+  params?: number[];
 }
 
 interface Circuit {
