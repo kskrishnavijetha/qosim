@@ -13,7 +13,7 @@ import { CircuitExporter } from './CircuitExporter';
 import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
 import { cn } from '@/lib/utils';
 
-// Import types only from the workspace hook for consistency
+// Import types from the workspace hook for consistency
 import type { 
   Gate, 
   Circuit 
