@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Zap, RotateCcw, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuantumGatePaletteProps {
@@ -10,118 +10,110 @@ interface QuantumGatePaletteProps {
   selectedGate: string | null;
 }
 
-const gateCategories = {
-  single: {
-    title: 'Single-Qubit Gates',
-    icon: '🟢',
+const gateCategories = [
+  {
+    name: 'Single Qubit',
     gates: [
-      { type: 'I', name: 'Identity', color: 'bg-slate-400', description: 'Identity gate - no operation' },
-      { type: 'X', name: 'Pauli-X', color: 'bg-quantum-neon', description: 'Bit flip gate |0⟩ ↔ |1⟩' },
-      { type: 'Y', name: 'Pauli-Y', color: 'bg-purple-500', description: 'Bit and phase flip' },
-      { type: 'Z', name: 'Pauli-Z', color: 'bg-quantum-particle', description: 'Phase flip gate' },
-      { type: 'H', name: 'Hadamard', color: 'bg-quantum-glow', description: 'Superposition gate' },
-      { type: 'S', name: 'Phase S', color: 'bg-blue-500', description: 'π/2 phase gate' },
-      { type: 'T', name: 'T Gate', color: 'bg-cyan-500', description: 'π/4 phase gate' },
+      { type: 'H', name: 'Hadamard', description: 'Creates superposition', color: 'bg-quantum-glow', icon: '⌘' },
+      { type: 'X', name: 'Pauli-X', description: 'Bit flip gate', color: 'bg-quantum-neon', icon: '✕' },
+      { type: 'Y', name: 'Pauli-Y', description: 'Bit and phase flip', color: 'bg-quantum-particle', icon: '⟡' },
+      { type: 'Z', name: 'Pauli-Z', description: 'Phase flip gate', color: 'bg-quantum-energy', icon: '⟢' },
+      { type: 'S', name: 'S Gate', description: 'Phase gate', color: 'bg-blue-500', icon: 'S' },
+      { type: 'T', name: 'T Gate', description: 'π/8 gate', color: 'bg-purple-500', icon: 'T' },
     ]
   },
-  rotation: {
-    title: 'Rotation Gates',
-    icon: '🔄',
+  {
+    name: 'Rotation Gates',
     gates: [
-      { type: 'RX', name: 'Rotation X', color: 'bg-quantum-energy', description: 'Rotation around X-axis' },
-      { type: 'RY', name: 'Rotation Y', color: 'bg-orange-500', description: 'Rotation around Y-axis' },
-      { type: 'RZ', name: 'Rotation Z', color: 'bg-yellow-500', description: 'Rotation around Z-axis' },
-      { type: 'U1', name: 'U1 Gate', color: 'bg-pink-500', description: 'Single parameter rotation' },
-      { type: 'U2', name: 'U2 Gate', color: 'bg-indigo-500', description: 'Two parameter rotation' },
-      { type: 'U3', name: 'U3 Gate', color: 'bg-violet-500', description: 'General single-qubit gate' },
+      { type: 'RX', name: 'Rotation-X', description: 'Rotation around X-axis', color: 'bg-red-500', icon: '↻' },
+      { type: 'RY', name: 'Rotation-Y', description: 'Rotation around Y-axis', color: 'bg-green-500', icon: '↺' },
+      { type: 'RZ', name: 'Rotation-Z', description: 'Rotation around Z-axis', color: 'bg-blue-500', icon: '⟲' },
     ]
   },
-  multi: {
-    title: 'Multi-Qubit Gates',
-    icon: '🔗',
+  {
+    name: 'Multi Qubit',
     gates: [
-      { type: 'CNOT', name: 'CNOT', color: 'bg-quantum-plasma', description: 'Controlled NOT gate' },
-      { type: 'CZ', name: 'CZ', color: 'bg-red-500', description: 'Controlled Z gate' },
-      { type: 'SWAP', name: 'SWAP', color: 'bg-green-500', description: 'Swap two qubits' },
-      { type: 'TOFFOLI', name: 'Toffoli', color: 'bg-emerald-600', description: 'Controlled-controlled NOT' },
-      { type: 'FREDKIN', name: 'Fredkin', color: 'bg-teal-600', description: 'Controlled SWAP' },
+      { type: 'CNOT', name: 'CNOT', description: 'Controlled-X gate', color: 'bg-quantum-plasma', icon: '⊕' },
+      { type: 'CZ', name: 'Controlled-Z', description: 'Controlled-Z gate', color: 'bg-orange-500', icon: '⊙' },
+      { type: 'SWAP', name: 'SWAP', description: 'Swap two qubits', color: 'bg-cyan-500', icon: '⇄' },
     ]
   },
-  measurement: {
-    title: 'Measurement & Special',
-    icon: '📊',
+  {
+    name: 'Measurement',
     gates: [
-      { type: 'M', name: 'Measure', color: 'bg-destructive', description: 'Measurement gate' },
-      { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-600', description: 'Circuit barrier' },
-      { type: 'RESET', name: 'Reset', color: 'bg-gray-600', description: 'Reset qubit to |0⟩' },
+      { type: 'M', name: 'Measure', description: 'Measurement gate', color: 'bg-destructive', icon: '⚡' },
     ]
   }
-};
+];
 
 export function QuantumGatePalette({ onGateSelect, selectedGate }: QuantumGatePaletteProps) {
-  
   const handleGateClick = (gateType: string) => {
     onGateSelect(gateType);
   };
 
   return (
-    <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-200px)]">
-      {Object.entries(gateCategories).map(([categoryKey, category]) => (
-        <div key={categoryKey} className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-quantum-glow">
-            <span>{category.icon}</span>
-            <span>{category.title}</span>
-            <Badge variant="outline" className="text-xs">
-              {category.gates.length}
-            </Badge>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-2">
-            {category.gates.map((gate) => (
-              <Tooltip key={gate.type}>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      "relative group cursor-pointer rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black transition-all duration-200 hover:scale-105 hover:shadow-lg quantum-glow select-none",
-                      gate.color,
-                      "h-12 w-full active:scale-95",
-                      selectedGate === gate.type && "ring-2 ring-quantum-glow"
-                    )}
-                    onClick={() => handleGateClick(gate.type)}
-                    style={{ 
-                      WebkitTouchCallout: 'none',
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none'
-                    }}
-                  >
+    <Card className="quantum-panel neon-border h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg text-quantum-glow flex items-center gap-2">
+          <Zap className="w-5 h-5" />
+          Gate Palette
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+        {gateCategories.map((category) => (
+          <div key={category.name}>
+            <h3 className="text-sm font-semibold text-quantum-particle mb-2 flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              {category.name}
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {category.gates.map((gate) => (
+                <div
+                  key={gate.type}
+                  className={cn(
+                    "group cursor-pointer rounded-lg border-2 p-3 transition-all duration-200 hover:scale-105 active:scale-95",
+                    selectedGate === gate.type 
+                      ? "border-quantum-glow bg-quantum-glow/10 shadow-lg" 
+                      : "border-quantum-matrix hover:border-quantum-glow/50 bg-quantum-matrix/20"
+                  )}
+                  onClick={() => handleGateClick(gate.type)}
+                  title={`${gate.name}: ${gate.description}`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className={cn(
+                      "w-8 h-8 rounded border-2 border-current flex items-center justify-center text-xs font-bold text-black transition-colors",
+                      gate.color
+                    )}>
+                      {gate.type}
+                    </div>
                     <div className="text-center">
-                      <div className="font-bold">{gate.type}</div>
-                      {gate.type.length > 3 && (
-                        <div className="text-xs opacity-75">{gate.name.split(' ')[0]}</div>
-                      )}
-                    </div>
-                    
-                    {/* Selection indicator */}
-                    <div className="absolute top-1 right-1 w-2 h-2 bg-white/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  </div>
-                </TooltipTrigger>
-                
-                <TooltipContent side="right" className="max-w-xs quantum-panel neon-border">
-                  <div className="space-y-2">
-                    <div className="font-semibold text-quantum-glow">{gate.name}</div>
-                    <div className="text-xs text-quantum-particle">{gate.description}</div>
-                    <div className="text-xs text-quantum-neon border-t border-quantum-matrix pt-2">
-                      Click to select gate
+                      <div className="text-xs font-mono text-quantum-glow">
+                        {gate.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {gate.description}
+                      </div>
                     </div>
                   </div>
-                </TooltipContent>
-              </Tooltip>
-            ))}
+                  
+                  {selectedGate === gate.type && (
+                    <Badge className="absolute -top-1 -right-1 bg-quantum-glow text-black text-xs">
+                      Selected
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-          
-          {categoryKey !== 'measurement' && <Separator className="bg-quantum-matrix" />}
+        ))}
+        
+        <div className="pt-4 border-t border-quantum-matrix">
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <RotateCcw className="w-3 h-3" />
+            Click a gate to select, then click on the circuit to place it
+          </div>
         </div>
-      ))}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
