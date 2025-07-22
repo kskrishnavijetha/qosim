@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +9,7 @@ import { DragDropCircuitBuilder } from './DragDropCircuitBuilder';
 import { RealtimeSimulationPanel } from './RealtimeSimulationPanel';
 import { WorkspaceToolbar } from './WorkspaceToolbar';
 import { CircuitExporter } from './CircuitExporter';
-import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
+import { useCircuitWorkspace, type Gate, type Circuit } from '@/hooks/useCircuitWorkspace';
 import { cn } from '@/lib/utils';
 
 export function QuantumOSWorkspace() {
@@ -34,7 +33,7 @@ export function QuantumOSWorkspace() {
 
   const activeCircuit = circuits.find(c => c.id === activeCircuitId);
 
-  const handleCircuitChange = (gates: any[]) => {
+  const handleCircuitChange = (gates: Gate[]) => {
     if (activeCircuitId) {
       updateCircuitGates(activeCircuitId, gates);
     }
