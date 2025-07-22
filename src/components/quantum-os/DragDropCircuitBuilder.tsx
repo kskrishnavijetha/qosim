@@ -7,13 +7,13 @@ import { cn } from '@/lib/utils';
 
 // Use types from the workspace hook to ensure consistency
 import type { 
-  Gate as WorkspaceGate, 
-  Circuit as WorkspaceCircuit 
+  Gate, 
+  Circuit 
 } from '@/hooks/useCircuitWorkspace';
 
 interface DragDropCircuitBuilderProps {
-  circuit?: WorkspaceCircuit;
-  onCircuitChange: (circuit: WorkspaceCircuit) => void;
+  circuit?: Circuit;
+  onCircuitChange: (circuit: Circuit) => void;
   onCanvasClick?: (x: number, y: number) => void;
   className?: string;
 }
@@ -33,7 +33,7 @@ export const DragDropCircuitBuilder = forwardRef<HTMLDivElement, DragDropCircuit
     const handleRemoveGate = (gateId: string) => {
       if (!circuit) return;
       
-      const updatedCircuit: WorkspaceCircuit = {
+      const updatedCircuit: Circuit = {
         ...circuit,
         gates: circuit.gates.filter(gate => gate.id !== gateId)
       };
@@ -41,7 +41,7 @@ export const DragDropCircuitBuilder = forwardRef<HTMLDivElement, DragDropCircuit
       onCircuitChange(updatedCircuit);
     };
 
-    const renderGate = (gate: WorkspaceGate) => {
+    const renderGate = (gate: Gate) => {
       // Calculate position based on gate properties
       const x = (gate.position || 0) * 80 + 100; // 80px spacing + 100px offset
       const y = (gate.qubit || 0) * 60 + 50; // 60px spacing + 50px offset
