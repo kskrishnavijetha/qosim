@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Use types from the workspace hook to ensure consistency
+// Import types from the workspace hook to ensure consistency
 import type { 
   Gate, 
   Circuit 
