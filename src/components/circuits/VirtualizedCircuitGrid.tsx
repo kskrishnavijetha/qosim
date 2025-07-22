@@ -1,4 +1,3 @@
-
 import React, { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { MemoizedGate } from "./MemoizedGate";
