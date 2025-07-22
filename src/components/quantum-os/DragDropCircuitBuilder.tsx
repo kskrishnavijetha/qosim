@@ -9,6 +9,7 @@ import { CircuitCanvas } from './CircuitCanvas';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { DraggingGate } from '@/components/circuits/DraggingGate';
 
+// Import the interfaces from the hook to avoid conflicts
 interface Gate {
   id: string;
   type: string;
@@ -16,6 +17,7 @@ interface Gate {
   qubits?: number[];
   position: number;
   angle?: number;
+  controlQubit?: number;
   params?: number[];
 }
 
@@ -25,6 +27,8 @@ interface Circuit {
   gates: Gate[];
   qubits: number;
   modified: boolean;
+  created: Date;
+  lastModified: Date;
 }
 
 interface DragDropCircuitBuilderProps {
