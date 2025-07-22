@@ -1,21 +1,22 @@
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, RotateCcw } from 'lucide-react';
 import { QuantumGatePalette } from './QuantumGatePalette';
 import { CircuitCanvas } from './CircuitCanvas';
-import { useDragDropCircuit } from '@/hooks/useDragDropCircuit';
-import { cn } from '@/lib/utils';
+import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
+import { DraggingGate } from '@/components/circuits/DraggingGate';
 
 interface Gate {
   id: string;
   type: string;
-  qubit: number;
+  qubit?: number;
+  qubits?: number[];
   position: number;
   angle?: number;
-  controlQubit?: number;
+  params?: number[];
 }
 
 interface Circuit {
@@ -32,21 +33,22 @@ interface DragDropCircuitBuilderProps {
 }
 
 export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCircuitBuilderProps) {
-  const canvasRef = useRef<HTMLDivElement>(null);
   const [selectedGate, setSelectedGate] = useState<string | null>(null);
   const [showGateProperties, setShowGateProperties] = useState(false);
 
+  const handleGateAdd = useCallback((gate: Gate) => {
+    onCircuitChange([...circuit.gates, gate]);
+  }, [circuit.gates, onCircuitChange]);
+
   const {
     dragState,
-    handleGateMouseDown,
-    handleGateTouchStart,
-    addGate,
-    removeGate,
-    updateGate
-  } = useDragDropCircuit({
-    circuit: circuit.gates,
+    circuitRef,
+    handleMouseDown,
+    handleTouchStart
+  } = useCircuitDragDrop({
+    onGateAdd: handleGateAdd,
     numQubits: circuit.qubits,
-    onCircuitChange
+    gridSize: 60
   });
 
   const handleGateSelect = useCallback((gateId: string) => {
@@ -55,12 +57,13 @@ export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCir
   }, []);
 
   const handleGateDelete = useCallback((gateId: string) => {
-    removeGate(gateId);
+    const updatedGates = circuit.gates.filter(gate => gate.id !== gateId);
+    onCircuitChange(updatedGates);
     if (selectedGate === gateId) {
       setSelectedGate(null);
       setShowGateProperties(false);
     }
-  }, [removeGate, selectedGate]);
+  }, [circuit.gates, onCircuitChange, selectedGate]);
 
   const selectedGateData = selectedGate ? circuit.gates.find(g => g.id === selectedGate) : null;
 
@@ -79,8 +82,8 @@ export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCir
           </CardHeader>
           <CardContent className="p-4">
             <QuantumGatePalette
-              onGateMouseDown={handleGateMouseDown}
-              onGateTouchStart={handleGateTouchStart}
+              onGateMouseDown={handleMouseDown}
+              onGateTouchStart={handleTouchStart}
             />
           </CardContent>
         </Card>
@@ -116,7 +119,7 @@ export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCir
         <Card className="flex-1 quantum-panel neon-border">
           <CardContent className="p-0 h-full">
             <CircuitCanvas
-              ref={canvasRef}
+              ref={circuitRef}
               circuit={circuit}
               dragState={dragState}
               onGateSelect={handleGateSelect}
@@ -156,7 +159,8 @@ export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCir
                 <div>
                   <label className="text-sm text-quantum-particle">Qubit</label>
                   <div className="text-quantum-neon font-mono">
-                    q[{selectedGateData.qubit}]
+                    {selectedGateData.qubit !== undefined ? `q[${selectedGateData.qubit}]` : 
+                     selectedGateData.qubits ? `q[${selectedGateData.qubits.join(', ')}]` : 'N/A'}
                   </div>
                 </div>
                 <div>
@@ -176,11 +180,11 @@ export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCir
                 </div>
               )}
 
-              {selectedGateData.controlQubit !== undefined && (
+              {selectedGateData.params && (
                 <div>
-                  <label className="text-sm text-quantum-particle">Control Qubit</label>
+                  <label className="text-sm text-quantum-particle">Parameters</label>
                   <div className="text-quantum-plasma font-mono">
-                    q[{selectedGateData.controlQubit}]
+                    [{selectedGateData.params.map(p => p.toFixed(3)).join(', ')}]
                   </div>
                 </div>
               )}
@@ -199,6 +203,9 @@ export function DragDropCircuitBuilder({ circuit, onCircuitChange }: DragDropCir
           </Card>
         </div>
       )}
+
+      {/* Dragging Gate Indicator */}
+      <DraggingGate dragState={dragState} />
     </div>
   );
 }

@@ -5,10 +5,11 @@ import { cn } from '@/lib/utils';
 interface Gate {
   id: string;
   type: string;
-  qubit: number;
+  qubit?: number;
+  qubits?: number[];
   position: number;
   angle?: number;
-  controlQubit?: number;
+  params?: number[];
 }
 
 interface Circuit {
@@ -50,11 +51,20 @@ const gateColors = {
   'RX': 'bg-quantum-energy',
   'RY': 'bg-orange-500',
   'RZ': 'bg-yellow-500',
+  'U1': 'bg-pink-500',
+  'U2': 'bg-indigo-500',
+  'U3': 'bg-violet-500',
   'CNOT': 'bg-quantum-plasma',
+  'CX': 'bg-quantum-plasma',
   'CZ': 'bg-red-500',
   'SWAP': 'bg-green-500',
+  'TOFFOLI': 'bg-emerald-600',
+  'CCX': 'bg-emerald-600',
+  'FREDKIN': 'bg-teal-600',
+  'CSWAP': 'bg-teal-600',
   'M': 'bg-destructive',
   'BARRIER': 'bg-amber-600',
+  'RESET': 'bg-gray-600',
 };
 
 export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
@@ -75,6 +85,106 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
         onGateSelect(gate.id);
       }
     }, [onGateSelect, onGateDelete]);
+
+    const renderGate = useCallback((gate: Gate) => {
+      const x = gate.position * GRID_SIZE + 80;
+      const isSelected = selectedGate === gate.id;
+      
+      // Handle multi-qubit gates
+      if (gate.qubits && gate.qubits.length > 1) {
+        const minQubit = Math.min(...gate.qubits);
+        const maxQubit = Math.max(...gate.qubits);
+        const y = minQubit * QUBIT_SPACING + 25;
+        
+        return (
+          <div key={gate.id} className="absolute">
+            {/* Connection line for multi-qubit gates */}
+            <div
+              className="absolute w-0.5 bg-quantum-plasma shadow-glow"
+              style={{
+                left: x + GATE_SIZE / 2,
+                top: minQubit * QUBIT_SPACING + 50,
+                height: (maxQubit - minQubit) * QUBIT_SPACING,
+                boxShadow: '0 0 4px hsl(var(--quantum-plasma) / 0.8)'
+              }}
+            />
+            
+            {/* Render gates on each qubit */}
+            {gate.qubits.map((qubit, index) => (
+              <div
+                key={`${gate.id}-${qubit}`}
+                className={cn(
+                  "rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-200 hover:scale-110 quantum-glow select-none shadow-lg",
+                  gateColors[gate.type as keyof typeof gateColors] || 'bg-secondary',
+                  isSelected 
+                    ? "border-quantum-glow shadow-[0_0_20px_hsl(var(--quantum-glow))] scale-110" 
+                    : "border-current hover:shadow-[0_0_15px_currentColor]"
+                )}
+                style={{
+                  left: x,
+                  top: qubit * QUBIT_SPACING + 25,
+                  width: GATE_SIZE,
+                  height: GATE_SIZE,
+                  zIndex: isSelected ? 10 : 1
+                }}
+                onClick={(e) => handleGateClick(gate, e)}
+                title={`${gate.type} gate (double-click to delete)`}
+              >
+                <div className="text-center">
+                  <div className="font-bold">
+                    {gate.type === 'CNOT' || gate.type === 'CX' ? 
+                      (index === 0 ? '●' : '⊕') : 
+                      gate.type.length > 4 ? gate.type.substring(0, 3) : gate.type}
+                  </div>
+                  {gate.angle && (
+                    <div className="text-xs opacity-75">
+                      {gate.angle.toFixed(1)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      
+      // Single qubit gate
+      const y = (gate.qubit || 0) * QUBIT_SPACING + 25;
+      
+      return (
+        <div key={gate.id} className="absolute">
+          <div
+            className={cn(
+              "rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-200 hover:scale-110 quantum-glow select-none shadow-lg",
+              gateColors[gate.type as keyof typeof gateColors] || 'bg-secondary',
+              isSelected 
+                ? "border-quantum-glow shadow-[0_0_20px_hsl(var(--quantum-glow))] scale-110" 
+                : "border-current hover:shadow-[0_0_15px_currentColor]"
+            )}
+            style={{
+              left: x,
+              top: y,
+              width: GATE_SIZE,
+              height: GATE_SIZE,
+              zIndex: isSelected ? 10 : 1
+            }}
+            onClick={(e) => handleGateClick(gate, e)}
+            title={`${gate.type} gate on qubit ${gate.qubit} (double-click to delete)`}
+          >
+            <div className="text-center">
+              <div className="font-bold">
+                {gate.type.length > 4 ? gate.type.substring(0, 3) : gate.type}
+              </div>
+              {gate.angle && (
+                <div className="text-xs opacity-75">
+                  {gate.angle.toFixed(1)}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }, [selectedGate, handleGateClick]);
 
     return (
       <div className="relative h-full overflow-auto bg-quantum-void">
@@ -114,70 +224,7 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
           ))}
 
           {/* Circuit Gates */}
-          {circuit.gates.map((gate) => {
-            const x = gate.position * GRID_SIZE + 80;
-            const y = gate.qubit * QUBIT_SPACING + 25;
-            const isSelected = selectedGate === gate.id;
-            
-            return (
-              <div key={gate.id} className="absolute">
-                {/* Control qubit connection for two-qubit gates */}
-                {gate.controlQubit !== undefined && (
-                  <div
-                    className="absolute w-0.5 bg-quantum-plasma shadow-glow"
-                    style={{
-                      left: x + GATE_SIZE / 2,
-                      top: Math.min(gate.qubit, gate.controlQubit) * QUBIT_SPACING + 50,
-                      height: Math.abs(gate.qubit - gate.controlQubit) * QUBIT_SPACING,
-                      boxShadow: '0 0 4px hsl(var(--quantum-plasma) / 0.8)'
-                    }}
-                  />
-                )}
-                
-                {/* Control qubit dot */}
-                {gate.controlQubit !== undefined && (
-                  <div
-                    className="absolute w-3 h-3 bg-quantum-plasma rounded-full shadow-glow"
-                    style={{
-                      left: x + GATE_SIZE / 2 - 6,
-                      top: gate.controlQubit * QUBIT_SPACING + 44
-                    }}
-                  />
-                )}
-
-                {/* Main Gate */}
-                <div
-                  className={cn(
-                    "rounded-lg border-2 flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-200 hover:scale-110 quantum-glow select-none shadow-lg",
-                    gateColors[gate.type as keyof typeof gateColors] || 'bg-secondary',
-                    isSelected 
-                      ? "border-quantum-glow shadow-[0_0_20px_hsl(var(--quantum-glow))] scale-110" 
-                      : "border-current hover:shadow-[0_0_15px_currentColor]"
-                  )}
-                  style={{
-                    left: x,
-                    top: y,
-                    width: GATE_SIZE,
-                    height: GATE_SIZE,
-                    zIndex: isSelected ? 10 : 1
-                  }}
-                  onClick={(e) => handleGateClick(gate, e)}
-                  title={`${gate.type} gate on qubit ${gate.qubit} (double-click to delete)`}
-                >
-                  <div className="text-center">
-                    <div className="font-bold">
-                      {gate.type.length > 4 ? gate.type.substring(0, 3) : gate.type}
-                    </div>
-                    {gate.angle && (
-                      <div className="text-xs opacity-75">
-                        {gate.angle.toFixed(1)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {circuit.gates.map(renderGate)}
 
           {/* Drop Zone Indicator */}
           {dragState.isDragging && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (

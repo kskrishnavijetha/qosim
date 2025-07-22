@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,6 +20,7 @@ export function QuantumOSWorkspace() {
     selectCircuit,
     deleteCircuit,
     saveCircuit,
+    updateCircuitGates,
     undo,
     redo,
     canUndo,
@@ -32,6 +32,12 @@ export function QuantumOSWorkspace() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const activeCircuit = circuits.find(c => c.id === activeCircuitId);
+
+  const handleCircuitChange = (gates: any[]) => {
+    if (activeCircuitId) {
+      updateCircuitGates(activeCircuitId, gates);
+    }
+  };
 
   return (
     <div className="h-screen bg-quantum-void text-quantum-neon font-mono">
@@ -143,11 +149,7 @@ export function QuantumOSWorkspace() {
                 <TabsContent value="builder" className="flex-1 p-6">
                   <DragDropCircuitBuilder
                     circuit={activeCircuit}
-                    onCircuitChange={(gates) => {
-                      // Update circuit with new gates
-                      const updatedCircuit = { ...activeCircuit, gates, modified: true };
-                      // This would update the circuit in the workspace
-                    }}
+                    onCircuitChange={handleCircuitChange}
                   />
                 </TabsContent>
 
@@ -168,7 +170,7 @@ export function QuantumOSWorkspace() {
                             <br/>
                             {activeCircuit.gates.map((gate, i) => (
                               <div key={i} className="text-quantum-glow">
-                                {gate.type.toLowerCase()} q[{gate.qubit}];
+                                {gate.type.toLowerCase()} q[{gate.qubit || (gate.qubits ? gate.qubits[0] : 0)}];
                               </div>
                             ))}
                           </div>
