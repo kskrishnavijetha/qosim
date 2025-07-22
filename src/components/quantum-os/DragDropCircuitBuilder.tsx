@@ -12,7 +12,7 @@ import type {
 } from '@/hooks/useCircuitWorkspace';
 
 interface DragDropCircuitBuilderProps {
-  circuit?: Circuit;
+  circuit?: Circuit | null;
   onCircuitChange: (circuit: Circuit) => void;
   onCanvasClick?: (x: number, y: number) => void;
   className?: string;

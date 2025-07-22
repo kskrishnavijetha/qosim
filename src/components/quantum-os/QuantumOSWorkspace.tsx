@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,7 +34,8 @@ export function QuantumOSWorkspace() {
     clearCircuit,
     exportCircuit,
     simulationResult,
-    isRunning
+    isRunning,
+    updateCircuitGates
   } = useCircuitWorkspace();
 
   const [selectedGate, setSelectedGate] = useState<string | null>(null);
@@ -102,6 +102,11 @@ export function QuantumOSWorkspace() {
       navigator.clipboard.writeText(window.location.href);
       toast.success('Circuit link copied to clipboard');
     }
+  };
+
+  const handleCircuitChange = (updatedCircuit: Circuit) => {
+    if (!updatedCircuit) return;
+    updateCircuitGates(updatedCircuit.id, updatedCircuit.gates);
   };
 
   return (
@@ -179,10 +184,7 @@ export function QuantumOSWorkspace() {
                 <div className="flex-1 overflow-hidden">
                   <DragDropCircuitBuilder
                     circuit={activeCircuit}
-                    onCircuitChange={(updatedCircuit: Circuit) => {
-                      // Handle circuit updates
-                      console.log('Circuit updated:', updatedCircuit);
-                    }}
+                    onCircuitChange={handleCircuitChange}
                     onCanvasClick={handleCanvasClick}
                     ref={canvasRef}
                   />
