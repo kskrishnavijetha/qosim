@@ -1,3 +1,4 @@
+
 import React, { forwardRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { DraggingGate } from '@/components/circuits/DraggingGate';
 
-// Import types from the workspace hook to ensure consistency
+// Import types from the workspace hook for consistency
 import type { 
   Gate, 
   Circuit 
