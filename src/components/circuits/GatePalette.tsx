@@ -72,14 +72,6 @@ export const GatePalette = memo(function GatePalette({
 
   const categoryOrder = ['Single', 'Parametric', 'Multi', 'Special', 'Custom'];
 
-  const handleGateInteraction = (gate: typeof gateTypes[0]) => (e: React.MouseEvent | React.TouchEvent) => {
-    if ('touches' in e && onGateTouchStart) {
-      onGateTouchStart(e as React.TouchEvent, gate.type);
-    } else if ('button' in e) {
-      onGateMouseDown(e as React.MouseEvent, gate.type);
-    }
-  };
-
   return (
     <div className={cn(
       "space-y-4 overflow-y-auto",

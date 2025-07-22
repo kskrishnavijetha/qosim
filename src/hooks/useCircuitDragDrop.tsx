@@ -1,6 +1,8 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Gate } from './useCircuitWorkspace';
+
+// Import types from the workspace hook to ensure consistency
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;
@@ -41,7 +43,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     setDragState({
       isDragging: true,
       gateType,
-      dragPosition: { x: clientX - rect.left, y: clientY - rect.top },
+      dragPosition: { x: clientX, y: clientY },
       hoverQubit: null,
       hoverPosition: null
     });
