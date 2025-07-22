@@ -6,9 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { EnhancedCircuitEditor } from '@/components/circuits/EnhancedCircuitEditor';
-import { Gate } from '@/hooks/useCircuitState';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
-import { Trash2, Undo, Settings, Zap, Activity } from 'lucide-react';
+import { Trash2, Undo, Settings, Activity } from 'lucide-react';
+
+// Import types from the workspace hook to ensure consistency
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface InteractiveCircuitEditorProps {
   circuit: Gate[];
