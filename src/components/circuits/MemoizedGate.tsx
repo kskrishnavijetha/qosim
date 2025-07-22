@@ -3,9 +3,7 @@ import React, { memo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // Import types from the workspace hook to ensure consistency
-import type { 
-  Gate
-} from '@/hooks/useCircuitWorkspace';
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface MemoizedGateProps {
   gate: Gate;

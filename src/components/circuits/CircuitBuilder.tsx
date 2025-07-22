@@ -12,9 +12,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 // Import types from the workspace hook to ensure consistency
-import type { 
-  Gate
-} from '@/hooks/useCircuitWorkspace';
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;
