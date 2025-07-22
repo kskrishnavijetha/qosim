@@ -8,8 +8,6 @@ import { QuantumGatePalette } from './QuantumGatePalette';
 import { CircuitCanvas } from './CircuitCanvas';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { DraggingGate } from '@/components/circuits/DraggingGate';
-
-// Import types from the workspace hook to avoid conflicts
 import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface DragDropCircuitBuilderProps {

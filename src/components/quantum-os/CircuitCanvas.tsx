@@ -1,8 +1,6 @@
 
 import React, { forwardRef, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-
-// Import types from the workspace hook to avoid conflicts
 import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
@@ -133,8 +131,9 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
         );
       }
       
-      // Single qubit gate
-      const y = (gate.qubit || 0) * QUBIT_SPACING + 25;
+      // Single qubit gate - handle both qubit and qubits[0] cases
+      const qubitIndex = gate.qubit !== undefined ? gate.qubit : (gate.qubits ? gate.qubits[0] : 0);
+      const y = qubitIndex * QUBIT_SPACING + 25;
       
       return (
         <div key={gate.id} className="absolute">
@@ -154,7 +153,7 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
               zIndex: isSelected ? 10 : 1
             }}
             onClick={(e) => handleGateClick(gate, e)}
-            title={`${gate.type} gate on qubit ${gate.qubit} (double-click to delete)`}
+            title={`${gate.type} gate on qubit ${qubitIndex} (double-click to delete)`}
           >
             <div className="text-center">
               <div className="font-bold">
