@@ -1,13 +1,11 @@
+
 import React, { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { MemoizedGate } from "./MemoizedGate";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Import types from the workspace hook to ensure consistency
-import type { 
-  Gate, 
-  Circuit 
-} from '@/hooks/useCircuitWorkspace';
+import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;

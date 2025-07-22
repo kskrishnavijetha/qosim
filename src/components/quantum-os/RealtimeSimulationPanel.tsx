@@ -6,10 +6,7 @@ import { Activity, Zap, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Import types from the workspace hook to ensure consistency
-import type { 
-  Gate, 
-  Circuit 
-} from '@/hooks/useCircuitWorkspace';
+import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface RealtimeSimulationPanelProps {
   circuit?: Circuit | null;
