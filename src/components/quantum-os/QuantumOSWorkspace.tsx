@@ -23,6 +23,7 @@ export function QuantumOSWorkspace() {
   // Access the circuit workspace context
   const {
     circuits,
+    activeCircuitId,
     activeCircuit,
     setActiveCircuit,
     addGateToCircuit,
