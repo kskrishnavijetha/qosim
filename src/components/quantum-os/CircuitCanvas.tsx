@@ -77,7 +77,6 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
       if (gate.qubits && gate.qubits.length > 1) {
         const minQubit = Math.min(...gate.qubits);
         const maxQubit = Math.max(...gate.qubits);
-        const y = minQubit * QUBIT_SPACING + 25;
         
         return (
           <div key={gate.id} className="absolute">
@@ -133,7 +132,6 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
       
       // Single qubit gate - handle both qubit and qubits[0] cases
       const qubitIndex = gate.qubit !== undefined ? gate.qubit : (gate.qubits ? gate.qubits[0] : 0);
-      const y = qubitIndex * QUBIT_SPACING + 25;
       
       return (
         <div key={gate.id} className="absolute">
@@ -147,13 +145,13 @@ export const CircuitCanvas = forwardRef<HTMLDivElement, CircuitCanvasProps>(
             )}
             style={{
               left: x,
-              top: y,
+              top: (qubitIndex || 0) * QUBIT_SPACING + 25,
               width: GATE_SIZE,
               height: GATE_SIZE,
               zIndex: isSelected ? 10 : 1
             }}
             onClick={(e) => handleGateClick(gate, e)}
-            title={`${gate.type} gate on qubit ${qubitIndex} (double-click to delete)`}
+            title={`${gate.type} gate on qubit ${qubitIndex || 0} (double-click to delete)`}
           >
             <div className="text-center">
               <div className="font-bold">
