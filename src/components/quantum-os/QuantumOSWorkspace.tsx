@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +12,7 @@ import { CircuitExporter } from './CircuitExporter';
 import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
 import { cn } from '@/lib/utils';
 
-// Use types directly from the workspace hook
+// Import types only from the workspace hook for consistency
 import type { 
   Gate, 
   Circuit 
@@ -232,4 +230,3 @@ export function QuantumOSWorkspace() {
     </div>
   );
 }
-
