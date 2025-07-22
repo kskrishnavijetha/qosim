@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings } from "lucide-react";
-import { Gate } from "@/hooks/useCircuitState";
+import { Gate } from "@/hooks/useCircuitWorkspace";
 
 interface GateParameterInputProps {
   gate: Gate;
