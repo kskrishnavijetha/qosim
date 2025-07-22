@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Gate } from './useCircuitState';
+import { Gate } from './useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;
