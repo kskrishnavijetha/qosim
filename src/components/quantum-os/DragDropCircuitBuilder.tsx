@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
+import { DraggingGate } from '@/components/circuits/DraggingGate';
 
 // Import types from the workspace hook to ensure consistency
 import type { 
@@ -21,6 +23,28 @@ interface DragDropCircuitBuilderProps {
 export const DragDropCircuitBuilder = forwardRef<HTMLDivElement, DragDropCircuitBuilderProps>(
   ({ circuit, onCircuitChange, onCanvasClick, className }, ref) => {
     
+    const handleGateAdd = useCallback((gate: Gate) => {
+      if (!circuit) return;
+      
+      const updatedCircuit: Circuit = {
+        ...circuit,
+        gates: [...circuit.gates, gate]
+      };
+      
+      onCircuitChange(updatedCircuit);
+    }, [circuit, onCircuitChange]);
+
+    const {
+      dragState,
+      circuitRef,
+      handleMouseDown,
+      handleTouchStart
+    } = useCircuitDragDrop({
+      onGateAdd: handleGateAdd,
+      numQubits: circuit?.qubits || 8,
+      gridSize: 80
+    });
+
     const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
       if (onCanvasClick) {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -114,40 +138,60 @@ export const DragDropCircuitBuilder = forwardRef<HTMLDivElement, DragDropCircuit
     }
 
     return (
-      <Card className={cn("h-full quantum-panel neon-border", className)}>
-        <CardContent className="h-full p-0 relative overflow-auto">
-          <div
-            ref={ref}
-            className="h-full min-h-[500px] relative cursor-crosshair"
-            onClick={handleCanvasClick}
-          >
-            {/* Grid background */}
-            <div className="absolute inset-0 opacity-20">
-              <div 
-                className="h-full w-full"
-                style={{
-                  backgroundImage: `
-                    linear-gradient(to right, rgba(123, 255, 178, 0.1) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(123, 255, 178, 0.1) 1px, transparent 1px)
-                  `,
-                  backgroundSize: '80px 60px'
-                }}
-              />
+      <>
+        <Card className={cn("h-full quantum-panel neon-border", className)}>
+          <CardContent className="h-full p-0 relative overflow-auto">
+            <div
+              ref={ref}
+              className="h-full min-h-[500px] relative cursor-crosshair"
+              onClick={handleCanvasClick}
+            >
+              <div ref={circuitRef} className="w-full h-full">
+                {/* Grid background */}
+                <div className="absolute inset-0 opacity-20">
+                  <div 
+                    className="h-full w-full"
+                    style={{
+                      backgroundImage: `
+                        linear-gradient(to right, rgba(123, 255, 178, 0.1) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(123, 255, 178, 0.1) 1px, transparent 1px)
+                      `,
+                      backgroundSize: '80px 60px'
+                    }}
+                  />
+                </div>
+
+                {/* Qubit lines and labels */}
+                {renderQubitLines()}
+
+                {/* Gates */}
+                {circuit.gates.map(renderGate)}
+
+                {/* Drop Zone Indicator */}
+                {dragState.isDragging && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (
+                  <div
+                    className="absolute w-12 h-8 border-2 border-dashed border-quantum-glow rounded-lg bg-quantum-glow/20 flex items-center justify-center text-xs font-bold quantum-glow animate-pulse"
+                    style={{
+                      left: dragState.hoverPosition * 80 + 100 - 24,
+                      top: dragState.hoverQubit * 60 + 50 - 16
+                    }}
+                  >
+                    {dragState.gateType}
+                  </div>
+                )}
+
+                {/* Circuit info */}
+                <div className="absolute top-4 right-4 text-sm font-mono text-quantum-glow/70">
+                  {circuit.name} - {circuit.gates.length} gates
+                </div>
+              </div>
             </div>
-
-            {/* Qubit lines and labels */}
-            {renderQubitLines()}
-
-            {/* Gates */}
-            {circuit.gates.map(renderGate)}
-
-            {/* Circuit info */}
-            <div className="absolute top-4 right-4 text-sm font-mono text-quantum-glow/70">
-              {circuit.name} - {circuit.gates.length} gates
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        
+        {/* Dragging Gate */}
+        <DraggingGate dragState={dragState} />
+      </>
     );
   }
 );
