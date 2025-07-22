@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,10 +13,10 @@ import { CircuitExporter } from './CircuitExporter';
 import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
 import { cn } from '@/lib/utils';
 
-// Import types with aliases to avoid conflicts
+// Import types from workspace hook to ensure consistency
 import type { 
-  Gate as WorkspaceGate, 
-  Circuit as WorkspaceCircuit 
+  Gate, 
+  Circuit 
 } from '@/hooks/useCircuitWorkspace';
 
 export function QuantumOSWorkspace() {
@@ -59,12 +60,11 @@ export function QuantumOSWorkspace() {
     const position = Math.floor(relativeX / 80); // Assuming 80px per position
     
     if (qubit >= 0 && qubit < 8) { // Max 8 qubits
-      const newGate: WorkspaceGate = {
+      const newGate: Gate = {
         id: `gate_${Date.now()}`,
         type: selectedGate,
         qubit,
-        position,
-        parameters: {}
+        position
       };
       
       addGateToCircuit(activeCircuit.id, newGate);
@@ -177,8 +177,8 @@ export function QuantumOSWorkspace() {
                 
                 <div className="flex-1 overflow-hidden">
                   <DragDropCircuitBuilder
-                    circuit={activeCircuit as WorkspaceCircuit}
-                    onCircuitChange={(updatedCircuit: WorkspaceCircuit) => {
+                    circuit={activeCircuit}
+                    onCircuitChange={(updatedCircuit: Circuit) => {
                       // Handle circuit updates
                       console.log('Circuit updated:', updatedCircuit);
                     }}
@@ -192,7 +192,7 @@ export function QuantumOSWorkspace() {
 
           <TabsContent value="simulation" className="flex-1 overflow-hidden m-0 p-4 pt-2">
             <RealtimeSimulationPanel
-              circuit={activeCircuit as WorkspaceCircuit}
+              circuit={activeCircuit}
               simulationResult={simulationResult}
               isRunning={isRunning}
             />
@@ -218,6 +218,10 @@ export function QuantumOSWorkspace() {
         <CircuitExporter
           circuit={activeCircuit}
           onClose={() => setShowExporter(false)}
+          onExport={(format: string) => {
+            exportCircuit(format);
+            setShowExporter(false);
+          }}
         />
       )}
     </div>

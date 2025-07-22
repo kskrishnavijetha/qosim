@@ -6,8 +6,8 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 interface QuantumGatePaletteProps {
-  onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
-  onGateTouchStart?: (e: React.TouchEvent, gateType: string) => void;
+  onGateSelect: (gateType: string) => void;
+  selectedGate: string | null;
 }
 
 const gateCategories = {
@@ -58,15 +58,10 @@ const gateCategories = {
   }
 };
 
-export function QuantumGatePalette({ onGateMouseDown, onGateTouchStart }: QuantumGatePaletteProps) {
+export function QuantumGatePalette({ onGateSelect, selectedGate }: QuantumGatePaletteProps) {
   
-  const handleGateInteraction = (gateType: string) => (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if ('touches' in e && onGateTouchStart) {
-      onGateTouchStart(e as React.TouchEvent, gateType);
-    } else if ('button' in e) {
-      onGateMouseDown(e as React.MouseEvent, gateType);
-    }
+  const handleGateClick = (gateType: string) => {
+    onGateSelect(gateType);
   };
 
   return (
@@ -89,10 +84,10 @@ export function QuantumGatePalette({ onGateMouseDown, onGateTouchStart }: Quantu
                     className={cn(
                       "relative group cursor-pointer rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black transition-all duration-200 hover:scale-105 hover:shadow-lg quantum-glow select-none",
                       gate.color,
-                      "h-12 w-full active:scale-95"
+                      "h-12 w-full active:scale-95",
+                      selectedGate === gate.type && "ring-2 ring-quantum-glow"
                     )}
-                    onMouseDown={(e) => onGateMouseDown(e, gate.type)}
-                    onTouchStart={onGateTouchStart ? (e) => onGateTouchStart(e, gate.type) : undefined}
+                    onClick={() => handleGateClick(gate.type)}
                     style={{ 
                       WebkitTouchCallout: 'none',
                       WebkitUserSelect: 'none',
@@ -106,7 +101,7 @@ export function QuantumGatePalette({ onGateMouseDown, onGateTouchStart }: Quantu
                       )}
                     </div>
                     
-                    {/* Drag indicator */}
+                    {/* Selection indicator */}
                     <div className="absolute top-1 right-1 w-2 h-2 bg-white/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
                 </TooltipTrigger>
@@ -116,7 +111,7 @@ export function QuantumGatePalette({ onGateMouseDown, onGateTouchStart }: Quantu
                     <div className="font-semibold text-quantum-glow">{gate.name}</div>
                     <div className="text-xs text-quantum-particle">{gate.description}</div>
                     <div className="text-xs text-quantum-neon border-t border-quantum-matrix pt-2">
-                      Drag to circuit to place
+                      Click to select gate
                     </div>
                   </div>
                 </TooltipContent>

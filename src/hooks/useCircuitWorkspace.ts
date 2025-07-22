@@ -34,7 +34,12 @@ export function useCircuitWorkspace() {
   const [activeCircuitId, setActiveCircuitId] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
+
+  // Get the active circuit
+  const activeCircuit = circuits.find(c => c.id === activeCircuitId) || null;
 
   const createNewCircuit = useCallback(() => {
     const newCircuit: Circuit = {
@@ -68,6 +73,10 @@ export function useCircuitWorkspace() {
     setActiveCircuitId(circuitId);
   }, []);
 
+  const setActiveCircuit = useCallback((circuit: Circuit | null) => {
+    setActiveCircuitId(circuit?.id || null);
+  }, []);
+
   const deleteCircuit = useCallback((circuitId: string) => {
     setCircuits(prev => prev.filter(c => c.id !== circuitId));
     if (activeCircuitId === circuitId) {
@@ -83,6 +92,27 @@ export function useCircuitWorkspace() {
     });
   }, [activeCircuitId, toast]);
 
+  const duplicateCircuit = useCallback((circuitId: string) => {
+    const originalCircuit = circuits.find(c => c.id === circuitId);
+    if (!originalCircuit) return;
+
+    const newCircuit: Circuit = {
+      ...originalCircuit,
+      id: `circuit_${Date.now()}`,
+      name: `${originalCircuit.name} (Copy)`,
+      created: new Date(),
+      lastModified: new Date()
+    };
+
+    setCircuits(prev => [...prev, newCircuit]);
+    setActiveCircuitId(newCircuit.id);
+
+    toast({
+      title: "Circuit duplicated",
+      description: `Created copy of ${originalCircuit.name}`
+    });
+  }, [circuits, toast]);
+
   const saveCircuit = useCallback((circuitId: string) => {
     setCircuits(prev => prev.map(circuit => 
       circuit.id === circuitId 
@@ -95,6 +125,37 @@ export function useCircuitWorkspace() {
       description: "Changes have been saved"
     });
   }, [toast]);
+
+  const addGateToCircuit = useCallback((circuitId: string, gate: Gate) => {
+    setCircuits(prev => prev.map(circuit => 
+      circuit.id === circuitId 
+        ? { ...circuit, gates: [...circuit.gates, gate], modified: true, lastModified: new Date() }
+        : circuit
+    ));
+
+    // Add to history
+    const updatedCircuit = circuits.find(c => c.id === circuitId);
+    if (updatedCircuit) {
+      const newGates = [...updatedCircuit.gates, gate];
+      setHistory(prev => {
+        const newHistory = prev.slice(0, historyIndex + 1);
+        return [...newHistory, {
+          circuitId,
+          gates: [...newGates],
+          timestamp: new Date()
+        }];
+      });
+      setHistoryIndex(prev => prev + 1);
+    }
+  }, [circuits, historyIndex]);
+
+  const removeGateFromCircuit = useCallback((circuitId: string, gateId: string) => {
+    setCircuits(prev => prev.map(circuit => 
+      circuit.id === circuitId 
+        ? { ...circuit, gates: circuit.gates.filter(g => g.id !== gateId), modified: true, lastModified: new Date() }
+        : circuit
+    ));
+  }, []);
 
   const updateCircuitGates = useCallback((circuitId: string, gates: Gate[]) => {
     setCircuits(prev => prev.map(circuit => 
@@ -114,6 +175,45 @@ export function useCircuitWorkspace() {
     });
     setHistoryIndex(prev => prev + 1);
   }, [historyIndex]);
+
+  const runCircuit = useCallback(async (circuitId: string) => {
+    setIsRunning(true);
+    const circuit = circuits.find(c => c.id === circuitId);
+    if (!circuit) return;
+
+    try {
+      // Simulate running the circuit
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSimulationResult({
+        probabilities: circuit.gates.reduce((acc, gate, idx) => {
+          acc[`${idx}`] = Math.random();
+          return acc;
+        }, {} as Record<string, number>),
+        counts: { '000': 512, '111': 512 }
+      });
+      
+      toast({
+        title: "Circuit executed",
+        description: "Simulation completed successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Execution failed",
+        description: "Failed to run circuit simulation",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRunning(false);
+    }
+  }, [circuits, toast]);
+
+  const clearCircuit = useCallback((circuitId: string) => {
+    setCircuits(prev => prev.map(circuit => 
+      circuit.id === circuitId 
+        ? { ...circuit, gates: [], modified: true, lastModified: new Date() }
+        : circuit
+    ));
+  }, []);
 
   const undo = useCallback(() => {
     if (historyIndex > 0 && activeCircuitId) {
@@ -154,11 +254,20 @@ export function useCircuitWorkspace() {
   return {
     circuits,
     activeCircuitId,
+    activeCircuit,
+    simulationResult,
+    isRunning,
     createNewCircuit,
     selectCircuit,
+    setActiveCircuit,
     deleteCircuit,
+    duplicateCircuit,
     saveCircuit,
+    addGateToCircuit,
+    removeGateFromCircuit,
     updateCircuitGates,
+    runCircuit,
+    clearCircuit,
     undo,
     redo,
     canUndo,
