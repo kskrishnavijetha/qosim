@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Download, FileText, Code } from 'lucide-react';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
 import { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface QASMExporterProps {
@@ -14,7 +14,6 @@ interface QASMExporterProps {
 
 export function QASMExporter({ circuit }: QASMExporterProps) {
   const [qasmCode, setQasmCode] = useState('');
-  const { toast: useSonner } = useToast();
 
   const generateQASMCode = () => {
     let code = `OPENQASM 3.0;\ninclude "stdgates.inc";\n\nqubit[${5}] q;\n`;
@@ -67,10 +66,7 @@ export function QASMExporter({ circuit }: QASMExporterProps) {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(qasmCode);
-    useSonner({
-      title: "QASM Code Copied",
-      description: "QASM code has been copied to clipboard"
-    });
+    toast("QASM code copied to clipboard");
   };
 
   const downloadQASMFile = () => {
@@ -84,10 +80,7 @@ export function QASMExporter({ circuit }: QASMExporterProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast({
-      title: "QASM File Downloaded",
-      description: "QASM code has been downloaded as circuit.qasm"
-    });
+    toast("QASM file downloaded as circuit.qasm");
   };
 
   return (

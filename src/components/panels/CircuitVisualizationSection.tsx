@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { QuantumStateVisualizer } from '@/components/circuits/QuantumStateVisualizer';
 import { type OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
-import { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -36,9 +36,11 @@ export function CircuitVisualizationSection({ simulationResult }: CircuitVisuali
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <QuantumStateVisualizer simulationResult={simulationResult} />
+        <QuantumStateVisualizer 
+          simulationResult={simulationResult} 
+          numQubits={5}
+        />
       </CardContent>
     </Card>
   );
 }
-

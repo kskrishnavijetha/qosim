@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,9 +53,10 @@ const algorithmTemplates: AlgorithmTemplate[] = [
 
 interface AlgorithmTemplatesLibraryProps {
   onTemplateSelect: (template: AlgorithmTemplate) => void;
+  currentCircuit: Gate[];
 }
 
-export function AlgorithmTemplatesLibrary({ onTemplateSelect }: AlgorithmTemplatesLibraryProps) {
+export function AlgorithmTemplatesLibrary({ onTemplateSelect, currentCircuit }: AlgorithmTemplatesLibraryProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>(undefined);
 
   const handleTemplateChange = (templateId: string) => {

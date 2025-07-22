@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
@@ -124,13 +125,13 @@ export function CircuitsPanel() {
     gates.forEach(gate => handleGateAdd(gate));
   };
 
-  // Handle algorithm template loading
-  const handleAlgorithmTemplateLoad = (algorithmName: string, gates: any[]) => {
+  // Handle algorithm template loading with correct interface
+  const handleAlgorithmTemplateLoad = (template: any) => {
     clearCircuit();
-    gates.forEach(gate => handleGateAdd(gate));
+    template.gates.forEach((gate: any) => handleGateAdd(gate));
     setAlgorithmResult({
-      circuit: { name: algorithmName, gates },
-      description: `${algorithmName} algorithm template loaded`,
+      circuit: { name: template.name, gates: template.gates },
+      description: `${template.name} algorithm template loaded`,
       templateLoaded: true
     });
   };
@@ -226,7 +227,7 @@ export function CircuitsPanel() {
 
         {/* Algorithm Templates Library */}
         <AlgorithmTemplatesLibrary
-          onAlgorithmLoad={handleAlgorithmTemplateLoad}
+          onTemplateSelect={handleAlgorithmTemplateLoad}
           currentCircuit={circuit}
         />
 
@@ -266,14 +267,6 @@ export function CircuitsPanel() {
 
         <CircuitVisualizationSection
           simulationResult={simulationResult}
-          numQubits={NUM_QUBITS}
-          circuit={circuit}
-          onSuggestionClick={handleSuggestionClick}
-          onStepModeToggle={handleStepModeToggle}
-          onSimulationStep={handleSimulationStep}
-          onSimulationReset={handleSimulationReset}
-          onSimulationPause={handleSimulationPause}
-          onSimulationResume={handleSimulationResume}
         />
 
         {/* Algorithm Results Display */}

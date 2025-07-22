@@ -16,6 +16,8 @@ import { FastQuantumSimulator } from '../simulation/FastQuantumSimulator';
 export function QuantumAlgorithmsSDK() {
   const [activeTab, setActiveTab] = useState("circuit-builder");
   const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { circuit, simulationResult, addGate, deleteGate, clearCircuit } = useCircuitState();
 
   const NUM_QUBITS = 5;
@@ -41,15 +43,41 @@ export function QuantumAlgorithmsSDK() {
     phase: 0
   };
 
-  // Handle algorithm template loading
-  const handleAlgorithmTemplateLoad = (algorithmName: string, gates: any[]) => {
+  // Handle algorithm template loading with correct interface
+  const handleAlgorithmTemplateLoad = (template: any) => {
     clearCircuit();
-    gates.forEach(gate => addGate(gate));
+    template.gates.forEach((gate: any) => addGate(gate));
     setAlgorithmResult({
-      circuit: { name: algorithmName, gates },
-      description: `${algorithmName} algorithm template loaded`,
+      circuit: { name: template.name, gates: template.gates },
+      description: `${template.name} algorithm template loaded`,
       templateLoaded: true
     });
+  };
+
+  const handleRun = () => {
+    setIsRunning(true);
+    setProgress(0);
+    // Simulate running
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsRunning(false);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+    setProgress(0);
+  };
+
+  const handleClear = () => {
+    clearCircuit();
+    setProgress(0);
   };
 
   return (
@@ -116,7 +144,7 @@ export function QuantumAlgorithmsSDK() {
 
           <TabsContent value="templates" className="space-y-6">
             <AlgorithmTemplatesLibrary
-              onAlgorithmLoad={handleAlgorithmTemplateLoad}
+              onTemplateSelect={handleAlgorithmTemplateLoad}
               currentCircuit={circuit}
             />
             
@@ -145,8 +173,11 @@ export function QuantumAlgorithmsSDK() {
           <TabsContent value="simulation" className="space-y-6">
             <SimulationRunner 
               circuit={circuit}
-              onSimulationComplete={(result) => console.log('Simulation Complete:', result)}
-              simulationResult={simulationResult}
+              isRunning={isRunning}
+              progress={progress}
+              onRun={handleRun}
+              onStop={handleStop}
+              onClear={handleClear}
             />
           </TabsContent>
 
@@ -164,7 +195,6 @@ export function QuantumAlgorithmsSDK() {
           <TabsContent value="export" className="space-y-6">
             <CircuitExporter
               circuit={circuit}
-              simulationResult={simulationResult}
             />
           </TabsContent>
         </Tabs>
