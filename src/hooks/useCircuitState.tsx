@@ -4,16 +4,7 @@ import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@
 import { type OptimizedSimulationResult, type SimulationStepData, optimizedQuantumSimulator } from '@/lib/quantumSimulatorOptimized';
 import { type CloudSimulationConfig, quantumSimulationManager } from '@/lib/quantumSimulationService';
 import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
-
-export interface Gate {
-  id: string;
-  type: string;
-  qubit?: number;
-  qubits?: number[];
-  position: number;
-  angle?: number;
-  params?: number[]; // For multi-parameter gates like U2, U3
-}
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 export function useCircuitState() {
   const [circuit, setCircuit] = useState<Gate[]>([]);

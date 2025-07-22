@@ -4,7 +4,7 @@ import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized"
 import { VirtualizedCircuitGrid } from "./VirtualizedCircuitGrid";
 
 // Import types from the workspace hook to ensure consistency
-import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;

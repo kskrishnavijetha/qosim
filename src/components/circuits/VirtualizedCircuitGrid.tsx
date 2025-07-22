@@ -5,7 +5,7 @@ import { MemoizedGate } from "./MemoizedGate";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Import types from the workspace hook to ensure consistency
-import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
+import type { Gate } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;
