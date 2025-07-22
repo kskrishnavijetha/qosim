@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Gate } from './useCircuitState';
+import { Gate } from '@/hooks/useCircuitWorkspace';
 
 export interface WorkingTemplate {
   id: string;
