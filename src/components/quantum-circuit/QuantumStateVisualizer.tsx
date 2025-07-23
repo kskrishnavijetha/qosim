@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Play, RotateCcw } from 'lucide-react';
+import { Play, RotateCcw, AlertCircle } from 'lucide-react';
 import { BlochSphere3D } from './BlochSphere3D';
 import { AmplitudeChart } from './AmplitudeChart';
 import { StepByStepExecutor } from '../simulation/StepByStepExecutor';
@@ -12,14 +12,14 @@ import { useQuantumSimulation } from '@/hooks/useQuantumSimulation';
 import { useQuantumBackend } from '@/hooks/useQuantumBackend';
 import { useCircuitStore } from '@/store/circuitStore';
 
-// Define normalized types for consistency
-interface NormalizedQubitState {
+// Simplified and consistent types
+interface QubitStateData {
   state: string;
   probability: number;
   blochCoordinates: { x: number; y: number; z: number };
 }
 
-interface NormalizedStateVector {
+interface StateVectorData {
   real: number;
   imag: number;
 }
@@ -39,12 +39,13 @@ export function QuantumStateVisualizer() {
   // Debug logging
   useEffect(() => {
     console.log('📊 QuantumStateVisualizer: State updated', {
-      lastResult,
-      simulationResult,
-      displayResult,
-      gates: gates.length,
+      hasLastResult: !!lastResult,
+      hasSimulationResult: !!simulationResult,
+      hasDisplayResult: !!displayResult,
+      gatesCount: gates.length,
       isExecuting,
-      isSimulating
+      isSimulating,
+      displayResultKeys: displayResult ? Object.keys(displayResult) : [],
     });
   }, [lastResult, simulationResult, gates, isExecuting, isSimulating]);
 
@@ -96,9 +97,11 @@ export function QuantumStateVisualizer() {
     simulate([], numQubits);
   };
 
-  // Helper function to normalize qubit state data
-  const getQubitState = (index: number): NormalizedQubitState => {
-    if (!displayResult?.qubitStates?.[index]) {
+  // Normalize qubit state data from any source
+  const getQubitState = (index: number): QubitStateData => {
+    console.log('🔍 Getting qubit state for index:', index, 'from result:', displayResult);
+    
+    if (!displayResult) {
       return {
         state: '|0⟩',
         probability: 1,
@@ -106,86 +109,73 @@ export function QuantumStateVisualizer() {
       };
     }
 
-    const rawQubitState = displayResult.qubitStates[index];
+    // Try to get qubit state from various possible locations
+    let qubitData: any = null;
     
-    // Check if it's from backend (has different structure)
-    if ('amplitude' in rawQubitState && 'phase' in rawQubitState) {
-      const backendState = rawQubitState as any;
+    if (displayResult.qubitStates && displayResult.qubitStates[index]) {
+      qubitData = displayResult.qubitStates[index];
+    } else if (displayResult.blochSphereData && displayResult.blochSphereData[index]) {
+      qubitData = displayResult.blochSphereData[index];
+    }
+
+    if (!qubitData) {
+      console.log('⚠️ No qubit data found for index:', index);
       return {
-        state: backendState.state || '|0⟩',
-        probability: backendState.probability || 0,
-        blochCoordinates: {
-          x: Math.sin(backendState.phase || 0) * Math.sqrt(backendState.probability || 0),
-          y: 0,
-          z: Math.cos(backendState.phase || 0) * Math.sqrt(1 - (backendState.probability || 0))
-        }
+        state: '|0⟩',
+        probability: 1,
+        blochCoordinates: { x: 0, y: 0, z: 1 }
       };
     }
+
+    console.log('📊 Raw qubit data:', qubitData);
+
+    // Normalize the data structure
+    const state = qubitData.state || '|0⟩';
+    const probability = qubitData.probability || 0;
     
-    // Local simulation result - check if it already has the expected structure
-    if ('blochCoordinates' in rawQubitState && 'state' in rawQubitState && 'probability' in rawQubitState) {
-      return rawQubitState as NormalizedQubitState;
-    }
+    let blochCoordinates = { x: 0, y: 0, z: 1 };
     
-    // Fallback conversion for unexpected formats
-    const state = (rawQubitState as any).state || '|0⟩';
-    const probability = (rawQubitState as any).probability || 0;
-    
-    return {
-      state,
-      probability,
-      blochCoordinates: {
-        x: 0,
+    if (qubitData.blochCoordinates) {
+      blochCoordinates = qubitData.blochCoordinates;
+    } else if (qubitData.phase !== undefined) {
+      // Calculate Bloch coordinates from phase and probability
+      blochCoordinates = {
+        x: Math.sin(qubitData.phase || 0) * Math.sqrt(probability),
         y: 0,
-        z: probability < 0.5 ? -1 : 1
-      }
-    };
+        z: Math.cos(qubitData.phase || 0) * Math.sqrt(1 - probability)
+      };
+    }
+
+    return { state, probability, blochCoordinates };
   };
 
-  // Helper function to normalize state vector
-  const getStateVector = (): NormalizedStateVector[] => {
+  // Normalize state vector data
+  const getStateVector = (): StateVectorData[] => {
     if (!displayResult?.stateVector || !Array.isArray(displayResult.stateVector)) {
+      console.log('⚠️ No state vector found in result');
       return [];
     }
 
-    return displayResult.stateVector.map(item => {
-      if ('imag' in item) {
-        return { real: item.real, imag: item.imag };
-      } else if ('imaginary' in item) {
-        return { real: item.real, imag: (item as any).imaginary };
-      }
-      return { real: 0, imag: 0 };
-    });
+    return displayResult.stateVector.map((item: any) => ({
+      real: item.real || 0,
+      imag: item.imag || item.imaginary || 0
+    }));
   };
 
-  // Helper function to normalize measurement probabilities
+  // Normalize measurement probabilities
   const getMeasurementProbabilities = (): number[] => {
     if (!displayResult?.measurementProbabilities) {
+      console.log('⚠️ No measurement probabilities found');
       return [];
     }
 
     if (Array.isArray(displayResult.measurementProbabilities)) {
       return displayResult.measurementProbabilities;
     } else if (typeof displayResult.measurementProbabilities === 'object') {
-      // Convert Record<string, number> to number[]
       return Object.values(displayResult.measurementProbabilities);
     }
     
     return [];
-  };
-
-  // Helper function to get fidelity from either result type
-  const getFidelity = (): number => {
-    if ('fidelity' in displayResult) {
-      return displayResult.fidelity;
-    }
-    // Default fidelity for backend results that don't provide it
-    return 0.95;
-  };
-
-  // Helper function to get execution time
-  const getExecutionTime = (): number => {
-    return displayResult?.executionTime || 0;
   };
 
   return (
@@ -281,19 +271,24 @@ export function QuantumStateVisualizer() {
                   })}
                 </div>
                 
-                {/* Show raw data for debugging */}
-                {displayResult && (
-                  <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
-                    <h4 className="text-xs font-semibold text-quantum-particle mb-2">
-                      Debug Info (Backend: {lastResult?.backend || 'local'})
-                    </h4>
-                    <div className="text-xs font-mono text-muted-foreground">
-                      <div>Qubits: {displayResult.qubitStates?.length || 0}</div>
-                      <div>Execution Time: {getExecutionTime().toFixed(2)}ms</div>
-                      <div>Fidelity: {(getFidelity() * 100).toFixed(1)}%</div>
-                    </div>
+                {/* Debug Info */}
+                <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
+                  <h4 className="text-xs font-semibold text-quantum-particle mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-3 h-3" />
+                    Debug Info (Backend: {lastResult?.backend || 'local'})
+                  </h4>
+                  <div className="text-xs font-mono text-muted-foreground space-y-1">
+                    <div>Gates: {gates.length}</div>
+                    <div>Display Result: {displayResult ? 'Yes' : 'No'}</div>
+                    {displayResult && (
+                      <>
+                        <div>Qubit States: {displayResult.qubitStates?.length || 0}</div>
+                        <div>State Vector: {displayResult.stateVector?.length || 0}</div>
+                        <div>Execution Time: {displayResult.executionTime?.toFixed(2) || 0}ms</div>
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
               </TabsContent>
               
               <TabsContent value="amplitude" className="space-y-4 mt-4">
