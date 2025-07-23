@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Play, RotateCcw, AlertCircle } from 'lucide-react';
+import { Play, RotateCcw, AlertCircle, Eye, Activity, Zap } from 'lucide-react';
 import { BlochSphere3D } from './BlochSphere3D';
 import { AmplitudeChart } from './AmplitudeChart';
 import { StepByStepExecutor } from '../simulation/StepByStepExecutor';
@@ -37,24 +36,26 @@ export function QuantumStateVisualizer() {
   const [selectedQubit, setSelectedQubit] = useState(0);
   const [isStepMode, setIsStepMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [debugMode, setDebugMode] = useState(false);
 
   // Use backend result if available, otherwise use local simulation result
   const displayResult = lastResult || simulationResult;
   const isRunning = isExecuting || isSimulating;
 
-  // Debug logging
+  // Enhanced debug logging
   useEffect(() => {
-    console.log('📊 QuantumStateVisualizer: State updated', {
+    console.log('🔍 QuantumStateVisualizer: Component mounted/updated', {
       hasLastResult: !!lastResult,
       hasSimulationResult: !!simulationResult,
       hasDisplayResult: !!displayResult,
       gatesCount: gates.length,
+      numQubits,
       isExecuting,
       isSimulating,
       displayResultType: displayResult ? (isQuantumBackendResult(displayResult) ? 'backend' : 'simulation') : 'none',
-      displayResultKeys: displayResult ? Object.keys(displayResult) : [],
+      timestamp: new Date().toISOString()
     });
-  }, [lastResult, simulationResult, gates, isExecuting, isSimulating]);
+  }, [lastResult, simulationResult, gates, isExecuting, isSimulating, numQubits]);
 
   const handleRunSimulation = async () => {
     if (gates.length === 0) return;
@@ -209,12 +210,19 @@ export function QuantumStateVisualizer() {
 
   return (
     <div className="space-y-4 h-full">
-      <Card className="quantum-panel neon-border">
-        <CardHeader>
-          <CardTitle className="text-sm text-quantum-neon flex items-center justify-between">
-            Real-time Quantum State Visualization
+      {/* Enhanced Header with Clear Status */}
+      <Card className="quantum-panel neon-border bg-gradient-to-r from-quantum-void/50 to-quantum-matrix/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-quantum-glow flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Eye className="w-5 h-5" />
+              Quantum State Visualization
+              <Badge variant="outline" className="text-quantum-neon animate-pulse">
+                ACTIVE
+              </Badge>
+            </div>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="text-xs">
                 {gates.length} gates | {numQubits} qubits
               </Badge>
               {lastResult && (
@@ -223,18 +231,40 @@ export function QuantumStateVisualizer() {
                 </Badge>
               )}
               {displayResult && (
-                <Badge variant="outline" className="text-quantum-energy">
-                  Results Ready
+                <Badge variant="outline" className="text-quantum-energy animate-bounce">
+                  ✓ Results Ready
                 </Badge>
               )}
+              <Button
+                onClick={() => setDebugMode(!debugMode)}
+                size="sm"
+                variant="ghost"
+                className="text-xs"
+              >
+                Debug
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+
+      {/* Main Visualization Content */}
+      <Card className="quantum-panel neon-border min-h-[500px]">
+        <CardHeader>
+          <CardTitle className="text-sm text-quantum-neon flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Real-time Quantum State Monitoring
+            </div>
+            <div className="flex items-center gap-2">
               <Button
                 onClick={handleRunSimulation}
                 disabled={isRunning || gates.length === 0}
                 size="sm"
-                className="neon-border"
+                className="neon-border bg-quantum-glow hover:bg-quantum-glow/80 text-black"
               >
                 <Play className="w-3 h-3 mr-1" />
-                {isRunning ? 'Running...' : 'Run'}
+                {isRunning ? 'Running...' : 'Run Simulation'}
               </Button>
               <Button
                 onClick={handleResetState}
@@ -250,37 +280,63 @@ export function QuantumStateVisualizer() {
         </CardHeader>
         <CardContent className="h-full">
           {gates.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <div className="text-lg mb-2">🎛️ Start Building Your Circuit</div>
-              <p>Drag gates from the left panel to see real-time quantum state visualization</p>
-              <div className="mt-4 text-sm">
-                <p>✨ Features available:</p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Interactive 3D Bloch Spheres</li>
-                  <li>Real-time Amplitude Charts</li>
-                  <li>Step-by-step Circuit Execution</li>
-                </ul>
+            <div className="text-center py-12 space-y-6">
+              <div className="text-6xl mb-4">🎛️</div>
+              <div className="text-xl font-semibold text-quantum-glow">Start Building Your Quantum Circuit</div>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Drag quantum gates from the palette to see real-time visualization of quantum states, 
+                Bloch spheres, and amplitude distributions.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
+                <div className="p-4 bg-quantum-matrix rounded-lg">
+                  <div className="text-2xl mb-2">🌐</div>
+                  <h3 className="font-semibold text-quantum-neon">3D Bloch Spheres</h3>
+                  <p className="text-xs text-muted-foreground">Interactive visualization of qubit states</p>
+                </div>
+                <div className="p-4 bg-quantum-matrix rounded-lg">
+                  <div className="text-2xl mb-2">📊</div>
+                  <h3 className="font-semibold text-quantum-neon">Amplitude Charts</h3>
+                  <p className="text-xs text-muted-foreground">Real-time probability distributions</p>
+                </div>
+                <div className="p-4 bg-quantum-matrix rounded-lg">
+                  <div className="text-2xl mb-2">⚡</div>
+                  <h3 className="font-semibold text-quantum-neon">Step Execution</h3>
+                  <p className="text-xs text-muted-foreground">Debug gate-by-gate evolution</p>
+                </div>
               </div>
             </div>
           ) : !displayResult ? (
-            <div className="text-center text-muted-foreground py-8">
-              <div className="text-lg mb-2">⚡ Ready to Simulate</div>
-              <p>Click "Run" to execute your quantum circuit and see the visualization</p>
+            <div className="text-center py-12 space-y-6">
+              <div className="text-6xl mb-4">⚡</div>
+              <div className="text-xl font-semibold text-quantum-energy">Ready to Simulate</div>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Your circuit has {gates.length} gate{gates.length !== 1 ? 's' : ''} ready for execution. 
+                Click "Run Simulation" to see the quantum state evolution.
+              </p>
               <Button
                 onClick={handleRunSimulation}
                 disabled={isRunning}
-                className="mt-4 neon-border"
+                className="mt-4 neon-border bg-quantum-glow hover:bg-quantum-glow/80 text-black px-8 py-3 text-lg"
               >
-                <Play className="w-4 h-4 mr-2" />
-                {isRunning ? 'Simulating...' : 'Run Simulation'}
+                <Zap className="w-5 h-5 mr-2" />
+                {isRunning ? 'Simulating...' : 'Run Quantum Simulation'}
               </Button>
             </div>
           ) : (
             <Tabs defaultValue="bloch" className="w-full h-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="bloch">Bloch Spheres</TabsTrigger>
-                <TabsTrigger value="amplitude">Amplitude Chart</TabsTrigger>
-                <TabsTrigger value="steps">Step-by-Step</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="bloch" className="flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  Bloch Spheres
+                </TabsTrigger>
+                <TabsTrigger value="amplitude" className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Amplitude Chart
+                </TabsTrigger>
+                <TabsTrigger value="steps" className="flex items-center gap-2">
+                  <Play className="w-4 h-4" />
+                  Step-by-Step
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="bloch" className="space-y-4 mt-4">
@@ -300,29 +356,31 @@ export function QuantumStateVisualizer() {
                   })}
                 </div>
                 
-                {/* Debug Info */}
-                <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
-                  <h4 className="text-xs font-semibold text-quantum-particle mb-2 flex items-center gap-2">
-                    <AlertCircle className="w-3 h-3" />
-                    Debug Info (Backend: {isQuantumBackendResult(displayResult) ? displayResult.backend : 'local'})
-                  </h4>
-                  <div className="text-xs font-mono text-muted-foreground space-y-1">
-                    <div>Gates: {gates.length}</div>
-                    <div>Display Result: {displayResult ? 'Yes' : 'No'}</div>
-                    <div>Result Type: {displayResult ? (isQuantumBackendResult(displayResult) ? 'Backend' : 'Simulation') : 'None'}</div>
-                    {displayResult && (
-                      <>
-                        <div>Qubit States: {displayResult.qubitStates?.length || 0}</div>
-                        <div>State Vector: {displayResult.stateVector?.length || 0}</div>
-                        <div>Execution Time: {displayResult.executionTime?.toFixed(2) || 0}ms</div>
-                        <div>Fidelity: {(getFidelity() * 100).toFixed(1)}%</div>
-                        {isQuantumBackendResult(displayResult) && (
-                          <div>Bloch Sphere Data: {displayResult.blochSphereData?.length || 0}</div>
-                        )}
-                      </>
-                    )}
+                {/* Enhanced Debug Info */}
+                {debugMode && (
+                  <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-glow/30">
+                    <h4 className="text-xs font-semibold text-quantum-particle mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-3 h-3" />
+                      Debug Information (Backend: {isQuantumBackendResult(displayResult) ? displayResult.backend : 'local'})
+                    </h4>
+                    <div className="text-xs font-mono text-muted-foreground space-y-1">
+                      <div>Gates: {gates.length}</div>
+                      <div>Display Result: {displayResult ? '✓ Yes' : '✗ No'}</div>
+                      <div>Result Type: {displayResult ? (isQuantumBackendResult(displayResult) ? 'Backend' : 'Simulation') : 'None'}</div>
+                      {displayResult && (
+                        <>
+                          <div>Qubit States: {displayResult.qubitStates?.length || 0}</div>
+                          <div>State Vector: {displayResult.stateVector?.length || 0}</div>
+                          <div>Execution Time: {displayResult.executionTime?.toFixed(2) || 0}ms</div>
+                          <div>Fidelity: {(getFidelity() * 100).toFixed(1)}%</div>
+                          {isQuantumBackendResult(displayResult) && (
+                            <div>Bloch Sphere Data: {displayResult.blochSphereData?.length || 0}</div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </TabsContent>
               
               <TabsContent value="amplitude" className="space-y-4 mt-4">
