@@ -59,7 +59,7 @@ const QUANTUM_GATES: GateInfo[] = [
   { type: 'CCX', name: 'CCX', color: 'bg-red-600', description: 'Toffoli (CCNOT)', category: 'Three-Qubit', complexity: 5 },
   { type: 'CSWAP', name: 'CSWAP', color: 'bg-green-700', description: 'Fredkin gate', category: 'Three-Qubit', complexity: 5 },
 
-  // Special gates
+  // Special gates with proper display text
   { type: 'MEASURE', name: 'Measure', color: 'bg-destructive', description: 'Measurement', category: 'Special', complexity: 1, displayText: 'M' },
   { type: 'RESET', name: 'Reset', color: 'bg-slate-600', description: 'Reset to |0⟩', category: 'Special', complexity: 1, displayText: 'R' },
   { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier', category: 'Special', complexity: 0, displayText: '||' },
@@ -168,7 +168,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                               animationDelay: `${QUANTUM_GATES.indexOf(gate) * 20}ms`
                             }}
                           >
-                            <span className="text-center leading-tight font-bold">
+                            <span className="text-center leading-tight font-bold text-black drop-shadow-sm">
                               {getGateDisplayText(gate)}
                             </span>
                             
