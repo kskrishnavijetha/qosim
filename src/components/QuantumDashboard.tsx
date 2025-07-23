@@ -1,9 +1,7 @@
-
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
 import { QuantumOSWorkspace } from "./quantum-os/QuantumOSWorkspace";
-import { QuantumCircuitBuilder } from "./quantum-circuit/QuantumCircuitBuilder";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { FilesPanel } from "./panels/FilesPanel";
@@ -32,7 +30,7 @@ export function QuantumDashboard() {
   const renderPanel = () => {
     switch (activeTab) {
       case "quantum-os":
-        return <QuantumCircuitBuilder />;
+        return <QuantumOSWorkspace />;
       case "memory":
         return <MemoryPanel />;
       case "files":
@@ -46,7 +44,7 @@ export function QuantumDashboard() {
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
-        return <QuantumCircuitBuilder />;
+        return <QuantumOSWorkspace />;
     }
   };
 
