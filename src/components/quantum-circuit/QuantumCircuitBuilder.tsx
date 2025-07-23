@@ -160,18 +160,18 @@ export function QuantumCircuitBuilder() {
 
         {/* Right Panel - State Viewer and Visualization */}
         <div className="w-80 flex-shrink-0">
-          <Tabs defaultValue="state" className="h-full">
+          <Tabs defaultValue="visualization" className="h-full">
             <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="visualization">Quantum Visualization</TabsTrigger>
               <TabsTrigger value="state">Circuit State</TabsTrigger>
-              <TabsTrigger value="visualization">Visualization</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="state" className="h-full">
-              <StateViewer />
+            <TabsContent value="visualization" className="h-full mt-4">
+              <QuantumStateVisualizer />
             </TabsContent>
             
-            <TabsContent value="visualization" className="h-full">
-              <QuantumStateVisualizer />
+            <TabsContent value="state" className="h-full mt-4">
+              <StateViewer />
             </TabsContent>
           </Tabs>
         </div>
