@@ -1,7 +1,11 @@
 
 import React from 'react';
-import { OptimizedQuantumWorkspace } from './OptimizedQuantumWorkspace';
+import { QuantumCircuitBuilder } from '../quantum-circuit/QuantumCircuitBuilder';
 
 export function QuantumOSWorkspace() {
-  return <OptimizedQuantumWorkspace />;
+  return (
+    <div className="h-full">
+      <QuantumCircuitBuilder />
+    </div>
+  );
 }
