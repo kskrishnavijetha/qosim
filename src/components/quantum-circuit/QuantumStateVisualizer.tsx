@@ -63,6 +63,69 @@ export function QuantumStateVisualizer() {
     simulate([], numQubits);
   };
 
+  // Helper function to normalize qubit state data
+  const getQubitState = (index: number) => {
+    if (displayResult?.qubitStates?.[index]) {
+      const qubitState = displayResult.qubitStates[index];
+      
+      // Check if it's from backend (has different structure)
+      if ('amplitude' in qubitState) {
+        const backendState = qubitState as any;
+        return {
+          state: backendState.state,
+          probability: backendState.probability,
+          blochCoordinates: {
+            x: Math.sin(backendState.phase || 0) * Math.sqrt(backendState.probability),
+            y: 0,
+            z: Math.cos(backendState.phase || 0) * Math.sqrt(1 - backendState.probability)
+          }
+        };
+      }
+      
+      // Local simulation result
+      return qubitState;
+    }
+    
+    // Default state
+    return {
+      state: '|0⟩',
+      probability: 1,
+      blochCoordinates: { x: 0, y: 0, z: 1 }
+    };
+  };
+
+  // Helper function to normalize state vector
+  const getStateVector = () => {
+    if (displayResult?.stateVector) {
+      if (Array.isArray(displayResult.stateVector) && displayResult.stateVector.length > 0) {
+        const firstElement = displayResult.stateVector[0];
+        if ('imag' in firstElement) {
+          return displayResult.stateVector as Array<{ real: number; imag: number }>;
+        } else if ('imaginary' in firstElement) {
+          // Convert backend format to expected format
+          return (displayResult.stateVector as any[]).map(item => ({
+            real: item.real,
+            imag: item.imaginary
+          }));
+        }
+      }
+    }
+    return [];
+  };
+
+  // Helper function to normalize measurement probabilities
+  const getMeasurementProbabilities = () => {
+    if (displayResult?.measurementProbabilities) {
+      if (Array.isArray(displayResult.measurementProbabilities)) {
+        return displayResult.measurementProbabilities;
+      } else if (typeof displayResult.measurementProbabilities === 'object') {
+        // Convert Record<string, number> to number[]
+        return Object.values(displayResult.measurementProbabilities);
+      }
+    }
+    return [];
+  };
+
   return (
     <div className="space-y-4 h-full">
       <Card className="quantum-panel neon-border">
@@ -125,7 +188,7 @@ export function QuantumStateVisualizer() {
                 {displayResult ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Array.from({ length: numQubits }).map((_, i) => {
-                      const qubitState = displayResult.qubitStates?.[i] || lastResult?.qubitStates?.[i];
+                      const qubitState = getQubitState(i);
                       
                       return (
                         <BlochSphere3D
@@ -133,11 +196,7 @@ export function QuantumStateVisualizer() {
                           qubitIndex={i}
                           isSelected={selectedQubit === i}
                           onSelect={() => setSelectedQubit(i)}
-                          qubitState={qubitState || {
-                            state: '|0⟩',
-                            probability: 1,
-                            blochCoordinates: { x: 0, y: 0, z: 1 }
-                          }}
+                          qubitState={qubitState}
                         />
                       );
                     })}
@@ -151,9 +210,8 @@ export function QuantumStateVisualizer() {
               
               <TabsContent value="amplitude" className="space-y-4 mt-4">
                 <AmplitudeChart
-                  stateVector={displayResult?.stateVector || lastResult?.stateVector || []}
-                  measurementProbabilities={displayResult?.measurementProbabilities || 
-                    (lastResult?.measurementProbabilities ? Object.values(lastResult.measurementProbabilities) : [])}
+                  stateVector={getStateVector()}
+                  measurementProbabilities={getMeasurementProbabilities()}
                   numQubits={numQubits}
                 />
               </TabsContent>

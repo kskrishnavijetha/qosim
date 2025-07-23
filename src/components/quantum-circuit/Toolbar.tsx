@@ -31,7 +31,8 @@ export function Toolbar() {
     canRedo,
     clearCircuit,
     copyGate,
-    removeGate
+    removeGate,
+    numQubits
   } = useCircuitStore();
 
   const { executeCircuit, isExecuting } = useQuantumBackend();
@@ -66,7 +67,8 @@ export function Toolbar() {
       const circuitGates = gates.map(gate => ({
         id: gate.id,
         type: gate.type,
-        qubit: gate.qubit,
+        qubit: gate.qubit || 0,
+        position: gate.timeStep, // Add the required position property
         qubits: gate.type === 'CNOT' ? [gate.qubit, gate.timeStep] : undefined, // For multi-qubit gates
         angle: gate.params?.angle,
         params: gate.params ? Object.values(gate.params) : undefined
