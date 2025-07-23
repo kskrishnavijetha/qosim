@@ -108,13 +108,13 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
   const categoryOrder = ['Basic', 'Rotation', 'Two-Qubit', 'Three-Qubit', 'Special'];
 
   return (
-    <Card className="h-full quantum-panel neon-border">
+    <Card className="h-full quantum-panel neon-border relative z-10">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg text-quantum-glow flex items-center gap-2">
           🎛️ Quantum Gates
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3">
+      <CardContent className="p-3 h-full">
         <ScrollArea className="h-full">
           <div className="space-y-6">
             {categoryOrder.map(category => {
@@ -140,7 +140,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                         <TooltipTrigger asChild>
                           <div
                             className={cn(
-                              `${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-200 quantum-glow select-none relative`,
+                              `${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-200 quantum-glow select-none relative hover:shadow-lg`,
                               isMobile 
                                 ? "w-12 h-12 text-[10px] active:scale-95" 
                                 : "w-14 h-14 text-xs hover:scale-105"
@@ -163,7 +163,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                             )}
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
+                        <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs z-50">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-quantum-glow">{gate.name}</span>

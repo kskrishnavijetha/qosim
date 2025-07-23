@@ -43,7 +43,7 @@ export const OptimizedDraggingGate = memo(function OptimizedDraggingGate() {
 
   return createPortal(
     <div
-      className="fixed pointer-events-none z-[9999] transition-transform duration-100"
+      className="fixed pointer-events-none z-[99999] transition-transform duration-100"
       style={{
         left: state.dragState.dragPosition.x - 20,
         top: state.dragState.dragPosition.y - 20,
@@ -51,7 +51,7 @@ export const OptimizedDraggingGate = memo(function OptimizedDraggingGate() {
       }}
     >
       <div className={cn(
-        "w-10 h-10 rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black quantum-glow shadow-lg",
+        "w-10 h-10 rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black quantum-glow shadow-lg backdrop-blur-sm",
         gateColor,
         state.dragState.hoverQubit !== null && state.dragState.hoverPosition !== null
           ? "scale-110 animate-pulse"
