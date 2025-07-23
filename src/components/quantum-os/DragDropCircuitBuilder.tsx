@@ -1,4 +1,3 @@
-
 import React, { forwardRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,12 +5,7 @@ import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { DraggingGate } from '@/components/circuits/DraggingGate';
-
-// Import types from the workspace hook for consistency
-import type { 
-  Gate, 
-  Circuit 
-} from '@/hooks/useCircuitWorkspace';
+import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface DragDropCircuitBuilderProps {
   circuit?: Circuit | null;

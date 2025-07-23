@@ -13,12 +13,6 @@ import { CircuitExporter } from './CircuitExporter';
 import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
 import { cn } from '@/lib/utils';
 
-// Import types from the workspace hook for consistency
-import type { 
-  Gate, 
-  Circuit 
-} from '@/hooks/useCircuitWorkspace';
-
 export function QuantumOSWorkspace() {
   // Access the circuit workspace context
   const {
@@ -62,7 +56,7 @@ export function QuantumOSWorkspace() {
     const position = Math.floor(relativeX / 80); // Assuming 80px per position
     
     if (qubit >= 0 && qubit < 8) { // Max 8 qubits
-      const newGate: Gate = {
+      const newGate = {
         id: `gate_${Date.now()}`,
         type: selectedGate,
         qubit,
@@ -105,7 +99,7 @@ export function QuantumOSWorkspace() {
     }
   };
 
-  const handleCircuitChange = (updatedCircuit: Circuit) => {
+  const handleCircuitChange = (updatedCircuit: any) => {
     if (!updatedCircuit) return;
     updateCircuitGates(updatedCircuit.id, updatedCircuit.gates);
   };
