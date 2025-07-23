@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,7 @@ import { useCircuitStore } from '@/store/circuitStore';
 export function QuantumStateVisualizer() {
   const { gates, numQubits } = useCircuitStore();
   const { simulationResult, isSimulating, simulate } = useQuantumSimulation();
-  const { lastResult, isExecuting } = useQuantumBackend();
+  const { lastResult, isExecuting, executeCircuit } = useQuantumBackend();
   const [selectedQubit, setSelectedQubit] = useState(0);
   const [isStepMode, setIsStepMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -24,18 +24,39 @@ export function QuantumStateVisualizer() {
   const displayResult = lastResult || simulationResult;
   const isRunning = isExecuting || isSimulating;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('📊 QuantumStateVisualizer: State updated', {
+      lastResult,
+      simulationResult,
+      displayResult,
+      gates: gates.length,
+      isExecuting,
+      isSimulating
+    });
+  }, [lastResult, simulationResult, gates, isExecuting, isSimulating]);
+
   const handleRunSimulation = async () => {
     if (gates.length === 0) return;
-    // Convert store gates to simulation format
-    const simulationGates = gates.map(gate => ({
-      id: gate.id,
-      type: gate.type,
-      qubit: gate.qubit,
-      position: gate.timeStep, // Map timeStep to position
-      angle: gate.params?.angle,
-      controlQubit: gate.params?.controlQubit
-    }));
-    await simulate(simulationGates, numQubits);
+    
+    console.log('🚀 Running simulation from visualizer with gates:', gates);
+    
+    try {
+      // Convert store gates to backend format
+      const circuitGates = gates.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubit || 0,
+        position: gate.timeStep,
+        angle: gate.params?.angle,
+        controlQubit: gate.params?.controlQubit
+      }));
+
+      console.log('🔄 Converted gates for backend:', circuitGates);
+      await executeCircuit(circuitGates, 'local', 1024);
+    } catch (error) {
+      console.error('❌ Simulation failed:', error);
+    }
   };
 
   const handleStepExecution = () => {
@@ -82,8 +103,21 @@ export function QuantumStateVisualizer() {
         };
       }
       
-      // Local simulation result
-      return qubitState;
+      // Local simulation result - ensure it has blochCoordinates
+      if ('blochCoordinates' in qubitState) {
+        return qubitState;
+      } else {
+        // Convert local simulation format to expected format
+        return {
+          state: qubitState.state || '|0⟩',
+          probability: qubitState.probability || 1,
+          blochCoordinates: {
+            x: 0,
+            y: 0,
+            z: qubitState.probability < 0.5 ? -1 : 1
+          }
+        };
+      }
     }
     
     // Default state
@@ -141,6 +175,11 @@ export function QuantumStateVisualizer() {
                   Backend: {lastResult.backend}
                 </Badge>
               )}
+              {displayResult && (
+                <Badge variant="outline" className="text-quantum-energy">
+                  Results Ready
+                </Badge>
+              )}
               <Button
                 onClick={handleRunSimulation}
                 disabled={isRunning || gates.length === 0}
@@ -176,6 +215,19 @@ export function QuantumStateVisualizer() {
                 </ul>
               </div>
             </div>
+          ) : !displayResult ? (
+            <div className="text-center text-muted-foreground py-8">
+              <div className="text-lg mb-2">⚡ Ready to Simulate</div>
+              <p>Click "Run" to execute your quantum circuit and see the visualization</p>
+              <Button
+                onClick={handleRunSimulation}
+                disabled={isRunning}
+                className="mt-4 neon-border"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                {isRunning ? 'Simulating...' : 'Run Simulation'}
+              </Button>
+            </div>
           ) : (
             <Tabs defaultValue="bloch" className="w-full h-full">
               <TabsList className="grid w-full grid-cols-3">
@@ -185,25 +237,33 @@ export function QuantumStateVisualizer() {
               </TabsList>
               
               <TabsContent value="bloch" className="space-y-4 mt-4">
-                {displayResult ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Array.from({ length: numQubits }).map((_, i) => {
-                      const qubitState = getQubitState(i);
-                      
-                      return (
-                        <BlochSphere3D
-                          key={i}
-                          qubitIndex={i}
-                          isSelected={selectedQubit === i}
-                          onSelect={() => setSelectedQubit(i)}
-                          qubitState={qubitState}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    Click "Run" to see Bloch sphere visualization
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Array.from({ length: numQubits }).map((_, i) => {
+                    const qubitState = getQubitState(i);
+                    
+                    return (
+                      <BlochSphere3D
+                        key={i}
+                        qubitIndex={i}
+                        isSelected={selectedQubit === i}
+                        onSelect={() => setSelectedQubit(i)}
+                        qubitState={qubitState}
+                      />
+                    );
+                  })}
+                </div>
+                
+                {/* Show raw data for debugging */}
+                {displayResult && (
+                  <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
+                    <h4 className="text-xs font-semibold text-quantum-particle mb-2">
+                      Debug Info (Backend: {lastResult?.backend || 'local'})
+                    </h4>
+                    <div className="text-xs font-mono text-muted-foreground">
+                      <div>Qubits: {displayResult.qubitStates?.length || 0}</div>
+                      <div>Execution Time: {displayResult.executionTime?.toFixed(2)}ms</div>
+                      <div>Fidelity: {(displayResult.fidelity * 100).toFixed(1)}%</div>
+                    </div>
                   </div>
                 )}
               </TabsContent>
