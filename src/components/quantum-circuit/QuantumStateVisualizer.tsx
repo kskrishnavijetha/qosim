@@ -9,14 +9,20 @@ import { BlochSphere3D } from './BlochSphere3D';
 import { AmplitudeChart } from './AmplitudeChart';
 import { StepByStepExecutor } from '../simulation/StepByStepExecutor';
 import { useQuantumSimulation } from '@/hooks/useQuantumSimulation';
+import { useQuantumBackend } from '@/hooks/useQuantumBackend';
 import { useCircuitStore } from '@/store/circuitStore';
 
 export function QuantumStateVisualizer() {
   const { gates, numQubits } = useCircuitStore();
   const { simulationResult, isSimulating, simulate } = useQuantumSimulation();
+  const { lastResult, isExecuting } = useQuantumBackend();
   const [selectedQubit, setSelectedQubit] = useState(0);
   const [isStepMode, setIsStepMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Use backend result if available, otherwise use local simulation result
+  const displayResult = lastResult || simulationResult;
+  const isRunning = isExecuting || isSimulating;
 
   const handleRunSimulation = async () => {
     if (gates.length === 0) return;
@@ -67,18 +73,23 @@ export function QuantumStateVisualizer() {
               <Badge variant="secondary">
                 {gates.length} gates | {numQubits} qubits
               </Badge>
+              {lastResult && (
+                <Badge variant="outline" className="text-quantum-glow">
+                  Backend: {lastResult.backend}
+                </Badge>
+              )}
               <Button
                 onClick={handleRunSimulation}
-                disabled={isSimulating || gates.length === 0}
+                disabled={isRunning || gates.length === 0}
                 size="sm"
                 className="neon-border"
               >
                 <Play className="w-3 h-3 mr-1" />
-                {isSimulating ? 'Running...' : 'Run'}
+                {isRunning ? 'Running...' : 'Run'}
               </Button>
               <Button
                 onClick={handleResetState}
-                disabled={isSimulating}
+                disabled={isRunning}
                 size="sm"
                 variant="outline"
                 className="neon-border"
@@ -111,27 +122,38 @@ export function QuantumStateVisualizer() {
               </TabsList>
               
               <TabsContent value="bloch" className="space-y-4 mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Array.from({ length: numQubits }).map((_, i) => (
-                    <BlochSphere3D
-                      key={i}
-                      qubitIndex={i}
-                      isSelected={selectedQubit === i}
-                      onSelect={() => setSelectedQubit(i)}
-                      qubitState={simulationResult?.qubitStates[i] || {
-                        state: '|0⟩',
-                        probability: 1,
-                        blochCoordinates: { x: 0, y: 0, z: 1 }
-                      }}
-                    />
-                  ))}
-                </div>
+                {displayResult ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Array.from({ length: numQubits }).map((_, i) => {
+                      const qubitState = displayResult.qubitStates?.[i] || lastResult?.qubitStates?.[i];
+                      
+                      return (
+                        <BlochSphere3D
+                          key={i}
+                          qubitIndex={i}
+                          isSelected={selectedQubit === i}
+                          onSelect={() => setSelectedQubit(i)}
+                          qubitState={qubitState || {
+                            state: '|0⟩',
+                            probability: 1,
+                            blochCoordinates: { x: 0, y: 0, z: 1 }
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-8">
+                    Click "Run" to see Bloch sphere visualization
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="amplitude" className="space-y-4 mt-4">
                 <AmplitudeChart
-                  stateVector={simulationResult?.stateVector || []}
-                  measurementProbabilities={simulationResult?.measurementProbabilities || []}
+                  stateVector={displayResult?.stateVector || lastResult?.stateVector || []}
+                  measurementProbabilities={displayResult?.measurementProbabilities || 
+                    (lastResult?.measurementProbabilities ? Object.values(lastResult.measurementProbabilities) : [])}
                   numQubits={numQubits}
                 />
               </TabsContent>

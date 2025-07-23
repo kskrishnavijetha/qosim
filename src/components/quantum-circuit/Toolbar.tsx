@@ -1,9 +1,12 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useCircuitStore } from '@/store/circuitStore';
+import { useQuantumBackend } from '@/hooks/useQuantumBackend';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Undo2, 
   Redo2, 
@@ -31,6 +34,9 @@ export function Toolbar() {
     removeGate
   } = useCircuitStore();
 
+  const { executeCircuit, isExecuting } = useQuantumBackend();
+  const { toast } = useToast();
+
   const handleCopy = () => {
     if (selectedGate) {
       copyGate(selectedGate);
@@ -40,6 +46,45 @@ export function Toolbar() {
   const handleDelete = () => {
     if (selectedGate) {
       removeGate(selectedGate.id);
+    }
+  };
+
+  const handleRunSimulation = async () => {
+    if (gates.length === 0) {
+      toast({
+        title: "No circuit to run",
+        description: "Add some gates to your circuit first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('🚀 Running simulation with gates:', gates);
+      
+      // Convert circuit gates to the format expected by the backend
+      const circuitGates = gates.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubit,
+        qubits: gate.type === 'CNOT' ? [gate.qubit, gate.timeStep] : undefined, // For multi-qubit gates
+        angle: gate.params?.angle,
+        params: gate.params ? Object.values(gate.params) : undefined
+      }));
+
+      await executeCircuit(circuitGates, 'local', 1024);
+      
+      toast({
+        title: "Simulation completed",
+        description: "Check the visualization below for results",
+      });
+    } catch (error) {
+      console.error('❌ Simulation failed:', error);
+      toast({
+        title: "Simulation failed",
+        description: "There was an error running the simulation",
+        variant: "destructive"
+      });
     }
   };
 
@@ -123,18 +168,13 @@ export function Toolbar() {
             <Button
               variant="outline"
               size="sm"
+              onClick={handleRunSimulation}
+              disabled={isExecuting || gates.length === 0}
               title="Run Simulation"
+              className="bg-quantum-glow/10 hover:bg-quantum-glow/20 border-quantum-glow"
             >
               <Play className="w-4 h-4" />
-              Run
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              title="Pause Simulation"
-            >
-              <Pause className="w-4 h-4" />
-              Pause
+              {isExecuting ? 'Running...' : 'Run'}
             </Button>
           </div>
 
@@ -153,6 +193,11 @@ export function Toolbar() {
             {clipboard && (
               <Badge variant="secondary">
                 Clipboard: {clipboard.type}
+              </Badge>
+            )}
+            {isExecuting && (
+              <Badge variant="secondary" className="animate-pulse">
+                Simulating...
               </Badge>
             )}
           </div>
