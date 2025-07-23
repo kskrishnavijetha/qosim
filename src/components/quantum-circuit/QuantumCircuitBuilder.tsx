@@ -4,7 +4,10 @@ import { GatePanel } from './GatePanel';
 import { CircuitCanvas } from './CircuitCanvas';
 import { Toolbar } from './Toolbar';
 import { StateViewer } from './StateViewer';
+import { QuantumStateVisualizer } from './QuantumStateVisualizer';
+import { StepByStepExecutor } from './StepByStepExecutor';
 import { useCircuitStore } from '@/store/circuitStore';
+import { useQuantumSimulation } from '@/hooks/useQuantumSimulation';
 import { useToast } from '@/hooks/use-toast';
 
 interface DragState {
@@ -17,6 +20,8 @@ interface DragState {
 export function QuantumCircuitBuilder() {
   const { toast } = useToast();
   const { 
+    gates,
+    numQubits,
     undo, 
     redo, 
     canUndo, 
@@ -28,6 +33,8 @@ export function QuantumCircuitBuilder() {
     clearCircuit
   } = useCircuitStore();
 
+  const { simulate, simulationResult, isSimulating } = useQuantumSimulation();
+
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     dragData: null,
@@ -35,16 +42,14 @@ export function QuantumCircuitBuilder() {
     hoverPosition: null
   });
 
-  // Touch drag handling
-  const [touchDragState, setTouchDragState] = useState<{
-    isDragging: boolean;
-    gateData: any;
-    offset: { x: number; y: number };
-  }>({
-    isDragging: false,
-    gateData: null,
-    offset: { x: 0, y: 0 }
-  });
+  const [executionMode, setExecutionMode] = useState<'full' | 'step'>('full');
+
+  // Run simulation when gates change (full mode)
+  useEffect(() => {
+    if (executionMode === 'full' && gates.length > 0) {
+      simulate(gates, numQubits);
+    }
+  }, [gates, numQubits, simulate, executionMode]);
 
   const handleGateDragStart = (gate: any, e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify(gate));
@@ -56,27 +61,19 @@ export function QuantumCircuitBuilder() {
     });
   };
 
-  const handleGateTouchStart = (gate: any, e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    const rect = e.currentTarget.getBoundingClientRect();
-    
-    setTouchDragState({
-      isDragging: true,
-      gateData: gate,
-      offset: {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      }
-    });
+  const handleStepExecute = (gateIndex: number) => {
+    const gatesToExecute = gates.slice(0, gateIndex + 1);
+    simulate(gatesToExecute, numQubits);
+  };
 
-    // Prevent default touch behavior
-    e.preventDefault();
+  const handleReset = () => {
+    // Reset to initial state
+    simulate([], numQubits);
   };
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Prevent shortcuts when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -105,10 +102,6 @@ export function QuantumCircuitBuilder() {
               });
             }
             break;
-          case 'v':
-            e.preventDefault();
-            // Paste functionality would need canvas position
-            break;
         }
       } else {
         switch (e.key) {
@@ -125,7 +118,12 @@ export function QuantumCircuitBuilder() {
             break;
           case 'Escape':
             e.preventDefault();
-            // Clear selection or cancel drag
+            setDragState({
+              isDragging: false,
+              dragData: null,
+              dragPosition: { x: 0, y: 0 },
+              hoverPosition: null
+            });
             break;
         }
       }
@@ -145,11 +143,40 @@ export function QuantumCircuitBuilder() {
       {/* Main Content */}
       <div className="flex-1 flex gap-4 p-4 pt-0 min-h-0">
         {/* Left Panel - Gates */}
-        <div className="w-80 flex-shrink-0">
-          <GatePanel 
-            onGateDragStart={handleGateDragStart}
-            onGateTouchStart={handleGateTouchStart}
-          />
+        <div className="w-80 flex-shrink-0 space-y-4">
+          <GatePanel onGateDragStart={handleGateDragStart} />
+          
+          {/* Execution Mode Toggle */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setExecutionMode('full')}
+              className={`flex-1 px-3 py-2 text-xs rounded border transition-colors ${
+                executionMode === 'full'
+                  ? 'bg-quantum-glow text-quantum-void border-quantum-glow'
+                  : 'bg-quantum-matrix text-quantum-neon border-quantum-matrix'
+              }`}
+            >
+              Full Mode
+            </button>
+            <button
+              onClick={() => setExecutionMode('step')}
+              className={`flex-1 px-3 py-2 text-xs rounded border transition-colors ${
+                executionMode === 'step'
+                  ? 'bg-quantum-glow text-quantum-void border-quantum-glow'
+                  : 'bg-quantum-matrix text-quantum-neon border-quantum-matrix'
+              }`}
+            >
+              Step Mode
+            </button>
+          </div>
+
+          {/* Step-by-Step Executor */}
+          {executionMode === 'step' && (
+            <StepByStepExecutor
+              onStepExecute={handleStepExecute}
+              onReset={handleReset}
+            />
+          )}
         </div>
 
         {/* Center - Circuit Canvas */}
@@ -160,9 +187,10 @@ export function QuantumCircuitBuilder() {
           />
         </div>
 
-        {/* Right Panel - State Viewer */}
-        <div className="w-80 flex-shrink-0">
+        {/* Right Panel - State Viewer & Visualization */}
+        <div className="w-80 flex-shrink-0 space-y-4 overflow-y-auto">
           <StateViewer />
+          <QuantumStateVisualizer />
         </div>
       </div>
     </div>
