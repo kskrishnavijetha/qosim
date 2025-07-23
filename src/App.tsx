@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Index from './pages';
+import Index from './pages/Index';
 import CircuitBuilder from './pages/CircuitBuilder';
-import { QuantumSDK } from '@/pages/QuantumSDK';
+import { QuantumSDK } from './pages/QuantumSDK';
 
 function App() {
   return (
