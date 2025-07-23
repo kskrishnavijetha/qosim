@@ -131,8 +131,9 @@ export function useQuantumSimulation() {
         imag: 0
       }));
 
-      // Apply gates sequentially
-      for (const gate of gates) {
+      // Sort gates by position (timeStep) and apply sequentially
+      const sortedGates = [...gates].sort((a, b) => a.position - b.position);
+      for (const gate of sortedGates) {
         stateVector = applyGate(stateVector, gate, numQubits);
       }
 

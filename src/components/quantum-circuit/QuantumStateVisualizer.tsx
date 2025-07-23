@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { BlochSphere3D } from './BlochSphere3D';
 import { AmplitudeChart } from './AmplitudeChart';
-import { StepByStepExecutor } from './StepByStepExecutor';
+import { StepByStepExecutor } from '../simulation/StepByStepExecutor';
 import { useQuantumSimulation } from '@/hooks/useQuantumSimulation';
 import { useCircuitStore } from '@/store/circuitStore';
 
@@ -18,12 +18,28 @@ export function QuantumStateVisualizer() {
 
   const handleRunSimulation = async () => {
     if (gates.length === 0) return;
-    await simulate(gates, numQubits);
+    // Convert store gates to simulation format
+    const simulationGates = gates.map(gate => ({
+      id: gate.id,
+      type: gate.type,
+      qubit: gate.qubit,
+      position: gate.timeStep, // Map timeStep to position
+      angle: gate.params?.angle,
+      controlQubit: gate.params?.controlQubit
+    }));
+    await simulate(simulationGates, numQubits);
   };
 
   const handleStepExecution = () => {
     if (currentStep < gates.length) {
-      const gatesUpToStep = gates.slice(0, currentStep + 1);
+      const gatesUpToStep = gates.slice(0, currentStep + 1).map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubit,
+        position: gate.timeStep,
+        angle: gate.params?.angle,
+        controlQubit: gate.params?.controlQubit
+      }));
       simulate(gatesUpToStep, numQubits);
       setCurrentStep(prev => prev + 1);
     }
@@ -81,7 +97,14 @@ export function QuantumStateVisualizer() {
             
             <TabsContent value="steps" className="space-y-4">
               <StepByStepExecutor
-                circuit={gates}
+                circuit={gates.map(gate => ({
+                  id: gate.id,
+                  type: gate.type,
+                  qubit: gate.qubit,
+                  position: gate.timeStep,
+                  angle: gate.params?.angle,
+                  controlQubit: gate.params?.controlQubit
+                }))}
                 onStep={handleStepExecution}
                 onReset={handleResetSteps}
                 onPause={() => setIsStepMode(false)}
