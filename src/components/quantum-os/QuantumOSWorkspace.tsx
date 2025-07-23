@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +11,6 @@ import { RealtimeSimulationPanel } from './RealtimeSimulationPanel';
 import { WorkspaceToolbar } from './WorkspaceToolbar';
 import { CircuitExporter } from './CircuitExporter';
 import { useCircuitWorkspace, type Gate, type Circuit } from '@/hooks/useCircuitWorkspace';
-import { cn } from '@/lib/utils';
 
 export function QuantumOSWorkspace() {
   // Access the circuit workspace context
