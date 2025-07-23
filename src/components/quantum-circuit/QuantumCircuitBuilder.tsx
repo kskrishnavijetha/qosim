@@ -4,8 +4,10 @@ import { GatePanel } from './GatePanel';
 import { CircuitCanvas } from './CircuitCanvas';
 import { Toolbar } from './Toolbar';
 import { StateViewer } from './StateViewer';
+import { QuantumStateVisualizer } from './QuantumStateVisualizer';
 import { useCircuitStore } from '@/store/circuitStore';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DragState {
   isDragging: boolean;
@@ -69,14 +71,12 @@ export function QuantumCircuitBuilder() {
       }
     });
 
-    // Prevent default touch behavior
     e.preventDefault();
   };
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Prevent shortcuts when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -107,7 +107,6 @@ export function QuantumCircuitBuilder() {
             break;
           case 'v':
             e.preventDefault();
-            // Paste functionality would need canvas position
             break;
         }
       } else {
@@ -125,7 +124,6 @@ export function QuantumCircuitBuilder() {
             break;
           case 'Escape':
             e.preventDefault();
-            // Clear selection or cancel drag
             break;
         }
       }
@@ -160,9 +158,22 @@ export function QuantumCircuitBuilder() {
           />
         </div>
 
-        {/* Right Panel - State Viewer */}
+        {/* Right Panel - State Viewer and Visualization */}
         <div className="w-80 flex-shrink-0">
-          <StateViewer />
+          <Tabs defaultValue="state" className="h-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="state">Circuit State</TabsTrigger>
+              <TabsTrigger value="visualization">Visualization</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="state" className="h-full">
+              <StateViewer />
+            </TabsContent>
+            
+            <TabsContent value="visualization" className="h-full">
+              <QuantumStateVisualizer />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
