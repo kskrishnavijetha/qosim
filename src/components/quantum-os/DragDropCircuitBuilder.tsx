@@ -7,27 +7,11 @@ import { cn } from '@/lib/utils';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { DraggingGate } from '@/components/circuits/DraggingGate';
 
-// Use the same Gate interface as the workspace
-interface Gate {
-  id: string;
-  type: string;
-  qubit: number;
-  position: number;
-  angle?: number;
-  controlQubit?: number;
-  params?: number[];
-  qubits?: number[];
-}
-
-interface Circuit {
-  id: string;
-  name: string;
-  gates: Gate[];
-  qubits: number;
-  modified: boolean;
-  created: Date;
-  lastModified: Date;
-}
+// Import types from the workspace hook for consistency
+import type { 
+  Gate, 
+  Circuit 
+} from '@/hooks/useCircuitWorkspace';
 
 interface DragDropCircuitBuilderProps {
   circuit?: Circuit | null;
