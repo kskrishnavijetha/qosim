@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -147,6 +148,7 @@ export function OptimizedQuantumWorkspace() {
 
   const handleGateAdd = useCallback((gate: Gate) => {
     if (!activeCircuit) return;
+    console.log('Adding gate:', gate);
     addGateToCircuit(activeCircuit.id, gate);
   }, [activeCircuit, addGateToCircuit]);
 
@@ -218,9 +220,9 @@ export function OptimizedQuantumWorkspace() {
 
   return (
     <DragDropProvider>
-      <div className="h-full flex flex-col quantum-grid">
+      <div className="h-full flex flex-col quantum-grid relative">
         {/* Header */}
-        <div className="flex-none p-4 border-b border-quantum-glow/20">
+        <div className="flex-none p-4 border-b border-quantum-glow/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-quantum-glow">Quantum Circuit Builder</h1>
@@ -270,9 +272,9 @@ export function OptimizedQuantumWorkspace() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden relative">
           <Tabs defaultValue="design" className="h-full flex flex-col">
-            <div className="flex-none px-4 pt-4">
+            <div className="flex-none px-4 pt-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
               <TabsList className="quantum-panel">
                 <TabsTrigger value="design">Circuit Design</TabsTrigger>
                 <TabsTrigger value="simulation">Real-time Simulation</TabsTrigger>
@@ -305,6 +307,7 @@ export function OptimizedQuantumWorkspace() {
                   
                   <div className="flex-1 overflow-hidden">
                     <OptimizedCircuitCanvas
+                      ref={canvasRef}
                       circuit={activeCircuit}
                       onCircuitChange={handleCircuitChange}
                       gridSize={gridSize}
@@ -342,6 +345,7 @@ export function OptimizedQuantumWorkspace() {
                       
                       <div className="flex-1 overflow-hidden">
                         <OptimizedCircuitCanvas
+                          ref={canvasRef}
                           circuit={activeCircuit}
                           onCircuitChange={handleCircuitChange}
                           gridSize={gridSize}
@@ -368,8 +372,10 @@ export function OptimizedQuantumWorkspace() {
           </Tabs>
         </div>
 
-        {/* Dragging Gate Overlay */}
-        <OptimizedDraggingGate />
+        {/* Dragging Gate Overlay - positioned at the very top */}
+        <div className="fixed inset-0 pointer-events-none z-[9999]">
+          <OptimizedDraggingGate />
+        </div>
       </div>
     </DragDropProvider>
   );

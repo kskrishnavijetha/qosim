@@ -10,23 +10,40 @@ export const OptimizedDraggingGate = memo(function OptimizedDraggingGate() {
   if (!state.dragState.isDragging) return null;
 
   const gateColors = {
+    'I': 'bg-slate-500',
     'H': 'bg-quantum-glow',
     'X': 'bg-quantum-neon',
     'Y': 'bg-purple-500',
     'Z': 'bg-quantum-particle',
+    'S': 'bg-blue-500',
+    'T': 'bg-cyan-500',
+    'SDG': 'bg-blue-600',
+    'TDG': 'bg-cyan-600',
     'CNOT': 'bg-quantum-plasma',
     'CX': 'bg-quantum-plasma',
+    'CY': 'bg-pink-500',
+    'CZ': 'bg-red-500',
+    'CH': 'bg-yellow-500',
+    'CCX': 'bg-red-600',
+    'SWAP': 'bg-green-500',
+    'ISWAP': 'bg-green-600',
+    'CSWAP': 'bg-green-700',
     'RX': 'bg-quantum-energy',
     'RY': 'bg-secondary',
     'RZ': 'bg-orange-500',
-    'MEASURE': 'bg-destructive'
+    'U1': 'bg-indigo-500',
+    'U2': 'bg-indigo-600',
+    'U3': 'bg-indigo-700',
+    'MEASURE': 'bg-destructive',
+    'RESET': 'bg-slate-600',
+    'BARRIER': 'bg-amber-500'
   };
 
   const gateColor = gateColors[state.dragState.gateType] || 'bg-slate-500';
 
   return createPortal(
     <div
-      className="fixed pointer-events-none z-50 transition-transform duration-100"
+      className="fixed pointer-events-none z-[9999] transition-transform duration-100"
       style={{
         left: state.dragState.dragPosition.x - 20,
         top: state.dragState.dragPosition.y - 20,
