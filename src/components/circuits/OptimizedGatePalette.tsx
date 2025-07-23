@@ -23,6 +23,7 @@ interface GateInfo {
   category: string;
   parameters?: string[];
   complexity?: number;
+  displayText?: string;
 }
 
 const QUANTUM_GATES: GateInfo[] = [
@@ -59,9 +60,9 @@ const QUANTUM_GATES: GateInfo[] = [
   { type: 'CSWAP', name: 'CSWAP', color: 'bg-green-700', description: 'Fredkin gate', category: 'Three-Qubit', complexity: 5 },
 
   // Special gates
-  { type: 'MEASURE', name: 'Measure', color: 'bg-destructive', description: 'Measurement', category: 'Special', complexity: 1 },
-  { type: 'RESET', name: 'Reset', color: 'bg-slate-600', description: 'Reset to |0⟩', category: 'Special', complexity: 1 },
-  { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier', category: 'Special', complexity: 0 },
+  { type: 'MEASURE', name: 'Measure', color: 'bg-destructive', description: 'Measurement', category: 'Special', complexity: 1, displayText: 'M' },
+  { type: 'RESET', name: 'Reset', color: 'bg-slate-600', description: 'Reset to |0⟩', category: 'Special', complexity: 1, displayText: 'R' },
+  { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier', category: 'Special', complexity: 0, displayText: '||' },
 ];
 
 const CATEGORY_COLORS = {
@@ -107,14 +108,21 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
 
   const categoryOrder = ['Basic', 'Rotation', 'Two-Qubit', 'Three-Qubit', 'Special'];
 
+  const getGateDisplayText = (gate: GateInfo) => {
+    if (gate.displayText) {
+      return gate.displayText;
+    }
+    return gate.type.length > 5 ? gate.type.slice(0, 4) + '.' : gate.type;
+  };
+
   return (
-    <Card className="h-full quantum-panel neon-border relative z-[100] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">
+    <Card className="h-full quantum-panel neon-border relative bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg text-quantum-glow flex items-center gap-2">
           🎛️ Quantum Gates
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 h-full relative z-[100]">
+      <CardContent className="p-3 h-full relative">
         <ScrollArea className="h-full">
           <div className="space-y-6 pb-4">
             {categoryOrder.map(category => {
@@ -123,7 +131,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
 
               return (
                 <div key={category} className="space-y-3">
-                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2 z-[110] border-b border-border/20">
+                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2 border-b border-border/20">
                     <span className="text-sm">{CATEGORY_ICONS[category]}</span>
                     <h3 className="text-sm font-semibold text-quantum-neon">{category}</h3>
                     <Badge variant="outline" className={cn("text-xs", CATEGORY_COLORS[category])}>
@@ -153,11 +161,8 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                               animationDelay: `${QUANTUM_GATES.indexOf(gate) * 20}ms`
                             }}
                           >
-                            <span className="text-center leading-tight">
-                              {gate.type === 'MEASURE' ? 'M' : 
-                               gate.type === 'RESET' ? 'R' :
-                               gate.type === 'BARRIER' ? '||' :
-                               gate.type.length > 5 ? gate.type.slice(0, 4) + '.' : gate.type}
+                            <span className="text-center leading-tight font-bold">
+                              {getGateDisplayText(gate)}
                             </span>
                             
                             {/* Complexity indicator */}
@@ -168,7 +173,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                             )}
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs z-[120]">
+                        <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-quantum-glow">{gate.name}</span>
