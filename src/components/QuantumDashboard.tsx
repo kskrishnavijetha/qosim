@@ -4,7 +4,7 @@ import { QuantumConsole } from "./QuantumConsole";
 import { QuantumOSWorkspace } from "./quantum-os/QuantumOSWorkspace";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
-import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
+import { FilesPanel } from "./panels/FilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
@@ -34,7 +34,7 @@ export function QuantumDashboard() {
       case "memory":
         return <MemoryPanel />;
       case "files":
-        return <EnhancedFilesPanel />;
+        return <FilesPanel />;
       case "logs":
         return <LogsPanel />;
       case "javascript-sdk":
