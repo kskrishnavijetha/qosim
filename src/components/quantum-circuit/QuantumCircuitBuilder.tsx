@@ -141,37 +141,45 @@ export function QuantumCircuitBuilder() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex gap-4 p-4 pt-0 min-h-0">
-        {/* Left Panel - Gates */}
-        <div className="w-80 flex-shrink-0">
-          <GatePanel 
-            onGateDragStart={handleGateDragStart}
-            onGateTouchStart={handleGateTouchStart}
-          />
+      <div className="flex-1 flex flex-col gap-4 p-4 pt-0 min-h-0">
+        {/* Top Section - Circuit Builder */}
+        <div className="flex gap-4 flex-1 min-h-0">
+          {/* Left Panel - Gates */}
+          <div className="w-80 flex-shrink-0">
+            <GatePanel 
+              onGateDragStart={handleGateDragStart}
+              onGateTouchStart={handleGateTouchStart}
+            />
+          </div>
+
+          {/* Center - Circuit Canvas */}
+          <div className="flex-1 min-w-0">
+            <CircuitCanvas 
+              dragState={dragState}
+              setDragState={setDragState}
+            />
+          </div>
+
+          {/* Right Panel - State Viewer */}
+          <div className="w-80 flex-shrink-0">
+            <StateViewer />
+          </div>
         </div>
 
-        {/* Center - Circuit Canvas */}
-        <div className="flex-1 min-w-0">
-          <CircuitCanvas 
-            dragState={dragState}
-            setDragState={setDragState}
-          />
-        </div>
-
-        {/* Right Panel - State Viewer and Visualization */}
-        <div className="w-80 flex-shrink-0">
+        {/* Bottom Section - Quantum Visualization Features */}
+        <div className="flex-shrink-0 h-96">
           <Tabs defaultValue="visualization" className="h-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="visualization">Quantum Visualization</TabsTrigger>
-              <TabsTrigger value="state">Circuit State</TabsTrigger>
+              <TabsTrigger value="bloch">Bloch Spheres & Analysis</TabsTrigger>
             </TabsList>
             
             <TabsContent value="visualization" className="h-full mt-4">
               <QuantumStateVisualizer />
             </TabsContent>
             
-            <TabsContent value="state" className="h-full mt-4">
-              <StateViewer />
+            <TabsContent value="bloch" className="h-full mt-4">
+              <QuantumStateVisualizer />
             </TabsContent>
           </Tabs>
         </div>
