@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
@@ -18,18 +17,18 @@ import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "./ui/resiz
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 export function QuantumDashboard() {
-  const [activePanel, setActivePanel] = useState("quantum-os");
+  const [activeTab, setActiveTab] = useState("quantum-os");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [consoleCollapsed, setConsoleCollapsed] = useState(true);
   const isMobile = useIsMobile();
 
-  const handlePanelChange = (panel: string) => {
-    setActivePanel(panel);
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
   };
 
   const renderPanel = () => {
-    switch (activePanel) {
+    switch (activeTab) {
       case "quantum-os":
         return <QuantumOSWorkspace />;
       case "memory":
@@ -63,9 +62,9 @@ export function QuantumDashboard() {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0 quantum-panel">
                 <QuantumSidebar 
-                  activePanel={activePanel} 
-                  onPanelChange={(panel) => {
-                    handlePanelChange(panel);
+                  activeTab={activeTab} 
+                  onTabChange={(tab) => {
+                    handleTabChange(tab);
                     setShowSidebar(false);
                   }}
                 />
@@ -137,8 +136,8 @@ export function QuantumDashboard() {
         {/* Sidebar */}
         <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
           <QuantumSidebar 
-            activePanel={activePanel} 
-            onPanelChange={handlePanelChange}
+            activeTab={activeTab} 
+            onTabChange={handleTabChange}
           />
         </ResizablePanel>
         

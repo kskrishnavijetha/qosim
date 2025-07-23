@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Upload, Plus, FileText } from "lucide-react";
+import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -116,18 +116,11 @@ export function FilesPanel() {
           <CardContent>
             {loading ? (
               <div className="text-center py-8 text-muted-foreground">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-quantum-glow mx-auto mb-4"></div>
-                <p>Loading quantum files...</p>
+                <p>Loading files...</p>
               </div>
             ) : legacyFiles.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No files found</h3>
-                <p className="text-sm mb-4">Get started by creating your first quantum file</p>
-                <Button className="bg-quantum-glow hover:bg-quantum-glow/80 text-black">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create First File
-                </Button>
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No files found</p>
               </div>
             ) : (
               <div className="space-y-2">
