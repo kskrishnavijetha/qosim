@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import {
   Redo2, 
   Trash2, 
   Copy, 
-  Paste, 
+  Clipboard, 
   Settings,
   Keyboard,
   Play,
@@ -89,7 +88,7 @@ export function Toolbar() {
               disabled={!clipboard}
               title="Paste (Ctrl+V)"
             >
-              <Paste className="w-4 h-4" />
+              <Clipboard className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"

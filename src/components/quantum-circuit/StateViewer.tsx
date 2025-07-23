@@ -9,7 +9,7 @@ export function StateViewer() {
   const { gates, selectedGate, numQubits, numTimeSteps } = useCircuitStore();
 
   const getGatesByQubit = () => {
-    const gatesByQubit = {};
+    const gatesByQubit: Record<number, typeof gates> = {};
     for (let i = 0; i < numQubits; i++) {
       gatesByQubit[i] = gates.filter(gate => gate.qubit === i).sort((a, b) => a.timeStep - b.timeStep);
     }
@@ -17,7 +17,7 @@ export function StateViewer() {
   };
 
   const getGatesByTimeStep = () => {
-    const gatesByTimeStep = {};
+    const gatesByTimeStep: Record<number, typeof gates> = {};
     for (let i = 0; i < numTimeSteps; i++) {
       gatesByTimeStep[i] = gates.filter(gate => gate.timeStep === i).sort((a, b) => a.qubit - b.qubit);
     }
@@ -133,7 +133,7 @@ export function StateViewer() {
                   acc[gate.type] = (acc[gate.type] || 0) + 1;
                   return acc;
                 }, {} as Record<string, number>)
-              ).sort(([,a], [,b]) => b - a).map(([type, count]) => (
+              ).sort(([,a], [,b]) => (b as number) - (a as number)).map(([type, count]) => (
                 <div key={type} className="flex justify-between items-center">
                   <Badge variant="outline">{type}</Badge>
                   <span className="text-sm font-mono">{count}</span>
