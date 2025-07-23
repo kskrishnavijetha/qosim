@@ -69,7 +69,7 @@ const CATEGORY_COLORS = {
   'Rotation': 'bg-purple-100 text-purple-800',
   'Two-Qubit': 'bg-red-100 text-red-800',
   'Three-Qubit': 'bg-orange-100 text-orange-800',
-  'Special': 'bg-gray-100 text-gray-800'
+  'Special': 'bg-green-100 text-green-800'
 };
 
 const CATEGORY_ICONS = {
@@ -108,22 +108,22 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
   const categoryOrder = ['Basic', 'Rotation', 'Two-Qubit', 'Three-Qubit', 'Special'];
 
   return (
-    <Card className="h-full quantum-panel neon-border relative z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">
+    <Card className="h-full quantum-panel neon-border relative z-[100] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg text-quantum-glow flex items-center gap-2">
           🎛️ Quantum Gates
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 h-full relative z-30">
+      <CardContent className="p-3 h-full relative z-[100]">
         <ScrollArea className="h-full">
-          <div className="space-y-4 pb-4">
+          <div className="space-y-6 pb-4">
             {categoryOrder.map(category => {
               const gates = groupedGates[category] || [];
               if (gates.length === 0) return null;
 
               return (
-                <div key={category} className="space-y-2">
-                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-1 z-40">
+                <div key={category} className="space-y-3">
+                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2 z-[110] border-b border-border/20">
                     <span className="text-sm">{CATEGORY_ICONS[category]}</span>
                     <h3 className="text-sm font-semibold text-quantum-neon">{category}</h3>
                     <Badge variant="outline" className={cn("text-xs", CATEGORY_COLORS[category])}>
@@ -132,18 +132,18 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                   </div>
                   
                   <div className={cn(
-                    "grid gap-2",
-                    isMobile ? "grid-cols-3" : "grid-cols-4"
+                    "grid gap-3",
+                    isMobile ? "grid-cols-2" : "grid-cols-3"
                   )}>
                     {gates.map(gate => (
                       <Tooltip key={gate.type}>
                         <TooltipTrigger asChild>
                           <div
                             className={cn(
-                              `${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-200 quantum-glow select-none relative hover:shadow-lg`,
+                              `${gate.color} rounded-lg border-2 border-current flex items-center justify-center font-bold text-black cursor-pointer transition-all duration-200 quantum-glow select-none relative hover:shadow-lg`,
                               isMobile 
-                                ? "w-12 h-12 text-[10px] active:scale-95" 
-                                : "w-14 h-14 text-xs hover:scale-105"
+                                ? "w-16 h-16 text-xs active:scale-95" 
+                                : "w-20 h-20 text-sm hover:scale-105"
                             )}
                             onMouseDown={!isMobile ? (e) => handleMouseDown(e, gate.type) : undefined}
                             onTouchStart={isMobile ? (e) => handleTouchStart(e, gate.type) : undefined}
@@ -153,17 +153,22 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                               animationDelay: `${QUANTUM_GATES.indexOf(gate) * 20}ms`
                             }}
                           >
-                            {gate.type.length > 4 ? gate.type.slice(0, 3) + '.' : gate.type}
+                            <span className="text-center leading-tight">
+                              {gate.type === 'MEASURE' ? 'M' : 
+                               gate.type === 'RESET' ? 'R' :
+                               gate.type === 'BARRIER' ? '||' :
+                               gate.type.length > 5 ? gate.type.slice(0, 4) + '.' : gate.type}
+                            </span>
                             
                             {/* Complexity indicator */}
                             {gate.complexity && gate.complexity > 3 && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[8px] font-bold">
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                 {gate.complexity}
                               </div>
                             )}
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs z-50">
+                        <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs z-[120]">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-quantum-glow">{gate.name}</span>
@@ -180,7 +185,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                               </div>
                             )}
                             
-                            {gate.complexity && (
+                            {gate.complexity !== undefined && (
                               <div className="text-xs border-t pt-1">
                                 <span className="text-quantum-energy">Complexity: </span>
                                 <span className="font-mono">{gate.complexity}</span>
