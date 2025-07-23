@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -306,7 +305,6 @@ export function OptimizedQuantumWorkspace() {
                   
                   <div className="flex-1 overflow-hidden">
                     <OptimizedCircuitCanvas
-                      ref={canvasRef}
                       circuit={activeCircuit}
                       onCircuitChange={handleCircuitChange}
                       gridSize={gridSize}
@@ -344,7 +342,6 @@ export function OptimizedQuantumWorkspace() {
                       
                       <div className="flex-1 overflow-hidden">
                         <OptimizedCircuitCanvas
-                          ref={canvasRef}
                           circuit={activeCircuit}
                           onCircuitChange={handleCircuitChange}
                           gridSize={gridSize}

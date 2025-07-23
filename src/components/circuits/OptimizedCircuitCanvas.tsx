@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react';
+import React, { memo, useMemo, useRef, useEffect, useState, useCallback, forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -136,13 +136,12 @@ const VirtualizedGate = memo(function VirtualizedGate({
   );
 });
 
-export const OptimizedCircuitCanvas = memo(function OptimizedCircuitCanvas({
+export const OptimizedCircuitCanvas = memo(forwardRef<HTMLDivElement, OptimizedCircuitCanvasProps>(function OptimizedCircuitCanvas({
   circuit,
   onCircuitChange,
   gridSize,
   numQubits
-}: OptimizedCircuitCanvasProps) {
-  const canvasRef = useRef<HTMLDivElement>(null);
+}, ref) {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(800);
   const { state, selectGate, deselectGate, clearSelection } = useDragDrop();
@@ -179,15 +178,15 @@ export const OptimizedCircuitCanvas = memo(function OptimizedCircuitCanvas({
   // Update viewport width on resize
   useEffect(() => {
     const updateViewport = () => {
-      if (canvasRef.current) {
-        setViewportWidth(canvasRef.current.clientWidth);
+      if (ref && 'current' in ref && ref.current) {
+        setViewportWidth(ref.current.clientWidth);
       }
     };
 
     updateViewport();
     window.addEventListener('resize', updateViewport);
     return () => window.removeEventListener('resize', updateViewport);
-  }, []);
+  }, [ref]);
 
   // Gate operations
   const handleGateSelect = useCallback((gateId: string) => {
@@ -304,7 +303,7 @@ export const OptimizedCircuitCanvas = memo(function OptimizedCircuitCanvas({
 
         {/* Canvas */}
         <div
-          ref={canvasRef}
+          ref={ref}
           className="flex-1 relative overflow-auto bg-quantum-matrix/10"
           onScroll={handleScroll}
           onClick={handleCanvasClick}
@@ -372,4 +371,4 @@ export const OptimizedCircuitCanvas = memo(function OptimizedCircuitCanvas({
       </CardContent>
     </Card>
   );
-});
+}));
