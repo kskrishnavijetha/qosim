@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { 
-  Circuit, 
+  Zap, 
   FileText, 
   Play, 
   Terminal, 
-  Memory, 
+  HardDrive, 
   Code, 
   Cpu,
   Settings,
@@ -36,11 +35,11 @@ export function QuantumSidebar({ activePanel, onPanelChange }: QuantumSidebarPro
   };
 
   const menuItems = [
-    { id: "circuits", icon: Circuit, label: "Circuits", description: "Build quantum circuits" },
+    { id: "circuits", icon: Zap, label: "Circuits", description: "Build quantum circuits" },
     { id: "files", icon: FileText, label: "Files", description: "Manage quantum files" },
     { id: "jobs", icon: Play, label: "Jobs", description: "Execute quantum jobs" },
     { id: "logs", icon: Terminal, label: "Runtime Logs", description: "View system logs" },
-    { id: "memory", icon: Memory, label: "Memory", description: "Monitor system memory" },
+    { id: "memory", icon: HardDrive, label: "Memory", description: "Monitor system memory" },
     { id: "sdk", icon: Code, label: "SDK Demo", description: "Explore the SDK" },
     { id: "workspace", icon: Cpu, label: "Workspace", description: "Quantum OS workspace" },
   ];
