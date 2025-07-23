@@ -61,6 +61,19 @@ export function QuantumCircuitBuilder() {
     });
   };
 
+  const handleGateTouchStart = (gate: any, e: React.TouchEvent) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    if (touch) {
+      setDragState({
+        isDragging: true,
+        dragData: gate,
+        dragPosition: { x: touch.clientX, y: touch.clientY },
+        hoverPosition: null
+      });
+    }
+  };
+
   const handleStepExecute = (gateIndex: number) => {
     const gatesToExecute = gates.slice(0, gateIndex + 1);
     simulate(gatesToExecute, numQubits);
@@ -144,7 +157,10 @@ export function QuantumCircuitBuilder() {
       <div className="flex-1 flex gap-4 p-4 pt-0 min-h-0">
         {/* Left Panel - Gates */}
         <div className="w-80 flex-shrink-0 space-y-4">
-          <GatePanel onGateDragStart={handleGateDragStart} />
+          <GatePanel 
+            onGateDragStart={handleGateDragStart}
+            onGateTouchStart={handleGateTouchStart}
+          />
           
           {/* Execution Mode Toggle */}
           <div className="flex gap-2">
