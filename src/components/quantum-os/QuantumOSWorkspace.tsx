@@ -10,7 +10,7 @@ import { DragDropCircuitBuilder } from './DragDropCircuitBuilder';
 import { RealtimeSimulationPanel } from './RealtimeSimulationPanel';
 import { WorkspaceToolbar } from './WorkspaceToolbar';
 import { CircuitExporter } from './CircuitExporter';
-import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
+import { useCircuitWorkspace, type Gate, type Circuit } from '@/hooks/useCircuitWorkspace';
 import { cn } from '@/lib/utils';
 
 export function QuantumOSWorkspace() {
@@ -56,7 +56,7 @@ export function QuantumOSWorkspace() {
     const position = Math.floor(relativeX / 80); // Assuming 80px per position
     
     if (qubit >= 0 && qubit < 8) { // Max 8 qubits
-      const newGate = {
+      const newGate: Gate = {
         id: `gate_${Date.now()}`,
         type: selectedGate,
         qubit,
@@ -99,7 +99,7 @@ export function QuantumOSWorkspace() {
     }
   };
 
-  const handleCircuitChange = (updatedCircuit: any) => {
+  const handleCircuitChange = (updatedCircuit: Circuit) => {
     if (!updatedCircuit) return;
     updateCircuitGates(updatedCircuit.id, updatedCircuit.gates);
   };
