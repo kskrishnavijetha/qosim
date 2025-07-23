@@ -8,6 +8,9 @@ import { QuantumStateVisualizer } from './QuantumStateVisualizer';
 import { useCircuitStore } from '@/store/circuitStore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Eye, Activity, Zap, Atom } from 'lucide-react';
 
 interface DragState {
   isDragging: boolean;
@@ -27,7 +30,9 @@ export function QuantumCircuitBuilder() {
     removeGate,
     copyGate,
     pasteGate,
-    clearCircuit
+    clearCircuit,
+    gates,
+    numQubits
   } = useCircuitStore();
 
   const [dragState, setDragState] = useState<DragState>({
@@ -166,22 +171,68 @@ export function QuantumCircuitBuilder() {
           </div>
         </div>
 
-        {/* Bottom Section - Quantum Visualization Features */}
-        <div className="flex-shrink-0 h-96">
-          <Tabs defaultValue="visualization" className="h-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="visualization">Quantum Visualization</TabsTrigger>
-              <TabsTrigger value="bloch">Bloch Spheres & Analysis</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="visualization" className="h-full mt-4">
-              <QuantumStateVisualizer />
-            </TabsContent>
-            
-            <TabsContent value="bloch" className="h-full mt-4">
-              <QuantumStateVisualizer />
-            </TabsContent>
-          </Tabs>
+        {/* Dedicated Quantum Visualization Section */}
+        <div className="flex-shrink-0">
+          <Card className="quantum-panel neon-border bg-gradient-to-r from-quantum-void/30 to-quantum-matrix/30">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-quantum-glow flex items-center gap-3">
+                <Atom className="w-6 h-6" />
+                Quantum State Visualization Center
+                <Badge variant="outline" className="text-quantum-neon animate-pulse">
+                  REAL-TIME
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {gates.length} gates | {numQubits} qubits
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <Tabs defaultValue="bloch-spheres" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 mb-6">
+                  <TabsTrigger value="bloch-spheres" className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    Bloch Spheres
+                  </TabsTrigger>
+                  <TabsTrigger value="amplitudes" className="flex items-center gap-2">
+                    <Activity className="w-4 h-4" />
+                    Amplitudes
+                  </TabsTrigger>
+                  <TabsTrigger value="step-by-step" className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Step-by-Step
+                  </TabsTrigger>
+                  <TabsTrigger value="entanglement" className="flex items-center gap-2">
+                    <Atom className="w-4 h-4" />
+                    Entanglement
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="bloch-spheres" className="space-y-4">
+                  <div className="h-96 overflow-auto">
+                    <QuantumStateVisualizer />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="amplitudes" className="space-y-4">
+                  <div className="h-96 overflow-auto">
+                    <QuantumStateVisualizer />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="step-by-step" className="space-y-4">
+                  <div className="h-96 overflow-auto">
+                    <QuantumStateVisualizer />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="entanglement" className="space-y-4">
+                  <div className="h-96 overflow-auto">
+                    <QuantumStateVisualizer />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
