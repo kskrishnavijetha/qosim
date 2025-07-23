@@ -26,7 +26,7 @@ interface GateInfo {
 }
 
 const QUANTUM_GATES: GateInfo[] = [
-  // Single-qubit gates
+  // Basic gates
   { type: 'I', name: 'Identity', color: 'bg-slate-500', description: 'Identity gate - no change', category: 'Basic', complexity: 1 },
   { type: 'H', name: 'Hadamard', color: 'bg-quantum-glow', description: 'Creates superposition', category: 'Basic', complexity: 1 },
   { type: 'X', name: 'Pauli-X', color: 'bg-quantum-neon', description: 'Bit flip (NOT gate)', category: 'Basic', complexity: 1 },
@@ -108,24 +108,24 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
   const categoryOrder = ['Basic', 'Rotation', 'Two-Qubit', 'Three-Qubit', 'Special'];
 
   return (
-    <Card className="h-full quantum-panel neon-border relative z-10">
+    <Card className="h-full quantum-panel neon-border relative z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg text-quantum-glow flex items-center gap-2">
           🎛️ Quantum Gates
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 h-full">
+      <CardContent className="p-3 h-full relative z-30">
         <ScrollArea className="h-full">
-          <div className="space-y-6">
+          <div className="space-y-4 pb-4">
             {categoryOrder.map(category => {
               const gates = groupedGates[category] || [];
               if (gates.length === 0) return null;
 
               return (
-                <div key={category} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{CATEGORY_ICONS[category]}</span>
-                    <h3 className="font-semibold text-quantum-neon">{category}</h3>
+                <div key={category} className="space-y-2">
+                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-1 z-40">
+                    <span className="text-sm">{CATEGORY_ICONS[category]}</span>
+                    <h3 className="text-sm font-semibold text-quantum-neon">{category}</h3>
                     <Badge variant="outline" className={cn("text-xs", CATEGORY_COLORS[category])}>
                       {gates.length}
                     </Badge>

@@ -221,7 +221,7 @@ export function OptimizedQuantumWorkspace() {
     <DragDropProvider>
       <div className="h-full flex flex-col quantum-grid relative">
         {/* Header */}
-        <div className="flex-none p-4 border-b border-quantum-glow/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
+        <div className="flex-none p-4 border-b border-quantum-glow/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-quantum-glow">Quantum Circuit Builder</h1>
@@ -271,9 +271,9 @@ export function OptimizedQuantumWorkspace() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-hidden relative z-10">
+        <div className="flex-1 overflow-hidden relative z-20">
           <Tabs defaultValue="design" className="h-full flex flex-col">
-            <div className="flex-none px-4 pt-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-15">
+            <div className="flex-none px-4 pt-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-25">
               <TabsList className="quantum-panel">
                 <TabsTrigger value="design">Circuit Design</TabsTrigger>
                 <TabsTrigger value="simulation">Real-time Simulation</TabsTrigger>
@@ -284,7 +284,7 @@ export function OptimizedQuantumWorkspace() {
             <TabsContent value="design" className="flex-1 overflow-hidden m-0 p-4 pt-2">
               {isMobile ? (
                 <div className="h-full flex flex-col gap-4">
-                  <div className="flex-none h-48 z-10">
+                  <div className="flex-none h-64 z-20">
                     <OptimizedGatePalette
                       canvasRef={canvasRef}
                       onGateAdd={handleGateAdd}
@@ -293,7 +293,7 @@ export function OptimizedQuantumWorkspace() {
                     />
                   </div>
                   
-                  <div className="flex-none z-10">
+                  <div className="flex-none z-20">
                     <WorkspaceToolbar
                       circuits={circuits}
                       activeCircuit={activeCircuit}
@@ -304,7 +304,7 @@ export function OptimizedQuantumWorkspace() {
                     />
                   </div>
                   
-                  <div className="flex-1 overflow-hidden relative z-5">
+                  <div className="flex-1 overflow-hidden relative z-10">
                     <OptimizedCircuitCanvas
                       ref={canvasRef}
                       circuit={activeCircuit}
@@ -316,8 +316,8 @@ export function OptimizedQuantumWorkspace() {
                 </div>
               ) : (
                 <ResizablePanelGroup direction="horizontal" className="h-full">
-                  <ResizablePanel defaultSize={25} minSize={20} maxSize={35}>
-                    <div className="h-full pr-4 relative z-10">
+                  <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
+                    <div className="h-full pr-4 relative z-20">
                       <OptimizedGatePalette
                         canvasRef={canvasRef}
                         onGateAdd={handleGateAdd}
@@ -329,9 +329,9 @@ export function OptimizedQuantumWorkspace() {
                   
                   <ResizableHandle withHandle />
                   
-                  <ResizablePanel defaultSize={75}>
+                  <ResizablePanel defaultSize={70}>
                     <div className="h-full pl-4 flex flex-col gap-4">
-                      <div className="flex-none z-10">
+                      <div className="flex-none z-20">
                         <WorkspaceToolbar
                           circuits={circuits}
                           activeCircuit={activeCircuit}
@@ -342,7 +342,7 @@ export function OptimizedQuantumWorkspace() {
                         />
                       </div>
                       
-                      <div className="flex-1 overflow-hidden relative z-5">
+                      <div className="flex-1 overflow-hidden relative z-10">
                         <OptimizedCircuitCanvas
                           ref={canvasRef}
                           circuit={activeCircuit}
@@ -357,7 +357,7 @@ export function OptimizedQuantumWorkspace() {
               )}
             </TabsContent>
 
-            <TabsContent value="simulation" className="flex-1 overflow-hidden m-0 p-4 pt-2 z-5">
+            <TabsContent value="simulation" className="flex-1 overflow-hidden m-0 p-4 pt-2 z-10">
               <RealtimeSimulationPanel
                 circuit={activeCircuit}
                 simulationResult={lastResult || simulationResult}
@@ -365,7 +365,7 @@ export function OptimizedQuantumWorkspace() {
               />
             </TabsContent>
 
-            <TabsContent value="analysis" className="flex-1 overflow-hidden m-0 p-4 pt-2 z-5">
+            <TabsContent value="analysis" className="flex-1 overflow-hidden m-0 p-4 pt-2 z-10">
               <AnalysisPanel circuit={activeCircuit} />
             </TabsContent>
           </Tabs>
