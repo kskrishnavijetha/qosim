@@ -6,7 +6,7 @@ import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { DraggingGate } from '@/components/circuits/DraggingGate';
-import type { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
+import { useCircuitWorkspace, type Gate, type Circuit } from '@/hooks/useCircuitWorkspace';
 
 interface DragDropCircuitBuilderProps {
   circuit?: Circuit | null;
