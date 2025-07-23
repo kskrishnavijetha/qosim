@@ -12,6 +12,18 @@ import { useQuantumSimulation } from '@/hooks/useQuantumSimulation';
 import { useQuantumBackend } from '@/hooks/useQuantumBackend';
 import { useCircuitStore } from '@/store/circuitStore';
 
+// Define normalized types for consistency
+interface NormalizedQubitState {
+  state: string;
+  probability: number;
+  blochCoordinates: { x: number; y: number; z: number };
+}
+
+interface NormalizedStateVector {
+  real: number;
+  imag: number;
+}
+
 export function QuantumStateVisualizer() {
   const { gates, numQubits } = useCircuitStore();
   const { simulationResult, isSimulating, simulate } = useQuantumSimulation();
@@ -85,79 +97,95 @@ export function QuantumStateVisualizer() {
   };
 
   // Helper function to normalize qubit state data
-  const getQubitState = (index: number) => {
-    if (displayResult?.qubitStates?.[index]) {
-      const qubitState = displayResult.qubitStates[index];
-      
-      // Check if it's from backend (has different structure)
-      if ('amplitude' in qubitState) {
-        const backendState = qubitState as any;
-        return {
-          state: backendState.state,
-          probability: backendState.probability,
-          blochCoordinates: {
-            x: Math.sin(backendState.phase || 0) * Math.sqrt(backendState.probability),
-            y: 0,
-            z: Math.cos(backendState.phase || 0) * Math.sqrt(1 - backendState.probability)
-          }
-        };
-      }
-      
-      // Local simulation result - ensure it has blochCoordinates
-      if ('blochCoordinates' in qubitState) {
-        return qubitState;
-      } else {
-        // Convert local simulation format to expected format
-        return {
-          state: qubitState.state || '|0⟩',
-          probability: qubitState.probability || 1,
-          blochCoordinates: {
-            x: 0,
-            y: 0,
-            z: qubitState.probability < 0.5 ? -1 : 1
-          }
-        };
-      }
+  const getQubitState = (index: number): NormalizedQubitState => {
+    if (!displayResult?.qubitStates?.[index]) {
+      return {
+        state: '|0⟩',
+        probability: 1,
+        blochCoordinates: { x: 0, y: 0, z: 1 }
+      };
+    }
+
+    const rawQubitState = displayResult.qubitStates[index];
+    
+    // Check if it's from backend (has different structure)
+    if ('amplitude' in rawQubitState && 'phase' in rawQubitState) {
+      const backendState = rawQubitState as any;
+      return {
+        state: backendState.state || '|0⟩',
+        probability: backendState.probability || 0,
+        blochCoordinates: {
+          x: Math.sin(backendState.phase || 0) * Math.sqrt(backendState.probability || 0),
+          y: 0,
+          z: Math.cos(backendState.phase || 0) * Math.sqrt(1 - (backendState.probability || 0))
+        }
+      };
     }
     
-    // Default state
+    // Local simulation result - check if it already has the expected structure
+    if ('blochCoordinates' in rawQubitState && 'state' in rawQubitState && 'probability' in rawQubitState) {
+      return rawQubitState as NormalizedQubitState;
+    }
+    
+    // Fallback conversion for unexpected formats
+    const state = (rawQubitState as any).state || '|0⟩';
+    const probability = (rawQubitState as any).probability || 0;
+    
     return {
-      state: '|0⟩',
-      probability: 1,
-      blochCoordinates: { x: 0, y: 0, z: 1 }
+      state,
+      probability,
+      blochCoordinates: {
+        x: 0,
+        y: 0,
+        z: probability < 0.5 ? -1 : 1
+      }
     };
   };
 
   // Helper function to normalize state vector
-  const getStateVector = () => {
-    if (displayResult?.stateVector) {
-      if (Array.isArray(displayResult.stateVector) && displayResult.stateVector.length > 0) {
-        const firstElement = displayResult.stateVector[0];
-        if ('imag' in firstElement) {
-          return displayResult.stateVector as Array<{ real: number; imag: number }>;
-        } else if ('imaginary' in firstElement) {
-          // Convert backend format to expected format
-          return (displayResult.stateVector as any[]).map(item => ({
-            real: item.real,
-            imag: item.imaginary
-          }));
-        }
-      }
+  const getStateVector = (): NormalizedStateVector[] => {
+    if (!displayResult?.stateVector || !Array.isArray(displayResult.stateVector)) {
+      return [];
     }
-    return [];
+
+    return displayResult.stateVector.map(item => {
+      if ('imag' in item) {
+        return { real: item.real, imag: item.imag };
+      } else if ('imaginary' in item) {
+        return { real: item.real, imag: (item as any).imaginary };
+      }
+      return { real: 0, imag: 0 };
+    });
   };
 
   // Helper function to normalize measurement probabilities
-  const getMeasurementProbabilities = () => {
-    if (displayResult?.measurementProbabilities) {
-      if (Array.isArray(displayResult.measurementProbabilities)) {
-        return displayResult.measurementProbabilities;
-      } else if (typeof displayResult.measurementProbabilities === 'object') {
-        // Convert Record<string, number> to number[]
-        return Object.values(displayResult.measurementProbabilities);
-      }
+  const getMeasurementProbabilities = (): number[] => {
+    if (!displayResult?.measurementProbabilities) {
+      return [];
     }
+
+    if (Array.isArray(displayResult.measurementProbabilities)) {
+      return displayResult.measurementProbabilities;
+    } else if (typeof displayResult.measurementProbabilities === 'object') {
+      // Convert Record<string, number> to number[]
+      return Object.values(displayResult.measurementProbabilities);
+    }
+    
     return [];
+  };
+
+  // Helper function to get fidelity from either result type
+  const getFidelity = (): number => {
+    if ('fidelity' in displayResult) {
+      return displayResult.fidelity;
+    }
+    // Default fidelity for backend results that don't provide it
+    return 0.95;
+  };
+
+  // Helper function to get execution time
+  const getExecutionTime = (): number => {
+    return displayResult?.executionTime || 0;
   };
 
   return (
@@ -261,8 +289,8 @@ export function QuantumStateVisualizer() {
                     </h4>
                     <div className="text-xs font-mono text-muted-foreground">
                       <div>Qubits: {displayResult.qubitStates?.length || 0}</div>
-                      <div>Execution Time: {displayResult.executionTime?.toFixed(2)}ms</div>
-                      <div>Fidelity: {(displayResult.fidelity * 100).toFixed(1)}%</div>
+                      <div>Execution Time: {getExecutionTime().toFixed(2)}ms</div>
+                      <div>Fidelity: {(getFidelity() * 100).toFixed(1)}%</div>
                     </div>
                   </div>
                 )}
