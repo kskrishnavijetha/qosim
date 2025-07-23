@@ -117,47 +117,54 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
 
   return (
     <Card className="h-full quantum-panel neon-border relative bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg text-quantum-glow flex items-center gap-2">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-quantum-glow flex items-center gap-2">
           🎛️ Quantum Gates
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 h-full relative">
+      <CardContent className="p-2 h-full relative">
         <ScrollArea className="h-full">
-          <div className="space-y-6 pb-4">
+          <div className="space-y-4 pb-4">
             {categoryOrder.map(category => {
               const gates = groupedGates[category] || [];
               if (gates.length === 0) return null;
 
               return (
-                <div key={category} className="space-y-3">
-                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2 border-b border-border/20">
-                    <span className="text-sm">{CATEGORY_ICONS[category]}</span>
-                    <h3 className="text-sm font-semibold text-quantum-neon">{category}</h3>
+                <div key={category} className="space-y-2">
+                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-1 border-b border-border/20">
+                    <span className="text-xs">{CATEGORY_ICONS[category]}</span>
+                    <h3 className="text-xs font-semibold text-quantum-neon">{category}</h3>
                     <Badge variant="outline" className={cn("text-xs", CATEGORY_COLORS[category])}>
                       {gates.length}
                     </Badge>
                   </div>
                   
                   <div className={cn(
-                    "grid gap-3",
-                    isMobile ? "grid-cols-2" : "grid-cols-3"
+                    "grid gap-2",
+                    isMobile ? "grid-cols-3" : "grid-cols-4"
                   )}>
                     {gates.map(gate => (
                       <Tooltip key={gate.type}>
                         <TooltipTrigger asChild>
                           <div
                             className={cn(
-                              `${gate.color} rounded-lg border-2 border-current flex items-center justify-center font-bold text-black cursor-pointer transition-all duration-200 quantum-glow select-none relative hover:shadow-lg`,
+                              `${gate.color} rounded-md border-2 border-current flex items-center justify-center font-bold text-black cursor-pointer transition-all duration-200 quantum-glow select-none relative hover:shadow-lg`,
                               isMobile 
-                                ? "w-16 h-16 text-xs active:scale-95" 
-                                : "w-20 h-20 text-sm hover:scale-105"
+                                ? "w-12 h-12 text-xs active:scale-95" 
+                                : "w-14 h-14 text-xs hover:scale-105"
                             )}
-                            onMouseDown={!isMobile ? (e) => handleMouseDown(e, gate.type) : undefined}
-                            onTouchStart={isMobile ? (e) => handleTouchStart(e, gate.type) : undefined}
+                            onMouseDown={!isMobile ? (e) => {
+                              e.preventDefault();
+                              handleMouseDown(e, gate.type);
+                            } : undefined}
+                            onTouchStart={isMobile ? (e) => {
+                              e.preventDefault();
+                              handleTouchStart(e, gate.type);
+                            } : undefined}
                             style={{ 
                               WebkitTouchCallout: 'none',
                               WebkitUserSelect: 'none',
+                              touchAction: 'none',
                               animationDelay: `${QUANTUM_GATES.indexOf(gate) * 20}ms`
                             }}
                           >
@@ -167,7 +174,7 @@ export const OptimizedGatePalette = memo(function OptimizedGatePalette({
                             
                             {/* Complexity indicator */}
                             {gate.complexity && gate.complexity > 3 && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                 {gate.complexity}
                               </div>
                             )}
