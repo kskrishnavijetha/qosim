@@ -11,6 +11,7 @@ import { StepByStepExecutor } from '../simulation/StepByStepExecutor';
 import { useQuantumSimulation } from '@/hooks/useQuantumSimulation';
 import { useQuantumBackend } from '@/hooks/useQuantumBackend';
 import { useCircuitStore } from '@/store/circuitStore';
+import { QuantumBackendResult } from '@/services/quantumBackendService';
 
 // Simplified and consistent types
 interface QubitStateData {
@@ -23,6 +24,11 @@ interface StateVectorData {
   real: number;
   imag: number;
 }
+
+// Type guard to check if result is from quantum backend
+const isQuantumBackendResult = (result: any): result is QuantumBackendResult => {
+  return result && typeof result === 'object' && 'backend' in result;
+};
 
 export function QuantumStateVisualizer() {
   const { gates, numQubits } = useCircuitStore();
@@ -45,6 +51,7 @@ export function QuantumStateVisualizer() {
       gatesCount: gates.length,
       isExecuting,
       isSimulating,
+      displayResultType: displayResult ? (isQuantumBackendResult(displayResult) ? 'backend' : 'simulation') : 'none',
       displayResultKeys: displayResult ? Object.keys(displayResult) : [],
     });
   }, [lastResult, simulationResult, gates, isExecuting, isSimulating]);
@@ -109,44 +116,43 @@ export function QuantumStateVisualizer() {
       };
     }
 
-    // Try to get qubit state from various possible locations
-    let qubitData: any = null;
-    
-    if (displayResult.qubitStates && displayResult.qubitStates[index]) {
-      qubitData = displayResult.qubitStates[index];
-    } else if (displayResult.blochSphereData && displayResult.blochSphereData[index]) {
-      qubitData = displayResult.blochSphereData[index];
-    }
-
-    if (!qubitData) {
-      console.log('⚠️ No qubit data found for index:', index);
+    // Handle quantum backend result
+    if (isQuantumBackendResult(displayResult)) {
+      // Try different possible locations for qubit data
+      if (displayResult.blochSphereData && displayResult.blochSphereData[index]) {
+        const qubitData = displayResult.blochSphereData[index];
+        return {
+          state: qubitData.state || '|0⟩',
+          probability: qubitData.probability || 0,
+          blochCoordinates: qubitData.blochCoordinates || { x: 0, y: 0, z: 1 }
+        };
+      }
+      
+      if (displayResult.qubitStates && displayResult.qubitStates[index]) {
+        const qubitData = displayResult.qubitStates[index];
+        return {
+          state: qubitData.state || '|0⟩',
+          probability: qubitData.probability || 0,
+          blochCoordinates: qubitData.blochCoordinates || { x: 0, y: 0, z: 1 }
+        };
+      }
+    } 
+    // Handle local simulation result
+    else if (displayResult.qubitStates && displayResult.qubitStates[index]) {
+      const qubitData = displayResult.qubitStates[index];
       return {
-        state: '|0⟩',
-        probability: 1,
-        blochCoordinates: { x: 0, y: 0, z: 1 }
+        state: qubitData.state,
+        probability: qubitData.probability,
+        blochCoordinates: qubitData.blochCoordinates
       };
     }
 
-    console.log('📊 Raw qubit data:', qubitData);
-
-    // Normalize the data structure
-    const state = qubitData.state || '|0⟩';
-    const probability = qubitData.probability || 0;
-    
-    let blochCoordinates = { x: 0, y: 0, z: 1 };
-    
-    if (qubitData.blochCoordinates) {
-      blochCoordinates = qubitData.blochCoordinates;
-    } else if (qubitData.phase !== undefined) {
-      // Calculate Bloch coordinates from phase and probability
-      blochCoordinates = {
-        x: Math.sin(qubitData.phase || 0) * Math.sqrt(probability),
-        y: 0,
-        z: Math.cos(qubitData.phase || 0) * Math.sqrt(1 - probability)
-      };
-    }
-
-    return { state, probability, blochCoordinates };
+    console.log('⚠️ No qubit data found for index:', index);
+    return {
+      state: '|0⟩',
+      probability: 1,
+      blochCoordinates: { x: 0, y: 0, z: 1 }
+    };
   };
 
   // Normalize state vector data
@@ -275,16 +281,20 @@ export function QuantumStateVisualizer() {
                 <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
                   <h4 className="text-xs font-semibold text-quantum-particle mb-2 flex items-center gap-2">
                     <AlertCircle className="w-3 h-3" />
-                    Debug Info (Backend: {lastResult?.backend || 'local'})
+                    Debug Info (Backend: {isQuantumBackendResult(displayResult) ? displayResult.backend : 'local'})
                   </h4>
                   <div className="text-xs font-mono text-muted-foreground space-y-1">
                     <div>Gates: {gates.length}</div>
                     <div>Display Result: {displayResult ? 'Yes' : 'No'}</div>
+                    <div>Result Type: {displayResult ? (isQuantumBackendResult(displayResult) ? 'Backend' : 'Simulation') : 'None'}</div>
                     {displayResult && (
                       <>
                         <div>Qubit States: {displayResult.qubitStates?.length || 0}</div>
                         <div>State Vector: {displayResult.stateVector?.length || 0}</div>
                         <div>Execution Time: {displayResult.executionTime?.toFixed(2) || 0}ms</div>
+                        {isQuantumBackendResult(displayResult) && (
+                          <div>Bloch Sphere Data: {displayResult.blochSphereData?.length || 0}</div>
+                        )}
                       </>
                     )}
                   </div>
