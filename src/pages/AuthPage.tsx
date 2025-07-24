@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user) {
-      navigate('/app');
+      navigate('/');
     }
   }, [user, navigate]);
 
