@@ -1,5 +1,4 @@
 
-
 import { useState } from "react";
 import { QuantumSidebar } from "@/components/QuantumSidebar";
 import { QuantumOSWorkspace } from "@/components/quantum-os/QuantumOSWorkspace";
@@ -33,7 +32,7 @@ export default function Index() {
       case "quantum-algorithms-sdk":
         return <QuantumAlgorithmsSDK />;
       case "javascript-sdk":
-        return <SDKDemoPanel defaultSDK="javascript" />;
+        return <SDKDemoPanel language="javascript" />;
       case "python-sdk":
         return <PythonAPIPlayground circuit={[]} />;
       default:
@@ -50,4 +49,3 @@ export default function Index() {
     </div>
   );
 }
-
