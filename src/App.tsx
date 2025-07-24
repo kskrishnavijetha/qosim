@@ -20,6 +20,7 @@ import SharedCircuit from "@/pages/SharedCircuit";
 import EmbedCircuit from "@/pages/EmbedCircuit";
 import ThankYou from "@/pages/ThankYou";
 import NotFound from "@/pages/NotFound";
+import Index from "@/pages/Index";
 import { QuantumDashboard } from "@/components/QuantumDashboard";
 import "./App.css";
 
@@ -33,6 +34,9 @@ function App() {
           <Router>
             <div className="App">
               <Routes>
+                {/* Root route that handles auth redirects */}
+                <Route path="/" element={<Index />} />
+                
                 {/* Public routes */}
                 <Route path="/landing" element={<LandingPage />} />
                 <Route path="/auth" element={<AuthPage />} />
@@ -48,7 +52,7 @@ function App() {
                 <Route path="/thank-you" element={<ThankYou />} />
                 
                 {/* Protected routes */}
-                <Route path="/" element={
+                <Route path="/home" element={
                   <AuthGuard>
                     <HomePage />
                   </AuthGuard>

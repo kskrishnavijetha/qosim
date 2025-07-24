@@ -1,26 +1,23 @@
-
-import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Zap, 
-  Cpu, 
-  Code, 
-  Users, 
-  ArrowRight, 
-  Play,
-  BookOpen,
-  Sparkles
-} from "lucide-react";
+import { Cpu, Zap, FileText, ArrowRight, Quantum, Activity } from "lucide-react";
 
 export function HomePage() {
-  const [activeDemo, setActiveDemo] = useState("circuit");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleLaunchApp = () => {
+  useEffect(() => {
+    // If user is logged in, redirect to the main app
+    if (user) {
+      navigate('/app');
+    }
+  }, [user, navigate]);
+
+  const handleGetStarted = () => {
     navigate('/app');
   };
 
@@ -28,174 +25,129 @@ export function HomePage() {
     navigate('/sdk-docs');
   };
 
-  return (
-    <div className="min-h-screen bg-quantum-void">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-quantum-glow/10 via-quantum-void to-quantum-neon/10"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <Badge className="mb-4 bg-quantum-glow/20 text-quantum-glow border-quantum-glow">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Quantum Computing Platform
-            </Badge>
-            
-            <h1 className="text-4xl md:text-6xl font-bold text-quantum-glow mb-6">
-              QOSim
-              <span className="text-quantum-neon">Quantum</span>
-            </h1>
-            
-            <p className="text-xl text-quantum-particle max-w-3xl mx-auto mb-8">
-              Build, simulate, and optimize quantum circuits with our visual editor, 
-              powerful SDK, and real-time collaboration tools.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                className="bg-quantum-glow hover:bg-quantum-glow/80 text-black font-semibold"
-                onClick={handleLaunchApp}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Start Building
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-quantum-neon text-quantum-neon hover:bg-quantum-neon/10"
-                onClick={handleViewDocs}
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                View Documentation
-              </Button>
-            </div>
-          </div>
-        </div>
+  // Show loading while checking auth status
+  if (user) {
+    return (
+      <div className="min-h-screen bg-quantum-void flex items-center justify-center">
+        <div className="text-quantum-glow">Launching Quantum OS...</div>
       </div>
+    );
+  }
 
-      {/* Features Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  return (
+    <div className="min-h-screen bg-quantum-void text-foreground">
+      <header className="border-b border-quantum-matrix bg-quantum-void/95 backdrop-blur supports-[backdrop-filter]:bg-quantum-void/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Quantum className="w-8 h-8 text-quantum-glow" />
+            <span className="text-xl font-bold text-quantum-glow">Quantum OS</span>
+          </div>
+          <nav className="flex items-center space-x-6">
+            <Button variant="ghost" onClick={handleViewDocs}>
+              Documentation
+            </Button>
+            <Button onClick={handleGetStarted} className="bg-quantum-glow hover:bg-quantum-glow/80 text-black">
+              Launch App
+            </Button>
+          </nav>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-12">
+        {/* Hero Section */}
+        <section className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
+            Quantum Circuit Simulator
+          </h1>
+          <p className="text-xl text-quantum-particle mb-8 max-w-2xl mx-auto">
+            Build, simulate, and visualize quantum circuits with our advanced quantum computing platform
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              onClick={handleGetStarted}
+              className="bg-quantum-glow hover:bg-quantum-glow/80 text-black"
+            >
+              Start Building
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={handleViewDocs}
+              className="neon-border text-quantum-neon"
+            >
+              <FileText className="mr-2 w-5 h-5" />
+              View Documentation
+            </Button>
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="grid md:grid-cols-3 gap-8 mb-16">
           <Card className="quantum-panel neon-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-quantum-glow">
-                <Cpu className="w-5 h-5" />
+                <Cpu className="w-6 h-6" />
                 Visual Circuit Builder
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-quantum-particle">
-                Drag and drop quantum gates to build circuits visually. 
-                Real-time state visualization and simulation.
-              </p>
+              <CardDescription className="text-quantum-particle">
+                Drag and drop quantum gates to build complex circuits with an intuitive visual interface
+              </CardDescription>
             </CardContent>
           </Card>
 
           <Card className="quantum-panel neon-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-quantum-glow">
-                <Code className="w-5 h-5" />
-                Python & JavaScript SDK
+                <Zap className="w-6 h-6" />
+                Real-time Simulation
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-quantum-particle">
-                Export circuits to code or import from popular quantum 
-                computing frameworks like Qiskit and Cirq.
-              </p>
+              <CardDescription className="text-quantum-particle">
+                See your quantum circuits come to life with real-time state visualization and measurement
+              </CardDescription>
             </CardContent>
           </Card>
 
           <Card className="quantum-panel neon-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-quantum-glow">
-                <Users className="w-5 h-5" />
-                Real-time Collaboration
+                <Activity className="w-6 h-6" />
+                Advanced Analytics
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-quantum-particle">
-                Work together with version control, comments, and 
-                multi-user editing capabilities.
-              </p>
+              <CardDescription className="text-quantum-particle">
+                Analyze circuit performance, entanglement, and quantum properties with detailed metrics
+              </CardDescription>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </section>
 
-      {/* Interactive Demo */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <Card className="quantum-panel neon-border">
-          <CardHeader>
-            <CardTitle className="text-center text-quantum-glow">
-              Interactive Demo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeDemo} onValueChange={setActiveDemo}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="circuit">Circuit Builder</TabsTrigger>
-                <TabsTrigger value="sdk">SDK Playground</TabsTrigger>
-                <TabsTrigger value="collaboration">Collaboration</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="circuit" className="mt-6">
-                <div className="bg-quantum-matrix rounded-lg p-6 h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <Cpu className="w-12 h-12 mx-auto mb-4 text-quantum-glow" />
-                    <p className="text-quantum-particle">
-                      Interactive circuit builder demo would go here
-                    </p>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="sdk" className="mt-6">
-                <div className="bg-quantum-matrix rounded-lg p-6 h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <Code className="w-12 h-12 mx-auto mb-4 text-quantum-glow" />
-                    <p className="text-quantum-particle">
-                      SDK code examples would go here
-                    </p>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="collaboration" className="mt-6">
-                <div className="bg-quantum-matrix rounded-lg p-6 h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <Users className="w-12 h-12 mx-auto mb-4 text-quantum-glow" />
-                    <p className="text-quantum-particle">
-                      Collaboration features demo would go here
-                    </p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Call to Action */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-quantum-glow mb-4">
-            Ready to Start Building?
-          </h2>
-          <p className="text-quantum-particle mb-8">
-            Join thousands of quantum developers building the future
-          </p>
-          <Button 
-            size="lg" 
-            className="bg-quantum-glow hover:bg-quantum-glow/80 text-black font-semibold"
-            onClick={handleLaunchApp}
-          >
-            Get Started Now
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      </div>
+        {/* Call to Action */}
+        <section className="text-center">
+          <div className="quantum-panel neon-border rounded-2xl p-8 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-4 text-quantum-glow">
+              Ready to explore quantum computing?
+            </h2>
+            <p className="text-quantum-particle mb-6">
+              Join thousands of researchers, students, and developers building the future of quantum technology
+            </p>
+            <Button 
+              size="lg" 
+              onClick={handleGetStarted}
+              className="bg-quantum-glow hover:bg-quantum-glow/80 text-black"
+            >
+              Get Started Now
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
