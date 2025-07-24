@@ -173,7 +173,7 @@ export function useRealtimeCircuitCollaboration(circuitId: string | null) {
           userId: comment.user_id,
           content: comment.content,
           resolved: comment.resolved,
-          timestamp: new Date(comment.timestamp)
+          timestamp: new Date(comment.created_at)
         }]);
       })
       .on('broadcast', { event: 'cursor_move' }, (payload) => {

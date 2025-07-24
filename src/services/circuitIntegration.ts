@@ -77,7 +77,7 @@ export class CircuitIntegrationService {
         qubit: gate.qubit || 0,
         controlQubit: gate.controlQubit,
         angle: gate.angle,
-        parameters: gate.params
+        parameters: gate.params || []
       });
     });
 
@@ -92,7 +92,7 @@ export class CircuitIntegrationService {
       position: index,
       controlQubit: gate.controlQubit,
       angle: gate.angle,
-      params: gate.parameters
+      params: gate.parameters || []
     }));
   }
 
@@ -178,17 +178,18 @@ export class CircuitIntegrationService {
       const trimmed = line.trim();
       if (trimmed.startsWith('qc.h(')) {
         const qubit = parseInt(trimmed.match(/\d+/)?.[0] || '0');
-        circuit.gates.push({ type: 'h', qubit });
+        circuit.gates.push({ type: 'h', qubit, parameters: [] });
       } else if (trimmed.startsWith('qc.x(')) {
         const qubit = parseInt(trimmed.match(/\d+/)?.[0] || '0');
-        circuit.gates.push({ type: 'x', qubit });
+        circuit.gates.push({ type: 'x', qubit, parameters: [] });
       } else if (trimmed.startsWith('qc.cx(')) {
         const matches = trimmed.match(/\d+/g);
         if (matches && matches.length >= 2) {
           circuit.gates.push({ 
             type: 'cnot', 
             controlQubit: parseInt(matches[0]), 
-            qubit: parseInt(matches[1]) 
+            qubit: parseInt(matches[1]),
+            parameters: []
           });
         }
       }
@@ -214,7 +215,10 @@ export class CircuitIntegrationService {
     for (const match of gateMatches) {
       try {
         const gateConfig = JSON.parse(match[1]);
-        circuit.gates.push(gateConfig);
+        circuit.gates.push({
+          ...gateConfig,
+          parameters: gateConfig.parameters || []
+        });
       } catch (e) {
         console.warn('Failed to parse gate config:', match[1]);
       }
@@ -239,17 +243,18 @@ export class CircuitIntegrationService {
       const trimmed = line.trim();
       if (trimmed.startsWith('h q[')) {
         const qubit = parseInt(trimmed.match(/\d+/)?.[0] || '0');
-        circuit.gates.push({ type: 'h', qubit });
+        circuit.gates.push({ type: 'h', qubit, parameters: [] });
       } else if (trimmed.startsWith('x q[')) {
         const qubit = parseInt(trimmed.match(/\d+/)?.[0] || '0');
-        circuit.gates.push({ type: 'x', qubit });
+        circuit.gates.push({ type: 'x', qubit, parameters: [] });
       } else if (trimmed.startsWith('cx q[')) {
         const matches = trimmed.match(/\d+/g);
         if (matches && matches.length >= 2) {
           circuit.gates.push({ 
             type: 'cnot', 
             controlQubit: parseInt(matches[0]), 
-            qubit: parseInt(matches[1]) 
+            qubit: parseInt(matches[1]),
+            parameters: []
           });
         }
       }
@@ -269,6 +274,14 @@ export class CircuitIntegrationService {
       created: new Date(),
       lastModified: new Date()
     };
+
+    // Ensure all gates have parameters array
+    if (circuit.gates) {
+      circuit.gates = circuit.gates.map(gate => ({
+        ...gate,
+        parameters: gate.parameters || []
+      }));
+    }
 
     return { circuit, metadata };
   }

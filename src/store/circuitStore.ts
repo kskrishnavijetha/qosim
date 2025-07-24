@@ -5,9 +5,12 @@ import { devtools } from 'zustand/middleware';
 export interface Gate {
   id: string;
   type: string;
-  qubit: number;
-  timeStep: number;
-  params?: Record<string, any>;
+  qubit?: number;
+  qubits?: number[];
+  position: number;
+  angle?: number;
+  controlQubit?: number;
+  params?: number[];
 }
 
 export interface CircuitState {
@@ -92,7 +95,7 @@ export const useCircuitStore = create<CircuitStore>()(
       moveGate: (gateId, qubit, timeStep) => {
         set((state) => {
           const newGates = state.gates.map(gate => 
-            gate.id === gateId ? { ...gate, qubit, timeStep } : gate
+            gate.id === gateId ? { ...gate, qubit, position: timeStep } : gate
           );
           return {
             gates: newGates,
@@ -115,7 +118,7 @@ export const useCircuitStore = create<CircuitStore>()(
           const newGate = {
             ...state.clipboard,
             qubit,
-            timeStep,
+            position: timeStep,
           };
           state.addGate(newGate);
         }
