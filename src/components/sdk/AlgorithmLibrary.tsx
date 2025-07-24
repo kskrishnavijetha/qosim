@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gate } from '@/hooks/useCircuitWorkspace';
 import { 
   Play, 
   Edit, 
@@ -27,7 +26,7 @@ interface Algorithm {
   description: string;
   complexity: 'Basic' | 'Intermediate' | 'Advanced';
   qubits: number;
-  gates: Gate[];
+  gates: number;
   executionTime: string;
   rating: number;
   uses: number;
@@ -47,10 +46,7 @@ const algorithmDatabase: Algorithm[] = [
     description: 'Creates maximally entangled two-qubit Bell states (EPR pairs)',
     complexity: 'Basic',
     qubits: 2,
-    gates: [
-      { id: 'h1', type: 'H', qubit: 0, position: 0 },
-      { id: 'cnot1', type: 'CNOT', qubit: 0, position: 1, controlQubit: 0 }
-    ],
+    gates: 2,
     executionTime: '< 1ms',
     rating: 4.9,
     uses: 1250,
@@ -76,12 +72,7 @@ cx q[0],q[1];`
     description: 'Quantum search algorithm with quadratic speedup',
     complexity: 'Intermediate',
     qubits: 3,
-    gates: [
-      { id: 'h1', type: 'H', qubit: 0, position: 0 },
-      { id: 'h2', type: 'H', qubit: 1, position: 0 },
-      { id: 'h3', type: 'H', qubit: 2, position: 0 },
-      { id: 'cz1', type: 'CZ', qubit: 0, position: 1, controlQubit: 0 }
-    ],
+    gates: 12,
     executionTime: '2-5ms',
     rating: 4.7,
     uses: 890,
@@ -102,6 +93,128 @@ include "qelib1.inc";
 qreg q[3];
 h q[0]; h q[1]; h q[2];
 cz q[0],q[1]; cz q[1],q[2];`
+    }
+  },
+  {
+    id: 'qft',
+    name: 'Quantum Fourier Transform',
+    category: 'Transform',
+    description: 'Quantum version of discrete Fourier transform',
+    complexity: 'Advanced',
+    qubits: 4,
+    gates: 16,
+    executionTime: '5-10ms',
+    rating: 4.8,
+    uses: 567,
+    tags: ['fourier', 'transform', 'frequency'],
+    code: {
+      javascript: `const circuit = new QOSimCircuit(4);
+// QFT implementation
+for(let i = 0; i < 4; i++) {
+  circuit.h(i);
+  for(let j = i+1; j < 4; j++) {
+    circuit.cp(Math.PI/Math.pow(2, j-i), i, j);
+  }
+}`,
+      python: `circuit = QOSimCircuit(4)
+# QFT implementation
+for i in range(4):
+    circuit.h(i)
+    for j in range(i+1, 4):
+        circuit.cp(np.pi/2**(j-i), i, j)`,
+      qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[4];
+h q[0]; cp(pi/2) q[0],q[1];
+h q[1]; cp(pi/4) q[0],q[2];`
+    }
+  },
+  {
+    id: 'shor',
+    name: "Shor's Algorithm",
+    category: 'Cryptography',
+    description: 'Integer factorization with exponential speedup',
+    complexity: 'Advanced',
+    qubits: 8,
+    gates: 45,
+    executionTime: '50-100ms',
+    rating: 4.6,
+    uses: 234,
+    tags: ['factorization', 'cryptography', 'period-finding'],
+    code: {
+      javascript: `const circuit = new QOSimCircuit(8);
+// Simplified Shor's algorithm
+circuit.h(0); circuit.h(1); circuit.h(2);
+// Controlled modular exponentiation
+circuit.cnot(0, 3); circuit.cnot(1, 4);`,
+      python: `circuit = QOSimCircuit(8)
+# Simplified Shor's algorithm
+for i in range(3): circuit.h(i)
+# Controlled operations
+circuit.cnot(0, 3); circuit.cnot(1, 4)`,
+      qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[8];
+h q[0]; h q[1]; h q[2];
+cx q[0],q[3]; cx q[1],q[4];`
+    }
+  },
+  {
+    id: 'vqe',
+    name: 'Variational Quantum Eigensolver',
+    category: 'Hybrid',
+    description: 'Hybrid algorithm for finding ground state energies',
+    complexity: 'Advanced',
+    qubits: 4,
+    gates: 20,
+    executionTime: '20-50ms',
+    rating: 4.5,
+    uses: 345,
+    tags: ['variational', 'optimization', 'chemistry'],
+    code: {
+      javascript: `const circuit = new QOSimCircuit(4);
+// VQE ansatz with parametrized gates
+circuit.ry(theta[0], 0); circuit.ry(theta[1], 1);
+circuit.cnot(0, 1); circuit.cnot(1, 2);`,
+      python: `circuit = QOSimCircuit(4)
+# VQE ansatz
+circuit.ry(theta[0], 0); circuit.ry(theta[1], 1)
+circuit.cnot(0, 1); circuit.cnot(1, 2)`,
+      qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[4];
+ry(theta1) q[0]; ry(theta2) q[1];
+cx q[0],q[1]; cx q[1],q[2];`
+    }
+  },
+  {
+    id: 'error-correction',
+    name: 'Quantum Error Correction',
+    category: 'Error Correction',
+    description: 'Three-qubit bit-flip error correction code',
+    complexity: 'Intermediate',
+    qubits: 3,
+    gates: 8,
+    executionTime: '3-8ms',
+    rating: 4.4,
+    uses: 456,
+    tags: ['error-correction', 'stabilizer', 'syndrome'],
+    code: {
+      javascript: `const circuit = new QOSimCircuit(3);
+// Encode logical qubit
+circuit.cnot(0, 1); circuit.cnot(0, 2);
+// Error detection and correction
+circuit.cnot(0, 1); circuit.cnot(0, 2);`,
+      python: `circuit = QOSimCircuit(3)
+# Encode logical qubit
+circuit.cnot(0, 1); circuit.cnot(0, 2)
+# Syndrome measurement
+circuit.cnot(0, 1); circuit.cnot(0, 2)`,
+      qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[3];
+cx q[0],q[1]; cx q[0],q[2];
+cx q[0],q[1]; cx q[0],q[2];`
     }
   }
 ];
@@ -254,7 +367,7 @@ export function AlgorithmLibrary({ searchQuery, onAlgorithmSelect }: AlgorithmLi
                   <div className="text-quantum-particle">Qubits</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-quantum-energy font-mono">{algorithm.gates.length}</div>
+                  <div className="text-quantum-energy font-mono">{algorithm.gates}</div>
                   <div className="text-quantum-particle">Gates</div>
                 </div>
                 <div className="text-center">
