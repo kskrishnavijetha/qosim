@@ -1,11 +1,12 @@
+
 import { useState } from "react";
 import { QuantumSidebar } from "@/components/QuantumSidebar";
-import { QuantumOSWorkspace } from "@/components/QuantumOSWorkspace";
-import { MemoryPanel } from "@/components/MemoryPanel";
-import { FilesPanel } from "@/components/FilesPanel";
-import { LogsPanel } from "@/components/LogsPanel";
+import { QuantumOSWorkspace } from "@/components/quantum-os/QuantumOSWorkspace";
+import { MemoryPanel } from "@/components/panels/MemoryPanel";
+import { FilesPanel } from "@/components/panels/FilesPanel";
+import { LogsPanel } from "@/components/panels/LogsPanel";
 import { IntegrationsRoadmap } from "@/components/IntegrationsRoadmap";
-import { SDKDemoPanel } from "@/components/SDKDemoPanel";
+import { SDKDemoPanel } from "@/components/panels/SDKDemoPanel";
 import { PythonAPIPlayground } from "@/components/sdk/PythonAPIPlayground";
 import { QuantumAlgorithmsSDK } from "@/components/sdk/QuantumAlgorithmsSDK";
 
