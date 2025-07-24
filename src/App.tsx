@@ -8,7 +8,7 @@ import Index from './pages/Index';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import CircuitBuilder from './pages/CircuitBuilder';
-import QuantumSDK from './pages/QuantumSDK';
+import { QuantumSDK } from './pages/QuantumSDK';
 import PythonSDKPage from './pages/PythonSDKPage';
 import SDKDocumentation from './pages/SDKDocumentation';
 import APIReference from './pages/APIReference';
