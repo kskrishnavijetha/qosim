@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Zap, 
-  Circuit, 
+  Cpu, 
   Code, 
   Users, 
   ArrowRight, 
@@ -68,7 +68,7 @@ export function HomePage() {
           <Card className="quantum-panel neon-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-quantum-glow">
-                <Circuit className="w-5 h-5" />
+                <Cpu className="w-5 h-5" />
                 Visual Circuit Builder
               </CardTitle>
             </CardHeader>
@@ -131,7 +131,7 @@ export function HomePage() {
               <TabsContent value="circuit" className="mt-6">
                 <div className="bg-quantum-matrix rounded-lg p-6 h-64 flex items-center justify-center">
                   <div className="text-center">
-                    <Circuit className="w-12 h-12 mx-auto mb-4 text-quantum-glow" />
+                    <Cpu className="w-12 h-12 mx-auto mb-4 text-quantum-glow" />
                     <p className="text-quantum-particle">
                       Interactive circuit builder demo would go here
                     </p>
