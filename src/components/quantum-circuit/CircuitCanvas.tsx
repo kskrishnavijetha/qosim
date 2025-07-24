@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCircuitStore } from '@/store/circuitStore';
@@ -74,6 +73,7 @@ export function CircuitCanvas({ dragState, setDragState }: CircuitCanvasProps) {
         addGate({
           type: dragState.dragData.type,
           qubit: position.qubit,
+          position: position.timeStep,
           timeStep: position.timeStep,
         });
       }
@@ -171,7 +171,7 @@ export function CircuitCanvas({ dragState, setDragState }: CircuitCanvasProps) {
         )}
         style={{
           left: gate.timeStep * gridSize + gridSize / 2 - 24,
-          top: gate.qubit * gridSize + gridSize / 2 - 24,
+          top: (gate.qubit || 0) * gridSize + gridSize / 2 - 24,
         }}
         onClick={(e) => {
           e.stopPropagation();

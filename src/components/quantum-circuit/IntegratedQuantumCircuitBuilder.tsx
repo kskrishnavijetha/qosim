@@ -22,6 +22,7 @@ export function IntegratedQuantumCircuitBuilder() {
         type: gate.type,
         qubit: gate.qubit,
         position: gate.position,
+        timeStep: gate.position, // Ensure both position and timeStep are provided
         controlQubit: gate.controlQubit,
         angle: gate.angle,
         params: gate.params
