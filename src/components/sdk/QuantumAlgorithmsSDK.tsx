@@ -1,98 +1,88 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { AlgorithmLibrary } from './AlgorithmLibrary';
-import { SDKCodeEditor } from './SDKCodeEditor';
-import { SimulationConsole } from './SimulationConsole';
-import { SDKDocumentation } from './SDKDocumentation';
-import { AlgorithmTemplates } from './AlgorithmTemplates';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { CircuitBuilder } from '../circuits/CircuitBuilder';
+import { BlochSphere } from '../BlochSphere';
+import { SimulationRunner } from './SimulationRunner';
+import { CircuitExporter } from './CircuitExporter';
+import { AlgorithmTemplatesLibrary } from './AlgorithmTemplatesLibrary';
 import { useCircuitState } from '@/hooks/useCircuitState';
-import { Code, Play, FileText, BookOpen, Zap, Download } from 'lucide-react';
+import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
+import { Zap, FileText, BookOpen } from 'lucide-react';
+import { FastQuantumSimulator } from '../simulation/FastQuantumSimulator';
 
 export function QuantumAlgorithmsSDK() {
-  const [activeTab, setActiveTab] = useState("algorithms");
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
-  const [codeOutput, setCodeOutput] = useState<string>('');
-  const [simulationRunning, setSimulationRunning] = useState(false);
-  const { circuit, simulationResult, addGate, clearCircuit } = useCircuitState();
+  const [activeTab, setActiveTab] = useState("circuit-builder");
+  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const { circuit, simulationResult, addGate, deleteGate, clearCircuit } = useCircuitState();
 
-  const handleAlgorithmSelect = (algorithm: any) => {
-    setSelectedAlgorithm(algorithm.id);
-    // Load algorithm into circuit
+  const NUM_QUBITS = 5;
+  const GRID_SIZE = 50;
+
+  const {
+    dragState,
+    circuitRef,
+    handleMouseDown,
+    handleTouchStart
+  } = useCircuitDragDrop({
+    onGateAdd: addGate,
+    numQubits: NUM_QUBITS,
+    gridSize: GRID_SIZE
+  });
+
+  // Generate a default qubit state for Bloch sphere visualization
+  const defaultQubitState = {
+    amplitude0: { real: 1, imag: 0 },
+    amplitude1: { real: 0, imag: 0 },
+    probability0: 1,
+    probability1: 0,
+    phase: 0
+  };
+
+  // Handle algorithm template loading with correct interface
+  const handleAlgorithmTemplateLoad = (template: any) => {
     clearCircuit();
-    algorithm.gates.forEach((gate: any) => {
-      addGate({
-        ...gate,
-        id: `${algorithm.id}-${gate.id}-${Date.now()}`
+    template.gates.forEach((gate: any) => addGate(gate));
+    setAlgorithmResult({
+      circuit: { name: template.name, gates: template.gates },
+      description: `${template.name} algorithm template loaded`,
+      templateLoaded: true
+    });
+  };
+
+  const handleRun = () => {
+    setIsRunning(true);
+    setProgress(0);
+    // Simulate running
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsRunning(false);
+          return 100;
+        }
+        return prev + 10;
       });
-    });
+    }, 200);
   };
 
-  const handleRunSimulation = async () => {
-    setSimulationRunning(true);
-    // Simulate running the algorithm
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setCodeOutput(`Algorithm executed successfully!\nResult: ${JSON.stringify(simulationResult, null, 2)}`);
-    setSimulationRunning(false);
+  const handleStop = () => {
+    setIsRunning(false);
+    setProgress(0);
   };
 
-  const handleExportOpenQASM = () => {
-    const qasm = generateOpenQASM(circuit);
-    const blob = new Blob([qasm], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'quantum_circuit.qasm';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const generateOpenQASM = (circuit: any[]) => {
-    let qasm = 'OPENQASM 2.0;\ninclude "qelib1.inc";\n\n';
-    qasm += 'qreg q[5];\ncreg c[5];\n\n';
-    
-    circuit.forEach(gate => {
-      switch (gate.type) {
-        case 'H':
-          qasm += `h q[${gate.qubit}];\n`;
-          break;
-        case 'X':
-          qasm += `x q[${gate.qubit}];\n`;
-          break;
-        case 'Y':
-          qasm += `y q[${gate.qubit}];\n`;
-          break;
-        case 'Z':
-          qasm += `z q[${gate.qubit}];\n`;
-          break;
-        case 'CNOT':
-          if (gate.qubits && gate.qubits.length >= 2) {
-            qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
-          }
-          break;
-        case 'RX':
-          qasm += `rx(${gate.angle || 0}) q[${gate.qubit}];\n`;
-          break;
-        case 'RY':
-          qasm += `ry(${gate.angle || 0}) q[${gate.qubit}];\n`;
-          break;
-        case 'RZ':
-          qasm += `rz(${gate.angle || 0}) q[${gate.qubit}];\n`;
-          break;
-      }
-    });
-    
-    qasm += '\nmeasure q -> c;\n';
-    return qasm;
+  const handleClear = () => {
+    clearCircuit();
+    setProgress(0);
   };
 
   return (
     <div className="min-h-screen bg-quantum-void text-quantum-neon p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -100,109 +90,112 @@ export function QuantumAlgorithmsSDK() {
               Quantum Algorithms SDK
             </h1>
             <p className="text-sm text-quantum-particle">
-              Pre-built algorithms, custom development, and real-time simulation
+              Explore, build, and simulate quantum circuits
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button 
-              onClick={handleRunSimulation} 
-              disabled={simulationRunning}
-              className="neon-border"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              {simulationRunning ? 'Running...' : 'Run Algorithm'}
-            </Button>
-            <Button 
-              onClick={handleExportOpenQASM}
-              variant="outline"
-              className="neon-border"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export QASM
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <Button variant="secondary">
+              <a href="https://github.com/Quantum-Tinkerers/quantum-lab" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
             </Button>
           </div>
         </div>
 
-        {/* Status Bar */}
-        <Card className="quantum-panel neon-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Badge variant="secondary">
-                  Gates: {circuit.length}
-                </Badge>
-                <Badge variant="outline">
-                  Qubits: 5
-                </Badge>
-                {selectedAlgorithm && (
-                  <Badge className="bg-quantum-matrix text-quantum-glow">
-                    Algorithm: {selectedAlgorithm}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-xs font-mono">Simulation Ready</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 quantum-tabs">
-            <TabsTrigger value="algorithms" className="quantum-tab">
-              <Zap className="w-4 h-4 mr-2" />
-              Algorithms
-            </TabsTrigger>
-            <TabsTrigger value="editor" className="quantum-tab">
-              <Code className="w-4 h-4 mr-2" />
-              Code Editor
-            </TabsTrigger>
-            <TabsTrigger value="simulation" className="quantum-tab">
-              <Play className="w-4 h-4 mr-2" />
-              Simulation
+          <TabsList className="grid w-full grid-cols-6 quantum-tabs">
+            <TabsTrigger value="circuit-builder" className="quantum-tab">
+              Circuit Builder
             </TabsTrigger>
             <TabsTrigger value="templates" className="quantum-tab">
-              <FileText className="w-4 h-4 mr-2" />
+              <BookOpen className="w-4 h-4 mr-2" />
               Templates
             </TabsTrigger>
-            <TabsTrigger value="docs" className="quantum-tab">
-              <BookOpen className="w-4 h-4 mr-2" />
-              Documentation
+            <TabsTrigger value="simulation" className="quantum-tab">
+              Simulation
+            </TabsTrigger>
+            <TabsTrigger value="bloch-sphere" className="quantum-tab">
+              Bloch Sphere
+            </TabsTrigger>
+            <TabsTrigger value="fast-simulator" className="quantum-tab">
+              <Zap className="w-4 h-4 mr-2" />
+              Fast Simulator
+            </TabsTrigger>
+            <TabsTrigger value="export" className="quantum-tab">
+              <FileText className="w-4 h-4 mr-2" />
+              Export & Hardware
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="algorithms" className="space-y-6">
-            <AlgorithmLibrary 
-              onAlgorithmSelect={handleAlgorithmSelect}
-              selectedAlgorithm={selectedAlgorithm}
-            />
-          </TabsContent>
-
-          <TabsContent value="editor" className="space-y-6">
-            <SDKCodeEditor 
-              onCodeChange={setCodeOutput}
+          <TabsContent value="circuit-builder" className="space-y-6">
+            <CircuitBuilder
               circuit={circuit}
-            />
-          </TabsContent>
-
-          <TabsContent value="simulation" className="space-y-6">
-            <SimulationConsole 
-              circuit={circuit}
+              dragState={dragState}
               simulationResult={simulationResult}
-              isRunning={simulationRunning}
-              output={codeOutput}
+              onDeleteGate={deleteGate}
+              onGateMouseDown={handleMouseDown}
+              onGateTouchStart={handleTouchStart}
+              circuitRef={circuitRef}
+              numQubits={NUM_QUBITS}
+              gridSize={GRID_SIZE}
             />
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-6">
-            <AlgorithmTemplates 
-              onTemplateLoad={handleAlgorithmSelect}
+            <AlgorithmTemplatesLibrary
+              onTemplateSelect={handleAlgorithmTemplateLoad}
+              currentCircuit={circuit}
+            />
+            
+            {/* Algorithm Results Display */}
+            {algorithmResult && (
+              <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
+                <h3 className="text-lg font-mono text-quantum-glow mb-3">Template Loaded</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Algorithm:</span>
+                    <div className="text-quantum-neon">{algorithmResult.circuit?.name}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Gates:</span>
+                    <div className="text-quantum-particle">{algorithmResult.circuit?.gates.length || 0}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Description:</span>
+                    <div className="text-quantum-energy">{algorithmResult.description}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="simulation" className="space-y-6">
+            <SimulationRunner 
+              circuit={circuit}
+              isRunning={isRunning}
+              progress={progress}
+              onRun={handleRun}
+              onStop={handleStop}
+              onClear={handleClear}
             />
           </TabsContent>
 
-          <TabsContent value="docs" className="space-y-6">
-            <SDKDocumentation />
+          <TabsContent value="bloch-sphere">
+            <BlochSphere 
+              qubitState={defaultQubitState}
+              size={400}
+            />
+          </TabsContent>
+
+          <TabsContent value="fast-simulator" className="space-y-6">
+            <FastQuantumSimulator />
+          </TabsContent>
+
+          <TabsContent value="export" className="space-y-6">
+            <CircuitExporter
+              circuit={circuit}
+            />
           </TabsContent>
         </Tabs>
       </div>
