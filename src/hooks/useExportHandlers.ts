@@ -190,7 +190,7 @@ export function useExportHandlers(
       a.download = `${options.projectName}.py`;
       a.click();
       URL.revokeObjectURL(url);
-      trackEvent('circuit_exported', { format: 'python', gateCount: circuit.length });
+      trackEvent('circuit_exported', { format: 'python' as const, gateCount: circuit.length });
       toast({ title: "Python exported successfully!" });
     } catch (error) {
       console.error('Python export error:', error);
@@ -242,7 +242,7 @@ export function useExportHandlers(
       a.download = `${options.projectName}.js`;
       a.click();
       URL.revokeObjectURL(url);
-      trackEvent('circuit_exported', { format: 'javascript', gateCount: circuit.length });
+      trackEvent('circuit_exported', { format: 'javascript' as const, gateCount: circuit.length });
       toast({ title: "JavaScript exported successfully!" });
     } catch (error) {
       console.error('JavaScript export error:', error);
