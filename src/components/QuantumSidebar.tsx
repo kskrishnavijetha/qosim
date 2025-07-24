@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Cpu,
@@ -34,7 +33,7 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
     { id: "logs", label: "Logs", icon: FileText, category: "system" },
     { id: "javascript-sdk", label: "JavaScript SDK", icon: Code2, category: "sdk" },
     { id: "python-sdk", label: "Python SDK", icon: Code2, category: "sdk" },
-    { id: "sdk-tools", label: "SDK Tools", icon: Wrench, category: "sdk" },
+    { id: "sdk-tools", label: "Quantum Algorithms SDK", icon: Wrench, category: "sdk" },
     { id: "integrations", label: "Integrations", icon: Plug, category: "extend" },
   ];
 
