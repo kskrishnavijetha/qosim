@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from './components/ui/sonner';
+import { TooltipProvider } from './components/ui/tooltip';
 import Index from './pages/Index';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
@@ -28,29 +29,31 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <div className="App">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/landing" element={<LandingPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/circuit-builder" element={<CircuitBuilder />} />
-              <Route path="/quantum-sdk" element={<QuantumSDK />} />
-              <Route path="/python-sdk" element={<PythonSDKPage />} />
-              <Route path="/sdk-docs" element={<SDKDocumentation />} />
-              <Route path="/api-reference" element={<APIReference />} />
-              <Route path="/tutorials" element={<TutorialsPage />} />
-              <Route path="/testing" element={<TestingPage />} />
-              <Route path="/thank-you" element={<ThankYou />} />
-              <Route path="/shared-circuit/:id" element={<SharedCircuit />} />
-              <Route path="/embed-circuit/:id" element={<EmbedCircuit />} />
-              <Route path="/roadmap" element={<RoadmapPage />} />
-              <Route path="/integrations" element={<IntegrationsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </div>
-        </Router>
+        <TooltipProvider>
+          <Router>
+            <div className="App">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/landing" element={<LandingPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/circuit-builder" element={<CircuitBuilder />} />
+                <Route path="/quantum-sdk" element={<QuantumSDK />} />
+                <Route path="/python-sdk" element={<PythonSDKPage />} />
+                <Route path="/sdk-docs" element={<SDKDocumentation />} />
+                <Route path="/api-reference" element={<APIReference />} />
+                <Route path="/tutorials" element={<TutorialsPage />} />
+                <Route path="/testing" element={<TestingPage />} />
+                <Route path="/thank-you" element={<ThankYou />} />
+                <Route path="/shared-circuit/:id" element={<SharedCircuit />} />
+                <Route path="/embed-circuit/:id" element={<EmbedCircuit />} />
+                <Route path="/roadmap" element={<RoadmapPage />} />
+                <Route path="/integrations" element={<IntegrationsPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster />
+            </div>
+          </Router>
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
