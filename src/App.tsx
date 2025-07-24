@@ -36,6 +36,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/landing" element={<LandingPage />} />
                 <Route path="/circuit-builder" element={<CircuitBuilder />} />
+                <Route path="/sdk" element={<QuantumSDK />} />
                 <Route path="/quantum-sdk" element={<QuantumSDK />} />
                 <Route path="/python-sdk" element={<PythonSDKPage />} />
                 <Route path="/sdk-docs" element={<SDKDocumentation />} />
