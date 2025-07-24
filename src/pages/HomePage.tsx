@@ -1,10 +1,11 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Cpu, Zap, FileText, ArrowRight, Quantum, Activity } from "lucide-react";
+import { Cpu, Zap, FileText, ArrowRight, Atom, Activity } from "lucide-react";
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export function HomePage() {
       <header className="border-b border-quantum-matrix bg-quantum-void/95 backdrop-blur supports-[backdrop-filter]:bg-quantum-void/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Quantum className="w-8 h-8 text-quantum-glow" />
+            <Atom className="w-8 h-8 text-quantum-glow" />
             <span className="text-xl font-bold text-quantum-glow">Quantum OS</span>
           </div>
           <nav className="flex items-center space-x-6">
