@@ -9,6 +9,7 @@ import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
+import { QuantumAlgorithmsSDK } from "./sdk/QuantumAlgorithmsSDK";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
@@ -41,6 +42,8 @@ export function QuantumDashboard() {
         return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
       case "python-sdk":
         return <SDKDemoPanel key="python" defaultSDK="python" />;
+      case "sdk-tools":
+        return <QuantumAlgorithmsSDK />;
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
