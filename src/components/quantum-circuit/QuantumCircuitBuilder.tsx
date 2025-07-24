@@ -5,14 +5,12 @@ import { CircuitCanvas } from './CircuitCanvas';
 import { Toolbar } from './Toolbar';
 import { StateViewer } from './StateViewer';
 import { QuantumStateVisualizer } from './QuantumStateVisualizer';
-import { CircuitBuilderIntegration } from '@/components/integration/CircuitBuilderIntegration';
 import { useCircuitStore } from '@/store/circuitStore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, Activity, Zap, Atom, Code2, GitBranch } from 'lucide-react';
+import { Eye, Activity, Zap, Atom } from 'lucide-react';
 
 interface DragState {
   isDragging: boolean;
@@ -43,8 +41,6 @@ export function QuantumCircuitBuilder() {
     dragPosition: { x: 0, y: 0 },
     hoverPosition: null
   });
-
-  const [showIntegration, setShowIntegration] = useState(false);
 
   // Touch drag handling
   const [touchDragState, setTouchDragState] = useState<{
@@ -117,10 +113,6 @@ export function QuantumCircuitBuilder() {
           case 'v':
             e.preventDefault();
             break;
-          case 'e':
-            e.preventDefault();
-            setShowIntegration(!showIntegration);
-            break;
         }
       } else {
         switch (e.key) {
@@ -144,38 +136,14 @@ export function QuantumCircuitBuilder() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedGate, undo, redo, copyGate, removeGate, toast, showIntegration]);
+  }, [selectedGate, undo, redo, copyGate, removeGate, toast]);
 
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Toolbar */}
       <div className="flex-shrink-0 p-4">
-        <div className="flex items-center justify-between">
-          <Toolbar />
-          <div className="flex items-center gap-2">
-            <Button
-              variant={showIntegration ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowIntegration(!showIntegration)}
-              className="neon-border"
-            >
-              {showIntegration ? <GitBranch className="w-4 h-4 mr-2" /> : <Code2 className="w-4 h-4 mr-2" />}
-              {showIntegration ? 'Hide Integration' : 'SDK Integration'}
-            </Button>
-          </div>
-        </div>
+        <Toolbar />
       </div>
-
-      {/* SDK Integration Panel */}
-      {showIntegration && (
-        <div className="flex-shrink-0 p-4 pt-0">
-          <Card className="quantum-panel neon-border">
-            <CardContent className="p-6">
-              <CircuitBuilderIntegration />
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col gap-4 p-4 pt-0 min-h-0">
