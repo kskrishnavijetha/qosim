@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const CircuitBuilder = lazy(() => import("./pages/CircuitBuilder"));
-const LandingPage = lazy(() => import("./pages/LandingPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const TutorialsPage = lazy(() => import("./pages/TutorialsPage"));
@@ -42,7 +41,6 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/circuit-builder" element={<CircuitBuilder />} />
-                <Route path="/landing" element={<LandingPage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/thank-you" element={<ThankYou />} />
                 <Route path="/tutorials" element={<TutorialsPage />} />
