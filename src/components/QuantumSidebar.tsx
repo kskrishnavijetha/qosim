@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Database, FileText, Terminal, Share2, User, LogOut, Code, Cpu } from "lucide-react";
+import { Database, FileText, Terminal, Share2, User, LogOut, Code, Cpu, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -119,6 +120,13 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
+                <DropdownMenuItem 
+                  onClick={() => onTabChange("quantum-algorithms-sdk")}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Quantum Algorithms SDK
+                </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => onTabChange("javascript-sdk")}
                   className="text-quantum-neon hover:bg-quantum-void/50"
