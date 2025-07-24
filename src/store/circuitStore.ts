@@ -8,6 +8,7 @@ export interface Gate {
   qubit?: number;
   qubits?: number[];
   position: number;
+  timeStep: number; // Add for backward compatibility
   angle?: number;
   controlQubit?: number;
   params?: number[];
@@ -70,7 +71,13 @@ export const useCircuitStore = create<CircuitStore>()(
 
       addGate: (gateData) => {
         const id = `gate_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const newGate: Gate = { ...gateData, id };
+        const newGate: Gate = { 
+          ...gateData, 
+          id,
+          position: gateData.position || gateData.timeStep || 0,
+          timeStep: gateData.timeStep || gateData.position || 0,
+          params: gateData.params || []
+        };
         
         set((state) => {
           const newGates = [...state.gates, newGate];
@@ -95,7 +102,12 @@ export const useCircuitStore = create<CircuitStore>()(
       moveGate: (gateId, qubit, timeStep) => {
         set((state) => {
           const newGates = state.gates.map(gate => 
-            gate.id === gateId ? { ...gate, qubit, position: timeStep } : gate
+            gate.id === gateId ? { 
+              ...gate, 
+              qubit, 
+              position: timeStep, 
+              timeStep 
+            } : gate
           );
           return {
             gates: newGates,
@@ -119,6 +131,7 @@ export const useCircuitStore = create<CircuitStore>()(
             ...state.clipboard,
             qubit,
             position: timeStep,
+            timeStep,
           };
           state.addGate(newGate);
         }

@@ -77,7 +77,7 @@ export class CircuitIntegrationService {
         qubit: gate.qubit || 0,
         controlQubit: gate.controlQubit,
         angle: gate.angle,
-        parameters: gate.params || []
+        parameters: Array.isArray(gate.params) ? gate.params : []
       });
     });
 
@@ -92,7 +92,7 @@ export class CircuitIntegrationService {
       position: index,
       controlQubit: gate.controlQubit,
       angle: gate.angle,
-      params: gate.parameters || []
+      params: Array.isArray(gate.parameters) ? gate.parameters : []
     }));
   }
 

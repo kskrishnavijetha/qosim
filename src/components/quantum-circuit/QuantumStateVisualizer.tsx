@@ -69,8 +69,8 @@ export function QuantumStateVisualizer() {
         type: gate.type,
         qubit: gate.qubit || 0,
         position: gate.timeStep,
-        angle: gate.params?.angle,
-        controlQubit: gate.params?.controlQubit
+        angle: gate.angle,
+        controlQubit: gate.controlQubit
       }));
 
       console.log('🔄 Converted gates for backend:', circuitGates);
@@ -87,8 +87,8 @@ export function QuantumStateVisualizer() {
         type: gate.type,
         qubit: gate.qubit,
         position: gate.timeStep,
-        angle: gate.params?.angle,
-        controlQubit: gate.params?.controlQubit
+        angle: gate.angle,
+        controlQubit: gate.controlQubit
       }));
       simulate(gatesUpToStep, numQubits);
       setCurrentStep(prev => prev + 1);
@@ -398,8 +398,8 @@ export function QuantumStateVisualizer() {
                     type: gate.type,
                     qubit: gate.qubit,
                     position: gate.timeStep,
-                    angle: gate.params?.angle,
-                    controlQubit: gate.params?.controlQubit
+                    angle: gate.angle,
+                    controlQubit: gate.controlQubit
                   }))}
                   onStep={handleStepExecution}
                   onReset={handleResetSteps}

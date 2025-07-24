@@ -19,7 +19,7 @@ export function StateViewer() {
   const getGatesByTimeStep = () => {
     const gatesByTimeStep: Record<number, typeof gates> = {};
     for (let i = 0; i < numTimeSteps; i++) {
-      gatesByTimeStep[i] = gates.filter(gate => gate.timeStep === i).sort((a, b) => a.qubit - b.qubit);
+      gatesByTimeStep[i] = gates.filter(gate => gate.timeStep === i).sort((a, b) => (a.qubit || 0) - (b.qubit || 0));
     }
     return gatesByTimeStep;
   };

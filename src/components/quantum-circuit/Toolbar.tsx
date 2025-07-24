@@ -68,10 +68,10 @@ export function Toolbar() {
         id: gate.id,
         type: gate.type,
         qubit: gate.qubit || 0,
-        position: gate.timeStep, // Add the required position property
+        position: gate.timeStep,
         qubits: gate.type === 'CNOT' ? [gate.qubit, gate.timeStep] : undefined, // For multi-qubit gates
-        angle: gate.params?.angle,
-        params: gate.params ? Object.values(gate.params) : undefined
+        angle: gate.angle,
+        params: gate.params ? gate.params : undefined
       }));
 
       await executeCircuit(circuitGates, 'local', 1024);
