@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,15 @@ import {
 
 export function HomePage() {
   const [activeDemo, setActiveDemo] = useState("circuit");
+  const navigate = useNavigate();
+
+  const handleLaunchApp = () => {
+    navigate('/app');
+  };
+
+  const handleViewDocs = () => {
+    navigate('/sdk-docs');
+  };
 
   return (
     <div className="min-h-screen bg-quantum-void">
@@ -45,6 +55,7 @@ export function HomePage() {
               <Button 
                 size="lg" 
                 className="bg-quantum-glow hover:bg-quantum-glow/80 text-black font-semibold"
+                onClick={handleLaunchApp}
               >
                 <Play className="w-4 h-4 mr-2" />
                 Start Building
@@ -53,6 +64,7 @@ export function HomePage() {
                 size="lg" 
                 variant="outline" 
                 className="border-quantum-neon text-quantum-neon hover:bg-quantum-neon/10"
+                onClick={handleViewDocs}
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 View Documentation
@@ -177,6 +189,7 @@ export function HomePage() {
           <Button 
             size="lg" 
             className="bg-quantum-glow hover:bg-quantum-glow/80 text-black font-semibold"
+            onClick={handleLaunchApp}
           >
             Get Started Now
             <ArrowRight className="w-4 h-4 ml-2" />
