@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,6 @@ export default function AuthPage() {
     }
   }, [user, navigate]);
 
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -34,8 +34,9 @@ export default function AuthPage() {
     
     if (error) {
       setError(error.message);
+      setLoading(false);
     }
-    setLoading(false);
+    // Don't set loading to false here since we're redirecting
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -61,8 +62,9 @@ export default function AuthPage() {
     
     if (error) {
       setError(error.message);
+      setLoading(false);
     }
-    setLoading(false);
+    // Don't set loading to false here since we're redirecting
   };
 
   return (

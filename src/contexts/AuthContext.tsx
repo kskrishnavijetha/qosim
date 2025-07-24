@@ -72,6 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
     });
+    
+    if (!error) {
+      // Force redirect to app after successful sign-in
+      window.location.href = '/app';
+    }
+    
     return { error };
   };
 
