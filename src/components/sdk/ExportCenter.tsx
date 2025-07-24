@@ -173,7 +173,7 @@ ws.send(JSON.stringify({
 }));`
     };
 
-    return mockCodes[format] || 'Export format not supported';
+    return mockCodes[format as keyof typeof mockCodes] || 'Export format not supported';
   };
 
   const handleGenerateExport = (format: string) => {
@@ -333,12 +333,12 @@ ws.send(JSON.stringify({
                   </div>
                   <div>
                     <Badge variant="secondary" className="mb-2">GET</Badge>
-                    <code className="text-quantum-energy">/v2/circuits/{id}/status</code>
+                    <code className="text-quantum-energy">/v2/circuits/{circuitId}/status</code>
                     <p className="text-quantum-particle mt-1">Check execution status and retrieve results</p>
                   </div>
                   <div>
                     <Badge className="mb-2">POST</Badge>
-                    <code className="text-quantum-energy">/v2/export/{format}</code>
+                    <code className="text-quantum-energy">/v2/export/{exportFormat}</code>
                     <p className="text-quantum-particle mt-1">Export circuits to various formats</p>
                   </div>
                   <div>

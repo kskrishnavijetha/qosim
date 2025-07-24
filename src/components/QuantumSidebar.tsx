@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Cpu,
@@ -55,7 +56,7 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
     ));
   };
 
-  const renderCategory = (category: string, label: string, icon: any) => {
+  const renderCategory = (category: string, label: string, IconComponent: any) => {
     const isExpanded = expandedCategory === category;
 
     return (
@@ -66,7 +67,7 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
           onClick={() => toggleCategory(category)}
         >
           <div className="flex items-center">
-            <icon className="mr-2 h-4 w-4" />
+            <IconComponent className="mr-2 h-4 w-4" />
             <span>{label}</span>
           </div>
           <svg
