@@ -1,216 +1,187 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BarChart3, 
-  Zap, 
-  Cpu, 
-  Activity, 
-  Code2,
-  Terminal,
-  BookOpen, 
-  Settings, 
-  Users,
-  Clock,
-  TrendingUp,
-  ChevronRight
-} from 'lucide-react';
-import { CircuitBuilderPanel } from './panels/CircuitBuilderPanel';
-import { AlgorithmsPanel } from './panels/AlgorithmsPanel';
-import { VisualizationPanel } from './panels/VisualizationPanel';
-import { SDKDemoPanel } from './panels/SDKDemoPanel';
-import { LearningPanel } from './panels/LearningPanel';
-import { SettingsPanel } from './panels/SettingsPanel';
-import { SDKDashboard } from './sdk/SDKDashboard';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-
-interface DashboardPanelProps {
-  activePanel:
-    | 'dashboard'
-    | 'circuit-builder'
-    | 'algorithms'
-    | 'visualization'
-    | 'sdk-tools'
-    | 'sdk-demo'
-    | 'learning'
-    | 'settings';
-  setActivePanel: (panel: DashboardPanelProps['activePanel']) => void;
-}
+import { useState } from "react";
+import { QuantumSidebar } from "./QuantumSidebar";
+import { QuantumConsole } from "./QuantumConsole";
+import { QuantumOSWorkspace } from "./quantum-os/QuantumOSWorkspace";
+import { JobsPanel } from "./panels/JobsPanel";
+import { MemoryPanel } from "./panels/MemoryPanel";
+import { FilesPanel } from "./panels/FilesPanel";
+import { LogsPanel } from "./panels/LogsPanel";
+import { FeedbackWidget } from "./FeedbackWidget";
+import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
+import { SDKDemoPanel } from "./panels/SDKDemoPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "./ui/button";
+import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "./ui/resizable";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 export function QuantumDashboard() {
-  const [activePanel, setActivePanel] =
-    useState<DashboardPanelProps['activePanel']>('dashboard');
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("quantum-os");
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
+  const [consoleCollapsed, setConsoleCollapsed] = useState(true);
+  const isMobile = useIsMobile();
 
-  useEffect(() => {
-    if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please sign in to access the Quantum Dashboard.',
-      });
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
+
+  const renderPanel = () => {
+    switch (activeTab) {
+      case "quantum-os":
+        return <QuantumOSWorkspace />;
+      case "memory":
+        return <MemoryPanel />;
+      case "files":
+        return <FilesPanel />;
+      case "logs":
+        return <LogsPanel />;
+      case "javascript-sdk":
+        return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
+      case "python-sdk":
+        return <SDKDemoPanel key="python" defaultSDK="python" />;
+      case "integrations":
+        return <IntegrationsRoadmap />;
+      default:
+        return <QuantumOSWorkspace />;
     }
-  }, [user, toast]);
+  };
 
-  return (
-    <div className="min-h-screen bg-quantum-void text-quantum-neon">
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-quantum-matrix border-r border-quantum-energy/20 p-4">
-          <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-quantum-glow quantum-float">
-                QuantumOS
-              </h1>
-              <p className="text-sm text-quantum-particle">Quantum Simulator</p>
-            </div>
-
-            <nav className="space-y-2">
-              <Button
-                variant={activePanel === 'dashboard' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('dashboard')}
-              >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Dashboard
-              </Button>
-              <Button
-                variant={activePanel === 'circuit-builder' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('circuit-builder')}
-              >
-                <Zap className="mr-2 h-4 w-4" />
-                Circuit Builder
-              </Button>
-              <Button
-                variant={activePanel === 'algorithms' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('algorithms')}
-              >
-                <Cpu className="mr-2 h-4 w-4" />
-                Algorithms
-              </Button>
-              <Button
-                variant={activePanel === 'visualization' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('visualization')}
-              >
-                <Activity className="mr-2 h-4 w-4" />
-                Visualization
-              </Button>
-              <Button
-                variant={activePanel === 'sdk-tools' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('sdk-tools')}
-              >
-                <Code2 className="mr-2 h-4 w-4" />
-                SDK Tools
-              </Button>
-              <Button
-                variant={activePanel === 'sdk-demo' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('sdk-demo')}
-              >
-                <Terminal className="mr-2 h-4 w-4" />
-                SDK Demo
-              </Button>
-              <Button
-                variant={activePanel === 'learning' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('learning')}
-              >
-                <BookOpen className="mr-2 h-4 w-4" />
-                Learning Center
-              </Button>
-              <Button
-                variant={activePanel === 'settings' ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => setActivePanel('settings')}
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-            </nav>
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-quantum-void text-foreground flex flex-col">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-4 border-b border-quantum-matrix bg-quantum-void z-50 sticky top-0">
+          <div className="flex items-center gap-3">
+            <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 p-0 quantum-panel">
+                <QuantumSidebar 
+                  activeTab={activeTab} 
+                  onTabChange={(tab) => {
+                    handleTabChange(tab);
+                    setShowSidebar(false);
+                  }}
+                />
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-lg font-bold text-quantum-glow">Quantum OS</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConsole(!showConsole)}
+              className="text-quantum-neon"
+            >
+              Console
+            </Button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1">
-          {/* Header */}
-          <div className="bg-quantum-void border-b border-quantum-energy/20 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-quantum-glow">
-                  {activePanel.replace('-', ' ').replace(/\b\w/g, (l) =>
-                    l.toUpperCase()
-                  )}
-                </h2>
-                <p className="text-sm text-quantum-particle">
-                  Explore the quantum realm
-                </p>
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-auto">
+            {renderPanel()}
+          </div>
+          
+          {/* Mobile Console Bottom Sheet */}
+          {showConsole && (
+            <div className="border-t border-quantum-matrix bg-quantum-void">
+              <div className="flex items-center justify-between p-3 border-b border-quantum-matrix">
+                <h3 className="text-sm font-semibold text-quantum-glow">Console</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConsoleCollapsed(!consoleCollapsed)}
+                  >
+                    {consoleCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowConsole(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              {/* User Info */}
-              {user && (
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-quantum-neon">
-                      {user.email}
-                    </h3>
-                    <p className="text-sm text-quantum-particle">
-                      User ID: {user.id}
-                    </p>
+              <div className={cn(
+                "transition-all duration-300 overflow-hidden",
+                consoleCollapsed ? "h-0" : "h-64"
+              )}>
+                <div className="h-full overflow-auto">
+                  <QuantumConsole />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <FeedbackWidget />
+      </div>
+    );
+  }
+
+  // Desktop/Tablet Layout
+  return (
+    <div className="min-h-screen bg-quantum-void text-foreground">
+      <ResizablePanelGroup direction="horizontal" className="min-h-screen">
+        {/* Sidebar */}
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+          <QuantumSidebar 
+            activeTab={activeTab} 
+            onTabChange={handleTabChange}
+          />
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
+        
+        {/* Main Content Area */}
+        <ResizablePanel defaultSize={60}>
+          <ResizablePanelGroup direction="vertical">
+            {/* Main Panel */}
+            <ResizablePanel defaultSize={70} minSize={50}>
+              <div className="h-full overflow-auto">
+                {renderPanel()}
+              </div>
+            </ResizablePanel>
+            
+            {/* Console Panel */}
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+              <div className="h-full border-t border-quantum-matrix">
+                <div className="flex items-center justify-between p-3 border-b border-quantum-matrix bg-quantum-matrix">
+                  <h3 className="text-sm font-semibold text-quantum-glow">Console</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConsoleCollapsed(!consoleCollapsed)}
+                  >
+                    {consoleCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                </div>
+                <div className={cn(
+                  "transition-all duration-300 overflow-hidden",
+                  consoleCollapsed ? "h-0" : "h-full"
+                )}>
+                  <div className="h-full overflow-auto">
+                    <QuantumConsole />
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Main Content Rendering */}
-          {activePanel === 'dashboard' && (
-            <Card className="h-full quantum-panel neon-border">
-              <CardHeader>
-                <CardTitle className="text-xl text-quantum-glow">
-                  Welcome to QuantumOS!
-                </CardTitle>
-                <CardDescription className="text-quantum-particle">
-                  Explore the quantum world with our simulator.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-quantum-neon">
-                  Get started by exploring the Circuit Builder, Algorithms, and
-                  Visualization tools.
-                </p>
-                <Button onClick={() => setActivePanel('circuit-builder')}>
-                  Go to Circuit Builder <ChevronRight className="ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {activePanel === 'circuit-builder' && (
-            <CircuitBuilderPanel />
-          )}
-
-          {activePanel === 'algorithms' && <AlgorithmsPanel />}
-
-          {activePanel === 'visualization' && <VisualizationPanel />}
-
-          {activePanel === 'sdk-tools' && (
-            <SDKDashboard />
-          )}
-
-          {activePanel === 'sdk-demo' && <SDKDemoPanel />}
-
-          {activePanel === 'learning' && <LearningPanel />}
-
-          {activePanel === 'settings' && <SettingsPanel />}
-        </div>
-      </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+      
+      <FeedbackWidget />
     </div>
   );
 }
