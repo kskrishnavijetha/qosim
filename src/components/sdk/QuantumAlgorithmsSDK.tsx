@@ -23,9 +23,18 @@ export function QuantumAlgorithmsSDK() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResults, setSimulationResults] = useState<any>(null);
   
-  const { circuit, addGate, clearCircuit } = useCircuitWorkspace();
+  const { activeCircuit, addGateToCircuit, clearCircuit, createNewCircuit } = useCircuitWorkspace();
+
+  // Create a circuit if none exists
+  React.useEffect(() => {
+    if (!activeCircuit) {
+      createNewCircuit();
+    }
+  }, [activeCircuit, createNewCircuit]);
 
   const handleAlgorithmSelect = (algorithm: any) => {
+    if (!activeCircuit) return;
+    
     // Convert algorithm to circuit gates
     const gates = algorithm.gates.map((gate: any, index: number) => ({
       ...gate,
@@ -33,8 +42,8 @@ export function QuantumAlgorithmsSDK() {
       position: index
     }));
     
-    clearCircuit();
-    gates.forEach(addGate);
+    clearCircuit(activeCircuit.id);
+    gates.forEach((gate: any) => addGateToCircuit(activeCircuit.id, gate));
   };
 
   const handleSimulation = async (code: string) => {
@@ -52,12 +61,14 @@ export function QuantumAlgorithmsSDK() {
         imag: Math.random() * 2 - 1 
       })),
       probabilities: Array(8).fill(0).map(() => Math.random()).map(x => x / 8),
-      circuitDepth: circuit.length,
-      gateCount: circuit.length
+      circuitDepth: activeCircuit?.gates.length || 0,
+      gateCount: activeCircuit?.gates.length || 0
     });
     
     setIsSimulating(false);
   };
+
+  const currentCircuit = activeCircuit?.gates || [];
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-quantum-void to-quantum-matrix text-quantum-glow">
@@ -158,10 +169,12 @@ export function QuantumAlgorithmsSDK() {
 
             <TabsContent value="circuit" className="h-full">
               <InteractiveCircuitEditor
-                circuit={circuit}
+                circuit={currentCircuit}
                 onCircuitChange={(gates) => {
-                  clearCircuit();
-                  gates.forEach(addGate);
+                  if (activeCircuit) {
+                    clearCircuit(activeCircuit.id);
+                    gates.forEach((gate: any) => addGateToCircuit(activeCircuit.id, gate));
+                  }
                 }}
               />
             </TabsContent>
@@ -176,24 +189,21 @@ export function QuantumAlgorithmsSDK() {
                 </div>
                 <div>
                   {selectedLanguage === 'python' && (
-                    <PythonAPIPlayground circuit={circuit} />
+                    <PythonAPIPlayground circuit={currentCircuit} />
                   )}
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="export" className="h-full">
-              <CircuitExporter
-                circuit={circuit}
-                simulationResults={simulationResults}
-              />
+              <CircuitExporter circuit={currentCircuit} />
             </TabsContent>
 
             <TabsContent value="templates" className="h-full">
               <AlgorithmTemplates
                 selectedLanguage={selectedLanguage}
                 onTemplateSelect={handleAlgorithmSelect}
-                currentCircuit={circuit}
+                currentCircuit={currentCircuit}
               />
             </TabsContent>
 
