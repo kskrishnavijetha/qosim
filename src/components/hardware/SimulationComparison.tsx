@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Computer, Cpu, TrendingUp, Clock } from 'lucide-react';
 
@@ -112,205 +112,203 @@ export function SimulationComparison({ simulationResult, hardwareResult, jobInfo
   };
 
   return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        {/* Header */}
-        <Card className="quantum-panel neon-border">
-          <CardHeader>
-            <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Simulation vs Hardware Comparison
-            </CardTitle>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Computer className="w-4 h-4" />
-                <span>Job: {jobInfo.name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4" />
-                <span>Backend: {jobInfo.backend}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span>Completed: {jobInfo.completedAt.toLocaleString()}</span>
-              </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Simulation vs Hardware Comparison
+          </CardTitle>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Computer className="w-4 h-4" />
+              <span>Job: {jobInfo.name}</span>
             </div>
-          </CardHeader>
+            <div className="flex items-center gap-2">
+              <Cpu className="w-4 h-4" />
+              <span>Backend: {jobInfo.backend}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Completed: {jobInfo.completedAt.toLocaleString()}</span>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="quantum-panel neon-border">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-mono text-quantum-glow mb-2">
+                {fidelity.toFixed(1)}%
+              </div>
+              <div className="text-sm text-muted-foreground">Quantum Fidelity</div>
+              <Progress value={fidelity} className="mt-2" />
+            </div>
+          </CardContent>
         </Card>
 
-        {/* Metrics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="quantum-panel neon-border">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-mono text-quantum-energy mb-2">
+                {klDivergence.toFixed(3)}
+              </div>
+              <div className="text-sm text-muted-foreground">KL Divergence</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {klDivergence < 0.1 ? 'Excellent' : klDivergence < 0.5 ? 'Good' : 'Fair'}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="quantum-panel neon-border">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-mono text-quantum-particle mb-2">
+                {hardwareResult.shots.toLocaleString()}
+              </div>
+              <div className="text-sm text-muted-foreground">Shots</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {simulationResult.shots === hardwareResult.shots ? 'Matched' : 'Different'}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Comparison */}
+      <Tabs defaultValue="probability" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 quantum-tabs">
+          <TabsTrigger value="probability">Probability Distribution</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="details">Detailed Results</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="probability" className="space-y-4">
           <Card className="quantum-panel neon-border">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-2xl font-mono text-quantum-glow mb-2">
-                  {fidelity.toFixed(1)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Quantum Fidelity</div>
-                <Progress value={fidelity} className="mt-2" />
+            <CardHeader>
+              <CardTitle className="text-sm text-quantum-neon">Probability Distribution Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      dataKey="state" 
+                      stroke="#9CA3AF"
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      stroke="#9CA3AF"
+                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="simulation" fill="#3B82F6" name="Simulation" />
+                    <Bar dataKey="hardware" fill="#F59E0B" name="Hardware" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
+        <TabsContent value="performance" className="space-y-4">
           <Card className="quantum-panel neon-border">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-2xl font-mono text-quantum-energy mb-2">
-                  {klDivergence.toFixed(3)}
-                </div>
-                <div className="text-sm text-muted-foreground">KL Divergence</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {klDivergence < 0.1 ? 'Excellent' : klDivergence < 0.5 ? 'Good' : 'Fair'}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="quantum-panel neon-border">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-2xl font-mono text-quantum-particle mb-2">
-                  {hardwareResult.shots.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">Shots</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {simulationResult.shots === hardwareResult.shots ? 'Matched' : 'Different'}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Detailed Comparison */}
-        <Tabs defaultValue="probability" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 quantum-tabs">
-            <TabsTrigger value="probability">Probability Distribution</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="details">Detailed Results</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="probability" className="space-y-4">
-            <Card className="quantum-panel neon-border">
-              <CardHeader>
-                <CardTitle className="text-sm text-quantum-neon">Probability Distribution Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis 
-                        dataKey="state" 
-                        stroke="#9CA3AF"
-                        tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      />
-                      <YAxis 
-                        stroke="#9CA3AF"
-                        tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                        tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="simulation" fill="#3B82F6" name="Simulation" />
-                      <Bar dataKey="hardware" fill="#F59E0B" name="Hardware" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="performance" className="space-y-4">
-            <Card className="quantum-panel neon-border">
-              <CardHeader>
-                <CardTitle className="text-sm text-quantum-neon">Performance Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {performanceData.map((item, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{item.metric}</span>
-                        <div className="flex gap-4">
-                          <span className="text-blue-400">
-                            Sim: {item.simulation.toLocaleString()}{item.unit}
-                          </span>
-                          <span className="text-orange-400">
-                            HW: {item.hardware.toLocaleString()}{item.unit}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-blue-500/20 h-2 rounded" style={{ 
-                          width: `${Math.min(item.simulation / Math.max(item.simulation, item.hardware) * 100, 100)}%` 
-                        }} />
-                        <div className="bg-orange-500/20 h-2 rounded" style={{ 
-                          width: `${Math.min(item.hardware / Math.max(item.simulation, item.hardware) * 100, 100)}%` 
-                        }} />
+            <CardHeader>
+              <CardTitle className="text-sm text-quantum-neon">Performance Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {performanceData.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{item.metric}</span>
+                      <div className="flex gap-4">
+                        <span className="text-blue-400">
+                          Sim: {item.simulation.toLocaleString()}{item.unit}
+                        </span>
+                        <span className="text-orange-400">
+                          HW: {item.hardware.toLocaleString()}{item.unit}
+                        </span>
                       </div>
                     </div>
-                  ))}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-blue-500/20 h-2 rounded" style={{ 
+                        width: `${Math.min(item.simulation / Math.max(item.simulation, item.hardware) * 100, 100)}%` 
+                      }} />
+                      <div className="bg-orange-500/20 h-2 rounded" style={{ 
+                        width: `${Math.min(item.hardware / Math.max(item.simulation, item.hardware) * 100, 100)}%` 
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="details" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="quantum-panel neon-border">
+              <CardHeader>
+                <CardTitle className="text-sm text-quantum-neon flex items-center gap-2">
+                  <Computer className="w-4 h-4" />
+                  Simulation Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {Object.entries(simulationResult.counts)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([state, count]) => (
+                      <div key={state} className="flex justify-between text-sm">
+                        <span className="font-mono text-quantum-neon">|{state}⟩</span>
+                        <div className="flex gap-4">
+                          <span className="text-quantum-particle">{count}</span>
+                          <span className="text-blue-400">
+                            {((count / simulationResult.shots) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="details" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="quantum-panel neon-border">
-                <CardHeader>
-                  <CardTitle className="text-sm text-quantum-neon flex items-center gap-2">
-                    <Computer className="w-4 h-4" />
-                    Simulation Results
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {Object.entries(simulationResult.counts)
-                      .sort(([,a], [,b]) => b - a)
-                      .map(([state, count]) => (
-                        <div key={state} className="flex justify-between text-sm">
-                          <span className="font-mono text-quantum-neon">|{state}⟩</span>
-                          <div className="flex gap-4">
-                            <span className="text-quantum-particle">{count}</span>
-                            <span className="text-blue-400">
-                              {((count / simulationResult.shots) * 100).toFixed(1)}%
-                            </span>
-                          </div>
+            <Card className="quantum-panel neon-border">
+              <CardHeader>
+                <CardTitle className="text-sm text-quantum-neon flex items-center gap-2">
+                  <Cpu className="w-4 h-4" />
+                  Hardware Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {Object.entries(hardwareResult.counts)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([state, count]) => (
+                      <div key={state} className="flex justify-between text-sm">
+                        <span className="font-mono text-quantum-neon">|{state}⟩</span>
+                        <div className="flex gap-4">
+                          <span className="text-quantum-particle">{count}</span>
+                          <span className="text-orange-400">
+                            {((count / hardwareResult.shots) * 100).toFixed(1)}%
+                          </span>
                         </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="quantum-panel neon-border">
-                <CardHeader>
-                  <CardTitle className="text-sm text-quantum-neon flex items-center gap-2">
-                    <Cpu className="w-4 h-4" />
-                    Hardware Results
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {Object.entries(hardwareResult.counts)
-                      .sort(([,a], [,b]) => b - a)
-                      .map(([state, count]) => (
-                        <div key={state} className="flex justify-between text-sm">
-                          <span className="font-mono text-quantum-neon">|{state}⟩</span>
-                          <div className="flex gap-4">
-                            <span className="text-quantum-particle">{count}</span>
-                            <span className="text-orange-400">
-                              {((count / hardwareResult.shots) * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </TooltipProvider>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

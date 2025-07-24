@@ -1,6 +1,6 @@
 
 import React, { memo } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCustomGates } from "@/hooks/useCustomGates";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -73,68 +73,66 @@ export const GatePalette = memo(function GatePalette({
   const categoryOrder = ['Single', 'Parametric', 'Multi', 'Special', 'Custom'];
 
   return (
-    <TooltipProvider>
-      <div className={cn(
-        "space-y-4 overflow-y-auto",
-        isMobile ? "w-full max-h-64" : "w-64 max-h-[600px]"
+    <div className={cn(
+      "space-y-4 overflow-y-auto",
+      isMobile ? "w-full max-h-64" : "w-64 max-h-[600px]"
+    )}>
+      <h3 className={cn(
+        "font-mono text-quantum-neon sticky top-0 bg-background",
+        isMobile ? "text-xs mb-2" : "text-sm mb-4"
       )}>
-        <h3 className={cn(
-          "font-mono text-quantum-neon sticky top-0 bg-background",
-          isMobile ? "text-xs mb-2" : "text-sm mb-4"
-        )}>
-          🎛️ Quantum Gate Palette
-        </h3>
+        🎛️ Quantum Gate Palette
+      </h3>
+      
+      {categoryOrder.map(category => {
+        const gates = groupedGates[category] || [];
+        if (gates.length === 0) return null;
         
-        {categoryOrder.map(category => {
-          const gates = groupedGates[category] || [];
-          if (gates.length === 0) return null;
-          
-          return (
-            <div key={category} className="space-y-2">
-              <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                {categoryIcons[category]} {category} Gates
-              </h4>
-              <div className={cn(
-                "grid gap-2",
-                isMobile ? "grid-cols-4" : "grid-cols-3"
-              )}>
-                {gates.map(gate => (
-                  <Tooltip key={gate.type}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={cn(
-                          `${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-300 quantum-glow animate-in fade-in select-none`,
-                          isMobile 
-                            ? "w-10 h-10 touch-manipulation active:scale-95" 
-                            : "w-12 h-12 hover:scale-110"
-                        )}
-                        onMouseDown={!isMobile ? (e) => onGateMouseDown(e, gate.type) : undefined}
-                        onTouchStart={isMobile && onGateTouchStart ? (e) => onGateTouchStart(e, gate.type) : undefined}
-                        style={{ 
-                          animationDelay: `${allGateTypes.indexOf(gate) * 50}ms`,
-                          WebkitTouchCallout: 'none',
-                          WebkitUserSelect: 'none'
-                        }}
-                      >
-                        {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
+        return (
+          <div key={category} className="space-y-2">
+            <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              {categoryIcons[category]} {category} Gates
+            </h4>
+            <div className={cn(
+              "grid gap-2",
+              isMobile ? "grid-cols-4" : "grid-cols-3"
+            )}>
+              {gates.map(gate => (
+                <Tooltip key={gate.type}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        `${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-300 quantum-glow animate-in fade-in select-none`,
+                        isMobile 
+                          ? "w-10 h-10 touch-manipulation active:scale-95" 
+                          : "w-12 h-12 hover:scale-110"
+                      )}
+                      onMouseDown={!isMobile ? (e) => onGateMouseDown(e, gate.type) : undefined}
+                      onTouchStart={isMobile && onGateTouchStart ? (e) => onGateTouchStart(e, gate.type) : undefined}
+                      style={{ 
+                        animationDelay: `${allGateTypes.indexOf(gate) * 50}ms`,
+                        WebkitTouchCallout: 'none',
+                        WebkitUserSelect: 'none'
+                      }}
+                    >
+                      {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
+                    <div className="space-y-2">
+                      <p className="font-semibold text-quantum-glow">{gate.name}</p>
+                      <p className="text-xs text-muted-foreground">{gate.description}</p>
+                      <div className="text-xs text-quantum-particle border-t pt-1">
+                        Category: {category}
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
-                      <div className="space-y-2">
-                        <p className="font-semibold text-quantum-glow">{gate.name}</p>
-                        <p className="text-xs text-muted-foreground">{gate.description}</p>
-                        <div className="text-xs text-quantum-particle border-t pt-1">
-                          Category: {category}
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
-          );
-        })}
-      </div>
-    </TooltipProvider>
+          </div>
+        );
+      })}
+    </div>
   );
 });

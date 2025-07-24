@@ -5,7 +5,6 @@ import { OrbitControls, Html, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface BlochSphere3DProps {
   qubitIndex: number;
@@ -94,40 +93,38 @@ function BlochSphereScene({ qubitState }: { qubitState: BlochSphere3DProps['qubi
 
 export function BlochSphere3D({ qubitIndex, isSelected, onSelect, qubitState }: BlochSphere3DProps) {
   return (
-    <TooltipProvider>
-      <Card 
-        className={`quantum-panel cursor-pointer transition-all ${
-          isSelected ? 'neon-border ring-2 ring-quantum-glow' : 'neon-border'
-        }`}
-        onClick={onSelect}
-      >
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xs text-quantum-neon flex items-center justify-between">
-            Qubit {qubitIndex}
-            <Badge variant="outline" className="text-xs">
-              {qubitState.state}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-2">
-          <div className="aspect-square bg-quantum-void rounded-lg overflow-hidden">
-            <Canvas camera={{ position: [2, 2, 2], fov: 50 }}>
-              <ambientLight intensity={0.6} />
-              <pointLight position={[10, 10, 10]} />
-              <BlochSphereScene qubitState={qubitState} />
-              <OrbitControls enableZoom={true} enablePan={false} />
-            </Canvas>
+    <Card 
+      className={`quantum-panel cursor-pointer transition-all ${
+        isSelected ? 'neon-border ring-2 ring-quantum-glow' : 'neon-border'
+      }`}
+      onClick={onSelect}
+    >
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xs text-quantum-neon flex items-center justify-between">
+          Qubit {qubitIndex}
+          <Badge variant="outline" className="text-xs">
+            {qubitState.state}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-2">
+        <div className="aspect-square bg-quantum-void rounded-lg overflow-hidden">
+          <Canvas camera={{ position: [2, 2, 2], fov: 50 }}>
+            <ambientLight intensity={0.6} />
+            <pointLight position={[10, 10, 10]} />
+            <BlochSphereScene qubitState={qubitState} />
+            <OrbitControls enableZoom={true} enablePan={false} />
+          </Canvas>
+        </div>
+        <div className="mt-2 text-xs text-center">
+          <div className="text-quantum-particle">
+            P = {(qubitState.probability * 100).toFixed(1)}%
           </div>
-          <div className="mt-2 text-xs text-center">
-            <div className="text-quantum-particle">
-              P = {(qubitState.probability * 100).toFixed(1)}%
-            </div>
-            <div className="text-muted-foreground">
-              ({qubitState.blochCoordinates.x.toFixed(2)}, {qubitState.blochCoordinates.y.toFixed(2)}, {qubitState.blochCoordinates.z.toFixed(2)})
-            </div>
+          <div className="text-muted-foreground">
+            ({qubitState.blochCoordinates.x.toFixed(2)}, {qubitState.blochCoordinates.y.toFixed(2)}, {qubitState.blochCoordinates.z.toFixed(2)})
           </div>
-        </CardContent>
-      </Card>
-    </TooltipProvider>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

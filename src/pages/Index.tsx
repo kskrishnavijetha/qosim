@@ -1,37 +1,51 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { QuantumSidebar } from "@/components/QuantumSidebar";
+import { QuantumOSWorkspace } from "@/components/quantum-os/QuantumOSWorkspace";
+import { MemoryPanel } from "@/components/panels/MemoryPanel";
+import { FilesPanel } from "@/components/panels/FilesPanel";
+import { LogsPanel } from "@/components/panels/LogsPanel";
+import { IntegrationsRoadmap } from "@/components/IntegrationsRoadmap";
+import { SDKDemoPanel } from "@/components/panels/SDKDemoPanel";
+import { PythonAPIPlayground } from "@/components/sdk/PythonAPIPlayground";
+import { QuantumAlgorithmsSDK } from "@/components/sdk/QuantumAlgorithmsSDK";
 
 export default function Index() {
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("quantum-os");
 
-  useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          // User is authenticated, redirect to app
-          navigate('/app');
-        } else {
-          // User is not authenticated, redirect to landing
-          navigate('/landing');
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        // On error, redirect to landing
-        navigate('/landing');
-      }
-    };
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
 
-    checkAuthAndRedirect();
-  }, [navigate]);
+  const renderContent = () => {
+    switch (activeTab) {
+      case "quantum-os":
+        return <QuantumOSWorkspace />;
+      case "memory":
+        return <MemoryPanel />;
+      case "files":
+        return <FilesPanel />;
+      case "logs":
+        return <LogsPanel />;
+      case "integrations":
+        return <IntegrationsRoadmap />;
+      case "quantum-algorithms-sdk":
+        return <QuantumAlgorithmsSDK />;
+      case "javascript-sdk":
+        return <SDKDemoPanel language="javascript" />;
+      case "python-sdk":
+        return <PythonAPIPlayground circuit={[]} />;
+      default:
+        return <QuantumOSWorkspace />;
+    }
+  };
 
-  // Show minimal loading while redirecting
   return (
-    <div className="min-h-screen bg-quantum-void flex items-center justify-center">
-      <div className="text-quantum-glow">Loading...</div>
+    <div className="min-h-screen bg-quantum-void text-quantum-neon flex">
+      <QuantumSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+      <main className="flex-1 p-6 overflow-x-auto">
+        {renderContent()}
+      </main>
     </div>
   );
 }
