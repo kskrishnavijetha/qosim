@@ -1,65 +1,74 @@
 
-import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthGuard } from "@/components/AuthGuard";
+import { LandingPage } from "@/pages/LandingPage";
+import { HomePage } from "@/pages/HomePage";
+import { CircuitBuilder } from "@/pages/CircuitBuilder";
+import { AuthPage } from "@/pages/AuthPage";
+import { PythonSDKPage } from "@/pages/PythonSDKPage";
+import { SDKDocumentation } from "@/pages/SDKDocumentation";
+import { APIReference } from "@/pages/APIReference";
+import { TutorialsPage } from "@/pages/TutorialsPage";
+import { RoadmapPage } from "@/pages/RoadmapPage";
+import { IntegrationsPage } from "@/pages/IntegrationsPage";
+import { TestingPage } from "@/pages/TestingPage";
+import { SharedCircuit } from "@/pages/SharedCircuit";
+import { EmbedCircuit } from "@/pages/EmbedCircuit";
+import { ThankYou } from "@/pages/ThankYou";
+import { NotFound } from "@/pages/NotFound";
+import { QuantumDashboard } from "@/components/QuantumDashboard";
+import "./App.css";
 
-const CircuitBuilder = lazy(() => import("./pages/CircuitBuilder"));
-const LandingPage = lazy(() => import("./pages/LandingPage"));
-const AuthPage = lazy(() => import("./pages/AuthPage"));
-const ThankYou = lazy(() => import("./pages/ThankYou"));
-const TutorialsPage = lazy(() => import("./pages/TutorialsPage"));
-const SDKDocumentation = lazy(() => import("./pages/SDKDocumentation"));
-const PythonSDKPage = lazy(() => import("./pages/PythonSDKPage"));
-const APIReference = lazy(() => import("./pages/APIReference"));
-const RoadmapPage = lazy(() => import("./pages/RoadmapPage"));
-const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
-const TestingPage = lazy(() => import("./pages/TestingPage"));
-const SharedCircuit = lazy(() => import("./pages/SharedCircuit"));
-const EmbedCircuit = lazy(() => import("./pages/EmbedCircuit"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <Suspense fallback={<div>Loading...</div>}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/circuit-builder" element={<CircuitBuilder />} />
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/thank-you" element={<ThankYou />} />
-                <Route path="/tutorials" element={<TutorialsPage />} />
-                <Route path="/sdk" element={<SDKDocumentation />} />
-                <Route path="/python-sdk" element={<PythonSDKPage />} />
-                <Route path="/api" element={<APIReference />} />
-                <Route path="/roadmap" element={<RoadmapPage />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/testing" element={<TestingPage />} />
-                <Route path="/shared/:id" element={<SharedCircuit />} />
-                <Route path="/embed/:id" element={<EmbedCircuit />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <Router>
+          <div className="App">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/python-sdk" element={<PythonSDKPage />} />
+              <Route path="/sdk-docs" element={<SDKDocumentation />} />
+              <Route path="/api-reference" element={<APIReference />} />
+              <Route path="/tutorials" element={<TutorialsPage />} />
+              <Route path="/roadmap" element={<RoadmapPage />} />
+              <Route path="/integrations" element={<IntegrationsPage />} />
+              <Route path="/testing" element={<TestingPage />} />
+              <Route path="/shared/:id" element={<SharedCircuit />} />
+              <Route path="/embed/:id" element={<EmbedCircuit />} />
+              <Route path="/thank-you" element={<ThankYou />} />
+              
+              {/* Protected routes */}
+              <Route path="/" element={
+                <AuthGuard>
+                  <HomePage />
+                </AuthGuard>
+              } />
+              <Route path="/app" element={
+                <AuthGuard>
+                  <QuantumDashboard />
+                </AuthGuard>
+              } />
+              <Route path="/circuit-builder" element={
+                <AuthGuard>
+                  <CircuitBuilder />
+                </AuthGuard>
+              } />
+              
+              {/* Catch all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </Router>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
