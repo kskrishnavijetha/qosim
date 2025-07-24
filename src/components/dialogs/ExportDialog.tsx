@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -35,11 +36,12 @@ export function ExportDialog({
     projectName: 'quantum_circuit'
   });
 
-  const { handleExportJSON, handleExportQASM, handleExportPython } = useExportHandlers(
-    circuit, 
-    numQubits, 
-    options
-  );
+  const { 
+    handleExportJSON, 
+    handleExportQASM, 
+    handleExportPython, 
+    handleExportJavaScript 
+  } = useExportHandlers(circuit, numQubits, options);
 
   const handleProjectNameChange = (name: string) => {
     setOptions(prev => ({ ...prev, projectName: name }));
@@ -65,6 +67,7 @@ export function ExportDialog({
             onExportJSON={handleExportJSON}
             onExportQASM={handleExportQASM}
             onExportPython={handleExportPython}
+            onExportJavaScript={handleExportJavaScript}
           />
         </div>
       </DialogContent>

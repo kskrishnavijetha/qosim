@@ -1,3 +1,4 @@
+
 import { useToast } from '@/hooks/use-toast';
 import { trackEvent } from '@/lib/analytics';
 
@@ -44,9 +45,11 @@ export function useExportHandlers(
       a.href = url;
       a.download = `${options.projectName}.json`;
       a.click();
+      URL.revokeObjectURL(url);
       trackEvent('circuit_exported', { format: 'json', gateCount: circuit.length });
       toast({ title: "JSON exported successfully!" });
     } catch (error) {
+      console.error('JSON export error:', error);
       toast({ title: "Export failed", description: String(error), variant: "destructive" });
     }
   };
@@ -55,7 +58,9 @@ export function useExportHandlers(
     try {
       let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[${numQubits}];\ncreg c[${numQubits}];\n\n`;
       
-      circuit.forEach(gate => {
+      const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+      
+      sortedGates.forEach(gate => {
         switch (gate.type) {
           case 'H':
             qasm += `h q[${gate.qubit}];\n`;
@@ -63,21 +68,37 @@ export function useExportHandlers(
           case 'X':
             qasm += `x q[${gate.qubit}];\n`;
             break;
+          case 'Y':
+            qasm += `y q[${gate.qubit}];\n`;
+            break;
           case 'Z':
             qasm += `z q[${gate.qubit}];\n`;
             break;
           case 'CNOT':
-            if (gate.qubits) qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
+            if (gate.qubits && gate.qubits.length >= 2) {
+              qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
+            }
             break;
           case 'RX':
-            qasm += `rx(${gate.angle}) q[${gate.qubit}];\n`;
+            qasm += `rx(${gate.angle || 'pi/2'}) q[${gate.qubit}];\n`;
             break;
           case 'RY':
-            qasm += `ry(${gate.angle}) q[${gate.qubit}];\n`;
+            qasm += `ry(${gate.angle || 'pi/2'}) q[${gate.qubit}];\n`;
+            break;
+          case 'RZ':
+            qasm += `rz(${gate.angle || 'pi/2'}) q[${gate.qubit}];\n`;
+            break;
+          case 'S':
+            qasm += `s q[${gate.qubit}];\n`;
+            break;
+          case 'T':
+            qasm += `t q[${gate.qubit}];\n`;
             break;
           case 'M':
             qasm += `measure q[${gate.qubit}] -> c[${gate.qubit}];\n`;
             break;
+          default:
+            console.warn(`Unsupported gate type for QASM: ${gate.type}`);
         }
       });
       
@@ -87,9 +108,11 @@ export function useExportHandlers(
       a.href = url;
       a.download = `${options.projectName}.qasm`;
       a.click();
+      URL.revokeObjectURL(url);
       trackEvent('circuit_exported', { format: 'qasm', gateCount: circuit.length });
       toast({ title: "QASM exported successfully!" });
     } catch (error) {
+      console.error('QASM export error:', error);
       toast({ title: "Export failed", description: String(error), variant: "destructive" });
     }
   };
@@ -104,7 +127,9 @@ export function useExportHandlers(
       python += `# Create quantum circuit\n`;
       python += `qc = QuantumCircuit(${numQubits}, ${numQubits})\n\n`;
       
-      circuit.forEach(gate => {
+      const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+      
+      sortedGates.forEach(gate => {
         switch (gate.type) {
           case 'H':
             python += `qc.h(${gate.qubit})  # Hadamard gate\n`;
@@ -119,7 +144,9 @@ export function useExportHandlers(
             python += `qc.z(${gate.qubit})  # Pauli-Z gate\n`;
             break;
           case 'CNOT':
-            if (gate.qubits) python += `qc.cx(${gate.qubits[0]}, ${gate.qubits[1]})  # CNOT gate\n`;
+            if (gate.qubits && gate.qubits.length >= 2) {
+              python += `qc.cx(${gate.qubits[0]}, ${gate.qubits[1]})  # CNOT gate\n`;
+            }
             break;
           case 'RX':
             python += `qc.rx(${gate.angle || 'np.pi/2'}, ${gate.qubit})  # RX rotation\n`;
@@ -139,6 +166,8 @@ export function useExportHandlers(
           case 'M':
             python += `qc.measure(${gate.qubit}, ${gate.qubit})  # Measurement\n`;
             break;
+          default:
+            console.warn(`Unsupported gate type for Python: ${gate.type}`);
         }
       });
       
@@ -160,9 +189,63 @@ export function useExportHandlers(
       a.href = url;
       a.download = `${options.projectName}.py`;
       a.click();
-      trackEvent('circuit_exported', { format: 'python' as any, gateCount: circuit.length });
+      URL.revokeObjectURL(url);
+      trackEvent('circuit_exported', { format: 'python', gateCount: circuit.length });
       toast({ title: "Python exported successfully!" });
     } catch (error) {
+      console.error('Python export error:', error);
+      toast({ title: "Export failed", description: String(error), variant: "destructive" });
+    }
+  };
+
+  const handleExportJavaScript = () => {
+    try {
+      let javascript = `// Quantum Circuit - ${options.projectName}\n`;
+      javascript += `// Generated by QOSim\n\n`;
+      javascript += `import { QOSimSDK } from '@/sdk/qosim-sdk';\n\n`;
+      javascript += `async function runQuantumCircuit() {\n`;
+      javascript += `  const sdk = new QOSimSDK();\n`;
+      javascript += `  await sdk.initialize();\n\n`;
+      javascript += `  // Create quantum circuit\n`;
+      javascript += `  let circuit = sdk.createCircuit('${options.projectName}', ${numQubits});\n\n`;
+      
+      const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+      
+      sortedGates.forEach(gate => {
+        const gateConfig = {
+          type: gate.type,
+          qubit: gate.qubit,
+          ...(gate.qubits && { qubits: gate.qubits }),
+          ...(gate.angle && { angle: gate.angle })
+        };
+        
+        javascript += `  // Add ${gate.type} gate\n`;
+        javascript += `  circuit = sdk.addGate(circuit, ${JSON.stringify(gateConfig)});\n`;
+      });
+      
+      javascript += `\n  // Simulate circuit\n`;
+      javascript += `  const result = await sdk.simulate(circuit);\n`;
+      javascript += `  console.log('Simulation result:', result);\n`;
+      javascript += `\n  return result;\n`;
+      javascript += `}\n\n`;
+      javascript += `// Run the quantum circuit\n`;
+      javascript += `runQuantumCircuit().then(result => {\n`;
+      javascript += `  console.log('Quantum circuit execution completed:', result);\n`;
+      javascript += `}).catch(error => {\n`;
+      javascript += `  console.error('Error running quantum circuit:', error);\n`;
+      javascript += `});\n`;
+      
+      const blob = new Blob([javascript], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${options.projectName}.js`;
+      a.click();
+      URL.revokeObjectURL(url);
+      trackEvent('circuit_exported', { format: 'javascript', gateCount: circuit.length });
+      toast({ title: "JavaScript exported successfully!" });
+    } catch (error) {
+      console.error('JavaScript export error:', error);
       toast({ title: "Export failed", description: String(error), variant: "destructive" });
     }
   };
@@ -170,6 +253,7 @@ export function useExportHandlers(
   return {
     handleExportJSON,
     handleExportQASM,
-    handleExportPython
+    handleExportPython,
+    handleExportJavaScript
   };
 }
