@@ -27,7 +27,7 @@ import {
 export function SDKDashboard() {
   const [activeTab, setActiveTab] = useState('library');
   const [searchQuery, setSearchQuery] = useState('');
-  const { circuit, addGate, clearCircuit } = useCircuitWorkspace();
+  const { activeCircuit, updateCircuitGates, clearCircuit } = useCircuitWorkspace();
 
   const sdkStats = {
     algorithmsCount: 25,
@@ -131,8 +131,12 @@ export function SDKDashboard() {
               searchQuery={searchQuery}
               onAlgorithmSelect={(algorithm) => {
                 // Load algorithm into workspace
-                clearCircuit();
-                algorithm.gates?.forEach(gate => addGate(gate));
+                if (activeCircuit) {
+                  clearCircuit(activeCircuit.id);
+                  if (algorithm.gates) {
+                    updateCircuitGates(activeCircuit.id, algorithm.gates);
+                  }
+                }
               }}
             />
           </TabsContent>
@@ -143,10 +147,11 @@ export function SDKDashboard() {
 
           <TabsContent value="editor" className="space-y-6">
             <InteractiveCodeEditor 
-              currentCircuit={circuit}
-              onCircuitUpdate={(newCircuit) => {
-                clearCircuit();
-                newCircuit.forEach(gate => addGate(gate));
+              currentCircuit={activeCircuit?.gates || []}
+              onCircuitUpdate={(newGates) => {
+                if (activeCircuit) {
+                  updateCircuitGates(activeCircuit.id, newGates);
+                }
               }}
             />
           </TabsContent>
