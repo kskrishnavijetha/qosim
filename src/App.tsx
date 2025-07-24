@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AuthGuard } from "./components/AuthGuard";
+import { QuantumDashboard } from "./components/QuantumDashboard";
 
 const CircuitBuilder = lazy(() => import("./pages/CircuitBuilder"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
@@ -40,6 +42,11 @@ function App() {
             <Suspense fallback={<div>Loading...</div>}>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/app" element={
+                  <AuthGuard>
+                    <QuantumDashboard />
+                  </AuthGuard>
+                } />
                 <Route path="/circuit-builder" element={<CircuitBuilder />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/thank-you" element={<ThankYou />} />
