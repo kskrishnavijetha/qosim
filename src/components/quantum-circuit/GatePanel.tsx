@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface GateInfo {
@@ -61,55 +62,57 @@ export function GatePanel({ onGateDragStart, onGateTouchStart }: GatePanelProps)
   const categoryOrder = ['Single', 'Rotation', 'Two-Qubit', 'Special'];
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Gate Panel</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className="space-y-4 p-4">
-            {categoryOrder.map(category => {
-              const gates = groupedGates[category] || [];
-              if (gates.length === 0) return null;
+    <TooltipProvider>
+      <Card className="h-full">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Gate Panel</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <ScrollArea className="h-[calc(100vh-200px)]">
+            <div className="space-y-4 p-4">
+              {categoryOrder.map(category => {
+                const gates = groupedGates[category] || [];
+                if (gates.length === 0) return null;
 
-              return (
-                <div key={category} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold">{category}</h3>
-                    <Badge variant="outline" className={cn("text-xs", CATEGORY_COLORS[category])}>
-                      {gates.length}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    {gates.map(gate => (
-                      <div
-                        key={gate.type}
-                        draggable
-                        onDragStart={(e) => onGateDragStart(gate, e)}
-                        onTouchStart={(e) => onGateTouchStart(gate, e)}
-                        className={cn(
-                          "cursor-grab active:cursor-grabbing rounded-lg border-2 border-current p-3 transition-all hover:scale-105 select-none",
-                          gate.color,
-                          "text-white font-bold text-center"
-                        )}
-                        title={`${gate.name}: ${gate.description}`}
-                      >
-                        <div className="text-sm font-bold">
-                          {gate.symbol || gate.type}
+                return (
+                  <div key={category} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold">{category}</h3>
+                      <Badge variant="outline" className={cn("text-xs", CATEGORY_COLORS[category])}>
+                        {gates.length}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      {gates.map(gate => (
+                        <div
+                          key={gate.type}
+                          draggable
+                          onDragStart={(e) => onGateDragStart(gate, e)}
+                          onTouchStart={(e) => onGateTouchStart(gate, e)}
+                          className={cn(
+                            "cursor-grab active:cursor-grabbing rounded-lg border-2 border-current p-3 transition-all hover:scale-105 select-none",
+                            gate.color,
+                            "text-white font-bold text-center"
+                          )}
+                          title={`${gate.name}: ${gate.description}`}
+                        >
+                          <div className="text-sm font-bold">
+                            {gate.symbol || gate.type}
+                          </div>
+                          <div className="text-xs mt-1 opacity-90">
+                            {gate.name}
+                          </div>
                         </div>
-                        <div className="text-xs mt-1 opacity-90">
-                          {gate.name}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }
