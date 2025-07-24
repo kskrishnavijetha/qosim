@@ -1,65 +1,46 @@
+import React from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+} from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { useAuth } from './hooks/useAuth';
+import { Auth } from './pages/Auth';
+import { Dashboard } from './pages/Dashboard';
+import { QuantumSimulator } from './pages/QuantumSimulator';
+import { CircuitBuilderPage } from './pages/CircuitBuilderPage';
+import { Settings } from './pages/Settings';
+import { Analytics } from './pages/Analytics';
+import { JavaScriptSDK } from './pages/JavaScriptSDK';
+import { PythonSDK } from './pages/PythonSDK';
+import SDKDocumentation from './pages/SDKDocumentation';
+import { Pricing } from './pages/Pricing';
+import { QuantumAlgorithmsPanelDemo } from './pages/QuantumAlgorithmsPanelDemo';
+import { QuantumAlgorithmsSDK } from '@/components/sdk/QuantumAlgorithmsSDK';
 
-import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import { AuthProvider } from "./contexts/AuthContext";
-
-const CircuitBuilder = lazy(() => import("./pages/CircuitBuilder"));
-const LandingPage = lazy(() => import("./pages/LandingPage"));
-const AuthPage = lazy(() => import("./pages/AuthPage"));
-const ThankYou = lazy(() => import("./pages/ThankYou"));
-const TutorialsPage = lazy(() => import("./pages/TutorialsPage"));
-const SDKDocumentation = lazy(() => import("./pages/SDKDocumentation"));
-const PythonSDKPage = lazy(() => import("./pages/PythonSDKPage"));
-const APIReference = lazy(() => import("./pages/APIReference"));
-const RoadmapPage = lazy(() => import("./pages/RoadmapPage"));
-const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
-const TestingPage = lazy(() => import("./pages/TestingPage"));
-const SharedCircuit = lazy(() => import("./pages/SharedCircuit"));
-const EmbedCircuit = lazy(() => import("./pages/EmbedCircuit"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <Suspense fallback={<div>Loading...</div>}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/circuit-builder" element={<CircuitBuilder />} />
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/thank-you" element={<ThankYou />} />
-                <Route path="/tutorials" element={<TutorialsPage />} />
-                <Route path="/sdk" element={<SDKDocumentation />} />
-                <Route path="/python-sdk" element={<PythonSDKPage />} />
-                <Route path="/api" element={<APIReference />} />
-                <Route path="/roadmap" element={<RoadmapPage />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/testing" element={<TestingPage />} />
-                <Route path="/shared/:id" element={<SharedCircuit />} />
-                <Route path="/embed/:id" element={<EmbedCircuit />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Auth />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/quantum-simulator" element={<QuantumSimulator />} />
+          <Route path="/circuit-builder" element={<CircuitBuilderPage />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/javascript-sdk" element={<JavaScriptSDK />} />
+          <Route path="/python-sdk" element={<PythonSDK />} />
+          <Route path="/sdk-docs" element={<SDKDocumentation />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/quantum-algorithms-panel-demo" element={<QuantumAlgorithmsPanelDemo />} />
+          <Route path="/quantum-algorithms-sdk" element={<QuantumAlgorithmsSDK />} />
+        </Routes>
+      </Router>
     </QueryClientProvider>
   );
 }
