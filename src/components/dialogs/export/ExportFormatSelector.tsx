@@ -54,21 +54,24 @@ export function ExportFormatSelector({
   ];
 
   const handleExport = (action: () => void) => {
+    console.log('Export action triggered');
     action();
     onOpenChange(false);
   };
 
+  console.log('ExportFormatSelector render - open:', open);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-background border border-border shadow-lg">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg">
             <Download className="w-5 h-5" />
             Choose Export Format
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <div className="space-y-3 mt-4">
           {exportOptions.map((option) => {
             const Icon = option.icon;
             return (
@@ -76,12 +79,12 @@ export function ExportFormatSelector({
                 key={option.id}
                 onClick={() => handleExport(option.action)}
                 variant="outline"
-                className="w-full justify-start gap-3 p-4 h-auto hover:bg-accent/50"
+                className="w-full justify-start gap-3 p-4 h-auto min-h-[60px] hover:bg-accent/50 border-2"
               >
-                <Icon className="w-5 h-5" />
-                <div className="text-left">
-                  <div className="font-medium">{option.name}</div>
-                  <div className="text-sm text-muted-foreground">{option.description}</div>
+                <Icon className="w-6 h-6 flex-shrink-0" />
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base">{option.name}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{option.description}</div>
                 </div>
               </Button>
             );

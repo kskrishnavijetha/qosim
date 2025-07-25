@@ -37,6 +37,12 @@ export function CircuitActions({
     setShowExportSelector(open);
   };
 
+  const handleExportAction = (exportFn: () => void, type: string) => {
+    console.log(`${type} export triggered`);
+    exportFn();
+    setShowExportSelector(false);
+  };
+
   return (
     <>
       <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-right" style={{ animationDelay: '200ms' }}>
@@ -70,26 +76,10 @@ export function CircuitActions({
       <ExportFormatSelector
         open={showExportSelector}
         onOpenChange={handleDialogOpenChange}
-        onExportJSON={() => {
-          console.log('JSON export triggered');
-          onExportJSON();
-          setShowExportSelector(false);
-        }}
-        onExportQASM={() => {
-          console.log('QASM export triggered');
-          onExportQASM();
-          setShowExportSelector(false);
-        }}
-        onExportPython={() => {
-          console.log('Python export triggered');
-          onExportPython();
-          setShowExportSelector(false);
-        }}
-        onExportJavaScript={() => {
-          console.log('JavaScript export triggered');
-          onExportJavaScript();
-          setShowExportSelector(false);
-        }}
+        onExportJSON={() => handleExportAction(onExportJSON, 'JSON')}
+        onExportQASM={() => handleExportAction(onExportQASM, 'QASM')}
+        onExportPython={() => handleExportAction(onExportPython, 'Python')}
+        onExportJavaScript={() => handleExportAction(onExportJavaScript, 'JavaScript')}
       />
     </>
   );
