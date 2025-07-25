@@ -68,8 +68,8 @@ export function Toolbar() {
         id: gate.id,
         type: gate.type,
         qubit: gate.qubit || 0,
-        position: gate.timeStep,
-        qubits: gate.type === 'CNOT' ? [gate.qubit, gate.timeStep] : undefined, // For multi-qubit gates
+        position: gate.position,
+        qubits: gate.type === 'CNOT' ? [gate.qubit, gate.position] : undefined, // For multi-qubit gates
         angle: gate.angle,
         params: gate.params ? gate.params : undefined
       }));
@@ -189,7 +189,7 @@ export function Toolbar() {
             </Badge>
             {selectedGate && (
               <Badge variant="default">
-                Selected: {selectedGate.type} (q{selectedGate.qubit}, t{selectedGate.timeStep})
+                Selected: {selectedGate.type} (q{selectedGate.qubit}, t{selectedGate.position})
               </Badge>
             )}
             {clipboard && (

@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCircuitStore } from '@/store/circuitStore';
@@ -68,13 +69,13 @@ export function CircuitCanvas({ dragState, setDragState }: CircuitCanvasProps) {
     const position = getGridPosition(e.clientX, e.clientY);
     
     if (position && dragState.dragData) {
-      const existingGate = gates.find(g => g.qubit === position.qubit && g.timeStep === position.timeStep);
+      const existingGate = gates.find(g => g.qubit === position.qubit && g.position === position.timeStep);
       if (!existingGate) {
         addGate({
+          id: `${dragState.dragData.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           type: dragState.dragData.type,
           qubit: position.qubit,
           position: position.timeStep,
-          timeStep: position.timeStep,
         });
       }
     }
@@ -90,7 +91,7 @@ export function CircuitCanvas({ dragState, setDragState }: CircuitCanvasProps) {
   const handleCanvasClick = (e: React.MouseEvent) => {
     const position = getGridPosition(e.clientX, e.clientY);
     if (position) {
-      const clickedGate = gates.find(g => g.qubit === position.qubit && g.timeStep === position.timeStep);
+      const clickedGate = gates.find(g => g.qubit === position.qubit && g.position === position.timeStep);
       if (clickedGate) {
         selectGate(clickedGate);
       } else {
@@ -125,7 +126,7 @@ export function CircuitCanvas({ dragState, setDragState }: CircuitCanvasProps) {
     if (duration < 500 && distance < 20) {
       const position = getGridPosition(touch.clientX, touch.clientY);
       if (position) {
-        const clickedGate = gates.find(g => g.qubit === position.qubit && g.timeStep === position.timeStep);
+        const clickedGate = gates.find(g => g.qubit === position.qubit && g.position === position.timeStep);
         if (clickedGate) {
           selectGate(clickedGate);
         } else {
@@ -170,7 +171,7 @@ export function CircuitCanvas({ dragState, setDragState }: CircuitCanvasProps) {
           getGateColor(gate.type)
         )}
         style={{
-          left: gate.timeStep * gridSize + gridSize / 2 - 24,
+          left: gate.position * gridSize + gridSize / 2 - 24,
           top: (gate.qubit || 0) * gridSize + gridSize / 2 - 24,
         }}
         onClick={(e) => {

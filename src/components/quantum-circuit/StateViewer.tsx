@@ -11,7 +11,7 @@ export function StateViewer() {
   const getGatesByQubit = () => {
     const gatesByQubit: Record<number, typeof gates> = {};
     for (let i = 0; i < numQubits; i++) {
-      gatesByQubit[i] = gates.filter(gate => gate.qubit === i).sort((a, b) => a.timeStep - b.timeStep);
+      gatesByQubit[i] = gates.filter(gate => gate.qubit === i).sort((a, b) => a.position - b.position);
     }
     return gatesByQubit;
   };
@@ -19,7 +19,7 @@ export function StateViewer() {
   const getGatesByTimeStep = () => {
     const gatesByTimeStep: Record<number, typeof gates> = {};
     for (let i = 0; i < numTimeSteps; i++) {
-      gatesByTimeStep[i] = gates.filter(gate => gate.timeStep === i).sort((a, b) => (a.qubit || 0) - (b.qubit || 0));
+      gatesByTimeStep[i] = gates.filter(gate => gate.position === i).sort((a, b) => (a.qubit || 0) - (b.qubit || 0));
     }
     return gatesByTimeStep;
   };
@@ -43,7 +43,7 @@ export function StateViewer() {
             <div>
               <div className="text-sm text-muted-foreground">Circuit Depth</div>
               <div className="text-2xl font-bold">
-                {gates.length > 0 ? Math.max(...gates.map(g => g.timeStep)) + 1 : 0}
+                {gates.length > 0 ? Math.max(...gates.map(g => g.position)) + 1 : 0}
               </div>
             </div>
             <div>
@@ -79,8 +79,8 @@ export function StateViewer() {
                 <span className="font-mono">q{selectedGate.qubit}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Time Step:</span>
-                <span className="font-mono">t{selectedGate.timeStep}</span>
+                <span className="text-sm text-muted-foreground">Position:</span>
+                <span className="font-mono">t{selectedGate.position}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">ID:</span>

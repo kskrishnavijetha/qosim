@@ -8,6 +8,9 @@ interface CircuitState {
   selectedGate: Gate | null;
   history: Gate[][];
   historyIndex: number;
+  gridSize: number;
+  numTimeSteps: number;
+  clipboard: Gate | null;
   
   // Actions
   addGate: (gate: Gate) => void;
@@ -17,17 +20,17 @@ interface CircuitState {
   selectGate: (gate: Gate | null) => void;
   setNumQubits: (num: number) => void;
   clearCircuit: () => void;
+  moveGate: (gateId: string, newQubit: number, newTimeStep: number) => void;
   
   // History
   undo: () => void;
   redo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
   
   // Clipboard
   copyGate: (gate: Gate) => void;
-  pasteGate: () => void;
-  clipboardGate: Gate | null;
+  pasteGate: (qubit: number, timeStep: number) => void;
 }
 
 export const useCircuitStore = create<CircuitState>((set, get) => ({
@@ -36,7 +39,9 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
   selectedGate: null,
   history: [[]],
   historyIndex: 0,
-  clipboardGate: null,
+  gridSize: 60,
+  numTimeSteps: 10,
+  clipboard: null,
   
   addGate: (gate) => set((state) => {
     const newGates = [...state.gates, gate];
@@ -104,6 +109,20 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
     };
   }),
   
+  moveGate: (gateId, newQubit, newTimeStep) => set((state) => {
+    const newGates = state.gates.map(g => 
+      g.id === gateId ? { ...g, qubit: newQubit, position: newTimeStep } : g
+    );
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push([...newGates]);
+    
+    return {
+      gates: newGates,
+      history: newHistory,
+      historyIndex: newHistory.length - 1
+    };
+  }),
+  
   undo: () => set((state) => {
     if (state.historyIndex > 0) {
       const newIndex = state.historyIndex - 1;
@@ -128,23 +147,25 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
     return state;
   }),
   
-  get canUndo() {
+  canUndo: () => {
     return get().historyIndex > 0;
   },
   
-  get canRedo() {
+  canRedo: () => {
     const state = get();
     return state.historyIndex < state.history.length - 1;
   },
   
-  copyGate: (gate) => set({ clipboardGate: { ...gate } }),
+  copyGate: (gate) => set({ clipboard: { ...gate } }),
   
-  pasteGate: () => {
+  pasteGate: (qubit, timeStep) => {
     const state = get();
-    if (state.clipboardGate) {
+    if (state.clipboard) {
       const newGate = {
-        ...state.clipboardGate,
-        id: `${state.clipboardGate.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        ...state.clipboard,
+        id: `${state.clipboard.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        qubit,
+        position: timeStep
       };
       state.addGate(newGate);
     }

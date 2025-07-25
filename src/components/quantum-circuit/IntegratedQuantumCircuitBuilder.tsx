@@ -19,13 +19,9 @@ export function IntegratedQuantumCircuitBuilder() {
     clearCircuit();
     newGates.forEach(gate => {
       addGate({
-        type: gate.type,
-        qubit: gate.qubit,
+        ...gate,
         position: gate.position,
-        timeStep: gate.position, // Ensure both position and timeStep are provided
-        controlQubit: gate.controlQubit,
-        angle: gate.angle,
-        params: gate.params
+        qubit: gate.qubit || 0,
       });
     });
   };

@@ -8,6 +8,7 @@ export interface Gate {
   qubit?: number;
   qubits?: number[];
   position: number;
+  timeStep?: number; // Add timeStep property
   angle?: number;
   controlQubit?: number;
   params?: number[];
