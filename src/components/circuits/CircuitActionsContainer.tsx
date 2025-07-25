@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { CircuitActions } from './CircuitActions';
-import { useExportHandlers } from '@/hooks/useExportHandlers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 interface Gate {
   id: string;
@@ -22,7 +21,7 @@ interface CircuitActionsContainerProps {
   onUndo: () => void;
   onClear: () => void;
   canUndo: boolean;
-  projectName?: string;
+  circuitName?: string;
 }
 
 export function CircuitActionsContainer({
@@ -31,34 +30,24 @@ export function CircuitActionsContainer({
   onUndo,
   onClear,
   canUndo,
-  projectName = 'quantum_circuit'
+  circuitName = 'quantum_circuit'
 }: CircuitActionsContainerProps) {
-  console.log('CircuitActionsContainer rendered with circuit:', circuit);
-  
-  const { 
-    handleExportJSON, 
-    handleExportQASM, 
-    handleExportPython, 
-    handleExportJavaScript 
-  } = useExportHandlers(circuit, numQubits, { projectName });
-
   return (
     <Card className="quantum-panel neon-border">
       <CardHeader>
         <CardTitle className="text-quantum-glow flex items-center gap-2">
-          <Download className="w-4 h-4" />
+          <Settings className="w-4 h-4" />
           Circuit Actions
         </CardTitle>
       </CardHeader>
       <CardContent>
         <CircuitActions
+          circuit={circuit}
+          numQubits={numQubits}
           onUndo={onUndo}
           onClear={onClear}
-          onExportJSON={handleExportJSON}
-          onExportQASM={handleExportQASM}
-          onExportPython={handleExportPython}
-          onExportJavaScript={handleExportJavaScript}
           canUndo={canUndo}
+          circuitName={circuitName}
         />
       </CardContent>
     </Card>
