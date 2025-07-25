@@ -22,24 +22,47 @@ export function CircuitActions({
   onExportJavaScript,
   canUndo
 }: CircuitActionsProps) {
+  console.log('CircuitActions rendered with handlers:', {
+    onExportJSON: typeof onExportJSON,
+    onExportQASM: typeof onExportQASM,
+    onExportPython: typeof onExportPython,
+    onExportJavaScript: typeof onExportJavaScript
+  });
+
   const handleExportJSON = () => {
-    console.log('Export JSON clicked');
-    onExportJSON();
+    console.log('Export JSON button clicked');
+    if (onExportJSON) {
+      onExportJSON();
+    } else {
+      console.error('onExportJSON handler is missing');
+    }
   };
 
   const handleExportQASM = () => {
-    console.log('Export QASM clicked');
-    onExportQASM();
+    console.log('Export QASM button clicked');
+    if (onExportQASM) {
+      onExportQASM();
+    } else {
+      console.error('onExportQASM handler is missing');
+    }
   };
 
   const handleExportPython = () => {
-    console.log('Export Python clicked');
-    onExportPython();
+    console.log('Export Python button clicked');
+    if (onExportPython) {
+      onExportPython();
+    } else {
+      console.error('onExportPython handler is missing');
+    }
   };
 
   const handleExportJavaScript = () => {
-    console.log('Export JavaScript clicked');
-    onExportJavaScript();
+    console.log('Export JavaScript button clicked');
+    if (onExportJavaScript) {
+      onExportJavaScript();
+    } else {
+      console.error('onExportJavaScript handler is missing');
+    }
   };
 
   return (
@@ -67,41 +90,41 @@ export function CircuitActions({
         <Button 
           onClick={handleExportJSON} 
           variant="outline" 
-          className="neon-border hover:scale-105 transition-all duration-300"
+          className="neon-border hover:scale-105 transition-all duration-300 bg-blue-500/10 hover:bg-blue-500/20"
           title="Export as JSON"
         >
           <FileText className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">JSON</span>
+          <span className="text-sm">JSON</span>
         </Button>
         
         <Button 
           onClick={handleExportQASM} 
           variant="outline" 
-          className="neon-border hover:scale-105 transition-all duration-300"
+          className="neon-border hover:scale-105 transition-all duration-300 bg-green-500/10 hover:bg-green-500/20"
           title="Export as OpenQASM"
         >
           <Code className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">QASM</span>
+          <span className="text-sm">QASM</span>
         </Button>
         
         <Button 
           onClick={handleExportPython} 
           variant="outline" 
-          className="neon-border hover:scale-105 transition-all duration-300"
+          className="neon-border hover:scale-105 transition-all duration-300 bg-yellow-500/10 hover:bg-yellow-500/20"
           title="Export as Python"
         >
           <FileCode className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Python</span>
+          <span className="text-sm">Python</span>
         </Button>
         
         <Button 
           onClick={handleExportJavaScript} 
           variant="outline" 
-          className="neon-border hover:scale-105 transition-all duration-300"
+          className="neon-border hover:scale-105 transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20"
           title="Export as JavaScript"
         >
           <Braces className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">JavaScript</span>
+          <span className="text-sm">JavaScript</span>
         </Button>
       </div>
     </div>
