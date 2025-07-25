@@ -27,6 +27,10 @@ export function CircuitActions({
 }: CircuitActionsProps) {
   const [showExportSelector, setShowExportSelector] = useState(false);
 
+  const handleExportClick = () => {
+    setShowExportSelector(true);
+  };
+
   return (
     <>
       <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-right" style={{ animationDelay: '200ms' }}>
@@ -44,7 +48,7 @@ export function CircuitActions({
           <span className="hidden sm:inline">Clear</span>
         </Button>
         <Button 
-          onClick={() => setShowExportSelector(true)} 
+          onClick={handleExportClick} 
           variant="outline" 
           className="neon-border hover:scale-105 transition-all duration-300"
         >
@@ -60,10 +64,22 @@ export function CircuitActions({
       <ExportFormatSelector
         open={showExportSelector}
         onOpenChange={setShowExportSelector}
-        onExportJSON={onExportJSON}
-        onExportQASM={onExportQASM}
-        onExportPython={onExportPython}
-        onExportJavaScript={onExportJavaScript}
+        onExportJSON={() => {
+          onExportJSON();
+          setShowExportSelector(false);
+        }}
+        onExportQASM={() => {
+          onExportQASM();
+          setShowExportSelector(false);
+        }}
+        onExportPython={() => {
+          onExportPython();
+          setShowExportSelector(false);
+        }}
+        onExportJavaScript={() => {
+          onExportJavaScript();
+          setShowExportSelector(false);
+        }}
       />
     </>
   );
