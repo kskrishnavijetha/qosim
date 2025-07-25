@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Undo, Trash2, FileDown, FileText, Code, FileCode, Braces } from "lucide-react";
+import { Undo, Trash2, FileText, Code, FileCode, Braces } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CircuitActionsProps {
@@ -10,7 +10,6 @@ interface CircuitActionsProps {
   onExportQASM: () => void;
   onExportPython: () => void;
   onExportJavaScript: () => void;
-  onShowExportDialog: () => void;
   canUndo: boolean;
 }
 
@@ -21,7 +20,6 @@ export function CircuitActions({
   onExportQASM,
   onExportPython,
   onExportJavaScript,
-  onShowExportDialog,
   canUndo
 }: CircuitActionsProps) {
   return (
@@ -79,11 +77,6 @@ export function CircuitActions({
       >
         <Braces className="w-4 h-4 mr-2" />
         <span className="hidden sm:inline">JavaScript</span>
-      </Button>
-      
-      <Button onClick={onShowExportDialog} className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
-        <FileDown className="w-4 h-4 mr-2" />
-        <span className="hidden sm:inline">Advanced Export</span>
       </Button>
     </div>
   );
