@@ -1,11 +1,13 @@
 
-import React, { forwardRef, useCallback, useMemo, useRef } from 'react';
+import React, { memo, useMemo, useRef, useEffect, useState, useCallback, forwardRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, Copy, Edit } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Trash2, Copy, Move, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type Circuit } from '@/hooks/useCircuitWorkspace';
+import { useDragDrop } from '@/contexts/DragDropContext';
+import { Gate, Circuit } from '@/hooks/useCircuitWorkspace';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface OptimizedCircuitCanvasProps {
   circuit: Circuit | null;
@@ -14,203 +16,378 @@ interface OptimizedCircuitCanvasProps {
   numQubits: number;
 }
 
-const GATE_COLORS = {
-  H: 'bg-blue-500',
-  X: 'bg-red-500',
-  Y: 'bg-green-500',
-  Z: 'bg-purple-500',
-  CNOT: 'bg-orange-500',
-  RX: 'bg-pink-500',
-  RY: 'bg-teal-500',
-  RZ: 'bg-indigo-500',
-  S: 'bg-yellow-500',
-  T: 'bg-cyan-500',
-  M: 'bg-gray-500'
-};
+interface VirtualizedGateProps {
+  gate: Gate;
+  gridSize: number;
+  numQubits: number;
+  isSelected: boolean;
+  onSelect: (gateId: string) => void;
+  onDelete: (gateId: string) => void;
+  onMove: (gateId: string, newQubit: number, newPosition: number) => void;
+}
 
-export const OptimizedCircuitCanvas = forwardRef<HTMLDivElement, OptimizedCircuitCanvasProps>(
-  ({ circuit, onCircuitChange, gridSize, numQubits }, ref) => {
-    const canvasRef = useRef<HTMLDivElement>(null);
-    const gates = circuit?.gates || [];
+const VirtualizedGate = memo(function VirtualizedGate({
+  gate,
+  gridSize,
+  numQubits,
+  isSelected,
+  onSelect,
+  onDelete,
+  onMove
+}: VirtualizedGateProps) {
+  const isMobile = useIsMobile();
+  const [isMoving, setIsMoving] = useState(false);
+  
+  const gateColors = {
+    'I': 'bg-slate-500',
+    'H': 'bg-quantum-glow',
+    'X': 'bg-quantum-neon',
+    'Y': 'bg-purple-500',
+    'Z': 'bg-quantum-particle',
+    'S': 'bg-blue-500',
+    'T': 'bg-cyan-500',
+    'SDG': 'bg-blue-600',
+    'TDG': 'bg-cyan-600',
+    'CNOT': 'bg-quantum-plasma',
+    'CX': 'bg-quantum-plasma',
+    'CY': 'bg-pink-500',
+    'CZ': 'bg-red-500',
+    'CH': 'bg-yellow-500',
+    'CCX': 'bg-red-600',
+    'SWAP': 'bg-green-500',
+    'ISWAP': 'bg-green-600',
+    'CSWAP': 'bg-green-700',
+    'RX': 'bg-quantum-energy',
+    'RY': 'bg-secondary',
+    'RZ': 'bg-orange-500',
+    'U1': 'bg-indigo-500',
+    'U2': 'bg-indigo-600',
+    'U3': 'bg-indigo-700',
+    'MEASURE': 'bg-destructive',
+    'RESET': 'bg-slate-600',
+    'BARRIER': 'bg-amber-500'
+  };
 
-    const handleGateClick = useCallback((gateId: string) => {
-      console.log('Gate clicked:', gateId);
-    }, []);
+  const gateColor = gateColors[gate.type] || 'bg-slate-500';
+  const gateSize = isMobile ? 32 : 40;
+  const x = gate.position * gridSize + 100;
+  const y = (gate.qubit || 0) * 60 + 40;
 
-    const handleDeleteGate = useCallback((gateId: string) => {
-      if (!circuit) return;
-      
-      const updatedGates = gates.filter(gate => gate.id !== gateId);
-      onCircuitChange({
-        ...circuit,
-        gates: updatedGates
-      });
-    }, [circuit, gates, onCircuitChange]);
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isMoving) return;
+    onSelect(gate.id);
+  };
 
-    const renderQubitLines = useMemo(() => {
-      const lines = [];
-      for (let i = 0; i < numQubits; i++) {
-        lines.push(
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(gate.id);
+  };
+
+  const handleMove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMoving(true);
+    // Implement move logic here
+  };
+
+  return (
+    <div
+      className={cn(
+        "absolute group cursor-pointer transition-all duration-200",
+        isSelected && "ring-2 ring-quantum-glow ring-offset-2"
+      )}
+      style={{
+        left: x - gateSize/2,
+        top: y - gateSize/2,
+        width: gateSize,
+        height: gateSize
+      }}
+      onClick={handleClick}
+    >
+      <div className={cn(
+        "w-full h-full rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black quantum-glow",
+        gateColor,
+        isSelected && "scale-110"
+      )}>
+        {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
+      </div>
+
+      {/* Gate controls */}
+      <div className={cn(
+        "absolute -top-8 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+        isSelected && "opacity-100"
+      )}>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="w-6 h-6 p-0"
+          onClick={handleMove}
+          title="Move gate"
+        >
+          <Move className="w-3 h-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          className="w-6 h-6 p-0"
+          onClick={handleDelete}
+          title="Delete gate"
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+
+      {/* Multi-qubit gate connections */}
+      {gate.type === 'CNOT' && gate.qubits && gate.qubits.length >= 2 && (
+        <div
+          className="absolute w-0.5 bg-quantum-plasma animate-pulse"
+          style={{
+            height: Math.abs(gate.qubits[1] - gate.qubits[0]) * 60,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            top: gate.qubits[0] < gate.qubits[1] ? '100%' : `-${Math.abs(gate.qubits[1] - gate.qubits[0]) * 60}px`
+          }}
+        />
+      )}
+    </div>
+  );
+});
+
+export const OptimizedCircuitCanvas = memo(forwardRef<HTMLDivElement, OptimizedCircuitCanvasProps>(function OptimizedCircuitCanvas({
+  circuit,
+  onCircuitChange,
+  gridSize,
+  numQubits
+}, ref) {
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(800);
+  const { state, selectGate, deselectGate, clearSelection } = useDragDrop();
+  const isMobile = useIsMobile();
+
+  // Calculate virtualization parameters
+  const bufferSize = 5;
+  const visibleRange = useMemo(() => {
+    const start = Math.max(0, Math.floor(scrollLeft / gridSize) - bufferSize);
+    const end = Math.ceil((scrollLeft + viewportWidth) / gridSize) + bufferSize;
+    return { start, end };
+  }, [scrollLeft, viewportWidth, gridSize]);
+
+  // Filter visible gates
+  const visibleGates = useMemo(() => {
+    if (!circuit) return [];
+    return circuit.gates.filter(gate => 
+      gate.position >= visibleRange.start && gate.position <= visibleRange.end
+    );
+  }, [circuit, visibleRange]);
+
+  // Calculate circuit dimensions
+  const circuitWidth = useMemo(() => {
+    if (!circuit || circuit.gates.length === 0) return 1000;
+    const maxPosition = Math.max(...circuit.gates.map(g => g.position));
+    return Math.max((maxPosition + 10) * gridSize, 1000);
+  }, [circuit, gridSize]);
+
+  // Handle scroll for virtualization
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollLeft(e.currentTarget.scrollLeft);
+  }, []);
+
+  // Update viewport width on resize
+  useEffect(() => {
+    const updateViewport = () => {
+      if (ref && 'current' in ref && ref.current) {
+        setViewportWidth(ref.current.clientWidth);
+      }
+    };
+
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, [ref]);
+
+  // Gate operations
+  const handleGateSelect = useCallback((gateId: string) => {
+    if (state.selectedGates.has(gateId)) {
+      deselectGate(gateId);
+    } else {
+      selectGate(gateId);
+    }
+  }, [state.selectedGates, selectGate, deselectGate]);
+
+  const handleGateDelete = useCallback((gateId: string) => {
+    if (!circuit) return;
+    
+    const updatedCircuit = {
+      ...circuit,
+      gates: circuit.gates.filter(g => g.id !== gateId)
+    };
+    
+    onCircuitChange(updatedCircuit);
+    deselectGate(gateId);
+  }, [circuit, onCircuitChange, deselectGate]);
+
+  const handleGateMove = useCallback((gateId: string, newQubit: number, newPosition: number) => {
+    if (!circuit) return;
+    
+    const updatedCircuit = {
+      ...circuit,
+      gates: circuit.gates.map(g => 
+        g.id === gateId ? { ...g, qubit: newQubit, position: newPosition } : g
+      )
+    };
+    
+    onCircuitChange(updatedCircuit);
+  }, [circuit, onCircuitChange]);
+
+  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      clearSelection();
+    }
+  }, [clearSelection]);
+
+  // Render qubit lines
+  const renderQubitLines = useMemo(() => {
+    const lines = [];
+    for (let i = 0; i < numQubits; i++) {
+      const y = i * 60 + 40;
+      lines.push(
+        <React.Fragment key={i}>
+          {/* Qubit line */}
           <div
-            key={`qubit-${i}`}
-            className="absolute w-full h-0.5 bg-quantum-glow/30"
+            className="absolute left-0 h-0.5 bg-quantum-neon/50"
             style={{
-              top: `${(i + 0.5) * gridSize}px`,
-              left: 0,
-              right: 0
+              top: y,
+              width: circuitWidth
             }}
           />
-        );
-      }
-      return lines;
-    }, [numQubits, gridSize]);
-
-    const renderGates = useMemo(() => {
-      return gates.map((gate) => {
-        const x = (gate.position || 0) * gridSize;
-        const y = (gate.qubit || 0) * gridSize;
-        const gateColor = GATE_COLORS[gate.type as keyof typeof GATE_COLORS] || 'bg-gray-500';
-
-        return (
+          {/* Qubit label */}
           <div
-            key={gate.id}
-            className={cn(
-              'absolute flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:scale-110 transition-transform border-2 border-quantum-glow/50 hover:border-quantum-glow',
-              gateColor
-            )}
-            style={{
-              left: x,
-              top: y,
-              width: gridSize - 4,
-              height: gridSize - 4,
-              borderRadius: '8px'
-            }}
-            onClick={() => handleGateClick(gate.id)}
+            className="absolute left-2 text-sm font-mono text-quantum-glow bg-background px-1 rounded"
+            style={{ top: y - 12 }}
           >
-            <span className="select-none">{gate.type}</span>
-            
-            {/* Gate controls */}
-            <div className="absolute -top-8 left-0 opacity-0 hover:opacity-100 transition-opacity bg-black/80 rounded px-2 py-1 flex gap-1">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 text-white hover:bg-white/20"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteGate(gate.id);
-                }}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 text-white hover:bg-white/20"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Copy gate functionality
-                }}
-              >
-                <Copy className="w-3 h-3" />
-              </Button>
-            </div>
+            q[{i}]
           </div>
-        );
-      });
-    }, [gates, gridSize, handleGateClick, handleDeleteGate]);
+        </React.Fragment>
+      );
+    }
+    return lines;
+  }, [numQubits, circuitWidth]);
 
-    const renderTimeStepLabels = useMemo(() => {
-      const maxTimeSteps = Math.max(10, Math.max(...gates.map(g => g.position || 0)) + 2);
-      const labels = [];
-      
-      for (let i = 0; i < maxTimeSteps; i++) {
-        labels.push(
-          <div
-            key={`time-${i}`}
-            className="absolute text-xs text-quantum-particle"
-            style={{
-              left: i * gridSize + gridSize / 2 - 8,
-              top: -20
-            }}
-          >
-            t{i}
-          </div>
-        );
-      }
-      return labels;
-    }, [gates, gridSize]);
-
-    const renderQubitLabels = useMemo(() => {
-      const labels = [];
-      for (let i = 0; i < numQubits; i++) {
-        labels.push(
-          <div
-            key={`qubit-label-${i}`}
-            className="absolute text-sm text-quantum-neon font-mono"
-            style={{
-              left: -40,
-              top: i * gridSize + gridSize / 2 - 8
-            }}
-          >
-            |q{i}⟩
-          </div>
-        );
-      }
-      return labels;
-    }, [numQubits, gridSize]);
-
+  if (!circuit) {
     return (
-      <Card className="quantum-panel neon-border h-full overflow-hidden">
-        <CardContent className="p-0 h-full">
-          <div className="flex items-center justify-between p-4 border-b border-quantum-glow/20">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold text-quantum-glow">Circuit Canvas</h3>
-              {circuit && (
-                <Badge variant="outline" className="text-quantum-neon">
-                  {gates.length} gates
-                </Badge>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex-1 overflow-auto p-4">
-            <div
-              ref={canvasRef}
-              className="relative bg-quantum-matrix/10 rounded-lg border border-quantum-glow/20 min-h-[400px]"
-              style={{
-                width: `${Math.max(800, gates.length * gridSize + 200)}px`,
-                height: `${numQubits * gridSize + 40}px`,
-                paddingLeft: '50px',
-                paddingTop: '30px'
-              }}
-            >
-              {/* Time step labels */}
-              {renderTimeStepLabels}
-              
-              {/* Qubit labels */}
-              {renderQubitLabels}
-              
-              {/* Qubit lines */}
-              {renderQubitLines}
-              
-              {/* Gates */}
-              {renderGates}
-              
-              {/* Empty state */}
-              {gates.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center text-quantum-particle">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">⚛️</div>
-                    <p>Drag gates from the palette to build your circuit</p>
-                  </div>
-                </div>
-              )}
-            </div>
+      <Card className="h-full quantum-panel neon-border">
+        <CardContent className="h-full flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="text-4xl">⚡</div>
+            <p className="text-muted-foreground">No circuit selected</p>
           </div>
         </CardContent>
       </Card>
     );
   }
-);
 
-OptimizedCircuitCanvas.displayName = 'OptimizedCircuitCanvas';
+  return (
+    <Card className="h-full quantum-panel neon-border">
+      <CardContent className="h-full p-0">
+        {/* Circuit header */}
+        <div className="p-4 border-b border-quantum-glow/20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h3 className="font-semibold text-quantum-glow">{circuit.name}</h3>
+            <Badge variant="outline">
+              {circuit.gates.length} gates
+            </Badge>
+            <Badge variant="outline">
+              {numQubits} qubits
+            </Badge>
+          </div>
+          
+          {state.selectedGates.size > 0 && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">
+                {state.selectedGates.size} selected
+              </Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={clearSelection}
+                className="neon-border"
+              >
+                Clear
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Canvas */}
+        <div
+          ref={ref}
+          className="flex-1 relative overflow-auto bg-quantum-matrix/10"
+          onScroll={handleScroll}
+          onClick={handleCanvasClick}
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(123, 255, 178, 0.1) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(123, 255, 178, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: `${gridSize}px 60px`,
+            backgroundPosition: `${-scrollLeft}px 0`
+          }}
+        >
+          <div
+            className="relative"
+            style={{
+              width: circuitWidth,
+              height: numQubits * 60 + 80
+            }}
+          >
+            {/* Qubit lines */}
+            {renderQubitLines}
+
+            {/* Gates */}
+            {visibleGates.map(gate => (
+              <VirtualizedGate
+                key={gate.id}
+                gate={gate}
+                gridSize={gridSize}
+                numQubits={numQubits}
+                isSelected={state.selectedGates.has(gate.id)}
+                onSelect={handleGateSelect}
+                onDelete={handleGateDelete}
+                onMove={handleGateMove}
+              />
+            ))}
+
+            {/* Preview gate */}
+            {state.dragState.previewGate && (
+              <div
+                className="absolute pointer-events-none z-10"
+                style={{
+                  left: state.dragState.previewGate.position * gridSize + 100 - 20,
+                  top: (state.dragState.previewGate.qubit || 0) * 60 + 40 - 20,
+                  width: 40,
+                  height: 40
+                }}
+              >
+                <div className="w-full h-full rounded-lg border-2 border-dashed border-quantum-glow bg-quantum-glow/20 flex items-center justify-center text-xs font-bold text-quantum-glow animate-pulse">
+                  {state.dragState.previewGate.type.length > 4 
+                    ? state.dragState.previewGate.type.slice(0, 3) 
+                    : state.dragState.previewGate.type}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Performance info */}
+        <div className="p-2 border-t border-quantum-glow/20 text-xs text-muted-foreground flex justify-between">
+          <span>
+            Showing {visibleGates.length} of {circuit.gates.length} gates
+          </span>
+          <span>
+            Grid: {gridSize}px | Viewport: {Math.round(viewportWidth)}px
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}));
