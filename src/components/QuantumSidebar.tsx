@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 
 interface QuantumSidebarProps {
   activeTab: string;
@@ -94,9 +95,14 @@ export function QuantumSidebar({ activeTab, onTabChange }: QuantumSidebarProps) 
 
   return (
     <div className="flex h-full min-w-[200px] flex-col border-r bg-background/95 backdrop-blur-sm">
-      <div className="px-4 py-2 text-center">
-        <h2 className="text-lg font-bold">Quantum OS</h2>
-        <p className="text-sm text-muted-foreground">v0.5.0-alpha</p>
+      <div className="px-4 py-2">
+        <div className="flex items-center justify-between">
+          <div className="text-center">
+            <h2 className="text-lg font-bold">Quantum OS</h2>
+            <p className="text-sm text-muted-foreground">v0.5.0-alpha</p>
+          </div>
+          <UserProfileDropdown />
+        </div>
       </div>
       <Separator />
       <ScrollArea className="flex-1 space-y-4 p-4">
