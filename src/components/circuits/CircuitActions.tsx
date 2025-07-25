@@ -28,7 +28,13 @@ export function CircuitActions({
   const [showExportSelector, setShowExportSelector] = useState(false);
 
   const handleExportClick = () => {
+    console.log('Export button clicked, opening dialog');
     setShowExportSelector(true);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    console.log('Dialog open state changed:', open);
+    setShowExportSelector(open);
   };
 
   return (
@@ -63,20 +69,24 @@ export function CircuitActions({
 
       <ExportFormatSelector
         open={showExportSelector}
-        onOpenChange={setShowExportSelector}
+        onOpenChange={handleDialogOpenChange}
         onExportJSON={() => {
+          console.log('JSON export triggered');
           onExportJSON();
           setShowExportSelector(false);
         }}
         onExportQASM={() => {
+          console.log('QASM export triggered');
           onExportQASM();
           setShowExportSelector(false);
         }}
         onExportPython={() => {
+          console.log('Python export triggered');
           onExportPython();
           setShowExportSelector(false);
         }}
         onExportJavaScript={() => {
+          console.log('JavaScript export triggered');
           onExportJavaScript();
           setShowExportSelector(false);
         }}

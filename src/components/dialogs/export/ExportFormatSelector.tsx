@@ -60,37 +60,33 @@ export function ExportFormatSelector({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="quantum-panel border-quantum-glow/30 max-w-md">
+      <DialogContent className="sm:max-w-[425px] bg-background border border-border shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-quantum-glow flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
             Choose Export Format
           </DialogTitle>
         </DialogHeader>
 
-        <Card className="quantum-panel border-quantum-glow/20">
-          <CardContent className="p-4 space-y-3">
-            <div className="space-y-2">
-              {exportOptions.map((option) => {
-                const Icon = option.icon;
-                return (
-                  <Button
-                    key={option.id}
-                    onClick={() => handleExport(option.action)}
-                    variant="outline"
-                    className="w-full justify-start gap-3 p-4 h-auto neon-border hover:bg-quantum-matrix/20"
-                  >
-                    <Icon className="w-5 h-5 text-quantum-glow" />
-                    <div className="text-left">
-                      <div className="font-medium text-quantum-glow">{option.name}</div>
-                      <div className="text-sm text-quantum-particle">{option.description}</div>
-                    </div>
-                  </Button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 py-4">
+          {exportOptions.map((option) => {
+            const Icon = option.icon;
+            return (
+              <Button
+                key={option.id}
+                onClick={() => handleExport(option.action)}
+                variant="outline"
+                className="w-full justify-start gap-3 p-4 h-auto hover:bg-accent/50"
+              >
+                <Icon className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-medium">{option.name}</div>
+                  <div className="text-sm text-muted-foreground">{option.description}</div>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
       </DialogContent>
     </Dialog>
   );
