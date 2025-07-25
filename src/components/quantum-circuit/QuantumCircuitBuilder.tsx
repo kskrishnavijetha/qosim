@@ -5,12 +5,13 @@ import { CircuitCanvas } from './CircuitCanvas';
 import { Toolbar } from './Toolbar';
 import { StateViewer } from './StateViewer';
 import { QuantumStateVisualizer } from './QuantumStateVisualizer';
+import { OptimizationPanel } from '@/components/optimization/OptimizationPanel';
 import { useCircuitStore } from '@/store/circuitStore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Activity, Zap, Atom } from 'lucide-react';
+import { Eye, Activity, Zap, Atom, Brain } from 'lucide-react';
 
 interface DragState {
   isDragging: boolean;
@@ -32,7 +33,8 @@ export function QuantumCircuitBuilder() {
     pasteGate,
     clearCircuit,
     gates,
-    numQubits
+    numQubits,
+    updateGates
   } = useCircuitStore();
 
   const [dragState, setDragState] = useState<DragState>({
@@ -77,6 +79,14 @@ export function QuantumCircuitBuilder() {
     });
 
     e.preventDefault();
+  };
+
+  const handleOptimizedCircuit = (optimizedGates: any[]) => {
+    updateGates(optimizedGates);
+    toast({
+      title: "Circuit optimized",
+      description: "AI optimization has been applied to your circuit",
+    });
   };
 
   // Keyboard shortcuts
@@ -165,9 +175,13 @@ export function QuantumCircuitBuilder() {
             />
           </div>
 
-          {/* Right Panel - State Viewer */}
-          <div className="w-80 flex-shrink-0">
+          {/* Right Panel - State Viewer & AI Optimization */}
+          <div className="w-80 flex-shrink-0 space-y-4">
             <StateViewer />
+            <OptimizationPanel 
+              circuit={gates}
+              onOptimizedCircuit={handleOptimizedCircuit}
+            />
           </div>
         </div>
 
@@ -188,7 +202,7 @@ export function QuantumCircuitBuilder() {
             </CardHeader>
             <CardContent className="p-6">
               <Tabs defaultValue="bloch-spheres" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsList className="grid w-full grid-cols-5 mb-6">
                   <TabsTrigger value="bloch-spheres" className="flex items-center gap-2">
                     <Eye className="w-4 h-4" />
                     Bloch Spheres
@@ -204,6 +218,10 @@ export function QuantumCircuitBuilder() {
                   <TabsTrigger value="entanglement" className="flex items-center gap-2">
                     <Atom className="w-4 h-4" />
                     Entanglement
+                  </TabsTrigger>
+                  <TabsTrigger value="ai-analysis" className="flex items-center gap-2">
+                    <Brain className="w-4 h-4" />
+                    AI Analysis
                   </TabsTrigger>
                 </TabsList>
                 
@@ -228,6 +246,15 @@ export function QuantumCircuitBuilder() {
                 <TabsContent value="entanglement" className="space-y-4">
                   <div className="h-96 overflow-auto">
                     <QuantumStateVisualizer />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="ai-analysis" className="space-y-4">
+                  <div className="h-96 overflow-auto">
+                    <OptimizationPanel 
+                      circuit={gates}
+                      onOptimizedCircuit={handleOptimizedCircuit}
+                    />
                   </div>
                 </TabsContent>
               </Tabs>

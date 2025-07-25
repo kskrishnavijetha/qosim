@@ -9,13 +9,21 @@ import { CodeEditorSDK } from './CodeEditorSDK';
 import { DocumentationCenter } from './DocumentationCenter';
 import { ExportCenter } from './ExportCenter';
 import { PerformanceBenchmark } from './PerformanceBenchmark';
+import { OptimizationPanel } from '@/components/optimization/OptimizationPanel';
+import { OptimizationButton } from '@/components/optimization/OptimizationButton';
 import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
-import { Code2, BookOpen, Download, Zap, Settings, Play } from 'lucide-react';
+import { Code2, BookOpen, Download, Zap, Settings, Play, Brain } from 'lucide-react';
 
 export function QuantumAlgorithmsSDK() {
   const [activeTab, setActiveTab] = useState("algorithms");
   const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'python'>('javascript');
   const workspace = useCircuitWorkspace();
+
+  const handleOptimizedCircuit = (optimizedGates: any[]) => {
+    if (workspace.activeCircuit) {
+      workspace.updateCircuitGates(workspace.activeCircuit.id, optimizedGates);
+    }
+  };
 
   return (
     <div className="h-full bg-quantum-void text-quantum-neon">
@@ -33,6 +41,9 @@ export function QuantumAlgorithmsSDK() {
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="neon-border text-quantum-glow">
               SDK v2.0.0
+            </Badge>
+            <Badge variant="outline" className="neon-border text-quantum-neon animate-pulse">
+              AI-POWERED
             </Badge>
             <div className="flex gap-2">
               <Button
@@ -52,12 +63,20 @@ export function QuantumAlgorithmsSDK() {
                 Python
               </Button>
             </div>
+            {workspace.activeCircuit && (
+              <OptimizationButton
+                circuit={workspace.activeCircuit.gates}
+                onOptimizedCircuit={handleOptimizedCircuit}
+                size="sm"
+                variant="outline"
+              />
+            )}
           </div>
         </div>
 
         {/* SDK Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-5 quantum-tabs">
+          <TabsList className="grid grid-cols-6 quantum-tabs">
             <TabsTrigger value="algorithms" className="quantum-tab">
               <Zap className="w-4 h-4 mr-2" />
               Algorithm Library
@@ -77,6 +96,10 @@ export function QuantumAlgorithmsSDK() {
             <TabsTrigger value="performance" className="quantum-tab">
               <Settings className="w-4 h-4 mr-2" />
               Performance
+            </TabsTrigger>
+            <TabsTrigger value="optimization" className="quantum-tab">
+              <Brain className="w-4 h-4 mr-2" />
+              AI Optimization
             </TabsTrigger>
           </TabsList>
 
@@ -107,6 +130,36 @@ export function QuantumAlgorithmsSDK() {
 
           <TabsContent value="performance" className="space-y-6">
             <PerformanceBenchmark workspace={workspace} />
+          </TabsContent>
+
+          <TabsContent value="optimization" className="space-y-6">
+            <div className="space-y-6">
+              <Card className="quantum-panel neon-border">
+                <CardHeader>
+                  <CardTitle className="text-quantum-glow flex items-center gap-2">
+                    <Brain className="w-5 h-5" />
+                    SDK AI Optimization
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-quantum-particle mb-4">
+                    Integrate AI-powered optimization directly into your quantum algorithms.
+                    The optimization engine preserves functional equivalence while improving performance.
+                  </p>
+                  
+                  {workspace.activeCircuit ? (
+                    <OptimizationPanel 
+                      circuit={workspace.activeCircuit.gates}
+                      onOptimizedCircuit={handleOptimizedCircuit}
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-quantum-particle">
+                      <p>Create or select a circuit to enable AI optimization</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

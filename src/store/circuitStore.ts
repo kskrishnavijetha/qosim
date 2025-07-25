@@ -1,200 +1,152 @@
 
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { Gate } from '@/hooks/useCircuitWorkspace';
 
-export interface Gate {
-  id: string;
-  type: string;
-  qubit?: number;
-  qubits?: number[];
-  position: number;
-  timeStep: number; // Add for backward compatibility
-  angle?: number;
-  controlQubit?: number;
-  params?: number[];
-}
-
-export interface CircuitState {
+interface CircuitState {
   gates: Gate[];
+  numQubits: number;
   selectedGate: Gate | null;
-  clipboard: Gate | null;
   history: Gate[][];
   historyIndex: number;
-  gridSize: number;
-  numQubits: number;
-  numTimeSteps: number;
-}
-
-export interface CircuitActions {
-  addGate: (gate: Omit<Gate, 'id'>) => void;
+  
+  // Actions
+  addGate: (gate: Gate) => void;
   removeGate: (gateId: string) => void;
-  moveGate: (gateId: string, qubit: number, timeStep: number) => void;
+  updateGate: (gateId: string, updates: Partial<Gate>) => void;
+  updateGates: (gates: Gate[]) => void;
   selectGate: (gate: Gate | null) => void;
-  copyGate: (gate: Gate) => void;
-  pasteGate: (qubit: number, timeStep: number) => void;
+  setNumQubits: (num: number) => void;
+  clearCircuit: () => void;
+  
+  // History
   undo: () => void;
   redo: () => void;
-  clearCircuit: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
-  setGridSize: (size: number) => void;
-  setNumQubits: (num: number) => void;
-  setNumTimeSteps: (num: number) => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  
+  // Clipboard
+  copyGate: (gate: Gate) => void;
+  pasteGate: () => void;
+  clipboardGate: Gate | null;
 }
 
-type CircuitStore = CircuitState & CircuitActions;
-
-const initialState: CircuitState = {
+export const useCircuitStore = create<CircuitState>((set, get) => ({
   gates: [],
+  numQubits: 5,
   selectedGate: null,
-  clipboard: null,
   history: [[]],
   historyIndex: 0,
-  gridSize: 60,
-  numQubits: 5,
-  numTimeSteps: 10,
-};
-
-const addToHistory = (state: CircuitState, gates: Gate[]) => {
-  const newHistory = state.history.slice(0, state.historyIndex + 1);
-  newHistory.push([...gates]);
-  return {
-    history: newHistory,
-    historyIndex: newHistory.length - 1,
-  };
-};
-
-export const useCircuitStore = create<CircuitStore>()(
-  devtools(
-    (set, get) => ({
-      ...initialState,
-
-      addGate: (gateData) => {
-        const id = `gate_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const newGate: Gate = { 
-          ...gateData, 
-          id,
-          position: gateData.position || gateData.timeStep || 0,
-          timeStep: gateData.timeStep || gateData.position || 0,
-          params: gateData.params || []
-        };
-        
-        set((state) => {
-          const newGates = [...state.gates, newGate];
-          return {
-            gates: newGates,
-            ...addToHistory(state, newGates),
-          };
-        });
-      },
-
-      removeGate: (gateId) => {
-        set((state) => {
-          const newGates = state.gates.filter(gate => gate.id !== gateId);
-          return {
-            gates: newGates,
-            selectedGate: state.selectedGate?.id === gateId ? null : state.selectedGate,
-            ...addToHistory(state, newGates),
-          };
-        });
-      },
-
-      moveGate: (gateId, qubit, timeStep) => {
-        set((state) => {
-          const newGates = state.gates.map(gate => 
-            gate.id === gateId ? { 
-              ...gate, 
-              qubit, 
-              position: timeStep, 
-              timeStep 
-            } : gate
-          );
-          return {
-            gates: newGates,
-            ...addToHistory(state, newGates),
-          };
-        });
-      },
-
-      selectGate: (gate) => {
-        set({ selectedGate: gate });
-      },
-
-      copyGate: (gate) => {
-        set({ clipboard: gate });
-      },
-
-      pasteGate: (qubit, timeStep) => {
-        const state = get();
-        if (state.clipboard) {
-          const newGate = {
-            ...state.clipboard,
-            qubit,
-            position: timeStep,
-            timeStep,
-          };
-          state.addGate(newGate);
-        }
-      },
-
-      undo: () => {
-        set((state) => {
-          if (state.historyIndex > 0) {
-            const newIndex = state.historyIndex - 1;
-            return {
-              gates: [...state.history[newIndex]],
-              historyIndex: newIndex,
-              selectedGate: null,
-            };
-          }
-          return state;
-        });
-      },
-
-      redo: () => {
-        set((state) => {
-          if (state.historyIndex < state.history.length - 1) {
-            const newIndex = state.historyIndex + 1;
-            return {
-              gates: [...state.history[newIndex]],
-              historyIndex: newIndex,
-              selectedGate: null,
-            };
-          }
-          return state;
-        });
-      },
-
-      clearCircuit: () => {
-        set((state) => ({
-          gates: [],
-          selectedGate: null,
-          ...addToHistory(state, []),
-        }));
-      },
-
-      canUndo: () => {
-        const state = get();
-        return state.historyIndex > 0;
-      },
-
-      canRedo: () => {
-        const state = get();
-        return state.historyIndex < state.history.length - 1;
-      },
-
-      setGridSize: (size) => {
-        set({ gridSize: size });
-      },
-
-      setNumQubits: (num) => {
-        set({ numQubits: num });
-      },
-
-      setNumTimeSteps: (num) => {
-        set({ numTimeSteps: num });
-      },
-    }),
-    { name: 'circuit-store' }
-  )
-);
+  clipboardGate: null,
+  
+  addGate: (gate) => set((state) => {
+    const newGates = [...state.gates, gate];
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push([...newGates]);
+    
+    return {
+      gates: newGates,
+      history: newHistory,
+      historyIndex: newHistory.length - 1
+    };
+  }),
+  
+  removeGate: (gateId) => set((state) => {
+    const newGates = state.gates.filter(g => g.id !== gateId);
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push([...newGates]);
+    
+    return {
+      gates: newGates,
+      history: newHistory,
+      historyIndex: newHistory.length - 1,
+      selectedGate: state.selectedGate?.id === gateId ? null : state.selectedGate
+    };
+  }),
+  
+  updateGate: (gateId, updates) => set((state) => {
+    const newGates = state.gates.map(g => 
+      g.id === gateId ? { ...g, ...updates } : g
+    );
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push([...newGates]);
+    
+    return {
+      gates: newGates,
+      history: newHistory,
+      historyIndex: newHistory.length - 1
+    };
+  }),
+  
+  updateGates: (gates) => set((state) => {
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push([...gates]);
+    
+    return {
+      gates: [...gates],
+      history: newHistory,
+      historyIndex: newHistory.length - 1
+    };
+  }),
+  
+  selectGate: (gate) => set({ selectedGate: gate }),
+  
+  setNumQubits: (num) => set({ numQubits: num }),
+  
+  clearCircuit: () => set((state) => {
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push([]);
+    
+    return {
+      gates: [],
+      history: newHistory,
+      historyIndex: newHistory.length - 1,
+      selectedGate: null
+    };
+  }),
+  
+  undo: () => set((state) => {
+    if (state.historyIndex > 0) {
+      const newIndex = state.historyIndex - 1;
+      return {
+        gates: [...state.history[newIndex]],
+        historyIndex: newIndex,
+        selectedGate: null
+      };
+    }
+    return state;
+  }),
+  
+  redo: () => set((state) => {
+    if (state.historyIndex < state.history.length - 1) {
+      const newIndex = state.historyIndex + 1;
+      return {
+        gates: [...state.history[newIndex]],
+        historyIndex: newIndex,
+        selectedGate: null
+      };
+    }
+    return state;
+  }),
+  
+  get canUndo() {
+    return get().historyIndex > 0;
+  },
+  
+  get canRedo() {
+    const state = get();
+    return state.historyIndex < state.history.length - 1;
+  },
+  
+  copyGate: (gate) => set({ clipboardGate: { ...gate } }),
+  
+  pasteGate: () => {
+    const state = get();
+    if (state.clipboardGate) {
+      const newGate = {
+        ...state.clipboardGate,
+        id: `${state.clipboardGate.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      };
+      state.addGate(newGate);
+    }
+  }
+}));
