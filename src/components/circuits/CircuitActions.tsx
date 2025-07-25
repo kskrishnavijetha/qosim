@@ -22,6 +22,26 @@ export function CircuitActions({
   onExportJavaScript,
   canUndo
 }: CircuitActionsProps) {
+  const handleExportJSON = () => {
+    console.log('Export JSON clicked');
+    onExportJSON();
+  };
+
+  const handleExportQASM = () => {
+    console.log('Export QASM clicked');
+    onExportQASM();
+  };
+
+  const handleExportPython = () => {
+    console.log('Export Python clicked');
+    onExportPython();
+  };
+
+  const handleExportJavaScript = () => {
+    console.log('Export JavaScript clicked');
+    onExportJavaScript();
+  };
+
   return (
     <div className="space-y-3">
       {/* Main action buttons row */}
@@ -45,7 +65,7 @@ export function CircuitActions({
       {/* Export buttons row */}
       <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-right" style={{ animationDelay: '300ms' }}>
         <Button 
-          onClick={onExportJSON} 
+          onClick={handleExportJSON} 
           variant="outline" 
           className="neon-border hover:scale-105 transition-all duration-300"
           title="Export as JSON"
@@ -55,7 +75,7 @@ export function CircuitActions({
         </Button>
         
         <Button 
-          onClick={onExportQASM} 
+          onClick={handleExportQASM} 
           variant="outline" 
           className="neon-border hover:scale-105 transition-all duration-300"
           title="Export as OpenQASM"
@@ -65,7 +85,7 @@ export function CircuitActions({
         </Button>
         
         <Button 
-          onClick={onExportPython} 
+          onClick={handleExportPython} 
           variant="outline" 
           className="neon-border hover:scale-105 transition-all duration-300"
           title="Export as Python"
@@ -75,7 +95,7 @@ export function CircuitActions({
         </Button>
         
         <Button 
-          onClick={onExportJavaScript} 
+          onClick={handleExportJavaScript} 
           variant="outline" 
           className="neon-border hover:scale-105 transition-all duration-300"
           title="Export as JavaScript"
