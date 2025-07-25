@@ -62,7 +62,7 @@ export function CircuitActions({
         <Button 
           onClick={handleExportClick} 
           variant="outline" 
-          className="neon-border hover:scale-105 transition-all duration-300"
+          className="neon-border hover:scale-105 transition-all duration-300 bg-blue-50 hover:bg-blue-100 border-blue-300"
         >
           <Download className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">Export</span>
