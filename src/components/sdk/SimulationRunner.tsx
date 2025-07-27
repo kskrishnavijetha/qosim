@@ -170,8 +170,8 @@ export function SimulationRunner({
                         </div>
                         <div className="text-xs text-quantum-particle">
                           {amplitude.real.toFixed(3)}
-                          {amplitude.imag >= 0 ? '+' : ''}
-                          {amplitude.imag.toFixed(3)}i
+                          {amplitude.imaginary >= 0 ? '+' : ''}
+                          {amplitude.imaginary.toFixed(3)}i
                         </div>
                       </div>
                     ))}

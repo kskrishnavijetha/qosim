@@ -223,7 +223,7 @@ export function FastQuantumSimulator() {
                           />
                         </div>
                         <span className="text-xs text-quantum-particle w-12 text-right">
-                          {count}
+                          {String(count)}
                         </span>
                       </div>
                     </div>
