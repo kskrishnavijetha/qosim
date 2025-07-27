@@ -1,82 +1,292 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, SkipForward, RotateCcw } from 'lucide-react';
-import { Gate } from '@/hooks/useCircuitWorkspace';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { Play, Pause, SkipForward, SkipBack, RotateCcw, Clock } from 'lucide-react';
+import { Gate } from '@/hooks/useCircuitState';
+import { OptimizedSimulationResult, SimulationStepData } from '@/lib/quantumSimulatorOptimized';
 
 interface StepByStepExecutorProps {
   circuit: Gate[];
-  onStep: () => void;
-  onReset: () => void;
-  onPause: () => void;
-  onResume: () => void;
-  isRunning: boolean;
-  progress: number;
+  simulationResult: OptimizedSimulationResult | null;
+  onStepModeToggle: (enabled: boolean) => void;
+  onSimulationStep: () => SimulationStepData | null;
+  onSimulationReset: () => void;
+  onSimulationPause: () => void;
+  onSimulationResume: () => void;
 }
 
 export function StepByStepExecutor({
   circuit,
-  onStep,
-  onReset,
-  onPause,
-  onResume,
-  isRunning,
-  progress
+  simulationResult,
+  onStepModeToggle,
+  onSimulationStep,
+  onSimulationReset,
+  onSimulationPause,
+  onSimulationResume
 }: StepByStepExecutorProps) {
+  const [isStepMode, setIsStepMode] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState([500]); // milliseconds
+  const [stepData, setStepData] = useState<SimulationStepData | null>(null);
+
+  // Real-time updates when simulation result changes
+  useEffect(() => {
+    console.log('🎯 StepByStepExecutor: simulationResult updated', simulationResult?.executionTime);
+    if (simulationResult) {
+      setCurrentStep(0);
+      setStepData(null);
+    }
+  }, [simulationResult]);
+
+  // Real-time updates when circuit changes
+  useEffect(() => {
+    console.log('🎯 StepByStepExecutor: circuit updated, length:', circuit.length);
+    setCurrentStep(0);
+    setStepData(null);
+    setIsPlaying(false);
+  }, [circuit]);
+
+  const handleStepModeToggle = useCallback(() => {
+    const newStepMode = !isStepMode;
+    setIsStepMode(newStepMode);
+    onStepModeToggle(newStepMode);
+    
+    if (!newStepMode) {
+      setCurrentStep(0);
+      setStepData(null);
+      setIsPlaying(false);
+    }
+  }, [isStepMode, onStepModeToggle]);
+
+  const handleStep = useCallback(() => {
+    const stepResult = onSimulationStep();
+    if (stepResult) {
+      setStepData(stepResult);
+    }
+    return stepResult;
+  }, [onSimulationStep]);
+
+  const handleReset = useCallback(() => {
+    onSimulationReset();
+    setCurrentStep(0);
+    setStepData(null);
+    setIsPlaying(false);
+  }, [onSimulationReset]);
+
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const currentStepRef = useRef(currentStep);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+
+  const handlePlayPause = useCallback(() => {
+    if (isPlaying) {
+      console.log('🔄 StepByStepExecutor: Pausing execution');
+      setIsPlaying(false);
+      onSimulationPause();
+      if (intervalId) {
+        clearInterval(intervalId);
+        setIntervalId(null);
+      }
+    } else {
+      console.log('🔄 StepByStepExecutor: Starting execution with current step:', currentStep, 'circuit length:', circuit.length);
+      
+      if (currentStep >= circuit.length) {
+        console.log('🔄 StepByStepExecutor: Already at end, resetting to start');
+        setCurrentStep(0);
+        currentStepRef.current = 0;
+        handleReset();
+      }
+      
+      setIsPlaying(true);
+      onSimulationResume();
+      
+      // Use interval for consistent stepping
+      const id = setInterval(() => {
+        const currentStepValue = currentStepRef.current;
+        console.log('🔄 StepByStepExecutor: Auto-stepping at currentStep:', currentStepValue, 'Circuit length:', circuit.length);
+        
+        if (currentStepValue >= circuit.length) {
+          console.log('🔄 StepByStepExecutor: Reached end, stopping');
+          setIsPlaying(false);
+          clearInterval(id);
+          setIntervalId(null);
+          return;
+        }
+        
+        const result = handleStep();
+        console.log('🔄 StepByStepExecutor: Auto-step result:', result);
+        
+        setCurrentStep(prev => {
+          const nextStep = prev + 1;
+          console.log('🔄 StepByStepExecutor: Updating step from', prev, 'to', nextStep);
+          currentStepRef.current = nextStep;
+          
+          if (nextStep >= circuit.length) {
+            console.log('🔄 StepByStepExecutor: Will reach end after this step');
+            setTimeout(() => {
+              setIsPlaying(false);
+              clearInterval(id);
+              setIntervalId(null);
+            }, 100);
+          }
+          return nextStep;
+        });
+      }, playbackSpeed[0]);
+      
+      setIntervalId(id);
+    }
+  }, [isPlaying, handleStep, playbackSpeed, circuit.length, onSimulationPause, onSimulationResume, intervalId, currentStep, handleReset]);
+
+  const progress = circuit.length > 0 ? (currentStep / circuit.length) * 100 : 0;
+
   return (
     <Card className="quantum-panel neon-border">
       <CardHeader>
-        <CardTitle className="text-sm text-quantum-neon">
+        <CardTitle className="flex items-center gap-2 text-quantum-glow">
+          <Clock className="w-5 h-5" />
           Step-by-Step Execution
-          <Badge variant="secondary" className="ml-2">
-            {circuit.length} gates
-          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Progress value={progress} />
-        <div className="flex items-center justify-between">
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-2">
           <Button
-            onClick={isRunning ? onPause : onResume}
-            disabled={circuit.length === 0}
-            variant="outline"
-            className="neon-border"
+            variant={isStepMode ? "default" : "outline"}
+            onClick={handleStepModeToggle}
+            className="flex-1"
           >
-            {isRunning ? (
-              <>
-                <Pause className="w-4 h-4 mr-2" />
-                Pause
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 mr-2" />
-                Resume
-              </>
-            )}
+            {isStepMode ? 'Exit Step Mode' : 'Enter Step Mode'}
           </Button>
-          <Button
-            onClick={onStep}
-            disabled={isRunning || circuit.length === 0}
-            variant="outline"
-            className="neon-border"
-          >
-            <SkipForward className="w-4 h-4 mr-2" />
-            Next Step
-          </Button>
-          <Button
-            onClick={onReset}
-            disabled={isRunning || circuit.length === 0}
-            variant="outline"
-            className="neon-border"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset
-          </Button>
+          {isStepMode && (
+            <Badge variant="secondary" className="quantum-glow">
+              Step Mode Active
+            </Badge>
+          )}
         </div>
+
+        {isStepMode && (
+          <>
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Progress: {currentStep} / {circuit.length}</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="quantum-progress" />
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleReset}
+                className="shrink-0"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (currentStep > 0) {
+                    setCurrentStep(prev => prev - 1);
+                  }
+                }}
+                disabled={currentStep === 0}
+              >
+                <SkipBack className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                size="sm"
+                onClick={handlePlayPause}
+                className="flex-1"
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 mr-2" />
+                ) : (
+                  <Play className="w-4 h-4 mr-2" />
+                )}
+                {isPlaying ? 'Pause' : 'Play'}
+              </Button>
+              
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleStep}
+                disabled={currentStep >= circuit.length}
+              >
+                <SkipForward className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Playback Speed */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Playback Speed: {playbackSpeed[0]}ms
+              </label>
+              <Slider
+                value={playbackSpeed}
+                onValueChange={setPlaybackSpeed}
+                min={100}
+                max={2000}
+                step={100}
+                className="quantum-slider"
+              />
+            </div>
+
+            {/* Current Step Info */}
+            {stepData && (
+              <Card className="bg-quantum-dark/50 border-quantum-blue/30">
+                <CardContent className="pt-4">
+                  <h4 className="font-semibold mb-2">Current Step:</h4>
+                  <div className="space-y-1 text-sm">
+                    <div>Gate: <Badge variant="outline">{stepData.gate.type}</Badge></div>
+                    <div>Target: Qubit {stepData.gate.qubit ?? stepData.gate.qubits?.join(', ')}</div>
+                    {stepData.gate.angle && (
+                      <div>Angle: {(stepData.gate.angle * 180 / Math.PI).toFixed(2)}°</div>
+                    )}
+                    <div>Execution Time: {stepData.timestamp.toFixed(2)}ms</div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* State Vector Display (Optional) */}
+            {simulationResult && simulationResult.stepResults && (
+              <Card className="bg-quantum-dark/30 border-quantum-purple/30">
+                <CardContent className="pt-4">
+                  <h4 className="font-semibold mb-2">State Vector:</h4>
+                  <div className="grid grid-cols-2 gap-1 text-xs font-mono max-h-32 overflow-y-auto">
+                    {simulationResult.stateVector.slice(0, 8).map((amplitude, i) => (
+                      <div key={i} className="flex justify-between">
+                        <span>|{i.toString(2).padStart(3, '0')}⟩:</span>
+                        <span className="text-quantum-glow">
+                          {amplitude.real.toFixed(3)}{amplitude.imag >= 0 ? '+' : ''}{amplitude.imag.toFixed(3)}i
+                        </span>
+                      </div>
+                    ))}
+                    {simulationResult.stateVector.length > 8 && (
+                      <div className="col-span-2 text-center text-gray-500">
+                        ... and {simulationResult.stateVector.length - 8} more
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );
 }
-

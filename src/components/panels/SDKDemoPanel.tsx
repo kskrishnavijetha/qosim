@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -133,7 +132,18 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
         </Badge>
       </div>
 
-      <div className={`gap-4 lg:gap-6 flex-1 ${isMobile ? 'flex flex-col' : 'grid grid-cols-1'}`}>
+      {/* Results Section - Top Priority on Mobile */}
+      {simulationResult && (
+        <div className="w-full">
+          <SimulationOutput
+            output={output}
+            isRunning={isRunning}
+            simulationResult={simulationResult}
+          />
+        </div>
+      )}
+
+      <div className={`gap-4 lg:gap-6 flex-1 ${isMobile ? 'flex flex-col' : 'grid grid-cols-1 lg:grid-cols-2'}`}>
         <CodeEditor
           selectedExample={selectedExample}
           customCode={customCode}
@@ -147,12 +157,14 @@ ${result.basisStates.filter(b => b.probability > 0.01).map(b =>
           onSDKChange={setSelectedSDK}
         />
         
-        {/* Simulation Results - now shown below code editor */}
-        <SimulationOutput
-          output={output}
-          isRunning={isRunning}
-          simulationResult={simulationResult}
-        />
+        {/* Show output here only when no simulation result */}
+        {!simulationResult && (
+          <SimulationOutput
+            output={output}
+            isRunning={isRunning}
+            simulationResult={simulationResult}
+          />
+        )}
       </div>
 
       <SDKFeatures />

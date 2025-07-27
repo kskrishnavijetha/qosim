@@ -1,8 +1,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-
-// Import types from the workspace hook to ensure consistency
-import type { Gate } from '@/hooks/useCircuitWorkspace';
+import { Gate } from './useCircuitState';
 
 interface DragState {
   isDragging: boolean;
@@ -43,7 +41,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     setDragState({
       isDragging: true,
       gateType,
-      dragPosition: { x: clientX, y: clientY },
+      dragPosition: { x: clientX - rect.left, y: clientY - rect.top },
       hoverQubit: null,
       hoverPosition: null
     });
@@ -104,10 +102,12 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
       const multiQubitGates = ['CNOT', 'CX', 'CZ', 'SWAP', 'TOFFOLI', 'CCX', 'FREDKIN', 'CSWAP'];
       const isMultiQubit = multiQubitGates.includes(gateType);
       
-      // For multi-qubit gates, use qubits array; for single-qubit gates, use qubit
+      // Determine qubits array for multi-qubit gates
       let qubits: number[] | undefined;
+      let qubit: number | undefined = dragState.hoverQubit;
       
       if (isMultiQubit) {
+        qubit = undefined;
         switch (gateType) {
           case 'CNOT':
           case 'CX':
@@ -147,11 +147,11 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
       const newGate: Gate = {
         id: `gate_${Date.now()}`,
         type: gateType,
-        qubit: dragState.hoverQubit,
+        qubit,
+        qubits,
         position: dragState.hoverPosition,
         angle,
-        params,
-        qubits
+        params
       };
       
       onGateAdd(newGate);

@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { OptimizationButton } from '@/components/optimization/OptimizationButton';
-import { useAIOptimization } from '@/hooks/useAIOptimization';
-import { Gate } from '@/hooks/useCircuitWorkspace';
-import { Zap, Settings, TrendingUp, AlertCircle, Brain } from 'lucide-react';
+import { Gate } from '@/hooks/useCircuitState';
+import { Zap, Settings, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CircuitOptimizerProps {
@@ -15,18 +13,126 @@ interface CircuitOptimizerProps {
   onOptimizedCircuit: (gates: Gate[]) => void;
 }
 
-export function CircuitOptimizer({ circuit, onOptimizedCircuit }: CircuitOptimizerProps) {
-  const { optimizationResult, isOptimizing, optimizeCircuit } = useAIOptimization();
-  const [showAdvanced, setShowAdvanced] = useState(false);
+interface OptimizationSuggestion {
+  type: 'gate_reduction' | 'gate_cancellation' | 'gate_commutation';
+  description: string;
+  impact: 'high' | 'medium' | 'low';
+  gatesAffected: string[];
+}
 
-  const handleOptimize = async () => {
-    try {
-      const result = await optimizeCircuit(circuit);
-      if (result.preservesFunctionality) {
-        onOptimizedCircuit(result.optimizedGates);
+export function CircuitOptimizer({ circuit, onOptimizedCircuit }: CircuitOptimizerProps) {
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
+
+  const analyzeCircuit = () => {
+    const newSuggestions: OptimizationSuggestion[] = [];
+    
+    // Check for consecutive identical gates (cancellation)
+    for (let i = 0; i < circuit.length - 1; i++) {
+      const current = circuit[i];
+      const next = circuit[i + 1];
+      
+      if (current.qubit === next.qubit && current.type === next.type && 
+          ['X', 'Y', 'Z', 'H'].includes(current.type)) {
+        newSuggestions.push({
+          type: 'gate_cancellation',
+          description: `Two consecutive ${current.type} gates cancel each other`,
+          impact: 'high',
+          gatesAffected: [current.id, next.id]
+        });
       }
+    }
+
+    // Check for redundant identity operations
+    const identityGates = circuit.filter(g => g.type === 'I');
+    if (identityGates.length > 0) {
+      newSuggestions.push({
+        type: 'gate_reduction',
+        description: `${identityGates.length} identity gates can be removed`,
+        impact: 'medium',
+        gatesAffected: identityGates.map(g => g.id)
+      });
+    }
+
+    // Check for gate commutation opportunities
+    for (let i = 0; i < circuit.length - 1; i++) {
+      const current = circuit[i];
+      const next = circuit[i + 1];
+      
+      if (current.qubit !== next.qubit && 
+          ['H', 'X', 'Y', 'Z'].includes(current.type) && 
+          ['H', 'X', 'Y', 'Z'].includes(next.type)) {
+        newSuggestions.push({
+          type: 'gate_commutation',
+          description: `Gates on qubits ${current.qubit} and ${next.qubit} can be reordered for better parallelization`,
+          impact: 'low',
+          gatesAffected: [current.id, next.id]
+        });
+      }
+    }
+
+    setSuggestions(newSuggestions);
+    return newSuggestions;
+  };
+
+  const optimizeCircuit = async () => {
+    setIsOptimizing(true);
+    
+    try {
+      // Simulate optimization process
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      let optimizedCircuit = [...circuit];
+      const suggestions = analyzeCircuit();
+      
+      // Apply optimizations
+      suggestions.forEach(suggestion => {
+        if (suggestion.type === 'gate_cancellation') {
+          // Remove pairs of canceling gates
+          optimizedCircuit = optimizedCircuit.filter(
+            gate => !suggestion.gatesAffected.includes(gate.id)
+          );
+        } else if (suggestion.type === 'gate_reduction') {
+          // Remove identity gates
+          optimizedCircuit = optimizedCircuit.filter(
+            gate => gate.type !== 'I'
+          );
+        }
+      });
+
+      onOptimizedCircuit(optimizedCircuit);
+      
+      const gatesRemoved = circuit.length - optimizedCircuit.length;
+      toast.success(`Circuit optimized! Removed ${gatesRemoved} redundant gates.`);
+      
     } catch (error) {
-      // Error handling is done in the hook
+      toast.error('Optimization failed. Please try again.');
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (circuit.length > 0) {
+      analyzeCircuit();
+    }
+  }, [circuit]);
+
+  const getImpactColor = (impact: string) => {
+    switch (impact) {
+      case 'high': return 'text-red-500';
+      case 'medium': return 'text-yellow-500';
+      case 'low': return 'text-blue-500';
+      default: return 'text-muted-foreground';
+    }
+  };
+
+  const getImpactBadge = (impact: string) => {
+    switch (impact) {
+      case 'high': return 'destructive';
+      case 'medium': return 'secondary';
+      case 'low': return 'outline';
+      default: return 'outline';
     }
   };
 
@@ -35,13 +141,13 @@ export function CircuitOptimizer({ circuit, onOptimizedCircuit }: CircuitOptimiz
       <Card className="quantum-panel neon-border">
         <CardHeader>
           <CardTitle className="text-sm text-quantum-neon flex items-center gap-2">
-            <Brain className="w-4 h-4" />
-            AI Circuit Optimizer
+            <Zap className="w-4 h-4" />
+            Circuit Optimizer
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground py-8">
-            Add gates to your circuit to enable AI optimization
+            Add gates to your circuit to see optimization suggestions
           </div>
         </CardContent>
       </Card>
@@ -52,129 +158,68 @@ export function CircuitOptimizer({ circuit, onOptimizedCircuit }: CircuitOptimiz
     <Card className="quantum-panel neon-border">
       <CardHeader>
         <CardTitle className="text-sm text-quantum-neon flex items-center gap-2">
-          <Brain className="w-4 h-4" />
-          AI Circuit Optimizer
-          <Badge variant="outline" className="text-quantum-glow animate-pulse">
-            AI-POWERED
-          </Badge>
+          <Zap className="w-4 h-4" />
+          Auto-Optimization
           <Badge variant="secondary" className="ml-2">
             {circuit.length} gates
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* One-Click Optimization */}
-        <div className="flex gap-2">
-          <OptimizationButton
-            circuit={circuit}
-            onOptimizedCircuit={onOptimizedCircuit}
-            disabled={isOptimizing}
-          />
-          <Button
-            variant="outline"
-            size="default"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="neon-border"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Advanced
-          </Button>
-        </div>
+        {/* Optimization Button */}
+        <Button
+          onClick={optimizeCircuit}
+          disabled={isOptimizing || suggestions.length === 0}
+          className="w-full neon-border"
+          variant="outline"
+        >
+          {isOptimizing ? (
+            <>
+              <Settings className="w-4 h-4 mr-2 animate-spin" />
+              Optimizing Circuit...
+            </>
+          ) : (
+            <>
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Optimize Circuit ({suggestions.length} suggestions)
+            </>
+          )}
+        </Button>
 
-        {/* Optimization Results */}
-        {optimizationResult && (
+        {/* Optimization Suggestions */}
+        {suggestions.length > 0 && (
           <>
             <Separator />
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-quantum-particle flex items-center gap-2">
-                <TrendingUp className="w-3 h-3" />
-                Optimization Results
+            <div>
+              <h4 className="text-xs font-semibold text-quantum-particle mb-3 flex items-center gap-2">
+                <AlertCircle className="w-3 h-3" />
+                Optimization Opportunities
               </h4>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 bg-quantum-void rounded border border-quantum-matrix">
-                  <div className="text-xs text-quantum-particle">Gate Reduction</div>
-                  <div className="text-lg font-bold text-quantum-glow">
-                    {optimizationResult.metrics.gateReduction.toFixed(1)}%
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {suggestions.map((suggestion, index) => (
+                  <div key={index} className="p-3 bg-quantum-void rounded border border-quantum-matrix">
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant={getImpactBadge(suggestion.impact)}>
+                        {suggestion.impact} impact
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {suggestion.gatesAffected.length} gates
+                      </span>
+                    </div>
+                    <p className="text-xs text-quantum-particle">
+                      {suggestion.description}
+                    </p>
                   </div>
-                </div>
-                
-                <div className="p-3 bg-quantum-void rounded border border-quantum-matrix">
-                  <div className="text-xs text-quantum-particle">Depth Reduction</div>
-                  <div className="text-lg font-bold text-quantum-glow">
-                    {optimizationResult.metrics.depthReduction.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-              
-              {optimizationResult.suggestions.length > 0 && (
-                <div className="p-3 bg-quantum-matrix/10 rounded border border-quantum-glow/30">
-                  <div className="text-xs text-quantum-neon font-semibold mb-2">
-                    AI Suggestions Applied
-                  </div>
-                  <div className="text-xs text-quantum-particle">
-                    {optimizationResult.suggestions.length} optimization(s) applied
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Advanced Options */}
-        {showAdvanced && (
-          <>
-            <Separator />
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-quantum-particle">
-                Advanced AI Optimization Options
-              </h4>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => optimizeCircuit(circuit, { optimizeDepth: true, reduceGates: false })}
-                  className="neon-border"
-                >
-                  Depth Only
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => optimizeCircuit(circuit, { optimizeDepth: false, reduceGates: true })}
-                  className="neon-border"
-                >
-                  Gates Only
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => optimizeCircuit(circuit, { errorCorrection: true })}
-                  className="neon-border"
-                >
-                  Error Correction
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => optimizeCircuit(circuit, { preserveEntanglement: true })}
-                  className="neon-border"
-                >
-                  Preserve Entanglement
-                </Button>
+                ))}
               </div>
             </div>
           </>
         )}
 
-        {circuit.length > 0 && !optimizationResult && (
-          <div className="text-center text-quantum-particle py-4">
-            <Brain className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-xs">Click "AI Optimize" to analyze your circuit</p>
+        {suggestions.length === 0 && (
+          <div className="text-center text-quantum-glow py-4">
+            <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-xs">Circuit is already optimized!</p>
           </div>
         )}
       </CardContent>

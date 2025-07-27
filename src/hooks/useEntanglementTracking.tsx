@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { Gate } from '@/hooks/useCircuitWorkspace';
+import { Gate } from '@/hooks/useCircuitState';
 import { toast } from '@/hooks/use-toast';
 
 const ENTANGLING_GATES = ['CNOT', 'CZ', 'BELL', 'GHZ', 'TOFFOLI'];

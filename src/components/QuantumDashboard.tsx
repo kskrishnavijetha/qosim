@@ -1,24 +1,23 @@
+
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
-import { QuantumOSWorkspace } from "./quantum-os/QuantumOSWorkspace";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
-import { FilesPanel } from "./panels/FilesPanel";
+import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
-import { QuantumAlgorithmsSDK } from "./sdk/QuantumAlgorithmsSDK";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "./ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./ui/resizable";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 export function QuantumDashboard() {
-  const [activeTab, setActiveTab] = useState("quantum-os");
+  const [activeTab, setActiveTab] = useState("memory");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [consoleCollapsed, setConsoleCollapsed] = useState(true);
@@ -30,24 +29,22 @@ export function QuantumDashboard() {
 
   const renderPanel = () => {
     switch (activeTab) {
-      case "quantum-os":
-        return <QuantumOSWorkspace />;
+      case "jobs":
+        return <JobsPanel />;
       case "memory":
         return <MemoryPanel />;
       case "files":
-        return <FilesPanel />;
+        return <EnhancedFilesPanel />;
       case "logs":
         return <LogsPanel />;
       case "javascript-sdk":
         return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
       case "python-sdk":
         return <SDKDemoPanel key="python" defaultSDK="python" />;
-      case "sdk-tools":
-        return <QuantumAlgorithmsSDK />;
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
-        return <QuantumOSWorkspace />;
+        return <MemoryPanel />;
     }
   };
 

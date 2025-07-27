@@ -1,8 +1,16 @@
-
 import React from "react";
 import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { VirtualizedCircuitGrid } from "./VirtualizedCircuitGrid";
-import { useCircuitWorkspace, type Gate } from '@/hooks/useCircuitWorkspace';
+
+interface Gate {
+  id: string;
+  type: string;
+  qubit?: number;
+  qubits?: number[];
+  position: number;
+  angle?: number;
+  params?: number[];
+}
 
 interface DragState {
   isDragging: boolean;

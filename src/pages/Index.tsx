@@ -1,9 +1,12 @@
-
-import LandingPage from "./LandingPage";
+import { QuantumDashboard } from "@/components/QuantumDashboard";
+import { AuthGuard } from "@/components/AuthGuard";
 
 const Index = () => {
-  // Always show landing page as the home page
-  return <LandingPage />;
+  return (
+    <AuthGuard>
+      <QuantumDashboard />
+    </AuthGuard>
+  );
 };
 
 export default Index;

@@ -47,8 +47,6 @@ export interface QuantumCircuit {
 
 class QuantumBackendService {
   private apiKey: string | null = null;
-  private simulationCache = new Map<string, QuantumBackendResult>();
-  private maxCacheSize = 100;
 
   async executeCircuit(
     circuit: QuantumCircuit, 
@@ -57,59 +55,98 @@ class QuantumBackendService {
   ): Promise<QuantumBackendResult> {
     console.log('🚀 QuantumBackendService: executeCircuit called', { backend, shots, gateCount: circuit.gates.length });
     
-    // Create cache key
-    const cacheKey = this.createCacheKey(circuit, backend, shots);
-    
-    // Check cache first
-    if (this.simulationCache.has(cacheKey)) {
-      console.log('⚡ Using cached simulation result');
-      return this.simulationCache.get(cacheKey)!;
-    }
-    
     const startTime = performance.now();
     
     try {
-      // For better performance, limit the number of qubits for complex circuits
-      const numQubits = Math.min(circuit.qubits, 8); // Limit to 8 qubits max
+      // Initialize state vector for |00000⟩
+      const numQubits = circuit.qubits;
       const stateSize = 2 ** numQubits;
-      
-      // Use optimized state vector initialization
-      let stateVector = new Array(stateSize);
-      stateVector.fill(new Complex(0, 0));
+      let stateVector = new Array(stateSize).fill(null).map(() => new Complex(0, 0));
       stateVector[0] = new Complex(1, 0); // |00000⟩
       
-      console.log('🚀 Processing', circuit.gates.length, 'gates for', numQubits, 'qubits');
+      console.log('🚀 Initial state vector length:', stateVector.length, 'for', numQubits, 'qubits');
 
-      // Process gates in batches for better performance
-      const batchSize = 20;
-      for (let i = 0; i < circuit.gates.length; i += batchSize) {
-        const batch = circuit.gates.slice(i, i + batchSize);
+      // Apply each gate
+      for (const gate of circuit.gates) {
+        console.log('🚀 Applying gate:', gate.type, 'to qubits:', gate.qubit || gate.qubits);
         
-        for (const gate of batch) {
-          stateVector = this.processGateOptimized(gate, stateVector, numQubits);
+        switch (gate.type) {
+          case 'H':
+            stateVector = this.applyHadamard(stateVector, gate.qubit!, numQubits);
+            break;
+          case 'X':
+            stateVector = this.applyPauliX(stateVector, gate.qubit!, numQubits);
+            break;
+          case 'Y':
+            stateVector = this.applyPauliY(stateVector, gate.qubit!, numQubits);
+            break;
+          case 'Z':
+            stateVector = this.applyPauliZ(stateVector, gate.qubit!, numQubits);
+            break;
+          case 'S':
+            stateVector = this.applyPhaseS(stateVector, gate.qubit!, numQubits);
+            break;
+          case 'T':
+            stateVector = this.applyTGate(stateVector, gate.qubit!, numQubits);
+            break;
+          case 'RX':
+            stateVector = this.applyRotationX(stateVector, gate.qubit!, gate.angle || 0, numQubits);
+            break;
+          case 'RY':
+            stateVector = this.applyRotationY(stateVector, gate.qubit!, gate.angle || 0, numQubits);
+            break;
+          case 'RZ':
+            stateVector = this.applyRotationZ(stateVector, gate.qubit!, gate.angle || 0, numQubits);
+            break;
+          case 'CNOT':
+            const controlQubit = gate.controlQubit !== undefined ? gate.controlQubit : gate.qubits?.[0] || 0;
+            const targetQubit = gate.qubit !== undefined ? gate.qubit : gate.qubits?.[1] || 1;
+            stateVector = this.applyCNOT(stateVector, controlQubit, targetQubit, numQubits);
+            break;
+          case 'CZ':
+            stateVector = this.applyCZ(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, numQubits);
+            break;
+          case 'SWAP':
+            stateVector = this.applySWAP(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, numQubits);
+            break;
+          case 'TOFFOLI':
+            stateVector = this.applyToffoli(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, gate.qubits?.[2] || 2, numQubits);
+            break;
+          case 'BELL':
+            stateVector = this.createBellState(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, numQubits);
+            break;
+          case 'GHZ':
+            stateVector = this.createGHZState(stateVector, gate.qubits || [0, 1, 2], numQubits);
+            break;
+          case 'W':
+            stateVector = this.createWState(stateVector, gate.qubits || [0, 1, 2], numQubits);
+            break;
         }
         
-        // Yield control periodically
-        if (i + batchSize < circuit.gates.length) {
-          await new Promise(resolve => setTimeout(resolve, 0));
-        }
+        stateVector = this.normalizeStateVector(stateVector);
       }
 
-      // Normalize state vector
-      stateVector = this.normalizeStateVector(stateVector);
+      console.log('🚀 Final state vector non-zero amplitudes:', 
+        stateVector.filter(amp => amp.magnitude() > 1e-10).length);
 
-      // Calculate results efficiently
+      // Calculate results
       const measurementProbabilities = this.calculateMeasurementProbabilities(stateVector, numQubits);
       const qubitStates = this.calculateQubitStates(stateVector, numQubits);
       const blochSphereData = this.calculateBlochSphereData(stateVector, numQubits);
-      const entanglement = this.calculateEntanglementOptimized(stateVector, numQubits);
+      const entanglement = this.calculateEntanglement(stateVector, numQubits);
 
       // Generate counts for shot simulation
-      const counts = this.simulateShots(measurementProbabilities, Math.min(shots, 1024)); // Limit shots
+      const counts = this.simulateShots(measurementProbabilities, shots);
+
+      console.log('🚀 Entanglement calculation result:', {
+        totalEntanglement: entanglement.totalEntanglement,
+        pairsCount: entanglement.pairs.length,
+        pairs: entanglement.pairs.map(p => `Q${p.qubit1}-Q${p.qubit2}: ${(p.strength * 100).toFixed(1)}%`)
+      });
 
       const executionTime = performance.now() - startTime;
       
-      const result: QuantumBackendResult = {
+      return {
         stateVector: stateVector.map(amp => ({
           real: amp.real,
           imaginary: amp.imaginary,
@@ -126,192 +163,12 @@ class QuantumBackendService {
         counts
       };
 
-      // Cache the result
-      this.cacheResult(cacheKey, result);
-      
-      return result;
-
     } catch (error) {
       console.error('❌ QuantumBackendService error:', error);
       throw error;
     }
   }
 
-  private createCacheKey(circuit: QuantumCircuit, backend: string, shots: number): string {
-    const gateString = circuit.gates.map(g => `${g.type}-${g.qubit || 0}-${g.angle || 0}`).join('|');
-    return `${backend}-${circuit.qubits}-${shots}-${gateString}`;
-  }
-
-  private cacheResult(key: string, result: QuantumBackendResult): void {
-    if (this.simulationCache.size >= this.maxCacheSize) {
-      // Remove oldest entry
-      const firstKey = this.simulationCache.keys().next().value;
-      this.simulationCache.delete(firstKey);
-    }
-    this.simulationCache.set(key, result);
-  }
-
-  private processGateOptimized(gate: any, stateVector: Complex[], numQubits: number): Complex[] {
-    switch (gate.type) {
-      case 'H':
-        return this.applyHadamardOptimized(stateVector, gate.qubit!, numQubits);
-      case 'X':
-        return this.applyPauliXOptimized(stateVector, gate.qubit!, numQubits);
-      case 'Y':
-        return this.applyPauliY(stateVector, gate.qubit!, numQubits);
-      case 'Z':
-        return this.applyPauliZOptimized(stateVector, gate.qubit!, numQubits);
-      case 'S':
-        return this.applyPhaseS(stateVector, gate.qubit!, numQubits);
-      case 'T':
-        return this.applyTGate(stateVector, gate.qubit!, numQubits);
-      case 'CNOT':
-        const controlQubit = gate.controlQubit !== undefined ? gate.controlQubit : gate.qubits?.[0] || 0;
-        const targetQubit = gate.qubit !== undefined ? gate.qubit : gate.qubits?.[1] || 1;
-        return this.applyCNOTOptimized(stateVector, controlQubit, targetQubit, numQubits);
-      case 'CZ':
-        return this.applyCZ(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, numQubits);
-      case 'SWAP':
-        return this.applySWAP(stateVector, gate.qubits?.[0] || 0, gate.qubits?.[1] || 1, numQubits);
-      case 'RX':
-        return this.applyRotationX(stateVector, gate.qubit!, gate.angle || 0, numQubits);
-      case 'RY':
-        return this.applyRotationY(stateVector, gate.qubit!, gate.angle || 0, numQubits);
-      case 'RZ':
-        return this.applyRotationZ(stateVector, gate.qubit!, gate.angle || 0, numQubits);
-      default:
-        return stateVector;
-    }
-  }
-
-  private applyHadamardOptimized(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
-    const newStateVector = new Array(stateVector.length);
-    const factor = 1 / Math.sqrt(2);
-    const qubitMask = 1 << qubit;
-
-    for (let i = 0; i < stateVector.length; i++) {
-      const flippedIndex = i ^ qubitMask;
-      const qubitBit = (i >> qubit) & 1;
-      
-      if (qubitBit === 0) {
-        newStateVector[i] = stateVector[i].multiply(new Complex(factor, 0)).add(stateVector[flippedIndex].multiply(new Complex(factor, 0)));
-        newStateVector[flippedIndex] = stateVector[i].multiply(new Complex(factor, 0)).add(stateVector[flippedIndex].multiply(new Complex(-factor, 0)));
-      }
-    }
-
-    return newStateVector;
-  }
-
-  private applyPauliXOptimized(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
-    const newStateVector = [...stateVector];
-    const qubitMask = 1 << qubit;
-    
-    for (let i = 0; i < stateVector.length; i++) {
-      const flippedIndex = i ^ qubitMask;
-      if (i < flippedIndex) {
-        [newStateVector[i], newStateVector[flippedIndex]] = [newStateVector[flippedIndex], newStateVector[i]];
-      }
-    }
-    
-    return newStateVector;
-  }
-
-  private applyPauliZOptimized(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
-    const newStateVector = [...stateVector];
-    const qubitMask = 1 << qubit;
-    
-    for (let i = 0; i < stateVector.length; i++) {
-      if (i & qubitMask) {
-        newStateVector[i] = newStateVector[i].multiply(new Complex(-1, 0));
-      }
-    }
-    
-    return newStateVector;
-  }
-
-  private applyCNOTOptimized(stateVector: Complex[], control: number, target: number, numQubits: number): Complex[] {
-    const newStateVector = [...stateVector];
-    const controlMask = 1 << control;
-    const targetMask = 1 << target;
-    
-    for (let i = 0; i < stateVector.length; i++) {
-      if (i & controlMask) {
-        const flippedIndex = i ^ targetMask;
-        if (i < flippedIndex) {
-          [newStateVector[i], newStateVector[flippedIndex]] = [newStateVector[flippedIndex], newStateVector[i]];
-        }
-      }
-    }
-    
-    return newStateVector;
-  }
-
-  private calculateEntanglementOptimized(stateVector: Complex[], numQubits: number) {
-    const pairs = [];
-    let totalEntanglement = 0;
-    
-    // Quick check for ground state
-    if (stateVector[0].magnitude() > 0.999) {
-      return {
-        pairs: [],
-        totalEntanglement: 0,
-        entanglementThreads: []
-      };
-    }
-    
-    // Simplified entanglement calculation for performance
-    for (let i = 0; i < numQubits && i < 4; i++) { // Limit to 4 qubits for performance
-      for (let j = i + 1; j < numQubits && j < 4; j++) {
-        const entanglementStrength = this.calculatePairwiseEntanglementOptimized(stateVector, i, j, numQubits);
-        
-        if (entanglementStrength > 0.05) {
-          pairs.push({
-            qubit1: i,
-            qubit2: j,
-            strength: entanglementStrength
-          });
-          totalEntanglement += entanglementStrength;
-        }
-      }
-    }
-    
-    return {
-      pairs,
-      totalEntanglement: totalEntanglement / Math.max(1, pairs.length),
-      entanglementThreads: []
-    };
-  }
-
-  private calculatePairwiseEntanglementOptimized(stateVector: Complex[], qubit1: number, qubit2: number, numQubits: number): number {
-    const probs = [0, 0, 0, 0]; // |00⟩, |01⟩, |10⟩, |11⟩
-    
-    for (let i = 0; i < stateVector.length; i++) {
-      const bit1 = (i >> qubit1) & 1;
-      const bit2 = (i >> qubit2) & 1;
-      const stateIndex = bit1 * 2 + bit2;
-      probs[stateIndex] += stateVector[i].magnitude() ** 2;
-    }
-    
-    // Quick mutual information calculation
-    const p0 = probs[0] + probs[1];
-    const p1 = probs[2] + probs[3];
-    const q0 = probs[0] + probs[2];
-    const q1 = probs[1] + probs[3];
-    
-    let entanglement = 0;
-    for (let i = 0; i < 4; i++) {
-      if (probs[i] > 1e-10) {
-        const marginalProduct = (i < 2 ? p0 : p1) * (i % 2 === 0 ? q0 : q1);
-        if (marginalProduct > 1e-10) {
-          entanglement += probs[i] * Math.log2(probs[i] / marginalProduct);
-        }
-      }
-    }
-    
-    return Math.abs(entanglement) / 2;
-  }
-
-  
   private simulateShots(probabilities: Record<string, number>, shots: number): Record<string, number> {
     const counts: Record<string, number> = {};
     const states = Object.keys(probabilities);
@@ -334,6 +191,44 @@ class QuantumBackendService {
     return counts;
   }
 
+  private applyHadamard(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
+    const newStateVector = new Array(stateVector.length).fill(null).map(() => new Complex(0, 0));
+    const factor = 1 / Math.sqrt(2);
+
+    for (let i = 0; i < stateVector.length; i++) {
+      const qubitBit = (i >> qubit) & 1;
+      const flippedIndex = i ^ (1 << qubit);
+      
+      if (qubitBit === 0) {
+        // |0⟩ -> (|0⟩ + |1⟩)/√2
+        newStateVector[i] = newStateVector[i].add(stateVector[i].multiply(new Complex(factor, 0)));
+        newStateVector[flippedIndex] = newStateVector[flippedIndex].add(stateVector[i].multiply(new Complex(factor, 0)));
+      } else {
+        // |1⟩ -> (|0⟩ - |1⟩)/√2
+        newStateVector[flippedIndex] = newStateVector[flippedIndex].add(stateVector[i].multiply(new Complex(factor, 0)));
+        newStateVector[i] = newStateVector[i].add(stateVector[i].multiply(new Complex(-factor, 0)));
+      }
+    }
+
+    return newStateVector;
+  }
+
+  private applyPauliX(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
+    const newStateVector = [...stateVector];
+    
+    for (let i = 0; i < stateVector.length; i++) {
+      const flippedIndex = i ^ (1 << qubit);
+      if (i < flippedIndex) {
+        // Swap amplitudes
+        const temp = newStateVector[i];
+        newStateVector[i] = newStateVector[flippedIndex];
+        newStateVector[flippedIndex] = temp;
+      }
+    }
+    
+    return newStateVector;
+  }
+
   private applyPauliY(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
     const newStateVector = [...stateVector];
     
@@ -344,9 +239,25 @@ class QuantumBackendService {
       if (i < flippedIndex) {
         const temp = newStateVector[i];
         if (qubitBit === 0) {
+          // |0⟩ -> i|1⟩
           newStateVector[flippedIndex] = temp.multiply(new Complex(0, 1));
+          // |1⟩ -> -i|0⟩
           newStateVector[i] = newStateVector[flippedIndex].multiply(new Complex(0, -1));
         }
+      }
+    }
+    
+    return newStateVector;
+  }
+
+  private applyPauliZ(stateVector: Complex[], qubit: number, numQubits: number): Complex[] {
+    const newStateVector = [...stateVector];
+    
+    for (let i = 0; i < stateVector.length; i++) {
+      const qubitBit = (i >> qubit) & 1;
+      if (qubitBit === 1) {
+        // Apply -1 phase to |1⟩
+        newStateVector[i] = newStateVector[i].multiply(new Complex(-1, 0));
       }
     }
     
@@ -359,6 +270,7 @@ class QuantumBackendService {
     for (let i = 0; i < stateVector.length; i++) {
       const qubitBit = (i >> qubit) & 1;
       if (qubitBit === 1) {
+        // Apply i phase to |1⟩
         newStateVector[i] = newStateVector[i].multiply(new Complex(0, 1));
       }
     }
@@ -373,6 +285,7 @@ class QuantumBackendService {
     for (let i = 0; i < stateVector.length; i++) {
       const qubitBit = (i >> qubit) & 1;
       if (qubitBit === 1) {
+        // Apply e^(iπ/4) phase to |1⟩
         newStateVector[i] = newStateVector[i].multiply(new Complex(Math.cos(phase), Math.sin(phase)));
       }
     }
@@ -390,6 +303,7 @@ class QuantumBackendService {
       const flippedIndex = i ^ (1 << qubit);
       
       if (qubitBit === 0) {
+        // RX matrix: [[cos, -i*sin], [-i*sin, cos]]
         newStateVector[i] = newStateVector[i].add(stateVector[i].multiply(new Complex(cos, 0)));
         newStateVector[flippedIndex] = newStateVector[flippedIndex].add(stateVector[i].multiply(new Complex(0, -sin)));
       } else {
@@ -411,6 +325,7 @@ class QuantumBackendService {
       const flippedIndex = i ^ (1 << qubit);
       
       if (qubitBit === 0) {
+        // RY matrix: [[cos, -sin], [sin, cos]]
         newStateVector[i] = newStateVector[i].add(stateVector[i].multiply(new Complex(cos, 0)));
         newStateVector[flippedIndex] = newStateVector[flippedIndex].add(stateVector[i].multiply(new Complex(-sin, 0)));
       } else {
@@ -428,9 +343,28 @@ class QuantumBackendService {
     for (let i = 0; i < stateVector.length; i++) {
       const qubitBit = (i >> qubit) & 1;
       if (qubitBit === 0) {
+        // Apply e^(-iθ/2) phase to |0⟩
         newStateVector[i] = newStateVector[i].multiply(new Complex(Math.cos(-angle/2), Math.sin(-angle/2)));
       } else {
+        // Apply e^(iθ/2) phase to |1⟩
         newStateVector[i] = newStateVector[i].multiply(new Complex(Math.cos(angle/2), Math.sin(angle/2)));
+      }
+    }
+    
+    return newStateVector;
+  }
+
+  private applyCNOT(stateVector: Complex[], control: number, target: number, numQubits: number): Complex[] {
+    const newStateVector = [...stateVector];
+    
+    for (let i = 0; i < stateVector.length; i++) {
+      const controlBit = (i >> control) & 1;
+      if (controlBit === 1) {
+        // Flip target qubit
+        const flippedIndex = i ^ (1 << target);
+        const temp = newStateVector[i];
+        newStateVector[i] = newStateVector[flippedIndex];
+        newStateVector[flippedIndex] = temp;
       }
     }
     
@@ -445,6 +379,7 @@ class QuantumBackendService {
       const targetBit = (i >> target) & 1;
       
       if (controlBit === 1 && targetBit === 1) {
+        // Apply -1 phase
         newStateVector[i] = newStateVector[i].multiply(new Complex(-1, 0));
       }
     }
@@ -472,6 +407,56 @@ class QuantumBackendService {
     return newStateVector;
   }
 
+  private applyToffoli(stateVector: Complex[], control1: number, control2: number, target: number, numQubits: number): Complex[] {
+    const newStateVector = [...stateVector];
+    
+    for (let i = 0; i < stateVector.length; i++) {
+      const control1Bit = (i >> control1) & 1;
+      const control2Bit = (i >> control2) & 1;
+      
+      if (control1Bit === 1 && control2Bit === 1) {
+        // Flip target qubit
+        const flippedIndex = i ^ (1 << target);
+        const temp = newStateVector[i];
+        newStateVector[i] = newStateVector[flippedIndex];
+        newStateVector[flippedIndex] = temp;
+      }
+    }
+    
+    return newStateVector;
+  }
+
+  private createBellState(stateVector: Complex[], qubit1: number, qubit2: number, numQubits: number): Complex[] {
+    // First apply H to qubit1, then CNOT(qubit1, qubit2)
+    let newStateVector = this.applyHadamard(stateVector, qubit1, numQubits);
+    newStateVector = this.applyCNOT(newStateVector, qubit1, qubit2, numQubits);
+    return newStateVector;
+  }
+
+  private createGHZState(stateVector: Complex[], qubits: number[], numQubits: number): Complex[] {
+    // H on first qubit, then CNOT to all others
+    let newStateVector = this.applyHadamard(stateVector, qubits[0], numQubits);
+    for (let i = 1; i < qubits.length; i++) {
+      newStateVector = this.applyCNOT(newStateVector, qubits[0], qubits[i], numQubits);
+    }
+    return newStateVector;
+  }
+
+  private createWState(stateVector: Complex[], qubits: number[], numQubits: number): Complex[] {
+    // Create W state: (|001⟩ + |010⟩ + |100⟩) / √3
+    const newStateVector = new Array(stateVector.length).fill(null).map(() => new Complex(0, 0));
+    const factor = 1 / Math.sqrt(3);
+    
+    // Only set the W state components
+    for (let qubit of qubits) {
+      let index = 0;
+      index |= (1 << qubit); // Set only this qubit to 1
+      newStateVector[index] = new Complex(factor, 0);
+    }
+    
+    return newStateVector;
+  }
+
   private normalizeStateVector(stateVector: Complex[]): Complex[] {
     const norm = Math.sqrt(stateVector.reduce((sum, amp) => sum + amp.magnitude() ** 2, 0));
     if (norm === 0) return stateVector;
@@ -484,7 +469,7 @@ class QuantumBackendService {
     
     for (let i = 0; i < stateVector.length; i++) {
       const probability = stateVector[i].magnitude() ** 2;
-      if (probability > 1e-10) {
+      if (probability > 1e-10) { // Only include significant probabilities
         const binaryState = i.toString(2).padStart(numQubits, '0');
         probabilities[binaryState] = probability;
       }
@@ -572,6 +557,7 @@ class QuantumBackendService {
         }
       }
       
+      // Convert to spherical coordinates
       const theta = Math.acos(z);
       const phi = Math.atan2(y, x);
       
@@ -579,6 +565,95 @@ class QuantumBackendService {
     }
     
     return blochData;
+  }
+
+  private calculateEntanglement(stateVector: Complex[], numQubits: number) {
+    const pairs = [];
+    let totalEntanglement = 0;
+    
+    console.log('🔍 Calculating entanglement for', numQubits, 'qubits');
+    console.log('🔍 State vector has', stateVector.filter(amp => amp.magnitude() > 1e-10).length, 'non-zero amplitudes');
+    
+    // Check if we have a simple product state (all amplitude in |00000⟩)
+    const groundStateAmplitude = stateVector[0].magnitude();
+    if (groundStateAmplitude > 0.999) {
+      console.log('🔍 Ground state detected, no entanglement');
+      return {
+        pairs: [],
+        totalEntanglement: 0,
+        entanglementThreads: []
+      };
+    }
+    
+    // Calculate pairwise entanglement using a simpler but more reliable method
+    for (let i = 0; i < numQubits; i++) {
+      for (let j = i + 1; j < numQubits; j++) {
+        const entanglementStrength = this.calculatePairwiseEntanglement(stateVector, i, j, numQubits);
+        
+        console.log(`🔍 Entanglement strength for qubits ${i}-${j}:`, entanglementStrength.toFixed(4));
+        
+        if (entanglementStrength > 0.01) { // Lower threshold for better detection
+          pairs.push({
+            qubit1: i,
+            qubit2: j,
+            strength: entanglementStrength
+          });
+          totalEntanglement += entanglementStrength;
+        }
+      }
+    }
+    
+    // Normalize total entanglement
+    const maxPossiblePairs = (numQubits * (numQubits - 1)) / 2;
+    totalEntanglement = maxPossiblePairs > 0 ? totalEntanglement / maxPossiblePairs : 0;
+    
+    console.log('🔍 Final entanglement result:', {
+      totalEntanglement: totalEntanglement.toFixed(4),
+      pairsFound: pairs.length,
+      pairs: pairs.map(p => `${p.qubit1}-${p.qubit2}: ${(p.strength * 100).toFixed(1)}%`)
+    });
+    
+    return {
+      pairs,
+      totalEntanglement,
+      entanglementThreads: [] // TODO: Implement multi-qubit entanglement detection
+    };
+  }
+
+  private calculatePairwiseEntanglement(stateVector: Complex[], qubit1: number, qubit2: number, numQubits: number): number {
+    // Calculate entanglement using Schmidt decomposition approach
+    // This is more reliable than the previous concurrence calculation
+    
+    let entanglement = 0;
+    
+    // Get probabilities for the four two-qubit basis states
+    const probs = [0, 0, 0, 0]; // |00⟩, |01⟩, |10⟩, |11⟩
+    
+    for (let i = 0; i < stateVector.length; i++) {
+      const bit1 = (i >> qubit1) & 1;
+      const bit2 = (i >> qubit2) & 1;
+      const stateIndex = bit1 * 2 + bit2;
+      probs[stateIndex] += stateVector[i].magnitude() ** 2;
+    }
+    
+    // Calculate marginal probabilities
+    const p0 = probs[0] + probs[1]; // P(qubit1 = 0)
+    const p1 = probs[2] + probs[3]; // P(qubit1 = 1)
+    const q0 = probs[0] + probs[2]; // P(qubit2 = 0)
+    const q1 = probs[1] + probs[3]; // P(qubit2 = 1)
+    
+    // Calculate mutual information as a measure of entanglement
+    for (let i = 0; i < 4; i++) {
+      if (probs[i] > 1e-10) {
+        const marginalProduct = (i < 2 ? p0 : p1) * (i % 2 === 0 ? q0 : q1);
+        if (marginalProduct > 1e-10) {
+          entanglement += probs[i] * Math.log2(probs[i] / marginalProduct);
+        }
+      }
+    }
+    
+    // Normalize to [0,1]
+    return Math.abs(entanglement) / 2;
   }
 }
 

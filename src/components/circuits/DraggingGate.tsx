@@ -3,7 +3,6 @@ import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-// Import consistent drag state interface
 interface DragState {
   isDragging: boolean;
   gateType: string;

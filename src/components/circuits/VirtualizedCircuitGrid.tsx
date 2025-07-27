@@ -3,7 +3,15 @@ import React, { useMemo, useCallback, useRef, useEffect, useState } from "react"
 import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { MemoizedGate } from "./MemoizedGate";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useCircuitWorkspace, type Gate } from '@/hooks/useCircuitWorkspace';
+
+interface Gate {
+  id: string;
+  type: string;
+  qubit?: number;
+  qubits?: number[];
+  position: number;
+  angle?: number;
+}
 
 interface DragState {
   isDragging: boolean;

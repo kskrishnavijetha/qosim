@@ -1,6 +1,5 @@
-
 import { useCallback } from 'react';
-import { useCircuitWorkspace, type Gate } from '@/hooks/useCircuitWorkspace';
+import { Gate } from './useCircuitState';
 
 interface UseTemplateLoaderProps {
   addGate: (gate: Gate) => void;

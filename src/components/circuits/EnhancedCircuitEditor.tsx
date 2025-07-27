@@ -5,15 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CircuitBuilder } from './CircuitBuilder';
 import { QuantumStateVisualizer } from './QuantumStateVisualizer';
 import { CircuitOptimizer } from './CircuitOptimizer';
+import { Gate } from '@/hooks/useCircuitState';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 import { Cpu, Eye, Zap, Activity, Settings, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-// Import types from the workspace hook to ensure consistency
-import type { 
-  Gate, 
-  Circuit 
-} from '@/hooks/useCircuitWorkspace';
 
 interface EnhancedCircuitEditorProps {
   circuit: Gate[];

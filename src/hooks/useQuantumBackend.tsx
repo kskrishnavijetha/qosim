@@ -1,6 +1,7 @@
+
 import { useState, useCallback } from 'react';
 import { quantumBackendService, QuantumBackendResult, QuantumCircuit } from '@/services/quantumBackendService';
-import { Gate } from '@/hooks/useCircuitWorkspace';
+import { Gate } from './useCircuitState';
 
 export function useQuantumBackend() {
   const [isExecuting, setIsExecuting] = useState(false);

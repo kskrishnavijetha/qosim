@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GatePalette } from './GatePalette';
 import { CircuitGrid } from './CircuitGrid';
+import { Gate } from '@/hooks/useCircuitState';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
@@ -10,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useCircuitWorkspace, type Gate } from '@/hooks/useCircuitWorkspace';
 
 interface DragState {
   isDragging: boolean;

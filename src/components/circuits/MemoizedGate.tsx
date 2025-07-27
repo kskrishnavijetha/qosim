@@ -2,8 +2,14 @@
 import React, { memo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Import types from the workspace hook to ensure consistency
-import type { Gate } from '@/hooks/useCircuitWorkspace';
+interface Gate {
+  id: string;
+  type: string;
+  qubit?: number;
+  qubits?: number[];
+  position: number;
+  angle?: number;
+}
 
 interface MemoizedGateProps {
   gate: Gate;

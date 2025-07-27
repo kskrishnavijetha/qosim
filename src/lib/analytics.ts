@@ -1,4 +1,3 @@
-
 import posthog from 'posthog-js';
 
 // Initialize PostHog
@@ -19,7 +18,7 @@ export type AnalyticsEvent = {
   'circuit_modified': { gateType: string; numGates: number };
   'gate_added': { gateType: string; qubit?: number; position: number };
   'gate_removed': { gateType: string };
-  'circuit_exported': { format: 'json' | 'qasm' | 'python' | 'javascript'; gateCount: number };
+  'circuit_exported': { format: 'json' | 'qasm'; gateCount: number };
   'circuit_simulated': { gateCount: number; numQubits: number; mode?: string };
   'session_time': { duration: number; circuitId: string };
   'feedback_submitted': { rating?: number; feedback: string };

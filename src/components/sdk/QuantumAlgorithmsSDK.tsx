@@ -1,165 +1,171 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { AlgorithmLibrary } from './AlgorithmLibrary';
-import { CodeEditorSDK } from './CodeEditorSDK';
-import { DocumentationCenter } from './DocumentationCenter';
-import { ExportCenter } from './ExportCenter';
-import { PerformanceBenchmark } from './PerformanceBenchmark';
-import { OptimizationPanel } from '@/components/optimization/OptimizationPanel';
-import { OptimizationButton } from '@/components/optimization/OptimizationButton';
-import { useCircuitWorkspace } from '@/hooks/useCircuitWorkspace';
-import { Code2, BookOpen, Download, Zap, Settings, Play, Brain } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { CircuitBuilder } from '../circuits/CircuitBuilder';
+import { BlochSphere } from '../BlochSphere';
+import { SimulationRunner } from './SimulationRunner';
+import { CircuitExporter } from './CircuitExporter';
+import { AlgorithmTemplatesLibrary } from './AlgorithmTemplatesLibrary';
+import { useCircuitState } from '@/hooks/useCircuitState';
+import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
+import { Zap, FileText, BookOpen } from 'lucide-react';
+import { FastQuantumSimulator } from '../simulation/FastQuantumSimulator';
 
 export function QuantumAlgorithmsSDK() {
-  const [activeTab, setActiveTab] = useState("algorithms");
-  const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'python'>('javascript');
-  const workspace = useCircuitWorkspace();
+  const [activeTab, setActiveTab] = useState("circuit-builder");
+  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  const { circuit, simulationResult, addGate, deleteGate, clearCircuit } = useCircuitState();
 
-  const handleOptimizedCircuit = (optimizedGates: any[]) => {
-    if (workspace.activeCircuit) {
-      workspace.updateCircuitGates(workspace.activeCircuit.id, optimizedGates);
-    }
+  const NUM_QUBITS = 5;
+  const GRID_SIZE = 50;
+
+  const {
+    dragState,
+    circuitRef,
+    handleMouseDown,
+    handleTouchStart
+  } = useCircuitDragDrop({
+    onGateAdd: addGate,
+    numQubits: NUM_QUBITS,
+    gridSize: GRID_SIZE
+  });
+
+  // Generate a default qubit state for Bloch sphere visualization
+  const defaultQubitState = {
+    amplitude0: { real: 1, imag: 0 },
+    amplitude1: { real: 0, imag: 0 },
+    probability0: 1,
+    probability1: 0,
+    phase: 0
+  };
+
+  // Handle algorithm template loading
+  const handleAlgorithmTemplateLoad = (algorithmName: string, gates: any[]) => {
+    clearCircuit();
+    gates.forEach(gate => addGate(gate));
+    setAlgorithmResult({
+      circuit: { name: algorithmName, gates },
+      description: `${algorithmName} algorithm template loaded`,
+      templateLoaded: true
+    });
   };
 
   return (
-    <div className="h-full bg-quantum-void text-quantum-neon">
-      <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-quantum-void text-quantum-neon p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-quantum-glow quantum-float">
+            <h1 className="text-3xl font-bold font-mono text-quantum-glow">
               Quantum Algorithms SDK
             </h1>
-            <p className="text-quantum-particle mt-2">
-              Build, test, and deploy quantum algorithms with JavaScript and Python
+            <p className="text-sm text-quantum-particle">
+              Explore, build, and simulate quantum circuits
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="neon-border text-quantum-glow">
-              SDK v2.0.0
-            </Badge>
-            <Badge variant="outline" className="neon-border text-quantum-neon animate-pulse">
-              AI-POWERED
-            </Badge>
-            <div className="flex gap-2">
-              <Button
-                variant={selectedLanguage === 'javascript' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedLanguage('javascript')}
-                className="neon-border"
-              >
-                JavaScript
-              </Button>
-              <Button
-                variant={selectedLanguage === 'python' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedLanguage('python')}
-                className="neon-border"
-              >
-                Python
-              </Button>
-            </div>
-            {workspace.activeCircuit && (
-              <OptimizationButton
-                circuit={workspace.activeCircuit.gates}
-                onOptimizedCircuit={handleOptimizedCircuit}
-                size="sm"
-                variant="outline"
-              />
-            )}
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <Button variant="secondary">
+              <a href="https://github.com/Quantum-Tinkerers/quantum-lab" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </Button>
           </div>
         </div>
 
-        {/* SDK Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-6 quantum-tabs">
-            <TabsTrigger value="algorithms" className="quantum-tab">
-              <Zap className="w-4 h-4 mr-2" />
-              Algorithm Library
+          <TabsList className="grid w-full grid-cols-6 quantum-tabs">
+            <TabsTrigger value="circuit-builder" className="quantum-tab">
+              Circuit Builder
             </TabsTrigger>
-            <TabsTrigger value="editor" className="quantum-tab">
-              <Code2 className="w-4 h-4 mr-2" />
-              Code Editor
-            </TabsTrigger>
-            <TabsTrigger value="docs" className="quantum-tab">
+            <TabsTrigger value="templates" className="quantum-tab">
               <BookOpen className="w-4 h-4 mr-2" />
-              Documentation
+              Templates
+            </TabsTrigger>
+            <TabsTrigger value="simulation" className="quantum-tab">
+              Simulation
+            </TabsTrigger>
+            <TabsTrigger value="bloch-sphere" className="quantum-tab">
+              Bloch Sphere
+            </TabsTrigger>
+            <TabsTrigger value="fast-simulator" className="quantum-tab">
+              <Zap className="w-4 h-4 mr-2" />
+              Fast Simulator
             </TabsTrigger>
             <TabsTrigger value="export" className="quantum-tab">
-              <Download className="w-4 h-4 mr-2" />
-              Export & API
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="quantum-tab">
-              <Settings className="w-4 h-4 mr-2" />
-              Performance
-            </TabsTrigger>
-            <TabsTrigger value="optimization" className="quantum-tab">
-              <Brain className="w-4 h-4 mr-2" />
-              AI Optimization
+              <FileText className="w-4 h-4 mr-2" />
+              Export & Hardware
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="algorithms" className="space-y-6">
-            <AlgorithmLibrary 
-              selectedLanguage={selectedLanguage}
-              workspace={workspace}
+          <TabsContent value="circuit-builder" className="space-y-6">
+            <CircuitBuilder
+              circuit={circuit}
+              dragState={dragState}
+              simulationResult={simulationResult}
+              onDeleteGate={deleteGate}
+              onGateMouseDown={handleMouseDown}
+              onGateTouchStart={handleTouchStart}
+              circuitRef={circuitRef}
+              numQubits={NUM_QUBITS}
+              gridSize={GRID_SIZE}
             />
           </TabsContent>
 
-          <TabsContent value="editor" className="space-y-6">
-            <CodeEditorSDK 
-              selectedLanguage={selectedLanguage}
-              workspace={workspace}
+          <TabsContent value="templates" className="space-y-6">
+            <AlgorithmTemplatesLibrary
+              onAlgorithmLoad={handleAlgorithmTemplateLoad}
+              currentCircuit={circuit}
+            />
+            
+            {/* Algorithm Results Display */}
+            {algorithmResult && (
+              <div className="mt-4 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
+                <h3 className="text-lg font-mono text-quantum-glow mb-3">Template Loaded</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Algorithm:</span>
+                    <div className="text-quantum-neon">{algorithmResult.circuit?.name}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Gates:</span>
+                    <div className="text-quantum-particle">{algorithmResult.circuit?.gates.length || 0}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Description:</span>
+                    <div className="text-quantum-energy">{algorithmResult.description}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="simulation" className="space-y-6">
+            <SimulationRunner 
+              circuit={circuit}
+              onSimulationComplete={(result) => console.log('Simulation Complete:', result)}
+              simulationResult={simulationResult}
             />
           </TabsContent>
 
-          <TabsContent value="docs" className="space-y-6">
-            <DocumentationCenter selectedLanguage={selectedLanguage} />
+          <TabsContent value="bloch-sphere">
+            <BlochSphere 
+              qubitState={defaultQubitState}
+              size={400}
+            />
+          </TabsContent>
+
+          <TabsContent value="fast-simulator" className="space-y-6">
+            <FastQuantumSimulator />
           </TabsContent>
 
           <TabsContent value="export" className="space-y-6">
-            <ExportCenter 
-              selectedLanguage={selectedLanguage}
-              workspace={workspace}
+            <CircuitExporter
+              circuit={circuit}
+              simulationResult={simulationResult}
             />
-          </TabsContent>
-
-          <TabsContent value="performance" className="space-y-6">
-            <PerformanceBenchmark workspace={workspace} />
-          </TabsContent>
-
-          <TabsContent value="optimization" className="space-y-6">
-            <div className="space-y-6">
-              <Card className="quantum-panel neon-border">
-                <CardHeader>
-                  <CardTitle className="text-quantum-glow flex items-center gap-2">
-                    <Brain className="w-5 h-5" />
-                    SDK AI Optimization
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-quantum-particle mb-4">
-                    Integrate AI-powered optimization directly into your quantum algorithms.
-                    The optimization engine preserves functional equivalence while improving performance.
-                  </p>
-                  
-                  {workspace.activeCircuit ? (
-                    <OptimizationPanel 
-                      circuit={workspace.activeCircuit.gates}
-                      onOptimizedCircuit={handleOptimizedCircuit}
-                    />
-                  ) : (
-                    <div className="text-center py-8 text-quantum-particle">
-                      <p>Create or select a circuit to enable AI optimization</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
         </Tabs>
       </div>
