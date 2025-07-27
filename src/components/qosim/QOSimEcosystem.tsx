@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
-  Circuit, 
+  Cpu, 
   Code, 
   GraduationCap, 
   Store, 
@@ -32,7 +32,7 @@ export function QOSimEcosystem() {
     {
       id: 'circuit-builder',
       label: 'Circuit Builder',
-      icon: Circuit,
+      icon: Cpu,
       description: 'Visual quantum circuit designer',
       component: QuantumCircuitBuilder
     },
