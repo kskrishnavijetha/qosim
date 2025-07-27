@@ -10,9 +10,17 @@ import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
 import { Cpu, Eye, Zap, Activity, Settings, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+interface DragState {
+  isDragging: boolean;
+  gateType: string;
+  dragPosition: { x: number; y: number };
+  hoverQubit: number | null;
+  hoverPosition: number | null;
+}
+
 interface EnhancedCircuitEditorProps {
   circuit: Gate[];
-  dragState: any;
+  dragState: DragState;
   simulationResult: OptimizedSimulationResult | null;
   onDeleteGate: (gateId: string) => void;
   onGateMouseDown: (e: React.MouseEvent, gateType: string) => void;
