@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,7 @@ import {
   Undo, 
   Redo, 
   Copy, 
-  Paste, 
+  Clipboard, 
   Save, 
   Share, 
   Zap,
@@ -171,7 +170,7 @@ export function CircuitBuilder() {
               size="sm"
               onClick={pasteGates}
             >
-              <Paste className="w-4 h-4 mr-1" />
+              <Clipboard className="w-4 h-4 mr-1" />
               Paste
             </Button>
             <Button
