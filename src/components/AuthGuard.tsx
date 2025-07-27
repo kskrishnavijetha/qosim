@@ -1,9 +1,7 @@
-
-import React from 'react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Lock, User } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -11,40 +9,28 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-quantum-void flex items-center justify-center">
-        <div className="text-quantum-neon">Loading...</div>
+        <div className="space-y-4 w-full max-w-md">
+          <Skeleton className="h-8 w-3/4 mx-auto" />
+          <Skeleton className="h-4 w-1/2 mx-auto" />
+          <Skeleton className="h-32 w-full" />
+        </div>
       </div>
     );
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-quantum-void flex items-center justify-center p-6">
-        <Card className="quantum-panel neon-border max-w-md">
-          <CardHeader>
-            <CardTitle className="text-quantum-glow flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              Authentication Required
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-quantum-particle">
-              Please sign in to access the QOSim ecosystem and quantum development tools.
-            </p>
-            <Button
-              onClick={() => window.location.href = '/auth'}
-              className="w-full neon-border"
-            >
-              <User className="w-4 h-4 mr-2" />
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
   return <>{children}</>;
