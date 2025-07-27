@@ -55,7 +55,7 @@ export function SimulationPanel({ result }: SimulationPanelProps) {
   const qubitData = result.qubitStates.map((qubit, index) => ({
     qubit: `Q${index}`,
     probability: qubit.probability * 100,
-    coherence: qubit.coherence || 95 + Math.random() * 5
+    coherence: 95 + Math.random() * 5 // Add default coherence since it's not in the original type
   }));
 
   const entanglementData = result.entanglement?.pairs.map((pair, index) => ({
@@ -134,7 +134,7 @@ export function SimulationPanel({ result }: SimulationPanelProps) {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="state" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`${value.toFixed(2)}%`, 'Probability']} />
+                  <Tooltip formatter={(value: any) => [`${Number(value).toFixed(2)}%`, 'Probability']} />
                   <Bar dataKey="probability" fill="hsl(var(--primary))" />
                 </BarChart>
               </ResponsiveContainer>
