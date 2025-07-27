@@ -106,6 +106,9 @@ const LandingPage = () => {
             </Badge>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
+                <Link to="/qosim">QOSim</Link>
+              </Button>
+              <Button variant="outline" asChild>
                 <Link to="/integrations">SDKs</Link>
               </Button>
               <Button asChild>
@@ -185,14 +188,14 @@ const LandingPage = () => {
             
             <div className="flex flex-col gap-4 sm:flex-row sm:gap-6 justify-center items-center pt-6">
               <Button size="lg" className="w-full sm:w-auto group bg-gradient-to-r from-quantum-glow to-quantum-neon text-black hover:from-quantum-neon hover:to-quantum-plasma px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
-                <Link to="/auth">
-                  Join Early Access
+                <Link to="/qosim">
+                  Launch QOSim Ecosystem
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-quantum-glow text-quantum-glow hover:bg-quantum-glow hover:text-black px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg" asChild>
                 <Link to="/auth">
-                  View Live Preview
+                  Join Early Access
                 </Link>
               </Button>
             </div>
