@@ -243,7 +243,7 @@ export function QuantumAlgorithmsSDK() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-quantum-void overflow-hidden">
+    <div className="h-screen flex flex-col bg-quantum-void">
       <div className="flex-1 flex flex-col min-h-0">
         <div className="p-4 pb-0">
           <Card className="quantum-panel h-full">
