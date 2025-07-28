@@ -1,12 +1,10 @@
+
 import React, { useState, useEffect } from "react";
-import { CircuitBuilder } from "@/components/circuits/CircuitBuilder";
 import { DraggingGate } from "@/components/circuits/DraggingGate";
 import { SimulationModeSelector } from "@/components/simulation/SimulationModeSelector";
 import { ExportDialog } from "@/components/dialogs/ExportDialog";
-import { QuantumAlgorithmsPanel } from "@/components/algorithms/QuantumAlgorithmsPanel";
 import { CollaborationStatus } from "@/components/collaboration/CollaborationStatus";
 import { CustomGateManager } from "@/components/gates/CustomGateManager";
-import { AlgorithmTemplatesLibrary } from "@/components/sdk/AlgorithmTemplatesLibrary";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
@@ -118,23 +116,6 @@ export function CircuitsPanel() {
     }
   };
 
-  // Handle algorithm-generated circuits
-  const handleAlgorithmCircuit = (gates: any[]) => {
-    clearCircuit();
-    gates.forEach(gate => handleGateAdd(gate));
-  };
-
-  // Handle algorithm template loading
-  const handleAlgorithmTemplateLoad = (algorithmName: string, gates: any[]) => {
-    clearCircuit();
-    gates.forEach(gate => handleGateAdd(gate));
-    setAlgorithmResult({
-      circuit: { name: algorithmName, gates },
-      description: `${algorithmName} algorithm template loaded`,
-      templateLoaded: true
-    });
-  };
-
   const handleAlgorithmExecution = (result: any) => {
     setAlgorithmResult(result);
   };
@@ -224,35 +205,10 @@ export function CircuitsPanel() {
           onLoadTemplate={handleTemplateLoad}
         />
 
-        {/* Algorithm Templates Library */}
-        <AlgorithmTemplatesLibrary
-          onAlgorithmLoad={handleAlgorithmTemplateLoad}
-          currentCircuit={circuit}
-        />
-
         {/* Custom Gate Manager */}
         <CustomGateManager
           onGateCreated={addCustomGate}
           existingGates={customGates}
-        />
-
-        {/* Quantum Algorithms Panel */}
-        <QuantumAlgorithmsPanel
-          onCircuitGenerated={handleAlgorithmCircuit}
-          onAlgorithmExecuted={handleAlgorithmExecution}
-        />
-
-        {/* Circuit Builder */}
-        <CircuitBuilder
-          circuit={circuit}
-          dragState={dragState}
-          simulationResult={simulationResult}
-          onDeleteGate={handleGateDelete}
-          onGateMouseDown={handleMouseDown}
-          onGateTouchStart={handleTouchStart}
-          circuitRef={circuitRef}
-          numQubits={NUM_QUBITS}
-          gridSize={GRID_SIZE}
         />
 
         {/* Simulation Mode Selector */}
