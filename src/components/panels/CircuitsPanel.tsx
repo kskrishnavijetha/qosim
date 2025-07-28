@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -176,6 +175,10 @@ export function CircuitsPanel() {
     console.log('Suggestion clicked:', suggestion);
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveView(value as 'legacy' | 'builder');
+  };
+
   useEffect(() => {
     if (isLearningMode) {
       checkStepCompletion(circuit);
@@ -184,7 +187,7 @@ export function CircuitsPanel() {
 
   return (
     <div className="h-full overflow-auto quantum-grid">
-      <Tabs value={activeView} onValueChange={setActiveView} className="h-full flex flex-col">
+      <Tabs value={activeView} onValueChange={handleTabChange} className="h-full flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
           <TabsList className="grid w-fit grid-cols-2">
             <TabsTrigger value="builder" className="flex items-center gap-2">
