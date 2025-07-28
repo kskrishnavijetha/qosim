@@ -243,11 +243,11 @@ export function QuantumAlgorithmsSDK() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-quantum-void">
-      <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6">
-          <Card className="quantum-panel">
-            <CardHeader>
+    <div className="h-screen flex flex-col bg-quantum-void overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="p-4 pb-0">
+          <Card className="quantum-panel h-full">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Code className="h-6 w-6" />
@@ -263,7 +263,7 @@ export function QuantumAlgorithmsSDK() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-[calc(100vh-120px)] flex flex-col">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Algorithm</label>
@@ -301,253 +301,354 @@ export function QuantumAlgorithmsSDK() {
                 </div>
               </div>
 
-              <Tabs defaultValue="editor" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="editor">Code Editor</TabsTrigger>
-                  <TabsTrigger value="visualizer">Visualizer</TabsTrigger>
-                  <TabsTrigger value="documentation">Documentation</TabsTrigger>
-                  <TabsTrigger value="integration">Integration</TabsTrigger>
-                </TabsList>
+              <div className="flex-1 min-h-0">
+                <Tabs defaultValue="editor" className="w-full h-full flex flex-col">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="editor">Code Editor</TabsTrigger>
+                    <TabsTrigger value="visualizer">Visualizer</TabsTrigger>
+                    <TabsTrigger value="documentation">Documentation</TabsTrigger>
+                    <TabsTrigger value="integration">Integration</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="editor" className="space-y-4">
-                  <ScrollArea className="h-[600px]">
-                    <SDKCodeEditor
-                      language={selectedLanguage}
-                      onExecute={executeAlgorithm}
-                    />
-                  </ScrollArea>
-                </TabsContent>
-
-                <TabsContent value="visualizer" className="space-y-4">
-                  <ScrollArea className="h-[600px]">
-                    <div className="pr-4">
-                      {visualizationSteps.length > 0 ? (
-                        <InteractiveAlgorithmVisualizer
-                          algorithm={selectedAlgorithm as any}
-                          steps={visualizationSteps}
+                  <TabsContent value="editor" className="flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                      <div className="pr-4 pb-4">
+                        <SDKCodeEditor
+                          language={selectedLanguage}
+                          onExecute={executeAlgorithm}
                         />
-                      ) : (
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="visualizer" className="flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                      <div className="pr-4 pb-4">
+                        {visualizationSteps.length > 0 ? (
+                          <InteractiveAlgorithmVisualizer
+                            algorithm={selectedAlgorithm as any}
+                            steps={visualizationSteps}
+                          />
+                        ) : (
+                          <Card className="quantum-panel">
+                            <CardContent className="flex items-center justify-center h-96">
+                              <div className="text-center">
+                                <Eye className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                                <h3 className="text-lg font-semibold mb-2">No Visualization Available</h3>
+                                <p className="text-muted-foreground">
+                                  Execute an algorithm to see the step-by-step visualization
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="documentation" className="flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                      <div className="pr-4 pb-4">
                         <Card className="quantum-panel">
-                          <CardContent className="flex items-center justify-center h-96">
-                            <div className="text-center">
-                              <Eye className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-semibold mb-2">No Visualization Available</h3>
-                              <p className="text-muted-foreground">
-                                Execute an algorithm to see the step-by-step visualization
-                              </p>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Book className="h-5 w-5" />
+                              {algorithms[selectedAlgorithm]?.name} Documentation
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-6">
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Algorithm Overview</h4>
+                                <p className="text-muted-foreground leading-relaxed">
+                                  {algorithms[selectedAlgorithm]?.description}
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Key Features</h4>
+                                <ul className="space-y-2 text-muted-foreground">
+                                  <li>• High-performance quantum simulation</li>
+                                  <li>• Real-time visualization capabilities</li>
+                                  <li>• Cross-platform compatibility</li>
+                                  <li>• Extensive debugging tools</li>
+                                </ul>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Parameters</h4>
+                                <div className="space-y-3">
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <code className="text-sm font-mono">numQubits: number</code>
+                                    <p className="text-xs text-muted-foreground mt-1">Number of qubits in the circuit</p>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <code className="text-sm font-mono">iterations: number</code>
+                                    <p className="text-xs text-muted-foreground mt-1">Number of algorithm iterations</p>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <code className="text-sm font-mono">precision: number</code>
+                                    <p className="text-xs text-muted-foreground mt-1">Simulation precision level</p>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Example Usage</h4>
+                                <pre className="bg-quantum-void p-4 rounded-lg text-sm overflow-x-auto">
+                                  {selectedLanguage === 'javascript' ? 
+                                    `const ${selectedAlgorithm} = new ${algorithms[selectedAlgorithm]?.name.replace(/\s+/g, '')}(sdk);
+const result = await ${selectedAlgorithm}.optimize(config);
+console.log('Result:', result);` :
+                                    `${selectedAlgorithm} = ${algorithms[selectedAlgorithm]?.name.replace(/\s+/g, '')}()
+result = ${selectedAlgorithm}.optimize(config)
+print('Result:', result)`
+                                  }
+                                </pre>
+                              </div>
+
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Performance Metrics</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Execution Time</div>
+                                    <div className="text-xs text-muted-foreground">~50ms average</div>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Memory Usage</div>
+                                    <div className="text-xs text-muted-foreground">Linear scaling</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Advanced Configuration</h4>
+                                <div className="space-y-3">
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <h5 className="font-medium mb-2">Optimization Settings</h5>
+                                    <ul className="text-sm text-muted-foreground space-y-1">
+                                      <li>• Circuit depth optimization</li>
+                                      <li>• Gate compilation strategies</li>
+                                      <li>• Error mitigation techniques</li>
+                                    </ul>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <h5 className="font-medium mb-2">Debugging Options</h5>
+                                    <ul className="text-sm text-muted-foreground space-y-1">
+                                      <li>• Step-by-step execution</li>
+                                      <li>• State vector inspection</li>
+                                      <li>• Entanglement analysis</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Related Resources</h4>
+                                <div className="grid grid-cols-1 gap-3">
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Research Papers</div>
+                                    <div className="text-xs text-muted-foreground">Academic references and implementations</div>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Tutorial Videos</div>
+                                    <div className="text-xs text-muted-foreground">Step-by-step implementation guides</div>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Code Examples</div>
+                                    <div className="text-xs text-muted-foreground">Production-ready implementations</div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
 
-                <TabsContent value="documentation" className="space-y-4">
-                  <ScrollArea className="h-[600px]">
-                    <div className="pr-4">
-                      <Card className="quantum-panel">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Book className="h-5 w-5" />
-                            {algorithms[selectedAlgorithm]?.name} Documentation
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-6">
-                            <div>
-                              <h4 className="font-semibold mb-3 text-lg">Algorithm Overview</h4>
-                              <p className="text-muted-foreground leading-relaxed">
-                                {algorithms[selectedAlgorithm]?.description}
+                  <TabsContent value="integration" className="flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                      <div className="pr-4 pb-4 space-y-6">
+                        <Card className="quantum-panel">
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Share2 className="h-5 w-5" />
+                              Circuit Builder Integration
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <p className="text-muted-foreground">
+                                Export your SDK-generated circuits to the visual Circuit Builder for further editing and analysis.
                               </p>
+                              
+                              <div className="flex flex-wrap gap-2">
+                                <Button 
+                                  onClick={exportToCircuitBuilder}
+                                  disabled={!currentResult?.circuit}
+                                >
+                                  <Share2 className="h-4 w-4 mr-2" />
+                                  Export to Circuit Builder
+                                </Button>
+                                
+                                <Button variant="outline">
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Export as OpenQASM
+                                </Button>
+                                
+                                <Button variant="outline">
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Save to QFS
+                                </Button>
+                              </div>
+                              
+                              {currentResult && (
+                                <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
+                                  <h4 className="font-semibold mb-2">Current Circuit</h4>
+                                  <div className="text-sm space-y-1">
+                                    <div>Name: {currentResult.circuit?.name}</div>
+                                    <div>Qubits: {currentResult.circuit?.qubits}</div>
+                                    <div>Gates: {currentResult.circuit?.gates.length}</div>
+                                    <div>Depth: {currentResult.circuit?.gates.length}</div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            
-                            <div>
-                              <h4 className="font-semibold mb-3 text-lg">Key Features</h4>
-                              <ul className="space-y-2 text-muted-foreground">
-                                <li>• High-performance quantum simulation</li>
-                                <li>• Real-time visualization capabilities</li>
-                                <li>• Cross-platform compatibility</li>
-                                <li>• Extensive debugging tools</li>
-                              </ul>
-                            </div>
-                            
-                            <div>
-                              <h4 className="font-semibold mb-3 text-lg">Parameters</h4>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="quantum-panel">
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Code className="h-5 w-5" />
+                              API Integration
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <p className="text-muted-foreground">
+                                Integrate with external quantum computing platforms and services.
+                              </p>
+                              
                               <div className="space-y-3">
                                 <div className="p-3 bg-quantum-matrix rounded-lg">
-                                  <code className="text-sm font-mono">numQubits: number</code>
-                                  <p className="text-xs text-muted-foreground mt-1">Number of qubits in the circuit</p>
+                                  <h5 className="font-medium">IBM Quantum</h5>
+                                  <p className="text-xs text-muted-foreground">Submit jobs to IBM quantum hardware</p>
                                 </div>
                                 <div className="p-3 bg-quantum-matrix rounded-lg">
-                                  <code className="text-sm font-mono">iterations: number</code>
-                                  <p className="text-xs text-muted-foreground mt-1">Number of algorithm iterations</p>
+                                  <h5 className="font-medium">Rigetti Forest</h5>
+                                  <p className="text-xs text-muted-foreground">Execute on Rigetti quantum processors</p>
                                 </div>
                                 <div className="p-3 bg-quantum-matrix rounded-lg">
-                                  <code className="text-sm font-mono">precision: number</code>
-                                  <p className="text-xs text-muted-foreground mt-1">Simulation precision level</p>
+                                  <h5 className="font-medium">Google Cirq</h5>
+                                  <p className="text-xs text-muted-foreground">Convert to Cirq format for Google quantum AI</p>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <h5 className="font-medium">Azure Quantum</h5>
+                                  <p className="text-xs text-muted-foreground">Deploy to Microsoft Azure cloud</p>
                                 </div>
                               </div>
                             </div>
-                            
-                            <div>
-                              <h4 className="font-semibold mb-3 text-lg">Example Usage</h4>
-                              <pre className="bg-quantum-void p-4 rounded-lg text-sm overflow-x-auto">
-                                {selectedLanguage === 'javascript' ? 
-                                  `const ${selectedAlgorithm} = new ${algorithms[selectedAlgorithm]?.name.replace(/\s+/g, '')}(sdk);
-const result = await ${selectedAlgorithm}.optimize(config);
-console.log('Result:', result);` :
-                                  `${selectedAlgorithm} = ${algorithms[selectedAlgorithm]?.name.replace(/\s+/g, '')}()
-result = ${selectedAlgorithm}.optimize(config)
-print('Result:', result)`
-                                }
-                              </pre>
-                            </div>
+                          </CardContent>
+                        </Card>
 
-                            <div>
-                              <h4 className="font-semibold mb-3 text-lg">Performance Metrics</h4>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-quantum-matrix rounded-lg">
-                                  <div className="text-sm font-medium">Execution Time</div>
-                                  <div className="text-xs text-muted-foreground">~50ms average</div>
-                                </div>
-                                <div className="p-3 bg-quantum-matrix rounded-lg">
-                                  <div className="text-sm font-medium">Memory Usage</div>
-                                  <div className="text-xs text-muted-foreground">Linear scaling</div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-
-                <TabsContent value="integration" className="space-y-4">
-                  <ScrollArea className="h-[600px]">
-                    <div className="pr-4 space-y-6">
-                      <Card className="quantum-panel">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Share2 className="h-5 w-5" />
-                            Circuit Builder Integration
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <p className="text-muted-foreground">
-                              Export your SDK-generated circuits to the visual Circuit Builder for further editing and analysis.
-                            </p>
-                            
-                            <div className="flex flex-wrap gap-2">
-                              <Button 
-                                onClick={exportToCircuitBuilder}
-                                disabled={!currentResult?.circuit}
-                              >
-                                <Share2 className="h-4 w-4 mr-2" />
-                                Export to Circuit Builder
-                              </Button>
+                        <Card className="quantum-panel">
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <FileText className="h-5 w-5" />
+                              File Format Support
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <p className="text-muted-foreground">
+                                Support for various quantum circuit file formats and standards.
+                              </p>
                               
-                              <Button variant="outline">
-                                <Download className="h-4 w-4 mr-2" />
-                                Export as OpenQASM
-                              </Button>
-                              
-                              <Button variant="outline">
-                                <Download className="h-4 w-4 mr-2" />
-                                Save to QFS
-                              </Button>
-                            </div>
-                            
-                            {currentResult && (
-                              <div className="mt-4 p-4 bg-quantum-matrix rounded-lg">
-                                <h4 className="font-semibold mb-2">Current Circuit</h4>
-                                <div className="text-sm space-y-1">
-                                  <div>Name: {currentResult.circuit?.name}</div>
-                                  <div>Qubits: {currentResult.circuit?.qubits}</div>
-                                  <div>Gates: {currentResult.circuit?.gates.length}</div>
-                                  <div>Depth: {currentResult.circuit?.gates.length}</div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">OpenQASM</div>
+                                  <div className="text-xs text-muted-foreground">Industry standard</div>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">Qiskit</div>
+                                  <div className="text-xs text-muted-foreground">Python circuits</div>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">Cirq</div>
+                                  <div className="text-xs text-muted-foreground">Google format</div>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">QFS</div>
+                                  <div className="text-xs text-muted-foreground">QOSim native</div>
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
 
-                      <Card className="quantum-panel">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Code className="h-5 w-5" />
-                            API Integration
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <p className="text-muted-foreground">
-                              Integrate with external quantum computing platforms and services.
-                            </p>
-                            
-                            <div className="space-y-3">
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <h5 className="font-medium">IBM Quantum</h5>
-                                <p className="text-xs text-muted-foreground">Submit jobs to IBM quantum hardware</p>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <h5 className="font-medium">Rigetti Forest</h5>
-                                <p className="text-xs text-muted-foreground">Execute on Rigetti quantum processors</p>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <h5 className="font-medium">Google Cirq</h5>
-                                <p className="text-xs text-muted-foreground">Convert to Cirq format for Google quantum AI</p>
+                              <div className="mt-4">
+                                <h5 className="font-medium mb-2">Import/Export Features</h5>
+                                <div className="space-y-2">
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Batch Processing</div>
+                                    <div className="text-xs text-muted-foreground">Process multiple circuits simultaneously</div>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Format Conversion</div>
+                                    <div className="text-xs text-muted-foreground">Convert between different quantum formats</div>
+                                  </div>
+                                  <div className="p-3 bg-quantum-matrix rounded-lg">
+                                    <div className="text-sm font-medium">Validation</div>
+                                    <div className="text-xs text-muted-foreground">Automatic format validation and error checking</div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
 
-                      <Card className="quantum-panel">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <FileText className="h-5 w-5" />
-                            File Format Support
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <p className="text-muted-foreground">
-                              Support for various quantum circuit file formats.
-                            </p>
-                            
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">OpenQASM</div>
-                                <div className="text-xs text-muted-foreground">Industry standard</div>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">Qiskit</div>
-                                <div className="text-xs text-muted-foreground">Python circuits</div>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">Cirq</div>
-                                <div className="text-xs text-muted-foreground">Google format</div>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">QFS</div>
-                                <div className="text-xs text-muted-foreground">QOSim native</div>
+                        <Card className="quantum-panel">
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Activity className="h-5 w-5" />
+                              Performance Monitoring
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <p className="text-muted-foreground">
+                                Monitor and optimize quantum algorithm performance in real-time.
+                              </p>
+                              
+                              <div className="grid grid-cols-1 gap-3">
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">Execution Metrics</div>
+                                  <div className="text-xs text-muted-foreground">Track runtime, memory usage, and accuracy</div>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">Benchmarking</div>
+                                  <div className="text-xs text-muted-foreground">Compare against classical algorithms</div>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">Resource Analysis</div>
+                                  <div className="text-xs text-muted-foreground">Analyze gate counts and circuit depth</div>
+                                </div>
+                                <div className="p-3 bg-quantum-matrix rounded-lg">
+                                  <div className="text-sm font-medium">Scalability Testing</div>
+                                  <div className="text-xs text-muted-foreground">Test performance with increasing problem sizes</div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-              </Tabs>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </CardContent>
           </Card>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
