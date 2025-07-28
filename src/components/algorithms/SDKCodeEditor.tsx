@@ -71,11 +71,16 @@ async function createBellState() {
   // Create Bell state circuit
   let circuit = sdk.createCircuit('Bell State', 2);
   circuit = sdk.addGate(circuit, { type: 'H', qubit: 0 });
-  circuit = sdk.addGate(circuit, { type: 'CNOT', controlQubit: 0, targetQubit: 1 });
+  circuit = sdk.addGate(circuit, { 
+    type: 'CNOT', 
+    controlQubit: 0, 
+    targetQubit: 1 
+  });
 
   // Simulate the circuit
   const result = await sdk.simulate(circuit);
   console.log('Bell State Created!');
+  console.log('State Vector:', result.stateVector);
   console.log('Probabilities:', result.probabilities);
   console.log('Entanglement:', result.entanglement);
   
@@ -85,6 +90,7 @@ async function createBellState() {
 // Execute the Bell state creation
 createBellState().then(result => {
   console.log('Final Result:', result);
+  console.log('Circuit successfully executed!');
 });`,
       
       'grover-search': `// Grover's Search Algorithm
@@ -102,14 +108,22 @@ async function groversSearch() {
   circuit = sdk.addGate(circuit, { type: 'H', qubit: 1 });
   
   // Oracle for |11⟩ state
-  circuit = sdk.addGate(circuit, { type: 'CZ', controlQubit: 0, targetQubit: 1 });
+  circuit = sdk.addGate(circuit, { 
+    type: 'CZ', 
+    controlQubit: 0, 
+    targetQubit: 1 
+  });
   
   // Diffusion operator
   circuit = sdk.addGate(circuit, { type: 'H', qubit: 0 });
   circuit = sdk.addGate(circuit, { type: 'H', qubit: 1 });
   circuit = sdk.addGate(circuit, { type: 'X', qubit: 0 });
   circuit = sdk.addGate(circuit, { type: 'X', qubit: 1 });
-  circuit = sdk.addGate(circuit, { type: 'CZ', controlQubit: 0, targetQubit: 1 });
+  circuit = sdk.addGate(circuit, { 
+    type: 'CZ', 
+    controlQubit: 0, 
+    targetQubit: 1 
+  });
   circuit = sdk.addGate(circuit, { type: 'X', qubit: 0 });
   circuit = sdk.addGate(circuit, { type: 'X', qubit: 1 });
   circuit = sdk.addGate(circuit, { type: 'H', qubit: 0 });
@@ -117,12 +131,16 @@ async function groversSearch() {
 
   const result = await sdk.simulate(circuit);
   console.log('Grover Search Complete!');
-  console.log('Target state probability:', result.probabilities[3]);
+  console.log('Target state |11⟩ probability:', result.probabilities[3]);
+  console.log('Search success:', result.probabilities[3] > 0.5);
   
   return result;
 }
 
-groversSearch();`,
+// Execute Grover's algorithm
+groversSearch().then(result => {
+  console.log('Search completed successfully!');
+});`,
       
       'vqe-optimization': `// Variational Quantum Eigensolver (VQE)
 import { QOSimSDK } from '@/sdk/qosim-sdk';
@@ -136,9 +154,21 @@ async function vqeOptimization() {
   
   // Parameterized ansatz
   const theta = Math.PI / 4;
-  circuit = sdk.addGate(circuit, { type: 'RY', qubit: 0, angle: theta });
-  circuit = sdk.addGate(circuit, { type: 'CNOT', controlQubit: 0, targetQubit: 1 });
-  circuit = sdk.addGate(circuit, { type: 'RY', qubit: 1, angle: theta });
+  circuit = sdk.addGate(circuit, { 
+    type: 'RY', 
+    qubit: 0, 
+    angle: theta 
+  });
+  circuit = sdk.addGate(circuit, { 
+    type: 'CNOT', 
+    controlQubit: 0, 
+    targetQubit: 1 
+  });
+  circuit = sdk.addGate(circuit, { 
+    type: 'RY', 
+    qubit: 1, 
+    angle: theta 
+  });
 
   const result = await sdk.simulate(circuit);
   
@@ -147,16 +177,23 @@ async function vqeOptimization() {
   console.log('VQE Optimization Step');
   console.log('Energy:', energy);
   console.log('Parameters:', { theta });
+  console.log('State Vector:', result.stateVector);
+  console.log('Convergence check:', Math.abs(energy + 1.1373) < 0.01);
   
   return { result, energy };
 }
 
 function calculateEnergyExpectation(stateVector) {
   // Simplified energy calculation for H2
-  return -1.1373 * Math.abs(stateVector[0])**2 + 0.3372 * Math.abs(stateVector[1])**2;
+  const energy = -1.1373 * Math.abs(stateVector[0])**2 + 
+                 0.3372 * Math.abs(stateVector[1])**2;
+  return energy;
 }
 
-vqeOptimization();`
+// Execute VQE optimization
+vqeOptimization().then(({ result, energy }) => {
+  console.log('VQE completed. Ground state energy:', energy);
+});`
     },
     python: {
       'bell-state': `# Create Bell State using QOSim Python SDK
@@ -175,15 +212,18 @@ def create_bell_state():
     result = sim.run()
     
     print("Bell State Created!")
-    print(f"Probabilities: {result['probabilities']}")
     print(f"State vector: {result['state_vector']}")
+    print(f"Probabilities: {result['probabilities']}")
     print(f"Entanglement: {result['entanglement']}")
+    print(f"Measurement outcomes: {result['measurements']}")
     
     return result
 
 # Execute Bell state creation
-result = create_bell_state()
-print(f"Final measurement probabilities: {result['probabilities']}") `,
+if __name__ == "__main__":
+    result = create_bell_state()
+    print(f"Final measurement probabilities: {result['probabilities']}")
+    print("Bell state successfully created and simulated!")`,
       
       'grover-search': `# Grover's Search Algorithm
 from qosim_sdk import QOSimulator
@@ -214,13 +254,17 @@ def grovers_search():
     result = sim.run()
     
     print("Grover's Search Complete!")
+    print(f"State vector: {result['state_vector']}")
+    print(f"All probabilities: {result['probabilities']}")
     print(f"Target state |11⟩ probability: {result['probabilities'][3]:.3f}")
-    print(f"Success rate: {result['probabilities'][3] > 0.5}")
+    print(f"Search success: {result['probabilities'][3] > 0.5}")
     
     return result
 
 # Run Grover's algorithm
-grovers_search()`,
+if __name__ == "__main__":
+    result = grovers_search()
+    print("Grover's algorithm execution completed!")`,
       
       'vqe-optimization': `# Variational Quantum Eigensolver (VQE)
 from qosim_sdk import QOSimulator
@@ -244,20 +288,25 @@ def vqe_optimization():
     energy = calculate_energy_expectation(result['state_vector'])
     
     print("VQE Optimization Step")
-    print(f"Energy: {energy:.6f}")
+    print(f"Energy: {energy:.6f} Ha")
     print(f"Parameters: theta = {theta:.3f}")
+    print(f"State vector: {result['state_vector']}")
     print(f"State probabilities: {result['probabilities']}")
+    print(f"Convergence check: {abs(energy + 1.1373) < 0.01}")
     
     return {"result": result, "energy": energy}
 
 def calculate_energy_expectation(state_vector):
     """Calculate energy expectation value for H2"""
     # Simplified H2 Hamiltonian
-    return -1.1373 * abs(state_vector[0])**2 + 0.3372 * abs(state_vector[1])**2
+    energy = -1.1373 * abs(state_vector[0])**2 + 0.3372 * abs(state_vector[1])**2
+    return energy
 
 # Run VQE optimization
-vqe_result = vqe_optimization()
-print(f"Ground state energy estimate: {vqe_result['energy']:.6f} Ha")`
+if __name__ == "__main__":
+    vqe_result = vqe_optimization()
+    print(f"Ground state energy estimate: {vqe_result['energy']:.6f} Ha")
+    print("VQE optimization completed successfully!")`
     }
   };
 
@@ -376,38 +425,42 @@ print(f"Ground state energy estimate: {vqe_result['energy']:.6f} Ha")`
   const generateMockOutput = () => {
     if (selectedExample === 'bell-state') {
       return `Bell State Created!
+State Vector: [0.707+0j, 0+0j, 0+0j, 0.707+0j]
 Probabilities: [0.5, 0, 0, 0.5]
 Entanglement: Maximum entanglement achieved
-State: (|00⟩ + |11⟩)/√2
+Measurement outcomes: {'00': 0.5, '11': 0.5}
 
-Measurement statistics:
-|00⟩: 50.0%
-|11⟩: 50.0%
-Entanglement pairs: [(0,1)]`;
+✅ Bell state successfully created and simulated!
+Circuit: Bell State (2 qubits)
+Gates: H(0), CNOT(0,1)
+Execution time: 12.3ms`;
     } else if (selectedExample === 'grover-search') {
       return `Grover's Search Complete!
-Target state |11⟩ probability: 0.875
-Success rate: True
-Iterations: 1
+State vector: [0.0+0j, 0.0+0j, 0.0+0j, 1.0+0j]
+All probabilities: [0.0, 0.0, 0.0, 1.0]
+Target state |11⟩ probability: 1.000
+Search success: True
 
-Search results:
-|00⟩: 4.2%
-|01⟩: 4.2%
-|10⟩: 4.2%
-|11⟩: 87.5% ← Target found!`;
+✅ Grover's algorithm execution completed!
+Oracle: Marked state |11⟩
+Iterations: 1
+Success rate: 100%
+Execution time: 18.7ms`;
     } else if (selectedExample === 'vqe-optimization') {
       return `VQE Optimization Step
-Energy: -1.1373 Ha
+Energy: -1.137300 Ha
 Parameters: theta = 0.785
-Convergence: Step 1/100
+State vector: [0.924+0j, 0.383+0j]
+State probabilities: [0.854, 0.146]
+Convergence check: True
 
-Optimization progress:
-Initial energy: -0.5443 Ha
-Current energy: -1.1373 Ha
-Ground state estimate: -1.1373 Ha
-Fidelity: 98.7%`;
+✅ VQE optimization completed successfully!
+Ground state energy estimate: -1.137300 Ha
+Optimization method: SLSQP
+Fidelity: 98.7%
+Execution time: 25.1ms`;
     }
-    return 'Code executed successfully!';
+    return 'Code executed successfully!\nExecution time: 15.2ms';
   };
 
   const handleCopyCode = () => {
@@ -529,7 +582,7 @@ Fidelity: 98.7%`;
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder={`Enter your ${language} code here...`}
-                  className="min-h-96 font-mono text-sm"
+                  className="min-h-96 font-mono text-sm resize-none"
                 />
                 
                 {/* AI Suggestions */}
@@ -549,10 +602,10 @@ Fidelity: 98.7%`;
                           'bg-green-500/10 text-green-400'
                         }`}
                       >
-                        {suggestion.type === 'error' && <XCircle className="h-4 w-4 mt-0.5" />}
-                        {suggestion.type === 'warning' && <AlertCircle className="h-4 w-4 mt-0.5" />}
-                        {suggestion.type === 'optimization' && <Lightbulb className="h-4 w-4 mt-0.5" />}
-                        {suggestion.type === 'completion' && <CheckCircle className="h-4 w-4 mt-0.5" />}
+                        {suggestion.type === 'error' && <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />}
+                        {suggestion.type === 'warning' && <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />}
+                        {suggestion.type === 'optimization' && <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />}
+                        {suggestion.type === 'completion' && <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />}
                         <span>{suggestion.text}</span>
                       </div>
                     ))}
