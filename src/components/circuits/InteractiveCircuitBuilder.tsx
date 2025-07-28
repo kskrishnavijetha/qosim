@@ -194,16 +194,16 @@ export function InteractiveCircuitBuilder() {
       {/* Main Content */}
       <div className="flex-1 flex">
         {/* Left Panel - Gate Palette */}
-        <div className="w-80 border-r bg-card">
+        <div className="w-80 bg-slate-800 border-r border-slate-700">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="design">Design</TabsTrigger>
-              <TabsTrigger value="simulate">Simulate</TabsTrigger>
-              <TabsTrigger value="collab">Collab</TabsTrigger>
-              <TabsTrigger value="ai">AI</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 bg-slate-700 m-2">
+              <TabsTrigger value="design" className="text-white data-[state=active]:bg-slate-600">Design</TabsTrigger>
+              <TabsTrigger value="simulate" className="text-white data-[state=active]:bg-slate-600">Simulate</TabsTrigger>
+              <TabsTrigger value="collab" className="text-white data-[state=active]:bg-slate-600">Collab</TabsTrigger>
+              <TabsTrigger value="ai" className="text-white data-[state=active]:bg-slate-600">AI</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="design" className="p-4">
+            <TabsContent value="design" className="p-0">
               <GatePaletteAdvanced
                 onGateSelect={addGate}
                 onQubitAdd={addQubit}
