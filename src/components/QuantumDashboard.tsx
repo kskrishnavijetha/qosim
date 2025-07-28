@@ -9,7 +9,6 @@ import { LogsPanel } from "./panels/LogsPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
-import { QuantumAlgorithmsSDK } from "./sdk/QuantumAlgorithmsSDK";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
@@ -39,10 +38,6 @@ export function QuantumDashboard() {
   };
 
   const renderPanel = () => {
-    if (showSDK && sdkType === 'quantum-algorithms') {
-      return <QuantumAlgorithmsSDK />;
-    }
-
     switch (activeTab) {
       case "circuits":
         return <CircuitsPanel />;
