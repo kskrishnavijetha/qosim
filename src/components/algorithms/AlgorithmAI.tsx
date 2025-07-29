@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Brain, Sparkles, MessageSquare, Code, Lightbulb, Zap } from 'lucide-react';
+import { Brain, Sparkles, MessageSquare, Code, Lightbulb, Zap, Heart } from 'lucide-react';
 
 interface AlgorithmAIProps {
   language: 'python' | 'javascript';
