@@ -1,12 +1,11 @@
 
-import { useState } from 'react';
-
 export function useEntanglementTracking() {
-  const [entanglement] = useState({ pairs: [], strength: 0 });
-  
   return {
-    entanglement,
+    entanglement: { pairs: [], strength: 0 },
     trackEntanglement: () => {},
-    resetTracking: () => {}
+    resetTracking: () => {},
+    selectedGates: [],
+    hasEntanglingGates: false,
+    entanglingGatesInCircuit: []
   };
 }

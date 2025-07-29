@@ -1,15 +1,13 @@
 
-import { useState } from 'react';
-
-export function useRealtimeCollaboration() {
-  const [isConnected] = useState(false);
-  const [collaborators] = useState([]);
-  
+export function useRealtimeCollaboration(circuitId: string | null) {
   return {
-    isConnected,
-    collaborators,
+    isConnected: false,
+    collaborators: [],
+    activeUsers: [],
+    recentChanges: [],
     connect: () => {},
     disconnect: () => {},
-    sendMessage: () => {}
+    sendMessage: () => {},
+    broadcastChange: (type: string, data: any) => {}
   };
 }

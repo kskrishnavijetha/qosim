@@ -5,16 +5,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 interface CircuitImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onImport?: (data: string, format: string) => Promise<void>;
 }
 
-export function CircuitImportDialog({ open, onOpenChange }: CircuitImportDialogProps) {
+export function CircuitImportDialog({ open, onOpenChange, onImport }: CircuitImportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Circuit</DialogTitle>
         </DialogHeader>
-        <p>Import functionality coming soon</p>
+        <div>Import functionality placeholder</div>
       </DialogContent>
     </Dialog>
   );

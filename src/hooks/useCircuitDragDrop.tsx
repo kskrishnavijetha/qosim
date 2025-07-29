@@ -1,13 +1,13 @@
 
-import { useState } from 'react';
-
-export function useCircuitDragDrop() {
-  const [isDragging] = useState(false);
-  
+export function useCircuitDragDrop(options: any) {
   return {
-    isDragging,
+    isDragging: false,
     handleDragStart: () => {},
     handleDragEnd: () => {},
-    handleDrop: () => {}
+    handleDrop: () => {},
+    dragState: { isDragging: false, gateType: null, position: null },
+    circuitRef: { current: null },
+    handleMouseDown: () => {},
+    handleTouchStart: () => {}
   };
 }

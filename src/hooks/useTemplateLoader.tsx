@@ -1,12 +1,9 @@
 
-import { useState } from 'react';
-
-export function useTemplateLoader() {
-  const [templates] = useState([]);
-  
+export function useTemplateLoader(options: any) {
   return {
-    templates,
+    templates: [],
     loadTemplate: () => {},
-    saveTemplate: () => {}
+    saveTemplate: () => {},
+    handleTemplateLoad: (template: any) => {}
   };
 }

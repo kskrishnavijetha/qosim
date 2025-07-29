@@ -1,13 +1,10 @@
 
-import { useState } from 'react';
-
 export function useCustomGates() {
-  const [customGates] = useState([]);
-  
   return {
-    customGates,
+    customGates: [],
     addCustomGate: () => {},
     removeCustomGate: () => {},
-    getCustomGate: () => null
+    getCustomGate: () => ({}),
+    isCustomGate: (gateType: string) => false
   };
 }
