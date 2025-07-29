@@ -59,7 +59,6 @@ export function FilesPanel() {
   const handleFileSelect = (fileId: string) => {
     console.log('File selected:', fileId);
     console.log('Available files:', files);
-    console.log('Files length:', files.length);
     
     // Find the file first to make sure it exists
     const fileData = files.find(f => f.id === fileId);
@@ -68,7 +67,7 @@ export function FilesPanel() {
     if (fileData) {
       setSelectedFile(fileId);
       setShowFileViewer(true);
-      console.log('File found and viewer opened:', fileData);
+      console.log('File found and viewer opened for:', fileData.name);
     } else {
       console.error('File not found:', fileId);
       console.error('Available file IDs:', files.map(f => f.id));
@@ -97,11 +96,12 @@ export function FilesPanel() {
     toggleFavorite(fileId);
   };
 
+  // Get the selected file data
   const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
   
-  console.log('Selected file ID:', selectedFile);
-  console.log('Selected file data:', selectedFileData);
-  console.log('Show file viewer:', showFileViewer);
+  console.log('Render - Selected file ID:', selectedFile);
+  console.log('Render - Selected file data:', selectedFileData);
+  console.log('Render - Show file viewer:', showFileViewer);
 
   const handleCloseFileViewer = () => {
     console.log('Closing file viewer');
@@ -142,13 +142,6 @@ export function FilesPanel() {
           </div>
         </div>
 
-        {/* Debug info */}
-        <div className="text-xs text-muted-foreground">
-          <p>Total files: {files.length}</p>
-          <p>Selected file: {selectedFile}</p>
-          <p>Show viewer: {showFileViewer ? 'true' : 'false'}</p>
-        </div>
-
         {/* File System Stats */}
         <FileSystemStats favoriteCount={getFileStats.favoriteCount} />
 
@@ -185,21 +178,36 @@ export function FilesPanel() {
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                {selectedFileData?.name || 'File Viewer'}
+                {selectedFileData ? `File Viewer - ${selectedFileData.name}` : 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
             <div className="max-h-[70vh] overflow-y-auto">
               {selectedFileData ? (
-                <FileViewer 
-                  file={selectedFileData} 
-                  onClose={handleCloseFileViewer}
-                />
+                <div>
+                  <div className="mb-4 p-4 bg-quantum-matrix/20 rounded-lg border border-quantum-glow/20">
+                    <h4 className="text-sm font-mono text-quantum-glow mb-2">Debug Information</h4>
+                    <div className="text-xs space-y-1">
+                      <p>File ID: {selectedFileData.id}</p>
+                      <p>Name: {selectedFileData.name}</p>
+                      <p>Type: {selectedFileData.type}</p>
+                      <p>Size: {selectedFileData.sizeDisplay}</p>
+                    </div>
+                  </div>
+                  <FileViewer 
+                    file={selectedFileData} 
+                    onClose={handleCloseFileViewer}
+                  />
+                </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
-                  <p>No file selected or file not found</p>
-                  <p className="text-sm mt-2">Selected ID: {selectedFile}</p>
-                  <p className="text-sm">Available files: {files.length}</p>
-                  <p className="text-sm">Files: {files.map(f => f.name).join(', ')}</p>
+                  <p className="text-lg mb-4">No file data available</p>
+                  <div className="text-sm space-y-2 mb-4">
+                    <p>Selected ID: {selectedFile || 'none'}</p>
+                    <p>Total files available: {files.length}</p>
+                    {files.length > 0 && (
+                      <p>Available files: {files.map(f => f.name).join(', ')}</p>
+                    )}
+                  </div>
                   <Button 
                     variant="outline" 
                     onClick={handleCloseFileViewer}
