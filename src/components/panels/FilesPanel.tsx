@@ -23,7 +23,6 @@ export function FilesPanel() {
   const [showFileViewer, setShowFileViewer] = useState(false);
 
   console.log('FilesPanel render - files count:', files.length);
-  console.log('FilesPanel render - showFileViewer:', showFileViewer);
   console.log('FilesPanel render - selectedFile:', selectedFile);
 
   // Transform files to legacy format for compatibility
@@ -63,14 +62,13 @@ export function FilesPanel() {
   const handleFileSelect = (fileId: string) => {
     console.log('handleFileSelect called with fileId:', fileId);
     
-    // Find the actual QuantumFile object
     const file = files.find(f => f.id === fileId);
     console.log('Found file:', file);
     
     if (file) {
+      console.log('Setting selected file and opening viewer');
       setSelectedFile(file);
       setShowFileViewer(true);
-      console.log('Opening file viewer with file:', file.name);
     } else {
       console.error('File not found:', fileId);
     }
@@ -176,15 +174,11 @@ export function FilesPanel() {
               </DialogTitle>
             </DialogHeader>
             <div className="max-h-[70vh] overflow-y-auto">
-              {selectedFile ? (
+              {selectedFile && (
                 <FileViewer 
                   file={selectedFile} 
                   onClose={handleCloseFileViewer}
                 />
-              ) : (
-                <div className="p-8 text-center">
-                  <p className="text-muted-foreground">Loading file...</p>
-                </div>
               )}
             </div>
           </DialogContent>

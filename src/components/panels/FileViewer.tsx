@@ -27,12 +27,17 @@ interface FileViewerProps {
 export function FileViewer({ file, onClose }: FileViewerProps) {
   const [activeTab, setActiveTab] = useState("content");
 
-  console.log('FileViewer received file:', file);
+  console.log('FileViewer rendering with file:', file);
 
+  // Early return if no file
   if (!file) {
+    console.log('No file provided to FileViewer');
     return (
       <div className="h-full flex items-center justify-center">
-        <p className="text-muted-foreground">No file selected</p>
+        <div className="text-center">
+          <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">No file selected</p>
+        </div>
       </div>
     );
   }
@@ -214,6 +219,16 @@ measure q -> c;`}
     }
   };
 
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return 'Unknown';
+    try {
+      const dateObj = date instanceof Date ? date : new Date(date);
+      return dateObj.toLocaleString();
+    } catch {
+      return 'Unknown';
+    }
+  };
+
   return (
     <div className="h-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
@@ -268,15 +283,7 @@ measure q -> c;`}
                     </div>
                     <div>
                       <p className="text-muted-foreground">Modified</p>
-                      <p className="text-xs">
-                        {file.updatedAt ? 
-                          (file.updatedAt instanceof Date ? 
-                            file.updatedAt.toLocaleString() : 
-                            new Date(file.updatedAt).toLocaleString()
-                          ) : 
-                          'Unknown'
-                        }
-                      </p>
+                      <p className="text-xs">{formatDate(file.updatedAt)}</p>
                     </div>
                   </div>
                   
@@ -330,27 +337,11 @@ measure q -> c;`}
                     </div>
                     <div>
                       <p className="text-muted-foreground">Created</p>
-                      <p className="text-xs">
-                        {file.createdAt ? 
-                          (file.createdAt instanceof Date ? 
-                            file.createdAt.toLocaleString() : 
-                            new Date(file.createdAt).toLocaleString()
-                          ) : 
-                          'Unknown'
-                        }
-                      </p>
+                      <p className="text-xs">{formatDate(file.createdAt)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Last Modified</p>
-                      <p className="text-xs">
-                        {file.updatedAt ? 
-                          (file.updatedAt instanceof Date ? 
-                            file.updatedAt.toLocaleString() : 
-                            new Date(file.updatedAt).toLocaleString()
-                          ) : 
-                          'Unknown'
-                        }
-                      </p>
+                      <p className="text-xs">{formatDate(file.updatedAt)}</p>
                     </div>
                   </div>
                 </CardContent>
