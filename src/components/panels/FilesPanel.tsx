@@ -57,11 +57,14 @@ export function FilesPanel() {
   };
 
   const handleFileSelect = (fileId: string) => {
+    console.log('File selected:', fileId);
+    console.log('Available files:', files);
     setSelectedFile(fileId);
     setShowFileViewer(true);
   };
 
   const handleContextAction = (action: string, fileId: string) => {
+    console.log('Context action:', action, 'for file:', fileId);
     if (action === "versions") {
       setSelectedFile(fileId);
       setShowVersionHistory(true);
@@ -83,6 +86,10 @@ export function FilesPanel() {
   };
 
   const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
+  
+  console.log('Selected file ID:', selectedFile);
+  console.log('Selected file data:', selectedFileData);
+  console.log('Show file viewer:', showFileViewer);
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -140,14 +147,25 @@ export function FilesPanel() {
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                {selectedFileData?.name}
+                {selectedFileData?.name || 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
-            {selectedFileData && (
+            {selectedFileData ? (
               <FileViewer 
                 file={selectedFileData} 
                 onClose={() => setShowFileViewer(false)}
               />
+            ) : (
+              <div className="p-8 text-center text-muted-foreground">
+                <p>No file selected or file not found</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowFileViewer(false)}
+                  className="mt-4"
+                >
+                  Close
+                </Button>
+              </div>
             )}
           </DialogContent>
         </Dialog>
