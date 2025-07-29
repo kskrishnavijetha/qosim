@@ -1,3 +1,4 @@
+
 /**
  * QOSim JavaScript SDK
  * A comprehensive SDK for creating, simulating, and managing quantum circuits
@@ -69,9 +70,11 @@ export class QOSimSDK {
         await this.loadQOSimCore();
       }
       
-      this.simulator = new window.QOSimSimulator();
+      this.simulator = new window.QOSimSimulator(this.config.defaultQubits);
       this.isInitialized = true;
+      console.log('QOSim SDK initialized successfully');
     } catch (error) {
+      console.error('Failed to initialize QOSim SDK:', error);
       throw new Error(`Failed to initialize QOSim SDK: ${error}`);
     }
   }
@@ -161,20 +164,26 @@ export class QOSimSDK {
     const startTime = performance.now();
 
     try {
-      // Reset simulator
+      // Reset simulator with correct number of qubits
       this.simulator.reset(circuit.qubits);
+      console.log(`Simulating circuit with ${circuit.qubits} qubits and ${circuit.gates.length} gates`);
 
-      // Apply gates in sequence
+      // Apply gates in sequence using the correct API
       for (const gate of circuit.gates) {
         await this.applyGate(gate);
       }
 
-      // Get results
+      // Run the simulation
+      this.simulator.run();
+
+      // Get results using the correct API
       const stateVector = this.simulator.getStateVector();
       const probabilities = this.simulator.getProbabilities();
       const basisStates = this.generateBasisStates(circuit.qubits);
 
       const executionTime = performance.now() - startTime;
+
+      console.log(`Simulation completed in ${executionTime.toFixed(2)}ms`);
 
       return {
         stateVector,
@@ -184,49 +193,74 @@ export class QOSimSDK {
         circuitDepth: this.calculateCircuitDepth(circuit)
       };
     } catch (error) {
+      console.error('Simulation failed:', error);
       throw new Error(`Simulation failed: ${error}`);
     }
   }
 
   /**
-   * Apply a single gate to the simulator
+   * Apply a single gate to the simulator using the correct QOSim API
    */
   private async applyGate(gate: QuantumGate): Promise<void> {
-    switch (gate.type.toLowerCase()) {
-      case 'h':
-      case 'hadamard':
-        this.simulator.applyHadamard(gate.qubit);
-        break;
-      case 'x':
-      case 'pauli-x':
-        this.simulator.applyPauliX(gate.qubit);
-        break;
-      case 'y':
-      case 'pauli-y':
-        this.simulator.applyPauliY(gate.qubit);
-        break;
-      case 'z':
-      case 'pauli-z':
-        this.simulator.applyPauliZ(gate.qubit);
-        break;
-      case 'cnot':
-      case 'cx':
-        if (gate.controlQubit === undefined) {
-          throw new Error('CNOT gate requires control qubit');
-        }
-        this.simulator.applyCNOT(gate.controlQubit, gate.qubit);
-        break;
-      case 'rx':
-        this.simulator.applyRotationX(gate.qubit, gate.angle || 0);
-        break;
-      case 'ry':
-        this.simulator.applyRotationY(gate.qubit, gate.angle || 0);
-        break;
-      case 'rz':
-        this.simulator.applyRotationZ(gate.qubit, gate.angle || 0);
-        break;
-      default:
-        throw new Error(`Unsupported gate type: ${gate.type}`);
+    try {
+      switch (gate.type.toLowerCase()) {
+        case 'h':
+        case 'hadamard':
+          this.simulator.addGate('H', gate.qubit);
+          break;
+        case 'x':
+        case 'pauli-x':
+          this.simulator.addGate('X', gate.qubit);
+          break;
+        case 'y':
+        case 'pauli-y':
+          this.simulator.addGate('Y', gate.qubit);
+          break;
+        case 'z':
+        case 'pauli-z':
+          this.simulator.addGate('Z', gate.qubit);
+          break;
+        case 'cnot':
+        case 'cx':
+          if (gate.controlQubit === undefined) {
+            throw new Error('CNOT gate requires control qubit');
+          }
+          this.simulator.addGate('CNOT', gate.controlQubit, gate.qubit);
+          break;
+        case 'rx':
+          this.simulator.addGate('RX', gate.qubit, gate.angle || 0);
+          break;
+        case 'ry':
+          this.simulator.addGate('RY', gate.qubit, gate.angle || 0);
+          break;
+        case 'rz':
+          this.simulator.addGate('RZ', gate.qubit, gate.angle || 0);
+          break;
+        case 'cz':
+          if (gate.controlQubit === undefined) {
+            throw new Error('CZ gate requires control qubit');
+          }
+          this.simulator.addGate('CZ', gate.controlQubit, gate.qubit);
+          break;
+        case 'swap':
+          if (gate.controlQubit === undefined) {
+            throw new Error('SWAP gate requires two qubits');
+          }
+          this.simulator.addGate('SWAP', gate.qubit, gate.controlQubit);
+          break;
+        case 's':
+          this.simulator.addGate('S', gate.qubit);
+          break;
+        case 't':
+          this.simulator.addGate('T', gate.qubit);
+          break;
+        default:
+          console.warn(`Unsupported gate type: ${gate.type}`);
+          throw new Error(`Unsupported gate type: ${gate.type}`);
+      }
+    } catch (error) {
+      console.error(`Error applying gate ${gate.type}:`, error);
+      throw error;
     }
   }
 
