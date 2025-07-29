@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Eye, Activity, Zap, BarChart3, Sphere, Network } from 'lucide-react';
+import { Eye, Activity, Zap, BarChart3, Circle, Network } from 'lucide-react';
 import { Algorithm } from './QuantumAlgorithmsSDK';
 
 export interface AlgorithmVisualizerProps {
@@ -116,7 +116,7 @@ export function AlgorithmVisualizer({
         <Tabs defaultValue="bloch" className="h-full flex flex-col">
           <TabsList className="flex-none grid w-full grid-cols-4 bg-quantum-matrix border-b border-quantum-neon/20">
             <TabsTrigger value="bloch" className="flex items-center gap-2">
-              <Sphere className="w-4 h-4" />
+              <Circle className="w-4 h-4" />
               Bloch Sphere
             </TabsTrigger>
             <TabsTrigger value="entanglement" className="flex items-center gap-2">

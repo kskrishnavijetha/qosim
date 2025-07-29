@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Circuit, 
   Zap, 
   Bot,
   Settings,
@@ -12,7 +11,8 @@ import {
   Database,
   TestTube,
   Layers,
-  Monitor
+  Monitor,
+  GitBranch
 } from 'lucide-react';
 
 interface QuantumSidebarProps {
@@ -29,7 +29,7 @@ export function QuantumSidebar({
   onSDKToggle 
 }: QuantumSidebarProps) {
   const menuItems = [
-    { id: 'circuits', label: 'Circuit Builder', icon: Circuit },
+    { id: 'circuits', label: 'Circuit Builder', icon: GitBranch },
     { id: 'sdk', label: 'SDK Demo', icon: Code },
     { id: 'algorithms', label: 'Algorithms', icon: Zap },
     { id: 'memory', label: 'Memory', icon: Database },

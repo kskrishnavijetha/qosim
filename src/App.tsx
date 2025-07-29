@@ -1,20 +1,21 @@
+
 import React, { useState, useCallback } from 'react';
 import { nanoid } from 'nanoid';
 import { QuantumSidebar } from './components/QuantumSidebar';
-import { CircuitBuilderPanel } from './components/CircuitBuilderPanel';
+import { CircuitsPanel } from './components/panels/CircuitsPanel';
 import { QuantumAlgorithmsPanel } from './components/algorithms/QuantumAlgorithmsPanel';
 import { SDKDemoPanel } from './components/panels/SDKDemoPanel';
 import { QuantumResultsDisplay } from './components/quantum/QuantumResultsDisplay';
 import { useCircuitState, Gate } from './hooks/useCircuitState';
 import { useQuantumBackend } from './hooks/useQuantumBackend';
 import { useCircuitSharing } from './hooks/useCircuitSharing';
-import { QuantumMemoryPanel } from './components/memory/QuantumMemoryPanel';
-import { QuantumJobsPanel } from './components/jobs/QuantumJobsPanel';
-import { QuantumFilesPanel } from './components/files/QuantumFilesPanel';
-import { QuantumTestingPanel } from './components/testing/QuantumTestingPanel';
+import { MemoryPanel } from './components/panels/MemoryPanel';
+import { JobsPanel } from './components/panels/JobsPanel';
+import { FilesPanel } from './components/panels/FilesPanel';
+import { QuantumTestingPanel } from './components/testing/QuantumTestSuite';
 import { QuantumSettingsPanel } from './components/settings/QuantumSettingsPanel';
 import { QuantumHelpPanel } from './components/help/QuantumHelpPanel';
-import { QuantumLogsPanel } from './components/logs/QuantumLogsPanel';
+import { LogsPanel } from './components/panels/LogsPanel';
 import { QuantumAlgorithmsSDK } from './components/quantum-algorithms-sdk/QuantumAlgorithmsSDK';
 
 export default function App() {
@@ -110,17 +111,7 @@ export default function App() {
             ) : (
               <>
                 {currentPanel === 'circuits' && (
-                  <CircuitBuilderPanel
-                    circuit={circuit}
-                    simulationResult={simulationResult}
-                    onCircuitChanged={setCircuit}
-                    onSimulate={simulateQuantumState}
-                    onCircuitSave={handleCircuitSave}
-                    onCircuitLoad={handleCircuitLoad}
-                    isExecuting={isExecuting}
-                    lastResult={lastResult}
-                    executeCircuit={executeCircuit}
-                  />
+                  <CircuitsPanel />
                 )}
                 {currentPanel === 'sdk' && (
                   <SDKDemoPanel />
@@ -132,16 +123,16 @@ export default function App() {
                   />
                 )}
                 {currentPanel === 'memory' && (
-                  <QuantumMemoryPanel />
+                  <MemoryPanel />
                 )}
                 {currentPanel === 'logs' && (
-                  <QuantumLogsPanel />
+                  <LogsPanel />
                 )}
                 {currentPanel === 'jobs' && (
-                  <QuantumJobsPanel />
+                  <JobsPanel />
                 )}
                 {currentPanel === 'files' && (
-                  <QuantumFilesPanel />
+                  <FilesPanel />
                 )}
                 {currentPanel === 'testing' && (
                   <QuantumTestingPanel />
