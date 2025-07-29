@@ -3,11 +3,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Cpu, Zap, Settings, Users, Bot } from 'lucide-react';
+import { Cpu, Zap, Users, Bot } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import AuthGuard from '@/components/AuthGuard';
+import { AuthGuard } from '@/components/AuthGuard';
 
 function QOSimContent() {
   const [activeTab, setActiveTab] = useState('overview');
