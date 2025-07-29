@@ -1,254 +1,385 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useState, useCallback, useRef } from 'react';
+import { nanoid } from 'nanoid';
+import { quantumSimulator } from '@/lib/quantumSimulator';
+import { qosmExporter } from '@/lib/qosmExporter';
+import { qosmImporter } from '@/lib/qosmImporter';
+import { useCircuitSharing } from '@/hooks/useCircuitSharing';
+import { toast } from 'sonner';
 
-export interface Gate {
-  id: string;
-  type: string;
-  qubit: number;
-  position: number;
-  parameters?: Record<string, any>;
-  controlQubits?: number[];
-}
-
-export interface Qubit {
+export interface CircuitQubit {
   id: string;
   index: number;
-  state: {
-    amplitude: { real: number; imaginary: number };
-    probability: number;
-    phase: number;
+  name: string;
+  state: 'computational' | 'superposition' | 'entangled';
+}
+
+export interface CircuitGate {
+  id: string;
+  type: string;
+  qubits: string[];
+  position: { x: number; y: number };
+  layer: number;
+  params?: { [key: string]: any };
+  metadata?: {
+    label?: string;
+    color?: string;
+    angle?: number;
   };
 }
 
-export interface SimulationResult {
-  stateVector: Array<{ real: number; imaginary: number }>;
-  probabilities: number[];
-  measurements: Record<string, number>;
+export interface CircuitLayer {
+  id: string;
+  index: number;
+  gates: CircuitGate[];
+  barrier?: boolean;
+}
+
+export interface QuantumCircuit {
+  id: string;
+  name: string;
+  description?: string;
+  qubits: CircuitQubit[];
+  gates: CircuitGate[];
+  layers: CircuitLayer[];
+  depth: number;
+  metadata: {
+    created: string;
+    modified: string;
+    version: string;
+    author?: string;
+  };
+}
+
+export interface CircuitSimulationResult {
+  stateVector: Complex[];
+  measurementProbabilities: number[];
+  qubitStates: {
+    qubit: string;
+    state: string;
+    amplitude: Complex;
+    phase: number;
+    probability: number;
+  }[];
+  entanglement: {
+    pairs: string[][];
+    strength: number;
+  };
   fidelity: number;
   executionTime: number;
 }
 
-interface CircuitHistory {
-  circuit: Gate[];
-  qubits: Qubit[];
-  timestamp: number;
+interface Complex {
+  real: number;
+  imag: number;
 }
 
 export function useCircuitBuilder() {
-  const [circuit, setCircuit] = useState<Gate[]>([]);
-  const [qubits, setQubits] = useState<Qubit[]>([
-    { id: 'q0', index: 0, state: { amplitude: { real: 1, imaginary: 0 }, probability: 1, phase: 0 } },
-    { id: 'q1', index: 1, state: { amplitude: { real: 1, imaginary: 0 }, probability: 1, phase: 0 } },
-    { id: 'q2', index: 2, state: { amplitude: { real: 1, imaginary: 0 }, probability: 1, phase: 0 } }
-  ]);
-  const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
-  const [isSimulating, setIsSimulating] = useState(false);
-  
-  const history = useRef<CircuitHistory[]>([]);
-  const historyIndex = useRef(-1);
-
-  const saveToHistory = useCallback(() => {
-    const snapshot: CircuitHistory = {
-      circuit: [...circuit],
-      qubits: [...qubits],
-      timestamp: Date.now()
-    };
-    
-    // Remove any history after current index
-    history.current = history.current.slice(0, historyIndex.current + 1);
-    
-    // Add new snapshot
-    history.current.push(snapshot);
-    historyIndex.current = history.current.length - 1;
-    
-    // Limit history size
-    if (history.current.length > 50) {
-      history.current = history.current.slice(-50);
-      historyIndex.current = history.current.length - 1;
+  const [circuit, setCircuit] = useState<QuantumCircuit>({
+    id: nanoid(),
+    name: 'Untitled Circuit',
+    qubits: [
+      { id: nanoid(), index: 0, name: 'q0', state: 'computational' },
+      { id: nanoid(), index: 1, name: 'q1', state: 'computational' },
+      { id: nanoid(), index: 2, name: 'q2', state: 'computational' }
+    ],
+    gates: [],
+    layers: [],
+    depth: 0,
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      version: '1.0.0'
     }
-  }, [circuit, qubits]);
+  });
 
-  const addGate = useCallback((gate: Gate) => {
-    setCircuit(prev => [...prev, gate]);
-    saveToHistory();
-    toast({
-      title: "Gate Added",
-      description: `${gate.type} gate added to qubit ${gate.qubit}`,
-    });
-  }, [saveToHistory]);
+  const [selectedGate, setSelectedGate] = useState<CircuitGate | null>(null);
+  const [simulationResult, setSimulationResult] = useState<CircuitSimulationResult | null>(null);
+  const [circuitHistory, setCircuitHistory] = useState<QuantumCircuit[]>([circuit]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  
+  const { saveCircuit: saveToCloud, loadCircuit: loadFromCloud } = useCircuitSharing();
 
-  const removeGate = useCallback((gateId: string) => {
-    setCircuit(prev => prev.filter(g => g.id !== gateId));
-    saveToHistory();
-    toast({
-      title: "Gate Removed",
-      description: "Gate has been removed from the circuit",
-    });
-  }, [saveToHistory]);
+  const updateCircuit = useCallback((newCircuit: QuantumCircuit) => {
+    newCircuit.metadata.modified = new Date().toISOString();
+    newCircuit.depth = calculateCircuitDepth(newCircuit);
+    setCircuit(newCircuit);
+    
+    // Update history
+    const newHistory = circuitHistory.slice(0, historyIndex + 1);
+    newHistory.push(newCircuit);
+    setCircuitHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [circuitHistory, historyIndex]);
 
-  const moveGate = useCallback((gateId: string, newPosition: number, newQubit?: number) => {
-    setCircuit(prev => prev.map(gate => 
-      gate.id === gateId 
-        ? { ...gate, position: newPosition, ...(newQubit !== undefined && { qubit: newQubit }) }
-        : gate
-    ));
-    saveToHistory();
-  }, [saveToHistory]);
+  const calculateCircuitDepth = useCallback((circuit: QuantumCircuit): number => {
+    if (circuit.gates.length === 0) return 0;
+    return Math.max(...circuit.gates.map(gate => gate.layer)) + 1;
+  }, []);
 
   const addQubit = useCallback(() => {
-    const newIndex = qubits.length;
-    const newQubit: Qubit = {
-      id: `q${newIndex}`,
-      index: newIndex,
-      state: { amplitude: { real: 1, imaginary: 0 }, probability: 1, phase: 0 }
+    const newQubit: CircuitQubit = {
+      id: nanoid(),
+      index: circuit.qubits.length,
+      name: `q${circuit.qubits.length}`,
+      state: 'computational'
     };
-    setQubits(prev => [...prev, newQubit]);
-    saveToHistory();
-    toast({
-      title: "Qubit Added",
-      description: `Qubit q${newIndex} added to the circuit`,
+    
+    updateCircuit({
+      ...circuit,
+      qubits: [...circuit.qubits, newQubit]
     });
-  }, [qubits.length, saveToHistory]);
+  }, [circuit, updateCircuit]);
 
-  const removeQubit = useCallback(() => {
-    if (qubits.length <= 1) {
-      toast({
-        title: "Cannot Remove",
-        description: "Circuit must have at least one qubit",
-        variant: "destructive"
-      });
+  const removeQubit = useCallback((qubitId: string) => {
+    if (circuit.qubits.length <= 1) {
+      toast.error('Cannot remove the last qubit');
       return;
     }
-    
-    const lastIndex = qubits.length - 1;
-    setQubits(prev => prev.slice(0, -1));
-    setCircuit(prev => prev.filter(gate => gate.qubit !== lastIndex));
-    saveToHistory();
-    toast({
-      title: "Qubit Removed",
-      description: `Qubit q${lastIndex} and its gates removed`,
-    });
-  }, [qubits.length, saveToHistory]);
 
-  const simulate = useCallback(async () => {
-    setIsSimulating(true);
+    const newQubits = circuit.qubits.filter(q => q.id !== qubitId);
+    const newGates = circuit.gates.filter(gate => !gate.qubits.includes(qubitId));
     
-    try {
-      // Simulate the quantum circuit
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock simulation delay
-      
-      const numStates = Math.pow(2, qubits.length);
-      const mockResult: SimulationResult = {
-        stateVector: Array.from({ length: numStates }, (_, i) => ({
-          real: Math.random() * 0.5,
-          imaginary: Math.random() * 0.5
-        })),
-        probabilities: Array.from({ length: numStates }, () => Math.random()).map(p => p / numStates),
-        measurements: {},
-        fidelity: 0.95 + Math.random() * 0.05,
-        executionTime: 150 + Math.random() * 100
-      };
-      
-      setSimulationResult(mockResult);
-      
-      toast({
-        title: "Simulation Complete",
-        description: `Circuit simulated in ${mockResult.executionTime.toFixed(1)}ms`,
-      });
-    } catch (error) {
-      toast({
-        title: "Simulation Failed",
-        description: "An error occurred during simulation",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSimulating(false);
+    updateCircuit({
+      ...circuit,
+      qubits: newQubits,
+      gates: newGates
+    });
+  }, [circuit, updateCircuit]);
+
+  const addGate = useCallback((gateType: string, qubits: string[], position: { x: number; y: number }) => {
+    const layer = Math.floor(position.x / 100);
+    
+    const newGate: CircuitGate = {
+      id: nanoid(),
+      type: gateType,
+      qubits,
+      position,
+      layer,
+      params: getDefaultGateParams(gateType),
+      metadata: {
+        label: gateType,
+        color: getGateColor(gateType)
+      }
+    };
+    
+    updateCircuit({
+      ...circuit,
+      gates: [...circuit.gates, newGate]
+    });
+  }, [circuit, updateCircuit]);
+
+  const removeGate = useCallback((gateId: string) => {
+    const newGates = circuit.gates.filter(gate => gate.id !== gateId);
+    updateCircuit({
+      ...circuit,
+      gates: newGates
+    });
+    
+    if (selectedGate?.id === gateId) {
+      setSelectedGate(null);
     }
-  }, [qubits.length]);
+  }, [circuit, selectedGate, updateCircuit]);
+
+  const moveGate = useCallback((gateId: string, newPosition: { x: number; y: number }) => {
+    const newLayer = Math.floor(newPosition.x / 100);
+    const newGates = circuit.gates.map(gate => 
+      gate.id === gateId 
+        ? { ...gate, position: newPosition, layer: newLayer }
+        : gate
+    );
+    
+    updateCircuit({
+      ...circuit,
+      gates: newGates
+    });
+  }, [circuit, updateCircuit]);
+
+  const updateGateParams = useCallback((gateId: string, params: { [key: string]: any }) => {
+    const newGates = circuit.gates.map(gate => 
+      gate.id === gateId 
+        ? { ...gate, params: { ...gate.params, ...params } }
+        : gate
+    );
+    
+    updateCircuit({
+      ...circuit,
+      gates: newGates
+    });
+  }, [circuit, updateCircuit]);
+
+  const selectGate = useCallback((gate: CircuitGate) => {
+    setSelectedGate(gate);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedGate(null);
+  }, []);
 
   const undo = useCallback(() => {
-    if (historyIndex.current > 0) {
-      historyIndex.current--;
-      const snapshot = history.current[historyIndex.current];
-      setCircuit([...snapshot.circuit]);
-      setQubits([...snapshot.qubits]);
-      toast({
-        title: "Undone",
-        description: "Last action has been undone",
-      });
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setCircuit(circuitHistory[historyIndex - 1]);
     }
-  }, []);
+  }, [historyIndex, circuitHistory]);
 
   const redo = useCallback(() => {
-    if (historyIndex.current < history.current.length - 1) {
-      historyIndex.current++;
-      const snapshot = history.current[historyIndex.current];
-      setCircuit([...snapshot.circuit]);
-      setQubits([...snapshot.qubits]);
-      toast({
-        title: "Redone",
-        description: "Action has been redone",
-      });
+    if (historyIndex < circuitHistory.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setCircuit(circuitHistory[historyIndex + 1]);
     }
-  }, []);
+  }, [historyIndex, circuitHistory]);
 
-  const clear = useCallback(() => {
-    setCircuit([]);
+  const clearCircuit = useCallback(() => {
+    const clearedCircuit: QuantumCircuit = {
+      ...circuit,
+      gates: [],
+      layers: [],
+      depth: 0
+    };
+    updateCircuit(clearedCircuit);
+    setSelectedGate(null);
     setSimulationResult(null);
-    saveToHistory();
-    toast({
-      title: "Circuit Cleared",
-      description: "All gates have been removed",
-    });
-  }, [saveToHistory]);
+  }, [circuit, updateCircuit]);
 
-  const exportCircuit = useCallback((format: string) => {
-    // Implementation for different export formats
-    console.log(`Exporting circuit as ${format}`);
-  }, []);
-
-  const importCircuit = useCallback((data: string, format: string) => {
-    // Implementation for different import formats
-    console.log(`Importing circuit from ${format}`);
-  }, []);
-
-  const optimizeCircuit = useCallback(() => {
-    // AI-powered circuit optimization
-    toast({
-      title: "Circuit Optimized",
-      description: "Circuit has been optimized using AI",
-    });
-  }, []);
-
-  const canUndo = historyIndex.current > 0;
-  const canRedo = historyIndex.current < history.current.length - 1;
-
-  // Initialize history
-  useEffect(() => {
-    if (history.current.length === 0) {
-      saveToHistory();
+  const saveCircuit = useCallback(async () => {
+    try {
+      await saveToCloud(circuit);
+      toast.success('Circuit saved successfully');
+    } catch (error) {
+      toast.error('Failed to save circuit');
     }
-  }, [saveToHistory]);
+  }, [circuit, saveToCloud]);
+
+  const loadCircuit = useCallback(async (circuitData?: QuantumCircuit) => {
+    try {
+      if (circuitData) {
+        updateCircuit(circuitData);
+      } else {
+        const loadedCircuit = await loadFromCloud();
+        if (loadedCircuit) {
+          updateCircuit(loadedCircuit);
+        }
+      }
+      toast.success('Circuit loaded successfully');
+    } catch (error) {
+      toast.error('Failed to load circuit');
+    }
+  }, [updateCircuit, loadFromCloud]);
+
+  const simulateCircuit = useCallback(async () => {
+    try {
+      // Convert circuit to quantum simulator format
+      const quantumGates = circuit.gates.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubits[0] ? circuit.qubits.findIndex(q => q.id === gate.qubits[0]) : 0,
+        qubits: gate.qubits.map(qId => circuit.qubits.findIndex(q => q.id === qId)),
+        position: gate.layer,
+        angle: gate.params?.angle || 0
+      }));
+
+      const result = quantumSimulator.simulate(quantumGates);
+      
+      const simulationResult: CircuitSimulationResult = {
+        stateVector: result.stateVector,
+        measurementProbabilities: result.measurementProbabilities,
+        qubitStates: result.qubitStates.map(qs => ({
+          qubit: circuit.qubits[qs.qubit]?.id || '',
+          state: qs.state,
+          amplitude: qs.amplitude,
+          phase: qs.phase,
+          probability: qs.probability
+        })),
+        entanglement: {
+          pairs: [],
+          strength: 0
+        },
+        fidelity: 1.0,
+        executionTime: Date.now()
+      };
+
+      setSimulationResult(simulationResult);
+      return simulationResult;
+    } catch (error) {
+      throw new Error('Simulation failed: ' + error);
+    }
+  }, [circuit]);
+
+  const exportCircuit = useCallback(async (format: string) => {
+    return qosmExporter.export(circuit, format);
+  }, [circuit]);
+
+  const importCircuit = useCallback(async (data: string, format: string) => {
+    try {
+      const importedCircuit = await qosmImporter.import(data, format);
+      updateCircuit(importedCircuit);
+      toast.success('Circuit imported successfully');
+    } catch (error) {
+      toast.error('Failed to import circuit');
+    }
+  }, [updateCircuit]);
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < circuitHistory.length - 1;
 
   return {
     circuit,
-    qubits,
+    selectedGate,
     simulationResult,
-    isSimulating,
+    circuitHistory,
+    addQubit,
+    removeQubit,
     addGate,
     removeGate,
     moveGate,
-    addQubit,
-    removeQubit,
-    simulate,
+    updateGateParams,
+    selectGate,
+    clearSelection,
     undo,
     redo,
-    canUndo,
-    canRedo,
-    clear,
+    clearCircuit,
+    saveCircuit,
+    loadCircuit,
+    simulateCircuit,
     exportCircuit,
     importCircuit,
-    optimizeCircuit
+    canUndo,
+    canRedo
   };
+}
+
+function getDefaultGateParams(gateType: string): { [key: string]: any } {
+  switch (gateType) {
+    case 'RX':
+    case 'RY':
+    case 'RZ':
+      return { angle: Math.PI / 4 };
+    case 'U1':
+      return { lambda: 0 };
+    case 'U2':
+      return { phi: 0, lambda: Math.PI / 2 };
+    case 'U3':
+      return { theta: Math.PI / 2, phi: 0, lambda: Math.PI / 2 };
+    default:
+      return {};
+  }
+}
+
+function getGateColor(gateType: string): string {
+  const colors: { [key: string]: string } = {
+    'H': '#FFD700',
+    'X': '#FF6B6B',
+    'Y': '#4ECDC4',
+    'Z': '#45B7D1',
+    'CNOT': '#96CEB4',
+    'RX': '#FFEAA7',
+    'RY': '#DDA0DD',
+    'RZ': '#98D8C8',
+    'S': '#F7DC6F',
+    'T': '#BB8FCE',
+    'SWAP': '#85C1E9',
+    'TOFFOLI': '#F8C471'
+  };
+  return colors[gateType] || '#BDC3C7';
 }

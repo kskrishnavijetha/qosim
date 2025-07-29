@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
+import { CircuitsPanel } from "./panels/CircuitsPanel";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
@@ -17,18 +17,30 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./ui/resiz
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 export function QuantumDashboard() {
-  const [activeTab, setActiveTab] = useState("memory");
+  const [activeTab, setActiveTab] = useState("circuits");
   const [showSidebar, setShowSidebar] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [consoleCollapsed, setConsoleCollapsed] = useState(true);
+  const [showSDK, setShowSDK] = useState(false);
+  const [sdkType, setSDKType] = useState<string>("");
   const isMobile = useIsMobile();
+
+  const handleSDKSelect = (type: string) => {
+    setSDKType(type);
+    setShowSDK(true);
+    setActiveTab("");
+  };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    setShowSDK(false);
+    setSDKType("");
   };
 
   const renderPanel = () => {
     switch (activeTab) {
+      case "circuits":
+        return <CircuitsPanel />;
       case "jobs":
         return <JobsPanel />;
       case "memory":
@@ -44,7 +56,7 @@ export function QuantumDashboard() {
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
-        return <MemoryPanel />;
+        return <CircuitsPanel />;
     }
   };
 
@@ -65,6 +77,10 @@ export function QuantumDashboard() {
                   activeTab={activeTab} 
                   onTabChange={(tab) => {
                     handleTabChange(tab);
+                    setShowSidebar(false);
+                  }}
+                  onSDKSelect={(type) => {
+                    handleSDKSelect(type);
                     setShowSidebar(false);
                   }}
                 />
@@ -138,6 +154,7 @@ export function QuantumDashboard() {
           <QuantumSidebar 
             activeTab={activeTab} 
             onTabChange={handleTabChange}
+            onSDKSelect={handleSDKSelect}
           />
         </ResizablePanel>
         
