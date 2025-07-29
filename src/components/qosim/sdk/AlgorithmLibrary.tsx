@@ -16,9 +16,10 @@ export function AlgorithmLibrary({ onAlgorithmSelect, selectedLanguage }: Algori
     {
       id: 'bell-state',
       name: 'Bell State',
-      category: 'Entanglement',
+      category: 'basic',
       description: 'Creates a maximally entangled two-qubit state',
-      complexity: 'Beginner',
+      complexity: 'beginner',
+      parameters: [],
       implementation: {
         python: `# Bell State Creation
 from qosim import QuantumCircuit
@@ -30,15 +31,26 @@ result = qc.simulate()`,
 const qc = new QuantumCircuit(2);
 qc.h(0);
 qc.cnot(0, 1);
-const result = qc.simulate();`
+const result = qc.simulate();`,
+        qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[2];
+creg c[2];
+h q[0];
+cx q[0],q[1];
+measure q -> c;`
+      },
+      visualization: {
+        steps: []
       }
     },
     {
       id: 'grovers',
       name: "Grover's Search",
-      category: 'Search',
+      category: 'search',
       description: 'Quantum search algorithm with quadratic speedup',
-      complexity: 'Intermediate',
+      complexity: 'intermediate',
+      parameters: [],
       implementation: {
         python: `# Grover's Algorithm
 from qosim import QuantumCircuit
@@ -87,15 +99,29 @@ function groversSearch(nQubits, markedState) {
         }
     }
     return qc;
-}`
+}`,
+        qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[2];
+creg c[2];
+h q[0];
+h q[1];
+cz q[0],q[1];
+h q[0];
+h q[1];
+measure q -> c;`
+      },
+      visualization: {
+        steps: []
       }
     },
     {
       id: 'qft',
       name: 'Quantum Fourier Transform',
-      category: 'Transform',
+      category: 'simulation',
       description: 'Quantum version of discrete Fourier transform',
-      complexity: 'Advanced',
+      complexity: 'advanced',
+      parameters: [],
       implementation: {
         python: `# Quantum Fourier Transform
 from qosim import QuantumCircuit
@@ -125,7 +151,22 @@ function qft(qc, n) {
         qc.swap(i, n-1-i);
     }
     return qc;
-}`
+}`,
+        qasm: `OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[3];
+creg c[3];
+h q[0];
+cp(pi/2) q[1],q[0];
+cp(pi/4) q[2],q[0];
+h q[1];
+cp(pi/2) q[2],q[1];
+h q[2];
+swap q[0],q[2];
+measure q -> c;`
+      },
+      visualization: {
+        steps: []
       }
     }
   ];
@@ -150,8 +191,8 @@ function qft(qc, n) {
                   <Badge 
                     variant="outline" 
                     className={`text-xs ${
-                      algorithm.complexity === 'Beginner' ? 'text-green-400' :
-                      algorithm.complexity === 'Intermediate' ? 'text-yellow-400' : 'text-red-400'
+                      algorithm.complexity === 'beginner' ? 'text-green-400' :
+                      algorithm.complexity === 'intermediate' ? 'text-yellow-400' : 'text-red-400'
                     }`}
                   >
                     {algorithm.complexity}

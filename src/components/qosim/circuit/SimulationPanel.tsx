@@ -31,9 +31,9 @@ export function SimulationPanel({ result, isSimulating }: SimulationPanelProps) 
     );
   }
 
-  const chartData = Object.entries(result.measurementResults).map(([state, probability]) => ({
+  const chartData = Object.entries(result.measurementProbabilities).map(([state, probability]) => ({
     state,
-    probability: probability * 100
+    probability: (probability as number) * 100
   }));
 
   return (
