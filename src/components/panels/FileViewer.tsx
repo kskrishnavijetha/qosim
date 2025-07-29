@@ -27,6 +27,16 @@ interface FileViewerProps {
 export function FileViewer({ file, onClose }: FileViewerProps) {
   const [activeTab, setActiveTab] = useState("content");
 
+  console.log('FileViewer received file:', file);
+
+  if (!file) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-muted-foreground">No file selected</p>
+      </div>
+    );
+  }
+
   const getFileIcon = (type: string) => {
     switch (type) {
       case "circuit":
@@ -44,6 +54,8 @@ export function FileViewer({ file, onClose }: FileViewerProps) {
         return <Film className="w-5 h-5 text-red-400" />;
       case "audio":
         return <Music className="w-5 h-5 text-yellow-400" />;
+      case "folder":
+        return <Archive className="w-5 h-5 text-blue-400" />;
       default:
         return <FileText className="w-5 h-5" />;
     }
@@ -179,11 +191,24 @@ measure q -> c;`}
           </div>
         );
         
+      case "folder":
+        return (
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <Archive className="w-16 h-16 mx-auto mb-4 text-blue-400" />
+              <h3 className="text-lg font-semibold mb-2">Directory</h3>
+              <p className="text-muted-foreground">This is a folder containing multiple files</p>
+              <p className="text-sm text-muted-foreground mt-2">{file.sizeDisplay}</p>
+            </div>
+          </div>
+        );
+        
       default:
         return (
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>File preview not available for this file type</p>
+            <p>File preview available</p>
+            <p className="text-sm mt-2">Type: {file.type}</p>
           </div>
         );
     }
@@ -243,7 +268,15 @@ measure q -> c;`}
                     </div>
                     <div>
                       <p className="text-muted-foreground">Modified</p>
-                      <p className="text-xs">{file.updatedAt.toLocaleString()}</p>
+                      <p className="text-xs">
+                        {file.updatedAt ? 
+                          (file.updatedAt instanceof Date ? 
+                            file.updatedAt.toLocaleString() : 
+                            new Date(file.updatedAt).toLocaleString()
+                          ) : 
+                          'Unknown'
+                        }
+                      </p>
                     </div>
                   </div>
                   
@@ -260,7 +293,7 @@ measure q -> c;`}
                     )}
                   </div>
                   
-                  {file.tags.length > 0 && (
+                  {file.tags && file.tags.length > 0 && (
                     <div>
                       <p className="text-muted-foreground text-sm mb-2">Tags</p>
                       <div className="flex flex-wrap gap-1">
@@ -289,19 +322,35 @@ measure q -> c;`}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-muted-foreground">Current Version</p>
-                      <p className="font-mono">{file.lastVersion}</p>
+                      <p className="font-mono">{file.lastVersion || 'v1.0'}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Total Versions</p>
-                      <p className="font-mono">{file.versions}</p>
+                      <p className="font-mono">{file.versions || 1}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Created</p>
-                      <p className="text-xs">{file.createdAt.toLocaleString()}</p>
+                      <p className="text-xs">
+                        {file.createdAt ? 
+                          (file.createdAt instanceof Date ? 
+                            file.createdAt.toLocaleString() : 
+                            new Date(file.createdAt).toLocaleString()
+                          ) : 
+                          'Unknown'
+                        }
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Last Modified</p>
-                      <p className="text-xs">{file.updatedAt.toLocaleString()}</p>
+                      <p className="text-xs">
+                        {file.updatedAt ? 
+                          (file.updatedAt instanceof Date ? 
+                            file.updatedAt.toLocaleString() : 
+                            new Date(file.updatedAt).toLocaleString()
+                          ) : 
+                          'Unknown'
+                        }
+                      </p>
                     </div>
                   </div>
                 </CardContent>

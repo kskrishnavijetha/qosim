@@ -16,13 +16,13 @@ import { ShareDialog } from "../dialogs/ShareDialog";
 export function FilesPanel() {
   const { files, loading, createFile, updateFile, deleteFile, toggleFavorite, getFileStats } = useQuantumFiles();
 
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<QuantumFile | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
 
-  console.log('FilesPanel render - files:', files);
+  console.log('FilesPanel render - files count:', files.length);
   console.log('FilesPanel render - showFileViewer:', showFileViewer);
   console.log('FilesPanel render - selectedFile:', selectedFile);
 
@@ -62,15 +62,24 @@ export function FilesPanel() {
 
   const handleFileSelect = (fileId: string) => {
     console.log('handleFileSelect called with fileId:', fileId);
-    setSelectedFile(fileId);
-    setShowFileViewer(true);
-    console.log('Set showFileViewer to true and selectedFile to:', fileId);
+    
+    // Find the actual QuantumFile object
+    const file = files.find(f => f.id === fileId);
+    console.log('Found file:', file);
+    
+    if (file) {
+      setSelectedFile(file);
+      setShowFileViewer(true);
+      console.log('Opening file viewer with file:', file.name);
+    } else {
+      console.error('File not found:', fileId);
+    }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
     console.log('Context action:', action, 'for file:', fileId);
     if (action === "versions") {
-      setSelectedFile(fileId);
+      setSelectedFile(files.find(f => f.id === fileId) || null);
       setShowVersionHistory(true);
     } else if (action === "share") {
       const file = files.find(f => f.id === fileId);
@@ -94,11 +103,6 @@ export function FilesPanel() {
     setShowFileViewer(false);
     setSelectedFile(null);
   };
-
-  // Get the selected file data
-  const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
-  
-  console.log('Selected file data:', selectedFileData);
 
   if (loading) {
     return (
@@ -163,31 +167,18 @@ export function FilesPanel() {
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
 
-        {/* Debug Info */}
-        {showFileViewer && (
-          <div className="bg-red-900/20 border border-red-500 p-4 rounded text-sm">
-            <p>DEBUG - Dialog should be open</p>
-            <p>showFileViewer: {showFileViewer.toString()}</p>
-            <p>selectedFile: {selectedFile}</p>
-            <p>selectedFileData exists: {selectedFileData ? 'YES' : 'NO'}</p>
-            {selectedFileData && (
-              <pre className="mt-2 text-xs">{JSON.stringify(selectedFileData, null, 2)}</pre>
-            )}
-          </div>
-        )}
-
         {/* File Viewer Dialog */}
-        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
+        <Dialog open={showFileViewer} onOpenChange={handleCloseFileViewer}>
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                File Viewer - {selectedFileData?.name || 'Loading...'}
+                File Viewer - {selectedFile?.name || 'Loading...'}
               </DialogTitle>
             </DialogHeader>
             <div className="max-h-[70vh] overflow-y-auto">
-              {selectedFileData ? (
+              {selectedFile ? (
                 <FileViewer 
-                  file={selectedFileData} 
+                  file={selectedFile} 
                   onClose={handleCloseFileViewer}
                 />
               ) : (
@@ -204,10 +195,10 @@ export function FilesPanel() {
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                Version History - {selectedFile && files.find(f => f.id === selectedFile)?.name}
+                Version History - {selectedFile?.name}
               </DialogTitle>
             </DialogHeader>
-            {selectedFile && <VersionHistory fileId={selectedFile} />}
+            {selectedFile && <VersionHistory fileId={selectedFile.id} />}
           </DialogContent>
         </Dialog>
 
