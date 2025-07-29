@@ -42,19 +42,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const handleSDKSelect = (sdkType: string) => {
-    // Map SDK types to tab names
-    const sdkTabMap = {
-      'quantum-algorithms': 'quantum-algorithms',
-      'javascript': 'javascript-sdk',
-      'python': 'python-sdk'
-    };
-    
-    const tabName = sdkTabMap[sdkType] || sdkType;
-    onTabChange(tabName);
-    onSDKSelect?.(sdkType);
-  };
-
   return (
     <div className={cn(
       "bg-quantum-void border-r neon-border quantum-panel h-full flex flex-col",
@@ -119,30 +106,23 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
                 <button className={cn(
                   "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
                   "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
-                  (activeTab === 'quantum-algorithms' || activeTab === 'javascript-sdk' || activeTab === 'python-sdk')
-                    ? "bg-quantum-matrix text-quantum-glow quantum-glow neon-border scale-105" 
-                    : "text-muted-foreground hover:text-quantum-neon"
+                  "text-muted-foreground hover:text-quantum-neon"
                 )}>
                   <div className="relative shrink-0">
-                    <Code className={cn("w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300", 
-                      (activeTab === 'quantum-algorithms' || activeTab === 'javascript-sdk' || activeTab === 'python-sdk') ? "quantum-float" : "group-hover:scale-110"
-                    )} />
-                    {(activeTab === 'quantum-algorithms' || activeTab === 'javascript-sdk' || activeTab === 'python-sdk') && (
-                      <div className="absolute -top-1 -right-1 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-quantum-glow rounded-full particle-animation"></div>
-                    )}
+                    <Code className="w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300 group-hover:scale-110" />
                   </div>
                   <span className="font-mono font-medium text-sm lg:text-base truncate">SDK Tools</span>
                   
                   {/* Hover effect line */}
                   <div className={cn(
                     "absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-quantum-glow to-quantum-neon rounded-r transition-all duration-300",
-                    (activeTab === 'quantum-algorithms' || activeTab === 'javascript-sdk' || activeTab === 'python-sdk') ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+                    "opacity-0 group-hover:opacity-50"
                   )} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
                 <DropdownMenuItem 
-                  onClick={() => handleSDKSelect('quantum-algorithms')}
+                  onClick={() => onSDKSelect?.('quantum-algorithms')}
                   className="text-quantum-neon hover:bg-quantum-void/50"
                 >
                   <Code className="w-4 h-4 mr-2" />
@@ -150,14 +130,14 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-quantum-matrix" />
                 <DropdownMenuItem 
-                  onClick={() => handleSDKSelect('javascript')}
+                  onClick={() => onTabChange("javascript-sdk")}
                   className="text-quantum-neon hover:bg-quantum-void/50"
                 >
                   <Code className="w-4 h-4 mr-2" />
                   JavaScript SDK
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => handleSDKSelect('python')}
+                  onClick={() => onTabChange("python-sdk")}
                   className="text-quantum-neon hover:bg-quantum-void/50"
                 >
                   <Code className="w-4 h-4 mr-2" />
