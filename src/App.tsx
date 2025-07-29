@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { nanoid } from 'nanoid';
 import { QuantumSidebar } from './components/QuantumSidebar';
@@ -54,7 +55,7 @@ export default function App() {
       gates: circuit.map(gate => ({
         id: gate.id,
         type: gate.type,
-        qubits: gate.qubits || [gate.qubit?.toString() || '0'],
+        qubits: gate.qubits ? gate.qubits.map(q => q.toString()) : [gate.qubit?.toString() || '0'],
         position: { x: gate.position * 100, y: (gate.qubit || 0) * 50 },
         layer: gate.position,
         params: gate.params ? { angle: gate.angle } : undefined,
