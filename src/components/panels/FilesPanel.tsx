@@ -59,8 +59,16 @@ export function FilesPanel() {
   const handleFileSelect = (fileId: string) => {
     console.log('File selected:', fileId);
     console.log('Available files:', files);
-    setSelectedFile(fileId);
-    setShowFileViewer(true);
+    
+    // Find the file first to make sure it exists
+    const fileData = files.find(f => f.id === fileId);
+    if (fileData) {
+      setSelectedFile(fileId);
+      setShowFileViewer(true);
+      console.log('File found and viewer opened:', fileData);
+    } else {
+      console.error('File not found:', fileId);
+    }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
@@ -90,6 +98,11 @@ export function FilesPanel() {
   console.log('Selected file ID:', selectedFile);
   console.log('Selected file data:', selectedFileData);
   console.log('Show file viewer:', showFileViewer);
+
+  const handleCloseFileViewer = () => {
+    setShowFileViewer(false);
+    setSelectedFile(null);
+  };
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -143,30 +156,34 @@ export function FilesPanel() {
         <QuantumProperties files={legacyFiles} />
 
         {/* File Viewer Dialog */}
-        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
+        <Dialog open={showFileViewer} onOpenChange={handleCloseFileViewer}>
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
                 {selectedFileData?.name || 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
-            {selectedFileData ? (
-              <FileViewer 
-                file={selectedFileData} 
-                onClose={() => setShowFileViewer(false)}
-              />
-            ) : (
-              <div className="p-8 text-center text-muted-foreground">
-                <p>No file selected or file not found</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowFileViewer(false)}
-                  className="mt-4"
-                >
-                  Close
-                </Button>
-              </div>
-            )}
+            <div className="max-h-[70vh] overflow-y-auto">
+              {selectedFileData ? (
+                <FileViewer 
+                  file={selectedFileData} 
+                  onClose={handleCloseFileViewer}
+                />
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                  <p>No file selected or file not found</p>
+                  <p className="text-sm mt-2">Selected ID: {selectedFile}</p>
+                  <p className="text-sm">Available files: {files.length}</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleCloseFileViewer}
+                    className="mt-4"
+                  >
+                    Close
+                  </Button>
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
 
