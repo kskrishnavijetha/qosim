@@ -12,9 +12,7 @@ import { useCircuitSharing } from './hooks/useCircuitSharing';
 import { MemoryPanel } from './components/panels/MemoryPanel';
 import { JobsPanel } from './components/panels/JobsPanel';
 import { FilesPanel } from './components/panels/FilesPanel';
-import { QuantumTestingPanel } from './components/testing/QuantumTestSuite';
-import { QuantumSettingsPanel } from './components/settings/QuantumSettingsPanel';
-import { QuantumHelpPanel } from './components/help/QuantumHelpPanel';
+import { QuantumTestSuite as QuantumTestingPanel } from './components/testing/QuantumTestSuite';
 import { LogsPanel } from './components/panels/LogsPanel';
 import { QuantumAlgorithmsSDK } from './components/quantum-algorithms-sdk/QuantumAlgorithmsSDK';
 
@@ -46,7 +44,7 @@ export default function App() {
 
   const handleCircuitLoad = useCallback(async () => {
     const loadedCircuit = await loadCircuit();
-    if (loadedCircuit) {
+    if (loadedCircuit && Array.isArray(loadedCircuit)) {
       setCircuit(loadedCircuit);
       simulateQuantumState(loadedCircuit);
     }
@@ -138,10 +136,16 @@ export default function App() {
                   <QuantumTestingPanel />
                 )}
                 {currentPanel === 'settings' && (
-                  <QuantumSettingsPanel />
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-quantum-glow mb-4">Settings</h2>
+                    <p className="text-quantum-particle">Settings panel coming soon...</p>
+                  </div>
                 )}
                 {currentPanel === 'help' && (
-                  <QuantumHelpPanel />
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-quantum-glow mb-4">Help</h2>
+                    <p className="text-quantum-particle">Help documentation coming soon...</p>
+                  </div>
                 )}
               </>
             )}
