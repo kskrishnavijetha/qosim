@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -157,7 +156,7 @@ export function QuantumAlgorithmsSDKPanel() {
           </TabsContent>
 
           <TabsContent value="editor" className="h-full m-0">
-            <SDKCodeEditor />
+            <SDKCodeEditor language="python" />
           </TabsContent>
 
           <TabsContent value="visualizer" className="h-full m-0">
@@ -247,7 +246,11 @@ export function QuantumAlgorithmsSDKPanel() {
           </TabsContent>
 
           <TabsContent value="integration" className="h-full m-0">
-            <CircuitSDKBridge />
+            <CircuitSDKBridge 
+              visualCircuit={[]}
+              onVisualCircuitChange={() => {}}
+              onSDKCircuitGenerated={() => {}}
+            />
           </TabsContent>
 
           <TabsContent value="docs" className="h-full m-0">
