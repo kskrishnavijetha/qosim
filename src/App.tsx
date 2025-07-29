@@ -19,7 +19,6 @@ import SharedCircuit from "./pages/SharedCircuit";
 import EmbedCircuit from "./pages/EmbedCircuit";
 import TestingPage from "./pages/TestingPage";
 import NotFound from "./pages/NotFound";
-import QOSimApp from "./pages/QOSimApp";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +33,6 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/roadmap" element={<RoadmapPage />} />
             <Route path="/app" element={<Index />} />
-            <Route path="/qosim" element={<QOSimApp />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/integrations" element={<IntegrationsPage />} />
             <Route path="/sdk" element={<SDKDocumentation />} />
