@@ -1,8 +1,8 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { QuantumCircuit } from '@/hooks/useCircuitBuilder';
 
 export interface SharedCircuit {
   id: string;
@@ -32,88 +32,6 @@ export function useCircuitSharing() {
   const [loading, setLoading] = useState(false);
   const [sharedCircuits, setSharedCircuits] = useState<SharedCircuit[]>([]);
   const [collaborators, setCollaborators] = useState<Record<string, CircuitCollaborator[]>>({});
-
-  const saveCircuit = useCallback(async (circuit: QuantumCircuit) => {
-    if (!user) {
-      toast.error('You must be signed in to save circuits');
-      return null;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('circuits')
-        .insert({
-          name: circuit.name,
-          description: circuit.description || '',
-          user_id: user.id,
-          circuit_data: {
-            gates: circuit.gates,
-            qubits: circuit.qubits,
-            layers: circuit.layers,
-            depth: circuit.depth,
-            metadata: circuit.metadata
-          } as any
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast.success('Circuit saved successfully');
-      return data;
-    } catch (error) {
-      console.error('Error saving circuit:', error);
-      toast.error('Failed to save circuit');
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const loadCircuit = useCallback(async (circuitId?: string): Promise<QuantumCircuit | null> => {
-    if (!user) {
-      toast.error('You must be signed in to load circuits');
-      return null;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('circuits')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) throw error;
-
-      const circuitData = data.circuit_data as any;
-      const loadedCircuit: QuantumCircuit = {
-        id: data.id,
-        name: data.name,
-        description: data.description,
-        qubits: circuitData.qubits || [],
-        gates: circuitData.gates || [],
-        layers: circuitData.layers || [],
-        depth: circuitData.depth || 0,
-        metadata: circuitData.metadata || {
-          created: data.created_at,
-          modified: data.updated_at || data.created_at,
-          version: '1.0.0'
-        }
-      };
-
-      return loadedCircuit;
-    } catch (error) {
-      console.error('Error loading circuit:', error);
-      toast.error('Failed to load circuit');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   const createShareLink = useCallback(async (
     circuitId: string,
@@ -317,8 +235,6 @@ export function useCircuitSharing() {
     loading,
     sharedCircuits,
     collaborators,
-    saveCircuit,
-    loadCircuit,
     createShareLink,
     forkCircuit,
     inviteCollaborator,
