@@ -10,7 +10,7 @@ import { QuantumProperties } from "./QuantumProperties";
 import { FileItem } from "./FileItem";
 import { FileViewer } from "./FileViewer";
 
-import { useQuantumFiles } from "@/hooks/useQuantumFiles";
+import { useQuantumFiles, QuantumFile } from "@/hooks/useQuantumFiles";
 import { ShareDialog } from "../dialogs/ShareDialog";
 
 export function FilesPanel() {
@@ -65,9 +65,24 @@ export function FilesPanel() {
     console.log('Found file data:', fileData);
     
     if (fileData) {
+      // Ensure the file data structure is complete for FileViewer
+      const completeFileData: QuantumFile = {
+        ...fileData,
+        // Ensure all required properties are present
+        createdAt: fileData.createdAt || new Date(),
+        updatedAt: fileData.updatedAt || new Date(),
+        sizeBytes: fileData.sizeBytes || 0,
+        sizeDisplay: fileData.sizeDisplay || '0 B',
+        superposition: fileData.superposition || false,
+        favorite: fileData.favorite || false,
+        tags: fileData.tags || [],
+        versions: fileData.versions || 1,
+        lastVersion: fileData.lastVersion || 'v1.0'
+      };
+      
+      console.log('Complete file data for viewer:', completeFileData);
       setSelectedFile(fileId);
       setShowFileViewer(true);
-      console.log('File found and viewer opened for:', fileData.name);
     } else {
       console.error('File not found:', fileId);
       console.error('Available file IDs:', files.map(f => f.id));
@@ -96,7 +111,7 @@ export function FilesPanel() {
     toggleFavorite(fileId);
   };
 
-  // Get the selected file data
+  // Get the selected file data with proper structure
   const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
   
   console.log('Render - Selected file ID:', selectedFile);
@@ -184,19 +199,28 @@ export function FilesPanel() {
             <div className="max-h-[70vh] overflow-y-auto">
               {selectedFileData ? (
                 <div>
-                  <div className="mb-4 p-4 bg-quantum-matrix/20 rounded-lg border border-quantum-glow/20">
-                    <h4 className="text-sm font-mono text-quantum-glow mb-2">Debug Information</h4>
-                    <div className="text-xs space-y-1">
-                      <p>File ID: {selectedFileData.id}</p>
-                      <p>Name: {selectedFileData.name}</p>
-                      <p>Type: {selectedFileData.type}</p>
-                      <p>Size: {selectedFileData.sizeDisplay}</p>
+                  {/* Debug section - remove this after fixing */}
+                  <div className="mb-4 p-4 bg-red-900/20 rounded-lg border border-red-500/20">
+                    <h4 className="text-sm font-mono text-red-400 mb-2">Debug: File Data Structure</h4>
+                    <div className="text-xs space-y-1 text-red-300">
+                      <p>File Object Keys: {Object.keys(selectedFileData).join(', ')}</p>
+                      <p>Has createdAt: {selectedFileData.createdAt ? 'Yes' : 'No'}</p>
+                      <p>Has updatedAt: {selectedFileData.updatedAt ? 'Yes' : 'No'}</p>
+                      <p>File Type: {typeof selectedFileData}</p>
                     </div>
+                    <pre className="text-xs mt-2 bg-red-950/50 p-2 rounded">
+                      {JSON.stringify(selectedFileData, null, 2)}
+                    </pre>
                   </div>
-                  <FileViewer 
-                    file={selectedFileData} 
-                    onClose={handleCloseFileViewer}
-                  />
+                  
+                  {/* Try to render FileViewer with error boundary */}
+                  <div className="border border-green-500/20 p-4 rounded-lg">
+                    <h4 className="text-sm font-mono text-green-400 mb-2">FileViewer Component</h4>
+                    <FileViewer 
+                      file={selectedFileData} 
+                      onClose={handleCloseFileViewer}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
