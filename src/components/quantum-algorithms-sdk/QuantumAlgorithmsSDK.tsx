@@ -66,11 +66,39 @@ export function QuantumAlgorithmsSDK({
   const [customCode, setCustomCode] = useState('');
   const [activeTab, setActiveTab] = useState('library');
 
-  const handleAlgorithmSelect = useCallback((algorithm: Algorithm) => {
-    setSelectedAlgorithm(algorithm);
-    const code = selectedLanguage === 'python' ? algorithm.pythonCode : algorithm.javascriptCode;
+  const handleAlgorithmSelect = useCallback((algorithm: any) => {
+    // Convert the algorithm format from AlgorithmLibrary to our SDK format
+    const sdkAlgorithm: Algorithm = {
+      id: algorithm.id,
+      name: algorithm.name,
+      category: algorithm.category === 'basic' ? 'search' : algorithm.category,
+      description: algorithm.description,
+      complexity: algorithm.difficulty,
+      pythonCode: algorithm.code.python,
+      javascriptCode: algorithm.code.javascript,
+      qubits: algorithm.qubits,
+      depth: algorithm.gates,
+      gates: ['H', 'CNOT'], // Default gates based on algorithm
+      visualization: {
+        blochSpheres: true,
+        entanglementMap: true,
+        measurementStats: true
+      }
+    };
+    
+    setSelectedAlgorithm(sdkAlgorithm);
+    const code = selectedLanguage === 'python' ? sdkAlgorithm.pythonCode : sdkAlgorithm.javascriptCode;
     setCustomCode(code);
     setActiveTab('editor');
+  }, [selectedLanguage]);
+
+  const handleAlgorithmExecute = useCallback(async (algorithm: any) => {
+    handleAlgorithmSelect(algorithm);
+    
+    // Auto-execute the algorithm
+    setTimeout(() => {
+      handleCodeExecution(selectedLanguage === 'python' ? algorithm.code.python : algorithm.code.javascript);
+    }, 100);
   }, [selectedLanguage]);
 
   const handleLanguageChange = useCallback((language: 'python' | 'javascript') => {
@@ -123,8 +151,8 @@ export function QuantumAlgorithmsSDK({
     }
   }, [isExecuting, selectedAlgorithm, selectedLanguage]);
 
-  const handleCircuitSync = useCallback((direction: 'export' | 'import') => {
-    if (direction === 'export' && selectedAlgorithm && onCircuitExport) {
+  const handleCircuitExport = useCallback(() => {
+    if (selectedAlgorithm && onCircuitExport) {
       const circuitData = {
         name: selectedAlgorithm.name,
         algorithm: selectedAlgorithm,
@@ -134,11 +162,22 @@ export function QuantumAlgorithmsSDK({
       };
       onCircuitExport(circuitData);
       toast.success('Algorithm exported to Circuit Builder');
-    } else if (direction === 'import' && currentCircuit && onCircuitImport) {
+    }
+  }, [selectedAlgorithm, customCode, selectedLanguage, executionResult, onCircuitExport]);
+
+  const handleCircuitImport = useCallback(() => {
+    if (currentCircuit && onCircuitImport) {
       onCircuitImport(currentCircuit);
       toast.success('Circuit imported from Circuit Builder');
     }
-  }, [selectedAlgorithm, customCode, selectedLanguage, executionResult, onCircuitExport, onCircuitImport, currentCircuit]);
+  }, [currentCircuit, onCircuitImport]);
+
+  const handleOptimizeCircuit = useCallback(async (gates: any[]) => {
+    // Mock optimization - reduce gates by ~20%
+    const optimizedGates = gates.slice(0, Math.max(1, Math.floor(gates.length * 0.8)));
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return optimizedGates;
+  }, []);
 
   return (
     <div className="h-full flex flex-col bg-quantum-void p-4 space-y-4">
@@ -190,9 +229,8 @@ export function QuantumAlgorithmsSDK({
         <div className="flex-1 mt-4">
           <TabsContent value="library" className="h-full m-0">
             <AlgorithmLibrary
-              onAlgorithmSelect={handleAlgorithmSelect}
-              selectedLanguage={selectedLanguage}
-              onLanguageChange={handleLanguageChange}
+              onSelectAlgorithm={handleAlgorithmSelect}
+              onExecuteAlgorithm={handleAlgorithmExecute}
             />
           </TabsContent>
 
@@ -233,9 +271,10 @@ export function QuantumAlgorithmsSDK({
 
           <TabsContent value="integration" className="h-full m-0">
             <CircuitBuilderIntegration
-              onCircuitSync={handleCircuitSync}
-              currentCircuit={currentCircuit}
-              selectedAlgorithm={selectedAlgorithm}
+              onExportToBuilder={handleCircuitExport}
+              onImportFromBuilder={handleCircuitImport}
+              currentCircuit={currentCircuit || []}
+              onOptimizeCircuit={handleOptimizeCircuit}
             />
           </TabsContent>
         </div>
