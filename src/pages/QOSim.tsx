@@ -12,7 +12,7 @@ import { CollaborationPanel } from '@/components/qosim/CollaborationPanel';
 import { AIAssistant } from '@/components/qosim/AIAssistant';
 import { useCircuitState } from '@/hooks/qosim/useCircuitState';
 import { useQuantumSimulation } from '@/hooks/qosim/useQuantumSimulation';
-import { Circuit, Atom, Code2, Users, Bot, Settings } from 'lucide-react';
+import { Cpu, Atom, Code2, Users, Bot, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function QOSim() {
@@ -115,7 +115,7 @@ export function QOSim() {
                       value="circuit-builder" 
                       className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
                     >
-                      <Circuit className="w-4 h-4 mr-2" />
+                      <Cpu className="w-4 h-4 mr-2" />
                       Circuit Builder
                     </TabsTrigger>
                     <TabsTrigger 
