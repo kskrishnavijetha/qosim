@@ -7,7 +7,7 @@ import {
   Cpu, 
   Code, 
   GitBranch, 
-  Memory, 
+  HardDrive, 
   FileText, 
   Terminal, 
   Wrench, 
@@ -58,7 +58,7 @@ const navigation = [
   {
     name: 'Memory',
     href: '/memory',
-    icon: Memory,
+    icon: HardDrive,
     description: 'Quantum memory states'
   },
   {
