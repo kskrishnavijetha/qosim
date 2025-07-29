@@ -1,201 +1,232 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { 
-  Home, 
-  Cpu, 
-  Code, 
-  GitBranch, 
-  HardDrive, 
-  FileText, 
-  Terminal, 
-  Wrench, 
-  Share2, 
-  Brain,
-  BookOpen,
-  Activity,
-  Settings,
-  Database,
-  Zap
-} from 'lucide-react';
+import { useState } from "react";
+import { Database, FileText, Terminal, Share2, User, LogOut, Code } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navigation = [
-  {
-    name: 'Dashboard',
-    href: '/',
-    icon: Home,
-    description: 'Main quantum computing interface'
-  },
-  {
-    name: 'QOSim',
-    href: '/qosim',
-    icon: Cpu,
-    description: 'Quantum OS Simulator',
-    badge: 'v2.1.0'
-  },
-  {
-    name: 'Circuit Builder',
-    href: '/qosim?tab=circuit-builder',
-    icon: GitBranch,
-    description: 'Visual quantum circuit design',
-    indent: true
-  },
-  {
-    name: 'Algorithms SDK',
-    href: '/qosim?tab=algorithms-sdk',
-    icon: Code,
-    description: 'Python & JavaScript APIs',
-    indent: true
-  },
-  {
-    name: 'Integration Layer',
-    href: '/qosim?tab=integration',
-    icon: Share2,
-    description: 'Seamless module sync',
-    indent: true
-  },
-  {
-    name: 'Memory',
-    href: '/memory',
-    icon: HardDrive,
-    description: 'Quantum memory states'
-  },
-  {
-    name: 'Files',
-    href: '/files',
-    icon: FileText,
-    description: 'Circuit files and exports'
-  },
-  {
-    name: 'Runtime Logs',
-    href: '/logs',
-    icon: Terminal,
-    description: 'System execution logs'
-  },
-  {
-    name: 'SDK Tools',
-    href: '/sdk',
-    icon: Wrench,
-    description: 'Development toolkit'
-  },
-  {
-    name: 'AI Assistant',
-    href: '/ai',
-    icon: Brain,
-    description: 'Quantum AI optimization'
-  },
-  {
-    name: 'Education Mode',
-    href: '/education',
-    icon: BookOpen,
-    description: 'Tutorials and learning'
-  },
-  {
-    name: 'Collaboration',
-    href: '/collaboration',
-    icon: Share2,
-    description: 'QFS real-time sharing'
-  },
-  {
-    name: 'Integrations',
-    href: '/integrations',
-    icon: Database,
-    description: 'Hardware & cloud backends'
-  }
+interface QuantumSidebarProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  onSDKSelect?: (sdkType: string) => void;
+}
+
+const navigationItems = [
+  { id: "memory", label: "Memory", icon: Database },
+  { id: "files", label: "Files", icon: FileText },
+  { id: "logs", label: "Runtime Logs", icon: Terminal },
 ];
 
-export function QuantumSidebar() {
-  const location = useLocation();
+export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
+  const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'QU';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-quantum-void border-r border-quantum-neon/20">
-      {/* Header */}
-      <div className="flex h-16 items-center gap-2 border-b border-quantum-neon/20 px-4">
-        <div className="flex items-center gap-2">
+    <div className={cn(
+      "bg-quantum-void border-r neon-border quantum-panel h-full flex flex-col",
+      isMobile ? "w-72" : "w-64"
+    )}>
+      <div className="p-3 lg:p-6 flex-1">
+        <div className="flex items-center gap-3 mb-6 lg:mb-8">
           <div className="relative">
-            <Cpu className="h-8 w-8 text-quantum-glow" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-quantum-energy rounded-full animate-pulse" />
+            <img 
+              src="/lovable-uploads/9ba01b22-3dfc-4014-9b17-0ba4cbbca31e.png" 
+              alt="QOSim Logo" 
+              className="w-6 h-6 lg:w-8 lg:h-8 quantum-float"
+            />
+            <div className="absolute -top-1 -right-1 w-2 h-2 lg:w-3 lg:h-3 bg-quantum-neon rounded-full quantum-orbit"></div>
           </div>
           <div>
-            <h1 className="font-bold text-quantum-glow font-mono">Quantum OS</h1>
-            <p className="text-xs text-quantum-particle">Simulator v2.1.0</p>
+            <h1 className="text-lg lg:text-xl font-bold text-quantum-glow quantum-float">Quantum OS</h1>
+            <p className="text-xs text-quantum-neon font-mono">Simulator v2.1.0</p>
+          </div>
+        </div>
+        
+        <nav className="space-y-2 lg:space-y-3">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
+                  "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
+                  isActive 
+                    ? "bg-quantum-matrix text-quantum-glow quantum-glow neon-border scale-105" 
+                    : "text-muted-foreground hover:text-quantum-neon"
+                )}
+              >
+                <div className="relative shrink-0">
+                  <Icon className={cn("w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300", 
+                    isActive ? "quantum-float" : "group-hover:scale-110"
+                  )} />
+                  {isActive && (
+                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-quantum-glow rounded-full particle-animation"></div>
+                  )}
+                </div>
+                <span className="font-mono font-medium text-sm lg:text-base truncate">{item.label}</span>
+                
+                {/* Hover effect line */}
+                <div className={cn(
+                  "absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-quantum-glow to-quantum-neon rounded-r transition-all duration-300",
+                  isActive ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+                )} />
+              </button>
+            );
+          })}
+
+          {/* SDK Tools Dropdown */}
+          <div className="mt-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn(
+                  "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
+                  "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
+                  "text-muted-foreground hover:text-quantum-neon"
+                )}>
+                  <div className="relative shrink-0">
+                    <Code className="w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300 group-hover:scale-110" />
+                  </div>
+                  <span className="font-mono font-medium text-sm lg:text-base truncate">SDK Tools</span>
+                  
+                  {/* Hover effect line */}
+                  <div className={cn(
+                    "absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-quantum-glow to-quantum-neon rounded-r transition-all duration-300",
+                    "opacity-0 group-hover:opacity-50"
+                  )} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
+                <DropdownMenuItem 
+                  onClick={() => onTabChange("javascript-sdk")}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  JavaScript SDK
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onTabChange("python-sdk")}
+                  className="text-quantum-neon hover:bg-quantum-void/50"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  Python SDK
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Integrations */}
+          <button
+            onClick={() => onTabChange("integrations")}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg transition-all duration-500 relative group text-left",
+              "hover:bg-quantum-matrix hover:quantum-glow hover:scale-105",
+              activeTab === "integrations"
+                ? "bg-quantum-matrix text-quantum-glow quantum-glow neon-border scale-105" 
+                : "text-muted-foreground hover:text-quantum-neon"
+            )}
+          >
+            <div className="relative shrink-0">
+              <Share2 className={cn("w-4 h-4 lg:w-5 lg:h-5 transition-all duration-300", 
+                activeTab === "integrations" ? "quantum-float" : "group-hover:scale-110"
+              )} />
+              {activeTab === "integrations" && (
+                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-quantum-glow rounded-full particle-animation"></div>
+              )}
+            </div>
+            <span className="font-mono font-medium text-sm lg:text-base truncate">Integrations</span>
+            
+            {/* Hover effect line */}
+            <div className={cn(
+              "absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-quantum-glow to-quantum-neon rounded-r transition-all duration-300",
+              activeTab === "integrations" ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+            )} />
+          </button>
+        </nav>
+        
+        {/* System Status - Hide on small mobile screens */}
+        <div className={cn(
+          "mt-6 lg:mt-8 p-3 lg:p-4 quantum-panel rounded-lg",
+          isMobile ? "hidden sm:block" : ""
+        )}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs lg:text-sm font-semibold text-quantum-neon">System Status</h3>
+            <ThemeToggle />
+          </div>
+          <div className="space-y-1 lg:space-y-2 text-xs font-mono">
+            <div className="flex justify-between">
+              <span>Qubits:</span>
+              <span className="text-quantum-glow">128/256</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Entangled:</span>
+              <span className="text-quantum-neon">64</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Coherence:</span>
+              <span className="text-green-400">98.3%</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-        {navigation.map((item) => {
-          const isActive = location.pathname === item.href || 
-            (item.href.includes('?tab=') && location.pathname === '/qosim');
-          
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={cn(
-                'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-                item.indent && 'ml-4 pl-6 border-l border-quantum-neon/20',
-                isActive
-                  ? 'bg-quantum-energy/10 text-quantum-energy border border-quantum-energy/30'
-                  : 'text-quantum-particle hover:bg-quantum-matrix/30 hover:text-quantum-glow'
-              )}
-            >
-              <item.icon className={cn(
-                'h-4 w-4 transition-colors',
-                isActive ? 'text-quantum-energy' : 'text-quantum-particle group-hover:text-quantum-glow'
-              )} />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span>{item.name}</span>
-                  {item.badge && (
-                    <span className="text-xs px-1.5 py-0.5 bg-quantum-energy/20 text-quantum-energy rounded font-mono">
-                      {item.badge}
-                    </span>
-                  )}
+      {/* User Profile Section */}
+      <div className="p-3 lg:p-4 border-t border-quantum-matrix">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full p-2 h-auto hover:bg-quantum-matrix">
+              <div className="flex items-center gap-2 lg:gap-3 w-full min-w-0">
+                <Avatar className="w-6 h-6 lg:w-8 lg:h-8 neon-border shrink-0">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                  <AvatarFallback className="bg-quantum-matrix text-quantum-glow text-xs">
+                    {getInitials(user?.user_metadata?.display_name || user?.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-xs lg:text-sm font-medium text-quantum-glow truncate">
+                    {user?.user_metadata?.display_name || user?.email?.split('@')[0]}
+                  </p>
+                  <p className="text-xs text-quantum-neon truncate">
+                    {user?.email}
+                  </p>
                 </div>
-                {item.description && (
-                  <div className="text-xs text-quantum-particle/60 mt-0.5">
-                    {item.description}
-                  </div>
-                )}
               </div>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* System Status */}
-      <div className="border-t border-quantum-neon/20 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-quantum-glow" />
-            <span className="text-sm font-medium text-quantum-glow">System Status</span>
-          </div>
-          <Settings className="h-4 w-4 text-quantum-particle hover:text-quantum-glow cursor-pointer" />
-        </div>
-        
-        <div className="mt-3 space-y-2 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-quantum-particle">Qubits:</span>
-            <span className="text-quantum-glow font-mono">20/20</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-quantum-particle">Simulation:</span>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-quantum-energy">Active</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-quantum-particle">QFS:</span>
-            <div className="flex items-center gap-1">
-              <Zap className="h-3 w-3 text-quantum-energy" />
-              <span className="text-quantum-glow">Connected</span>
-            </div>
-          </div>
-        </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 quantum-panel neon-border">
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="w-4 h-4 mr-2" />
+              Profile Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-quantum-matrix" />
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-400">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

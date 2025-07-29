@@ -61,7 +61,13 @@ export function QuantumDashboard() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0 quantum-panel">
-                <QuantumSidebar />
+                <QuantumSidebar 
+                  activeTab={activeTab} 
+                  onTabChange={(tab) => {
+                    handleTabChange(tab);
+                    setShowSidebar(false);
+                  }}
+                />
               </SheetContent>
             </Sheet>
             <h1 className="text-lg font-bold text-quantum-glow">Quantum OS</h1>
@@ -129,7 +135,10 @@ export function QuantumDashboard() {
       <ResizablePanelGroup direction="horizontal" className="min-h-screen">
         {/* Sidebar */}
         <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-          <QuantumSidebar />
+          <QuantumSidebar 
+            activeTab={activeTab} 
+            onTabChange={handleTabChange}
+          />
         </ResizablePanel>
         
         <ResizableHandle withHandle />
