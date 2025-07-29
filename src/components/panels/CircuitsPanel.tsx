@@ -9,6 +9,9 @@ import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { CollaborationStatus } from "@/components/collaboration/CollaborationStatus";
 import { CustomGateManager } from "@/components/gates/CustomGateManager";
 import { InteractiveCircuitBuilder } from "@/components/circuits/InteractiveCircuitBuilder";
+import { CircuitSDKIntegration } from "@/components/circuits/CircuitSDKIntegration";
+import { VisualCodeSyncPanel } from "@/components/circuits/VisualCodeSyncPanel";
+import { CollaborativeCircuitEditor } from "@/components/circuits/CollaborativeCircuitEditor";
 import { useCircuitState } from "@/hooks/useCircuitState";
 import { useCircuitDragDrop } from "@/hooks/useCircuitDragDrop";
 import { useLearningMode } from "@/hooks/useLearningMode";
@@ -19,13 +22,13 @@ import { useCustomGates } from "@/hooks/useCustomGates";
 import { CircuitPanelHeader } from "./CircuitPanelHeader";
 import { LearningModeSection } from "./LearningModeSection";
 import { CircuitVisualizationSection } from "./CircuitVisualizationSection";
-import { Cpu, Zap, Settings } from "lucide-react";
+import { Cpu, Zap, Settings, Code2, Users, Bot } from "lucide-react";
 
 export function CircuitsPanel() {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [algorithmResult, setAlgorithmResult] = useState<any>(null);
   const [currentCircuitId, setCurrentCircuitId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'legacy' | 'builder'>('builder');
+  const [activeView, setActiveView] = useState<'builder' | 'legacy' | 'sdk' | 'collab'>('builder');
   
   const {
     circuit,
@@ -176,7 +179,7 @@ export function CircuitsPanel() {
   };
 
   const handleTabChange = (value: string) => {
-    setActiveView(value as 'legacy' | 'builder');
+    setActiveView(value as 'builder' | 'legacy' | 'sdk' | 'collab');
   };
 
   useEffect(() => {
@@ -189,14 +192,22 @@ export function CircuitsPanel() {
     <div className="h-full overflow-auto quantum-grid">
       <Tabs value={activeView} onValueChange={handleTabChange} className="h-full flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
-          <TabsList className="grid w-fit grid-cols-2">
+          <TabsList className="grid w-fit grid-cols-4">
             <TabsTrigger value="builder" className="flex items-center gap-2">
               <Zap className="w-4 h-4" />
-              Circuit Builder
+              Builder
+            </TabsTrigger>
+            <TabsTrigger value="sdk" className="flex items-center gap-2">
+              <Code2 className="w-4 h-4" />
+              SDK Integration
+            </TabsTrigger>
+            <TabsTrigger value="collab" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Collaborate
             </TabsTrigger>
             <TabsTrigger value="legacy" className="flex items-center gap-2">
               <Cpu className="w-4 h-4" />
-              Legacy View
+              Legacy
             </TabsTrigger>
           </TabsList>
           
@@ -217,6 +228,71 @@ export function CircuitsPanel() {
 
         <TabsContent value="builder" className="flex-1 m-0">
           <InteractiveCircuitBuilder />
+        </TabsContent>
+
+        <TabsContent value="sdk" className="flex-1 m-0 p-4 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+            <div className="space-y-4">
+              <Card className="quantum-panel neon-border">
+                <CardHeader>
+                  <CardTitle className="text-quantum-glow flex items-center gap-2">
+                    <Code2 className="w-5 h-5" />
+                    Circuit ↔ SDK Integration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CircuitSDKIntegration
+                    onOptimizedCircuit={(circuit) => {
+                      console.log('Optimized circuit received:', circuit);
+                    }}
+                    onSimulationResult={(result) => {
+                      console.log('Simulation result received:', result);
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="space-y-4">
+              <VisualCodeSyncPanel
+                circuit={circuit}
+                onCircuitUpdate={(updatedCircuit) => {
+                  console.log('Circuit updated from code:', updatedCircuit);
+                  // Here you would normally update the circuit state
+                }}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="collab" className="flex-1 m-0 p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+            <div className="lg:col-span-2">
+              <Card className="quantum-panel neon-border h-full">
+                <CardHeader>
+                  <CardTitle className="text-quantum-glow flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Collaborative Circuit Editor
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-quantum-particle">
+                    <p>Circuit collaboration features will appear here.</p>
+                    <p className="text-sm mt-2">Create or join a collaborative session to get started.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div>
+              <CollaborativeCircuitEditor
+                circuitId={currentCircuitId || 'demo-circuit'}
+                onCommentAdd={(comment) => {
+                  console.log('Comment added:', comment);
+                }}
+              />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="legacy" className="flex-1 m-0">
