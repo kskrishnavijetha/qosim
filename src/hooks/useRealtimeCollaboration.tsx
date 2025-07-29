@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,7 @@ interface CollaborativeUser {
 }
 
 interface CollaborativeChange {
-  type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved' | 'comment_added' | 'circuit_exported' | 'circuit_imported' | 'circuit_optimized' | 'simulation_completed' | 'user_joined' | 'user_left';
+  type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved';
   data: any;
   userId: string;
   timestamp: string;
@@ -26,18 +27,15 @@ export function useRealtimeCollaboration(circuitId: string | null) {
   const [isConnected, setIsConnected] = useState(false);
 
   const broadcastChange = useCallback(async (
-    type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved' | 'comment_added' | 'circuit_exported' | 'circuit_imported' | 'circuit_optimized' | 'simulation_completed' | 'user_joined' | 'user_left',
+    type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved',
     data: any
   ) => {
     if (!circuitId || !user) return;
 
-    // Only log supported activity types to database
-    const supportedTypes = ['gate_added', 'gate_removed', 'gate_moved', 'circuit_saved', 'user_joined', 'user_left'];
-    if (supportedTypes.includes(type)) {
-      await logActivity(circuitId, type as any, data);
-    }
+    // Log to database
+    await logActivity(circuitId, type, data);
 
-    // Add to local state for immediate feedback (all types)
+    // Add to local state for immediate feedback
     const change: CollaborativeChange = {
       type,
       data,
