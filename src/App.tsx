@@ -1,54 +1,75 @@
+import React, { useState } from 'react';
+import { QuantumSidebar } from './components/QuantumSidebar';
+import { CircuitsPanel } from './components/panels/CircuitsPanel';
+import { QuantumAlgorithmsSDK } from './components/quantum-algorithms-sdk/QuantumAlgorithmsSDK';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import Index from "./pages/Index";
-import LandingPage from "./pages/LandingPage";
-import RoadmapPage from "./pages/RoadmapPage";
-import AuthPage from "./pages/AuthPage";
-import IntegrationsPage from "./pages/IntegrationsPage";
-import SDKDocumentation from "./pages/SDKDocumentation";
-import PythonSDKPage from "./pages/PythonSDKPage";
-import APIReference from "./pages/APIReference";
-import TutorialsPage from "./pages/TutorialsPage";
-import ThankYou from "./pages/ThankYou";
-import SharedCircuit from "./pages/SharedCircuit";
-import EmbedCircuit from "./pages/EmbedCircuit";
-import TestingPage from "./pages/TestingPage";
-import NotFound from "./pages/NotFound";
+export default function App() {
+  const [activeTab, setActiveTab] = useState<string>('circuits');
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [currentCircuit, setCurrentCircuit] = useState<any>(null);
+  const [lastAlgorithmResult, setLastAlgorithmResult] = useState<any>(null);
 
-const queryClient = new QueryClient();
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+  };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/roadmap" element={<RoadmapPage />} />
-            <Route path="/app" element={<Index />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/integrations" element={<IntegrationsPage />} />
-            <Route path="/sdk" element={<SDKDocumentation />} />
-            <Route path="/python-sdk" element={<PythonSDKPage />} />
-            <Route path="/api" element={<APIReference />} />
-            <Route path="/tutorials" element={<TutorialsPage />} />
-            <Route path="/thank-you" element={<ThankYou />} />
-            <Route path="/testing" element={<TestingPage />} />
-            <Route path="/circuit/:id" element={<SharedCircuit />} />
-            <Route path="/embed/:id" element={<EmbedCircuit />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+  const handleCircuitGenerated = (circuitData: any) => {
+    setCurrentCircuit(circuitData);
+  };
 
-export default App;
+  const handleAlgorithmExecuted = (result: any) => {
+    setLastAlgorithmResult(result);
+  };
+
+  const handleSDKSelect = (sdkType: string) => {
+    if (sdkType === 'quantum-algorithms') {
+      setActiveTab('quantum-algorithms-sdk');
+    }
+  };
+
+  const handleCircuitExport = (circuitData: any) => {
+    // Convert SDK algorithm to circuit builder format
+    console.log('Exporting algorithm to Circuit Builder:', circuitData);
+    // Implementation would sync the algorithm to the visual circuit builder
+  };
+
+  const handleCircuitImport = (circuitData: any) => {
+    // Import visual circuit to SDK
+    console.log('Importing circuit from Circuit Builder:', circuitData);
+    // Implementation would convert visual circuit to SDK code
+  };
+
+  const renderMainContent = () => {
+    switch (activeTab) {
+      case 'circuits':
+        return <CircuitsPanel />;
+      case 'quantum-algorithms-sdk':
+        return (
+          <QuantumAlgorithmsSDK
+            onCircuitExport={handleCircuitExport}
+            onCircuitImport={handleCircuitImport}
+            collaborationEnabled={true}
+            currentCircuit={currentCircuit}
+          />
+        );
+      default:
+        return <CircuitsPanel />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-quantum-void text-white quantum-grid">
+      <QuantumSidebar 
+        onTabChange={setActiveTab}
+        activeTab={activeTab}
+        onTemplateSelect={handleTemplateSelect}
+        onCircuitGenerated={handleCircuitGenerated}
+        onAlgorithmExecuted={handleAlgorithmExecuted}
+        onSDKSelect={handleSDKSelect}
+      />
+      <main className="flex-1 overflow-hidden">
+        {renderMainContent()}
+      </main>
+    </div>
+  );
+}
