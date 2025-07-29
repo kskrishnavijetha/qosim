@@ -7,7 +7,7 @@ import { SyncManager } from './integration/SyncManager';
 import { AIOptimizer } from './integration/AIOptimizer';
 import { ContextRecommendations } from './integration/ContextRecommendations';
 import { UnifiedSimulation } from './integration/UnifiedSimulation';
-import { Sync, Brain, Lightbulb, Cpu } from 'lucide-react';
+import { RefreshCw, Brain, Lightbulb, Cpu } from 'lucide-react';
 
 interface IntegrationLayerProps {
   sharedData: any;
@@ -36,7 +36,7 @@ export function IntegrationLayer({ sharedData, onDataUpdate }: IntegrationLayerP
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Sync className="w-5 h-5" />
+              <RefreshCw className="w-5 h-5" />
               <span>Sync Manager</span>
             </CardTitle>
           </CardHeader>

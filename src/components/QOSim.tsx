@@ -5,7 +5,7 @@ import { QuantumCircuitBuilder } from './qosim/QuantumCircuitBuilder';
 import { QuantumAlgorithmsSDK } from './qosim/QuantumAlgorithmsSDK';
 import { IntegrationLayer } from './qosim/IntegrationLayer';
 import { QFSCollaboration } from './qosim/QFSCollaboration';
-import { Circuit, Zap, Link, Users } from 'lucide-react';
+import { Cpu, Zap, Link, Users } from 'lucide-react';
 
 export function QOSim() {
   const [activeModule, setActiveModule] = useState('circuit-builder');
@@ -34,7 +34,7 @@ export function QOSim() {
       <Tabs value={activeModule} onValueChange={setActiveModule} className="container mx-auto px-4 py-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="circuit-builder" className="flex items-center space-x-2">
-            <Circuit className="w-4 h-4" />
+            <Cpu className="w-4 h-4" />
             <span>Circuit Builder</span>
           </TabsTrigger>
           <TabsTrigger value="algorithms-sdk" className="flex items-center space-x-2">
