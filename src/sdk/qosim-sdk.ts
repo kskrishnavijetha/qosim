@@ -1,114 +1,60 @@
+
 /**
- * QOSim JavaScript SDK
- * A comprehensive SDK for creating, simulating, and managing quantum circuits
+ * QOSim Quantum Algorithms SDK
+ * Core SDK for quantum algorithm development and execution
  */
 
-import { supabase } from "@/integrations/supabase/client";
-
-// Core types for the SDK
 export interface QuantumGate {
   type: string;
-  qubit: number;
+  qubit?: number;
   controlQubit?: number;
   angle?: number;
-  parameters?: Record<string, any>;
+  parameters?: { [key: string]: any };
 }
 
 export interface QuantumCircuit {
-  id?: string;
+  id: string;
   name: string;
-  description?: string;
-  gates: QuantumGate[];
+  description: string;
   qubits: number;
-  metadata?: Record<string, any>;
+  gates: QuantumGate[];
+  metadata?: {
+    created: string;
+    author?: string;
+    version?: string;
+  };
 }
 
 export interface SimulationResult {
-  stateVector: Array<{ real: number; imaginary: number }>;
-  probabilities: number[];
-  basisStates: string[];
-  measurements?: Record<string, number>;
+  stateVector: { real: number; imag: number }[];
+  measurementProbabilities: { [state: string]: number };
   executionTime: number;
   circuitDepth: number;
+  entanglementMeasures?: {
+    pairs: [number, number][];
+    concurrence: number[];
+  };
 }
 
-export interface SDKConfig {
-  autoSave?: boolean;
-  defaultQubits?: number;
-  simulationMode?: 'local' | 'cloud';
-  maxQubits?: number;
-}
-
-/**
- * Main QOSim SDK class
- */
 export class QOSimSDK {
-  private config: SDKConfig;
-  private isInitialized = false;
-  private simulator: any = null;
+  private backend: string = 'local';
+  private debug: boolean = false;
 
-  constructor(config: SDKConfig = {}) {
-    this.config = {
-      autoSave: false,
-      defaultQubits: 3,
-      simulationMode: 'local',
-      maxQubits: 20,
-      ...config
-    };
-  }
-
-  /**
-   * Initialize the SDK and load QOSim core
-   */
-  async initialize(): Promise<void> {
-    if (this.isInitialized) return;
-
-    try {
-      // Load QOSim core if not already loaded
-      if (!window.QOSimSimulator) {
-        await this.loadQOSimCore();
-      }
-      
-      this.simulator = new window.QOSimSimulator();
-      this.isInitialized = true;
-    } catch (error) {
-      throw new Error(`Failed to initialize QOSim SDK: ${error}`);
-    }
-  }
-
-  private async loadQOSimCore(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.QOSimSimulator) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = '/qosim-core.js';
-      script.onload = () => {
-        // Wait a bit for the module to initialize
-        setTimeout(() => {
-          if (window.QOSimSimulator) {
-            resolve();
-          } else {
-            reject(new Error('QOSim core failed to load properly'));
-          }
-        }, 100);
-      };
-      script.onerror = () => reject(new Error('Failed to load QOSim core'));
-      document.head.appendChild(script);
-    });
+  constructor(config?: { backend?: string; debug?: boolean }) {
+    this.backend = config?.backend || 'local';
+    this.debug = config?.debug || false;
   }
 
   /**
    * Create a new quantum circuit
    */
-  createCircuit(name: string, qubits?: number, description?: string): QuantumCircuit {
+  createCircuit(name: string, qubits: number, description?: string): QuantumCircuit {
     return {
+      id: `circuit_${Date.now()}`,
       name,
-      description,
+      description: description || '',
+      qubits,
       gates: [],
-      qubits: qubits || this.config.defaultQubits || 3,
       metadata: {
         created: new Date().toISOString(),
         version: '1.0.0'
@@ -117,358 +63,224 @@ export class QOSimSDK {
   }
 
   /**
-   * Add a gate to a circuit
+   * Add a quantum gate to the circuit
    */
   addGate(circuit: QuantumCircuit, gate: QuantumGate): QuantumCircuit {
-    // Validate gate
-    this.validateGate(gate, circuit.qubits);
-    
     return {
       ...circuit,
-      gates: [...circuit.gates, gate],
-      metadata: {
-        ...circuit.metadata,
-        lastModified: new Date().toISOString()
-      }
+      gates: [...circuit.gates, gate]
     };
   }
 
   /**
-   * Validate a quantum gate
+   * Apply Hadamard gate
    */
-  private validateGate(gate: QuantumGate, numQubits: number): void {
-    if (gate.qubit < 0 || gate.qubit >= numQubits) {
-      throw new Error(`Invalid qubit index: ${gate.qubit}. Must be between 0 and ${numQubits - 1}`);
-    }
-
-    if (gate.controlQubit !== undefined && (gate.controlQubit < 0 || gate.controlQubit >= numQubits)) {
-      throw new Error(`Invalid control qubit index: ${gate.controlQubit}. Must be between 0 and ${numQubits - 1}`);
-    }
-
-    if (gate.controlQubit === gate.qubit) {
-      throw new Error('Control qubit cannot be the same as target qubit');
-    }
+  h(circuit: QuantumCircuit, qubit: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'h', qubit });
   }
 
   /**
-   * Simulate a quantum circuit
+   * Apply Pauli-X gate
    */
-  async simulate(circuit: QuantumCircuit): Promise<SimulationResult> {
-    if (!this.isInitialized) {
-      await this.initialize();
-    }
+  x(circuit: QuantumCircuit, qubit: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'x', qubit });
+  }
 
+  /**
+   * Apply Pauli-Y gate
+   */
+  y(circuit: QuantumCircuit, qubit: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'y', qubit });
+  }
+
+  /**
+   * Apply Pauli-Z gate
+   */
+  z(circuit: QuantumCircuit, qubit: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'z', qubit });
+  }
+
+  /**
+   * Apply CNOT gate
+   */
+  cnot(circuit: QuantumCircuit, controlQubit: number, targetQubit: number): QuantumCircuit {
+    return this.addGate(circuit, { 
+      type: 'cnot', 
+      controlQubit, 
+      qubit: targetQubit 
+    });
+  }
+
+  /**
+   * Apply rotation gates
+   */
+  rx(circuit: QuantumCircuit, qubit: number, angle: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'rx', qubit, angle });
+  }
+
+  ry(circuit: QuantumCircuit, qubit: number, angle: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'ry', qubit, angle });
+  }
+
+  rz(circuit: QuantumCircuit, qubit: number, angle: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'rz', qubit, angle });
+  }
+
+  /**
+   * Apply measurement
+   */
+  measure(circuit: QuantumCircuit, qubit: number): QuantumCircuit {
+    return this.addGate(circuit, { type: 'measure', qubit });
+  }
+
+  /**
+   * Simulate the quantum circuit
+   */
+  async simulate(circuit: QuantumCircuit, shots: number = 1024): Promise<SimulationResult> {
     const startTime = performance.now();
-
-    try {
-      // Reset simulator
-      this.simulator.reset(circuit.qubits);
-
-      // Apply gates in sequence
-      for (const gate of circuit.gates) {
-        await this.applyGate(gate);
-      }
-
-      // Get results
-      const stateVector = this.simulator.getStateVector();
-      const probabilities = this.simulator.getProbabilities();
-      const basisStates = this.generateBasisStates(circuit.qubits);
-
-      const executionTime = performance.now() - startTime;
-
-      return {
-        stateVector,
-        probabilities,
-        basisStates,
-        executionTime,
-        circuitDepth: this.calculateCircuitDepth(circuit)
-      };
-    } catch (error) {
-      throw new Error(`Simulation failed: ${error}`);
-    }
-  }
-
-  /**
-   * Apply a single gate to the simulator
-   */
-  private async applyGate(gate: QuantumGate): Promise<void> {
-    switch (gate.type.toLowerCase()) {
-      case 'h':
-      case 'hadamard':
-        this.simulator.applyHadamard(gate.qubit);
-        break;
-      case 'x':
-      case 'pauli-x':
-        this.simulator.applyPauliX(gate.qubit);
-        break;
-      case 'y':
-      case 'pauli-y':
-        this.simulator.applyPauliY(gate.qubit);
-        break;
-      case 'z':
-      case 'pauli-z':
-        this.simulator.applyPauliZ(gate.qubit);
-        break;
-      case 'cnot':
-      case 'cx':
-        if (gate.controlQubit === undefined) {
-          throw new Error('CNOT gate requires control qubit');
-        }
-        this.simulator.applyCNOT(gate.controlQubit, gate.qubit);
-        break;
-      case 'rx':
-        this.simulator.applyRotationX(gate.qubit, gate.angle || 0);
-        break;
-      case 'ry':
-        this.simulator.applyRotationY(gate.qubit, gate.angle || 0);
-        break;
-      case 'rz':
-        this.simulator.applyRotationZ(gate.qubit, gate.angle || 0);
-        break;
-      default:
-        throw new Error(`Unsupported gate type: ${gate.type}`);
-    }
-  }
-
-  /**
-   * Generate basis states for given number of qubits
-   */
-  private generateBasisStates(qubits: number): string[] {
-    const states: string[] = [];
-    const numStates = Math.pow(2, qubits);
     
-    for (let i = 0; i < numStates; i++) {
-      states.push(i.toString(2).padStart(qubits, '0'));
-    }
-    
-    return states;
-  }
+    // Basic simulation logic - in production this would connect to actual backends
+    const numStates = Math.pow(2, circuit.qubits);
+    const stateVector = Array.from({ length: numStates }, (_, i) => ({
+      real: i === 0 ? 1 : 0,
+      imag: 0
+    }));
 
-  /**
-   * Calculate circuit depth
-   */
-  private calculateCircuitDepth(circuit: QuantumCircuit): number {
-    // Simple depth calculation - can be enhanced
-    return circuit.gates.length;
-  }
-
-  /**
-   * Save circuit to database
-   */
-  async saveCircuit(circuit: QuantumCircuit): Promise<string> {
-    try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('Authentication required to save circuits');
-      }
-
-      const { data, error } = await supabase
-        .from('circuits')
-        .insert({
-          name: circuit.name,
-          description: circuit.description || '',
-          user_id: user.id,
-          circuit_data: {
-            gates: circuit.gates,
-            qubits: circuit.qubits,
-            metadata: circuit.metadata
-          } as any
-        })
-        .select('id')
-        .single();
-
-      if (error) throw error;
-      
-      return data.id;
-    } catch (error) {
-      throw new Error(`Failed to save circuit: ${error}`);
-    }
-  }
-
-  /**
-   * Load circuit from database
-   */
-  async loadCircuit(circuitId: string): Promise<QuantumCircuit> {
-    try {
-      const { data, error } = await supabase
-        .from('circuits')
-        .select('*')
-        .eq('id', circuitId)
-        .single();
-
-      if (error) throw error;
-
-      const circuitData = data.circuit_data as any;
-      return {
-        id: data.id,
-        name: data.name,
-        description: data.description,
-        gates: circuitData.gates,
-        qubits: circuitData.qubits,
-        metadata: circuitData.metadata
-      };
-    } catch (error) {
-      throw new Error(`Failed to load circuit: ${error}`);
-    }
-  }
-
-  /**
-   * List user's circuits
-   */
-  async listCircuits(): Promise<QuantumCircuit[]> {
-    try {
-      const { data, error } = await supabase
-        .from('circuits')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      return data.map(circuit => {
-        const circuitData = circuit.circuit_data as any;
-        return {
-          id: circuit.id,
-          name: circuit.name,
-          description: circuit.description,
-          gates: circuitData.gates,
-          qubits: circuitData.qubits,
-          metadata: circuitData.metadata
-        };
-      });
-    } catch (error) {
-      throw new Error(`Failed to list circuits: ${error}`);
-    }
-  }
-
-  /**
-   * Export circuit to various formats
-   */
-  exportCircuit(circuit: QuantumCircuit, format: 'json' | 'qasm' | 'python'): string {
-    switch (format) {
-      case 'json':
-        return JSON.stringify(circuit, null, 2);
-      case 'qasm':
-        return this.toQASM(circuit);
-      case 'python':
-        return this.toPython(circuit);
-      default:
-        throw new Error(`Unsupported export format: ${format}`);
-    }
-  }
-
-  private toQASM(circuit: QuantumCircuit): string {
-    let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\n\n`;
-    qasm += `qreg q[${circuit.qubits}];\ncreg c[${circuit.qubits}];\n\n`;
-
+    // Apply gates (simplified simulation)
     for (const gate of circuit.gates) {
-      switch (gate.type.toLowerCase()) {
+      this.applyGate(stateVector, gate, circuit.qubits);
+    }
+
+    // Calculate measurement probabilities
+    const measurementProbabilities: { [state: string]: number } = {};
+    for (let i = 0; i < numStates; i++) {
+      const prob = Math.pow(stateVector[i].real, 2) + Math.pow(stateVector[i].imag, 2);
+      if (prob > 1e-10) {
+        measurementProbabilities[i.toString(2).padStart(circuit.qubits, '0')] = prob;
+      }
+    }
+
+    const executionTime = performance.now() - startTime;
+
+    return {
+      stateVector,
+      measurementProbabilities,
+      executionTime,
+      circuitDepth: this.calculateDepth(circuit)
+    };
+  }
+
+  private applyGate(stateVector: { real: number; imag: number }[], gate: QuantumGate, qubits: number): void {
+    // Simplified gate application - real implementation would be more complex
+    const numStates = stateVector.length;
+    
+    switch (gate.type) {
+      case 'h':
+        // Hadamard gate implementation (simplified)
+        if (gate.qubit !== undefined) {
+          for (let i = 0; i < numStates; i++) {
+            if (((i >> gate.qubit) & 1) === 0) {
+              const j = i | (1 << gate.qubit);
+              if (j < numStates) {
+                const temp = { ...stateVector[i] };
+                stateVector[i] = {
+                  real: (temp.real + stateVector[j].real) / Math.sqrt(2),
+                  imag: (temp.imag + stateVector[j].imag) / Math.sqrt(2)
+                };
+                stateVector[j] = {
+                  real: (temp.real - stateVector[j].real) / Math.sqrt(2),
+                  imag: (temp.imag - stateVector[j].imag) / Math.sqrt(2)
+                };
+              }
+            }
+          }
+        }
+        break;
+      
+      case 'x':
+        // Pauli-X gate implementation
+        if (gate.qubit !== undefined) {
+          for (let i = 0; i < numStates; i++) {
+            if (((i >> gate.qubit) & 1) === 0) {
+              const j = i | (1 << gate.qubit);
+              if (j < numStates) {
+                const temp = stateVector[i];
+                stateVector[i] = stateVector[j];
+                stateVector[j] = temp;
+              }
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  private calculateDepth(circuit: QuantumCircuit): number {
+    return circuit.gates.length; // Simplified depth calculation
+  }
+
+  /**
+   * Export circuit to OpenQASM
+   */
+  toQASM(circuit: QuantumCircuit): string {
+    let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\n`;
+    qasm += `qreg q[${circuit.qubits}];\n`;
+    qasm += `creg c[${circuit.qubits}];\n\n`;
+
+    circuit.gates.forEach(gate => {
+      switch (gate.type) {
         case 'h':
           qasm += `h q[${gate.qubit}];\n`;
           break;
         case 'x':
           qasm += `x q[${gate.qubit}];\n`;
           break;
-        case 'y':
-          qasm += `y q[${gate.qubit}];\n`;
-          break;
-        case 'z':
-          qasm += `z q[${gate.qubit}];\n`;
-          break;
         case 'cnot':
           qasm += `cx q[${gate.controlQubit}],q[${gate.qubit}];\n`;
           break;
-        case 'rx':
-          qasm += `rx(${gate.angle}) q[${gate.qubit}];\n`;
-          break;
-        case 'ry':
-          qasm += `ry(${gate.angle}) q[${gate.qubit}];\n`;
-          break;
-        case 'rz':
-          qasm += `rz(${gate.angle}) q[${gate.qubit}];\n`;
+        case 'measure':
+          qasm += `measure q[${gate.qubit}] -> c[${gate.qubit}];\n`;
           break;
       }
-    }
+    });
 
-    qasm += `\nmeasure q -> c;\n`;
     return qasm;
   }
 
-  private toPython(circuit: QuantumCircuit): string {
-    let python = `from qosim import QOSimSDK\n\n`;
-    python += `# Create SDK instance\nsdk = QOSimSDK()\n`;
-    python += `await sdk.initialize()\n\n`;
-    python += `# Create circuit\n`;
-    python += `circuit = sdk.createCircuit("${circuit.name}", ${circuit.qubits})\n\n`;
+  /**
+   * Export circuit to Python (Qiskit)
+   */
+  toPython(circuit: QuantumCircuit): string {
+    let python = `# Quantum Circuit: ${circuit.name}\n`;
+    python += `from qiskit import QuantumCircuit, execute, Aer\n\n`;
+    python += `qc = QuantumCircuit(${circuit.qubits})\n\n`;
 
-    for (const gate of circuit.gates) {
-      switch (gate.type.toLowerCase()) {
+    circuit.gates.forEach(gate => {
+      switch (gate.type) {
         case 'h':
-          python += `circuit = sdk.addGate(circuit, {'type': 'h', 'qubit': ${gate.qubit}})\n`;
+          python += `qc.h(${gate.qubit})\n`;
           break;
         case 'x':
-          python += `circuit = sdk.addGate(circuit, {'type': 'x', 'qubit': ${gate.qubit}})\n`;
+          python += `qc.x(${gate.qubit})\n`;
           break;
         case 'cnot':
-          python += `circuit = sdk.addGate(circuit, {'type': 'cnot', 'controlQubit': ${gate.controlQubit}, 'qubit': ${gate.qubit}})\n`;
+          python += `qc.cx(${gate.controlQubit}, ${gate.qubit})\n`;
           break;
-        default:
-          python += `circuit = sdk.addGate(circuit, ${JSON.stringify(gate)})\n`;
+        case 'measure':
+          python += `qc.measure_all()\n`;
+          break;
       }
-    }
+    });
 
-    python += `\n# Simulate circuit\nresult = await sdk.simulate(circuit)\nconsole.log(result)\n`;
+    python += `\n# Execute circuit\n`;
+    python += `backend = Aer.get_backend('qasm_simulator')\n`;
+    python += `job = execute(qc, backend, shots=1024)\n`;
+    python += `result = job.result()\n`;
+    python += `counts = result.get_counts(qc)\n`;
+    python += `print(counts)\n`;
+
     return python;
   }
 }
 
-// Helper functions for common circuit patterns
-export class CircuitBuilder {
-  private sdk: QOSimSDK;
-
-  constructor(sdk: QOSimSDK) {
-    this.sdk = sdk;
-  }
-
-  /**
-   * Create a Bell state circuit
-   */
-  bellState(name = "Bell State"): QuantumCircuit {
-    const circuit = this.sdk.createCircuit(name, 2, "Creates a Bell state (maximally entangled state)");
-    let result = this.sdk.addGate(circuit, { type: 'h', qubit: 0 });
-    result = this.sdk.addGate(result, { type: 'cnot', controlQubit: 0, qubit: 1 });
-    return result;
-  }
-
-  /**
-   * Create a GHZ state circuit
-   */
-  ghzState(qubits = 3, name = "GHZ State"): QuantumCircuit {
-    const circuit = this.sdk.createCircuit(name, qubits, `Creates a ${qubits}-qubit GHZ state`);
-    let result = this.sdk.addGate(circuit, { type: 'h', qubit: 0 });
-    
-    for (let i = 1; i < qubits; i++) {
-      result = this.sdk.addGate(result, { type: 'cnot', controlQubit: 0, qubit: i });
-    }
-    
-    return result;
-  }
-
-  /**
-   * Create a quantum random number generator
-   */
-  randomGenerator(qubits = 3, name = "Random Generator"): QuantumCircuit {
-    const circuit = this.sdk.createCircuit(name, qubits, "Generates random bits using quantum superposition");
-    let result = circuit;
-    
-    for (let i = 0; i < qubits; i++) {
-      result = this.sdk.addGate(result, { type: 'h', qubit: i });
-    }
-    
-    return result;
-  }
-}
-
-// Export a default instance for convenience
-export const qosim = new QOSimSDK();
-export const circuitBuilder = new CircuitBuilder(qosim);
+export default QOSimSDK;
