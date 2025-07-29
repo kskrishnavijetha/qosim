@@ -29,7 +29,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
 }) {
   const {
     circuit,
-    setCircuit,
+    loadCircuit,
     simulateCircuit,
     exportCircuit,
     importCircuit
@@ -79,23 +79,14 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
       
       const importedCircuit = await qosmImporter.import(code, format);
       
-      // Merge with existing circuit if needed
-      const newCircuit: QuantumCircuit = {
-        ...importedCircuit,
-        id: circuit.id, // Keep existing ID
-        metadata: {
-          ...importedCircuit.metadata,
-          modified: new Date().toISOString()
-        }
-      };
-      
-      setCircuit(newCircuit);
+      // Use loadCircuit to update the circuit
+      await loadCircuit(importedCircuit);
       
       // Broadcast the import action
       if (options.enableRealTimeSync && isConnected) {
         await broadcastChange('circuit_imported', { 
           format, 
-          gateCount: newCircuit.gates.length,
+          gateCount: importedCircuit.gates.length,
           timestamp: Date.now() 
         });
       }
@@ -103,13 +94,13 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
       setSyncStatus('idle');
       toast.success(`Code imported from ${format.toUpperCase()}`);
       
-      return newCircuit;
+      return importedCircuit;
     } catch (error) {
       setSyncStatus('error');
       toast.error('Failed to import from SDK: ' + error.message);
       throw error;
     }
-  }, [circuit.id, setCircuit, options.enableRealTimeSync, isConnected, broadcastChange]);
+  }, [loadCircuit, options.enableRealTimeSync, isConnected, broadcastChange]);
 
   // AI-Powered Optimization
   const optimizeCircuit = useCallback(async () => {
@@ -160,7 +151,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
       // Apply optimizations
       if (optimizationSuggestions.length > 0) {
         optimizedCircuit.depth = Math.max(...optimizedCircuit.gates.map(g => g.layer)) + 1;
-        setCircuit(optimizedCircuit);
+        await loadCircuit(optimizedCircuit);
         setSuggestions(optimizationSuggestions);
         
         // Broadcast optimization
@@ -181,7 +172,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
     } finally {
       setIsOptimizing(false);
     }
-  }, [circuit, setCircuit, options.enableAIOptimization, options.enableRealTimeSync, isConnected, broadcastChange]);
+  }, [circuit, loadCircuit, options.enableAIOptimization, options.enableRealTimeSync, isConnected, broadcastChange]);
 
   // Context-Aware Suggestions
   const getContextSuggestions = useCallback(() => {

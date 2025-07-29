@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,10 +31,13 @@ export function useRealtimeCollaboration(circuitId: string | null) {
   ) => {
     if (!circuitId || !user) return;
 
-    // Log to database
-    await logActivity(circuitId, type, data);
+    // Only log supported activity types to database
+    const supportedTypes = ['gate_added', 'gate_removed', 'gate_moved', 'circuit_saved', 'user_joined', 'user_left'];
+    if (supportedTypes.includes(type)) {
+      await logActivity(circuitId, type as any, data);
+    }
 
-    // Add to local state for immediate feedback
+    // Add to local state for immediate feedback (all types)
     const change: CollaborativeChange = {
       type,
       data,
