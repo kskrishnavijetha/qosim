@@ -17,13 +17,16 @@ export function FilesPanel() {
   const { files, loading, createFile, updateFile, deleteFile, toggleFavorite, getFileStats } = useQuantumFiles();
 
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedFileComplete, setSelectedFileComplete] = useState<QuantumFile | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
 
-  // Transform files to legacy format for useFileOperations compatibility
+  console.log('FilesPanel render - files:', files);
+  console.log('FilesPanel render - showFileViewer:', showFileViewer);
+  console.log('FilesPanel render - selectedFile:', selectedFile);
+
+  // Transform files to legacy format for compatibility
   const legacyFiles = files.map(file => ({
     id: file.id,
     name: file.name,
@@ -37,7 +40,7 @@ export function FilesPanel() {
     lastVersion: file.lastVersion
   }));
 
-  // Simplified drag and drop state for this component
+  // Simplified drag and drop state
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, fileId: string) => {
@@ -58,34 +61,10 @@ export function FilesPanel() {
   };
 
   const handleFileSelect = (fileId: string) => {
-    console.log('File selected:', fileId);
-    
-    const fileData = files.find(f => f.id === fileId);
-    console.log('Found file data:', fileData);
-    
-    if (fileData) {
-      // Ensure the file data structure is complete for FileViewer
-      const completeFileData: QuantumFile = {
-        ...fileData,
-        // Ensure all required properties are present with proper types
-        createdAt: fileData.createdAt instanceof Date ? fileData.createdAt : new Date(fileData.createdAt || Date.now()),
-        updatedAt: fileData.updatedAt instanceof Date ? fileData.updatedAt : new Date(fileData.updatedAt || Date.now()),
-        sizeBytes: fileData.sizeBytes || 0,
-        sizeDisplay: fileData.sizeDisplay || '0 B',
-        superposition: fileData.superposition || false,
-        favorite: fileData.favorite || false,
-        tags: fileData.tags || [],
-        versions: fileData.versions || 1,
-        lastVersion: fileData.lastVersion || 'v1.0'
-      };
-      
-      console.log('Complete file data for viewer:', completeFileData);
-      setSelectedFile(fileId);
-      setSelectedFileComplete(completeFileData);
-      setShowFileViewer(true);
-    } else {
-      console.error('File not found:', fileId);
-    }
+    console.log('handleFileSelect called with fileId:', fileId);
+    setSelectedFile(fileId);
+    setShowFileViewer(true);
+    console.log('Set showFileViewer to true and selectedFile to:', fileId);
   };
 
   const handleContextAction = (action: string, fileId: string) => {
@@ -114,10 +93,13 @@ export function FilesPanel() {
     console.log('Closing file viewer');
     setShowFileViewer(false);
     setSelectedFile(null);
-    setSelectedFileComplete(null);
   };
 
-  // Debug render
+  // Get the selected file data
+  const selectedFileData = selectedFile ? files.find(f => f.id === selectedFile) : null;
+  
+  console.log('Selected file data:', selectedFileData);
+
   if (loading) {
     return (
       <div className="h-full overflow-auto quantum-grid">
@@ -181,30 +163,36 @@ export function FilesPanel() {
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
 
+        {/* Debug Info */}
+        {showFileViewer && (
+          <div className="bg-red-900/20 border border-red-500 p-4 rounded text-sm">
+            <p>DEBUG - Dialog should be open</p>
+            <p>showFileViewer: {showFileViewer.toString()}</p>
+            <p>selectedFile: {selectedFile}</p>
+            <p>selectedFileData exists: {selectedFileData ? 'YES' : 'NO'}</p>
+            {selectedFileData && (
+              <pre className="mt-2 text-xs">{JSON.stringify(selectedFileData, null, 2)}</pre>
+            )}
+          </div>
+        )}
+
         {/* File Viewer Dialog */}
-        <Dialog open={showFileViewer} onOpenChange={handleCloseFileViewer}>
+        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
           <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                {selectedFileComplete ? `File Viewer - ${selectedFileComplete.name}` : 'File Viewer'}
+                File Viewer - {selectedFileData?.name || 'Loading...'}
               </DialogTitle>
             </DialogHeader>
             <div className="max-h-[70vh] overflow-y-auto">
-              {selectedFileComplete ? (
+              {selectedFileData ? (
                 <FileViewer 
-                  file={selectedFileComplete} 
+                  file={selectedFileData} 
                   onClose={handleCloseFileViewer}
                 />
               ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  <p className="text-lg mb-4">No file selected</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleCloseFileViewer}
-                    className="mt-4"
-                  >
-                    Close
-                  </Button>
+                <div className="p-8 text-center">
+                  <p className="text-muted-foreground">Loading file...</p>
                 </div>
               )}
             </div>
