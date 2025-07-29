@@ -2,9 +2,10 @@
 export function useCircuits() {
   return {
     circuits: [],
-    loadCircuits: () => Promise.resolve([]),
-    saveCircuit: (circuit: any) => Promise.resolve(),
-    deleteCircuit: (id: string) => Promise.resolve(),
-    getCircuit: (id: string) => null
+    currentCircuit: null,
+    saveCircuit: (name: string, description: string) => Promise.resolve("saved-id"),
+    loadCircuit: () => {},
+    deleteCircuit: () => {},
+    createCircuit: () => {}
   };
 }

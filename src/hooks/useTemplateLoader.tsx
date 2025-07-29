@@ -1,9 +1,9 @@
 
-export function useTemplateLoader(options: any) {
+export function useTemplateLoader() {
   return {
     templates: [],
     loadTemplate: () => {},
     saveTemplate: () => {},
-    handleTemplateLoad: (template: any) => {}
+    handleTemplateLoad: (templateId: string) => {}
   };
 }
