@@ -600,140 +600,140 @@ print('Result:', result)`
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <Card className="quantum-panel">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5" />
-                        Performance Monitoring
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <p className="text-muted-foreground">
-                          Monitor and optimize quantum algorithm performance in real-time.
-                        </p>
-                        
-                        <div className="grid grid-cols-1 gap-3">
+                <Card className="quantum-panel">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Performance Monitoring
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        Monitor and optimize quantum algorithm performance in real-time.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Execution Metrics</div>
+                          <div className="text-xs text-muted-foreground">Track runtime, memory usage, and accuracy</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Benchmarking</div>
+                          <div className="text-xs text-muted-foreground">Compare against classical algorithms</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Resource Analysis</div>
+                          <div className="text-xs text-muted-foreground">Analyze gate counts and circuit depth</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Scalability Testing</div>
+                          <div className="text-xs text-muted-foreground">Test performance with increasing problem sizes</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="quantum-panel">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Cpu className="h-5 w-5" />
+                      Cloud Integration
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        Seamlessly integrate with cloud quantum computing services and platforms.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">AWS Braket</div>
+                          <div className="text-xs text-muted-foreground">Execute on Amazon quantum hardware</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Google Quantum AI</div>
+                          <div className="text-xs text-muted-foreground">Access Google's quantum processors</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">IonQ Cloud</div>
+                          <div className="text-xs text-muted-foreground">Run on trapped ion quantum computers</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Honeywell Quantum</div>
+                          <div className="text-xs text-muted-foreground">High-fidelity quantum computing</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <h5 className="font-medium mb-2">Cloud Features</h5>
+                        <div className="space-y-2">
                           <div className="p-3 bg-quantum-matrix rounded-lg">
-                            <div className="text-sm font-medium">Execution Metrics</div>
-                            <div className="text-xs text-muted-foreground">Track runtime, memory usage, and accuracy</div>
+                            <div className="text-sm font-medium">Auto-scaling</div>
+                            <div className="text-xs text-muted-foreground">Automatically scale quantum resources</div>
                           </div>
                           <div className="p-3 bg-quantum-matrix rounded-lg">
-                            <div className="text-sm font-medium">Benchmarking</div>
-                            <div className="text-xs text-muted-foreground">Compare against classical algorithms</div>
+                            <div className="text-sm font-medium">Load Balancing</div>
+                            <div className="text-xs text-muted-foreground">Distribute workloads across quantum backends</div>
                           </div>
                           <div className="p-3 bg-quantum-matrix rounded-lg">
-                            <div className="text-sm font-medium">Resource Analysis</div>
-                            <div className="text-xs text-muted-foreground">Analyze gate counts and circuit depth</div>
+                            <div className="text-sm font-medium">Cost Optimization</div>
+                            <div className="text-xs text-muted-foreground">Optimize quantum resource usage and costs</div>
                           </div>
                           <div className="p-3 bg-quantum-matrix rounded-lg">
-                            <div className="text-sm font-medium">Scalability Testing</div>
-                            <div className="text-xs text-muted-foreground">Test performance with increasing problem sizes</div>
+                            <div className="text-sm font-medium">Security</div>
+                            <div className="text-xs text-muted-foreground">Enterprise-grade security and compliance</div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card className="quantum-panel">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Cpu className="h-5 w-5" />
-                          Cloud Integration
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <p className="text-muted-foreground">
-                            Seamlessly integrate with cloud quantum computing services and platforms.
-                          </p>
-                          
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">AWS Braket</div>
-                              <div className="text-xs text-muted-foreground">Execute on Amazon quantum hardware</div>
-                            </div>
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">Google Quantum AI</div>
-                              <div className="text-xs text-muted-foreground">Access Google's quantum processors</div>
-                            </div>
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">IonQ Cloud</div>
-                              <div className="text-xs text-muted-foreground">Run on trapped ion quantum computers</div>
-                            </div>
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">Honeywell Quantum</div>
-                              <div className="text-xs text-muted-foreground">High-fidelity quantum computing</div>
-                            </div>
-                          </div>
-
-                          <div className="mt-4">
-                            <h5 className="font-medium mb-2">Cloud Features</h5>
-                            <div className="space-y-2">
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">Auto-scaling</div>
-                                <div className="text-xs text-muted-foreground">Automatically scale quantum resources</div>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">Load Balancing</div>
-                                <div className="text-xs text-muted-foreground">Distribute workloads across quantum backends</div>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">Cost Optimization</div>
-                                <div className="text-xs text-muted-foreground">Optimize quantum resource usage and costs</div>
-                              </div>
-                              <div className="p-3 bg-quantum-matrix rounded-lg">
-                                <div className="text-sm font-medium">Security</div>
-                                <div className="text-xs text-muted-foreground">Enterprise-grade security and compliance</div>
-                              </div>
-                            </div>
-                          </div>
+                <Card className="quantum-panel">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="h-5 w-5" />
+                      Advanced Features
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        Advanced quantum computing features and capabilities.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Quantum Error Correction</div>
+                          <div className="text-xs text-muted-foreground">Implement error correction protocols</div>
                         </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="quantum-panel">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Zap className="h-5 w-5" />
-                          Advanced Features
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <p className="text-muted-foreground">
-                            Advanced quantum computing features and capabilities.
-                          </p>
-                          
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">Quantum Error Correction</div>
-                              <div className="text-xs text-muted-foreground">Implement error correction protocols</div>
-                            </div>
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">Noise Modeling</div>
-                              <div className="text-xs text-muted-foreground">Simulate realistic quantum noise</div>
-                            </div>
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">Quantum Machine Learning</div>
-                              <div className="text-xs text-muted-foreground">ML algorithms on quantum computers</div>
-                            </div>
-                            <div className="p-3 bg-quantum-matrix rounded-lg">
-                              <div className="text-sm font-medium">Quantum Optimization</div>
-                              <div className="text-xs text-muted-foreground">Solve optimization problems quantumly</div>
-                            </div>
-                          </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Noise Modeling</div>
+                          <div className="text-xs text-muted-foreground">Simulate realistic quantum noise</div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Quantum Machine Learning</div>
+                          <div className="text-xs text-muted-foreground">ML algorithms on quantum computers</div>
+                        </div>
+                        <div className="p-3 bg-quantum-matrix rounded-lg">
+                          <div className="text-sm font-medium">Quantum Optimization</div>
+                          <div className="text-xs text-muted-foreground">Solve optimization problems quantumly</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
