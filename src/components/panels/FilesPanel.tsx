@@ -59,15 +59,19 @@ export function FilesPanel() {
   const handleFileSelect = (fileId: string) => {
     console.log('File selected:', fileId);
     console.log('Available files:', files);
+    console.log('Files length:', files.length);
     
     // Find the file first to make sure it exists
     const fileData = files.find(f => f.id === fileId);
+    console.log('Found file data:', fileData);
+    
     if (fileData) {
       setSelectedFile(fileId);
       setShowFileViewer(true);
       console.log('File found and viewer opened:', fileData);
     } else {
       console.error('File not found:', fileId);
+      console.error('Available file IDs:', files.map(f => f.id));
     }
   };
 
@@ -100,9 +104,23 @@ export function FilesPanel() {
   console.log('Show file viewer:', showFileViewer);
 
   const handleCloseFileViewer = () => {
+    console.log('Closing file viewer');
     setShowFileViewer(false);
     setSelectedFile(null);
   };
+
+  // Debug render
+  if (loading) {
+    return (
+      <div className="h-full overflow-auto quantum-grid">
+        <div className="p-6 space-y-6">
+          <div className="text-center">
+            <p className="text-muted-foreground">Loading files...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -122,6 +140,13 @@ export function FilesPanel() {
               New File
             </Button>
           </div>
+        </div>
+
+        {/* Debug info */}
+        <div className="text-xs text-muted-foreground">
+          <p>Total files: {files.length}</p>
+          <p>Selected file: {selectedFile}</p>
+          <p>Show viewer: {showFileViewer ? 'true' : 'false'}</p>
         </div>
 
         {/* File System Stats */}
@@ -174,6 +199,7 @@ export function FilesPanel() {
                   <p>No file selected or file not found</p>
                   <p className="text-sm mt-2">Selected ID: {selectedFile}</p>
                   <p className="text-sm">Available files: {files.length}</p>
+                  <p className="text-sm">Files: {files.map(f => f.name).join(', ')}</p>
                   <Button 
                     variant="outline" 
                     onClick={handleCloseFileViewer}
