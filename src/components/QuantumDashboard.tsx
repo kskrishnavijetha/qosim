@@ -1,187 +1,109 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
-import { QuantumConsole } from "./QuantumConsole";
+import { CircuitsPanel } from "./panels/CircuitsPanel";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
-import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
+import { FilesPanel } from "./panels/FilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
-import { FeedbackWidget } from "./FeedbackWidget";
-import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
+import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
+import { QuantumAlgorithmsPanel } from "./algorithms/QuantumAlgorithmsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "./ui/button";
-import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./ui/resizable";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 export function QuantumDashboard() {
-  const [activeTab, setActiveTab] = useState("memory");
-  const [showSidebar, setShowSidebar] = useState(false);
-  const [showConsole, setShowConsole] = useState(false);
-  const [consoleCollapsed, setConsoleCollapsed] = useState(true);
+  const [activeTab, setActiveTab] = useState("circuits");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
   };
 
-  const renderPanel = () => {
+  const handleSDKSelect = (sdkType: string) => {
+    // This is handled by the sidebar's handleSDKSelect function
+    // which calls onTabChange with the appropriate tab name
+  };
+
+  const renderActivePanel = () => {
     switch (activeTab) {
+      case "circuits":
+        return <CircuitsPanel />;
       case "jobs":
         return <JobsPanel />;
       case "memory":
         return <MemoryPanel />;
       case "files":
-        return <EnhancedFilesPanel />;
+        return <FilesPanel />;
       case "logs":
         return <LogsPanel />;
       case "javascript-sdk":
-        return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
+        return <SDKDemoPanel defaultSDK="javascript" />;
       case "python-sdk":
-        return <SDKDemoPanel key="python" defaultSDK="python" />;
+        return <SDKDemoPanel defaultSDK="python" />;
+      case "quantum-algorithms":
+        return <QuantumAlgorithmsPanel 
+          onCircuitGenerated={(gates) => console.log('Circuit generated:', gates)}
+          onAlgorithmExecuted={(result) => console.log('Algorithm executed:', result)}
+        />;
       case "integrations":
         return <IntegrationsRoadmap />;
       default:
-        return <MemoryPanel />;
+        return <CircuitsPanel />;
     }
   };
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-quantum-void text-foreground flex flex-col">
-        {/* Mobile Header */}
-        <div className="flex items-center justify-between p-4 border-b border-quantum-matrix bg-quantum-void z-50 sticky top-0">
-          <div className="flex items-center gap-3">
-            <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0 quantum-panel">
-                <QuantumSidebar 
-                  activeTab={activeTab} 
-                  onTabChange={(tab) => {
-                    handleTabChange(tab);
-                    setShowSidebar(false);
-                  }}
-                />
-              </SheetContent>
-            </Sheet>
-            <h1 className="text-lg font-bold text-quantum-glow">Quantum OS</h1>
-          </div>
+      <div className="h-screen flex flex-col bg-quantum-void">
+        <div className="flex items-center justify-between p-4 border-b border-quantum-matrix">
+          <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-quantum-glow">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <QuantumSidebar 
+                activeTab={activeTab} 
+                onTabChange={handleTabChange}
+                onSDKSelect={handleSDKSelect}
+              />
+            </SheetContent>
+          </Sheet>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowConsole(!showConsole)}
-              className="text-quantum-neon"
-            >
-              Console
-            </Button>
+            <img 
+              src="/lovable-uploads/9ba01b22-3dfc-4014-9b17-0ba4cbbca31e.png" 
+              alt="QOSim Logo" 
+              className="w-6 h-6"
+            />
+            <span className="text-lg font-bold text-quantum-glow">Quantum OS</span>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-auto">
-            {renderPanel()}
-          </div>
-          
-          {/* Mobile Console Bottom Sheet */}
-          {showConsole && (
-            <div className="border-t border-quantum-matrix bg-quantum-void">
-              <div className="flex items-center justify-between p-3 border-b border-quantum-matrix">
-                <h3 className="text-sm font-semibold text-quantum-glow">Console</h3>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setConsoleCollapsed(!consoleCollapsed)}
-                  >
-                    {consoleCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowConsole(false)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className={cn(
-                "transition-all duration-300 overflow-hidden",
-                consoleCollapsed ? "h-0" : "h-64"
-              )}>
-                <div className="h-full overflow-auto">
-                  <QuantumConsole />
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="flex-1 overflow-hidden">
+          {renderActivePanel()}
         </div>
-        
-        <FeedbackWidget />
       </div>
     );
   }
 
-  // Desktop/Tablet Layout
   return (
-    <div className="min-h-screen bg-quantum-void text-foreground">
-      <ResizablePanelGroup direction="horizontal" className="min-h-screen">
-        {/* Sidebar */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-          <QuantumSidebar 
-            activeTab={activeTab} 
-            onTabChange={handleTabChange}
-          />
-        </ResizablePanel>
-        
-        <ResizableHandle withHandle />
-        
-        {/* Main Content Area */}
-        <ResizablePanel defaultSize={60}>
-          <ResizablePanelGroup direction="vertical">
-            {/* Main Panel */}
-            <ResizablePanel defaultSize={70} minSize={50}>
-              <div className="h-full overflow-auto">
-                {renderPanel()}
-              </div>
-            </ResizablePanel>
-            
-            {/* Console Panel */}
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-              <div className="h-full border-t border-quantum-matrix">
-                <div className="flex items-center justify-between p-3 border-b border-quantum-matrix bg-quantum-matrix">
-                  <h3 className="text-sm font-semibold text-quantum-glow">Console</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setConsoleCollapsed(!consoleCollapsed)}
-                  >
-                    {consoleCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </Button>
-                </div>
-                <div className={cn(
-                  "transition-all duration-300 overflow-hidden",
-                  consoleCollapsed ? "h-0" : "h-full"
-                )}>
-                  <div className="h-full overflow-auto">
-                    <QuantumConsole />
-                  </div>
-                </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-      
-      <FeedbackWidget />
+    <div className="h-screen flex bg-quantum-void">
+      <QuantumSidebar 
+        activeTab={activeTab} 
+        onTabChange={handleTabChange}
+        onSDKSelect={handleSDKSelect}
+      />
+      <div className="flex-1 overflow-hidden">
+        {renderActivePanel()}
+      </div>
     </div>
   );
 }
