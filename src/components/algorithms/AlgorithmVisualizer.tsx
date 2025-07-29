@@ -258,7 +258,12 @@ export function AlgorithmVisualizer({
                     Qubit {qubit}
                   </h4>
                   <div className="w-32 h-32 mx-auto">
-                    <BlochSphere vector={{ x, y, z }} size={128} />
+                    <BlochSphere 
+                      x={x} 
+                      y={y} 
+                      z={z} 
+                      size={128} 
+                    />
                   </div>
                   <p className="text-xs text-quantum-neon mt-1">
                     ({x.toFixed(2)}, {y.toFixed(2)}, {z.toFixed(2)})

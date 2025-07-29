@@ -1,4 +1,3 @@
-
 /**
  * QOSim Quantum Algorithms SDK
  * Core SDK for quantum algorithm development and execution
@@ -28,6 +27,8 @@ export interface QuantumCircuit {
 export interface SimulationResult {
   stateVector: { real: number; imag: number }[];
   measurementProbabilities: { [state: string]: number };
+  probabilities: number[];
+  basisStates: string[];
   executionTime: number;
   circuitDepth: number;
   entanglementMeasures?: {
@@ -36,13 +37,58 @@ export interface SimulationResult {
   };
 }
 
+export class CircuitBuilder {
+  private sdk: QOSimSDK;
+
+  constructor(sdk: QOSimSDK) {
+    this.sdk = sdk;
+  }
+
+  bellState(name: string = 'Bell State'): QuantumCircuit {
+    let circuit = this.sdk.createCircuit(name, 2, 'Maximally entangled Bell state');
+    circuit = this.sdk.h(circuit, 0);
+    circuit = this.sdk.cnot(circuit, 0, 1);
+    return circuit;
+  }
+
+  ghzState(qubits: number, name: string = 'GHZ State'): QuantumCircuit {
+    let circuit = this.sdk.createCircuit(name, qubits, `${qubits}-qubit GHZ state`);
+    circuit = this.sdk.h(circuit, 0);
+    for (let i = 1; i < qubits; i++) {
+      circuit = this.sdk.cnot(circuit, 0, i);
+    }
+    return circuit;
+  }
+
+  randomGenerator(qubits: number, name: string = 'Quantum RNG'): QuantumCircuit {
+    let circuit = this.sdk.createCircuit(name, qubits, 'Quantum random number generator');
+    for (let i = 0; i < qubits; i++) {
+      circuit = this.sdk.h(circuit, i);
+      circuit = this.sdk.measure(circuit, i);
+    }
+    return circuit;
+  }
+}
+
 export class QOSimSDK {
   private backend: string = 'local';
   private debug: boolean = false;
+  private initialized: boolean = false;
 
   constructor(config?: { backend?: string; debug?: boolean }) {
     this.backend = config?.backend || 'local';
     this.debug = config?.debug || false;
+  }
+
+  /**
+   * Initialize the SDK
+   */
+  async initialize(): Promise<void> {
+    if (this.debug) console.log('Initializing QOSim SDK...');
+    // Simulation of async initialization
+    await new Promise(resolve => setTimeout(resolve, 100));
+    this.initialized = true;
+    if (this.debug) console.log('QOSim SDK initialized successfully');
   }
 
   /**
@@ -153,10 +199,16 @@ export class QOSimSDK {
 
     // Calculate measurement probabilities
     const measurementProbabilities: { [state: string]: number } = {};
+    const probabilities: number[] = [];
+    const basisStates: string[] = [];
+
     for (let i = 0; i < numStates; i++) {
       const prob = Math.pow(stateVector[i].real, 2) + Math.pow(stateVector[i].imag, 2);
       if (prob > 1e-10) {
-        measurementProbabilities[i.toString(2).padStart(circuit.qubits, '0')] = prob;
+        const state = i.toString(2).padStart(circuit.qubits, '0');
+        measurementProbabilities[state] = prob;
+        probabilities.push(prob);
+        basisStates.push(state);
       }
     }
 
@@ -165,9 +217,27 @@ export class QOSimSDK {
     return {
       stateVector,
       measurementProbabilities,
+      probabilities,
+      basisStates,
       executionTime,
       circuitDepth: this.calculateDepth(circuit)
     };
+  }
+
+  /**
+   * Export circuit to different formats
+   */
+  exportCircuit(circuit: QuantumCircuit, format: 'json' | 'qasm' | 'python'): string {
+    switch (format) {
+      case 'json':
+        return JSON.stringify(circuit, null, 2);
+      case 'qasm':
+        return this.toQASM(circuit);
+      case 'python':
+        return this.toPython(circuit);
+      default:
+        throw new Error(`Unsupported export format: ${format}`);
+    }
   }
 
   private applyGate(stateVector: { real: number; imag: number }[], gate: QuantumGate, qubits: number): void {
@@ -283,4 +353,5 @@ export class QOSimSDK {
   }
 }
 
+export { CircuitBuilder };
 export default QOSimSDK;
