@@ -1,393 +1,305 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Code, 
-  Eye, 
-  BookOpen, 
-  Zap, 
-  ArrowRightLeft,
+  Code2, 
+  Play, 
+  Eye,
   Download,
-  Share,
-  GitBranch
+  BookOpen,
+  Zap,
+  GitBranch,
+  Palette,
+  Brain,
+  Settings,
+  FileText,
+  Share2
 } from 'lucide-react';
-import { SDKCodeEditor } from '../sdk/SDKCodeEditor';
-import { AlgorithmVisualizer } from '../algorithms/AlgorithmVisualizer';
-import { CircuitSDKBridge } from '../integration/CircuitSDKBridge';
-import QOSimSDK, { QuantumCircuit } from '@/sdk/qosim-sdk';
-import { BellStateGenerator } from '@/sdk/algorithms/bellState';
-import { GroverAlgorithm } from '@/sdk/algorithms/grovers';
-import { QuantumFourierTransform } from '@/sdk/algorithms/qft';
-import { ErrorCorrectionCodes } from '@/sdk/algorithms/errorCorrection';
-import { useCircuitState } from '@/hooks/useCircuitState';
-import { toast } from 'sonner';
+import { SDKCodeEditor } from '@/components/sdk/SDKCodeEditor';
+import { AlgorithmVisualizer } from '@/components/algorithms/AlgorithmVisualizer';
+import { CircuitSDKBridge } from '@/components/integration/CircuitSDKBridge';
+
+const algorithmCategories = [
+  {
+    name: "Search Algorithms",
+    icon: <Zap className="h-4 w-4" />,
+    algorithms: [
+      { name: "Grover's Search", description: "Quantum database search", complexity: "O(√N)" },
+      { name: "Amplitude Amplification", description: "Generalized amplitude amplification", complexity: "O(√N)" }
+    ]
+  },
+  {
+    name: "Factoring & Cryptography",
+    icon: <Brain className="h-4 w-4" />,
+    algorithms: [
+      { name: "Shor's Algorithm", description: "Integer factorization", complexity: "O(log³N)" },
+      { name: "Discrete Logarithm", description: "Quantum discrete log", complexity: "O(log³N)" }
+    ]
+  },
+  {
+    name: "Optimization",
+    icon: <Settings className="h-4 w-4" />,
+    algorithms: [
+      { name: "QAOA", description: "Quantum Approximate Optimization", complexity: "O(poly(n))" },
+      { name: "VQE", description: "Variational Quantum Eigensolver", complexity: "O(poly(n))" }
+    ]
+  },
+  {
+    name: "Simulation",
+    icon: <Palette className="h-4 w-4" />,
+    algorithms: [
+      { name: "Bell States", description: "Quantum entanglement preparation", complexity: "O(1)" },
+      { name: "QFT", description: "Quantum Fourier Transform", complexity: "O(log²N)" },
+      { name: "Error Correction", description: "Quantum error correction codes", complexity: "O(n)" }
+    ]
+  }
+];
 
 export function QuantumAlgorithmsSDKPanel() {
-  const [activeTab, setActiveTab] = useState('algorithms');
-  const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'python'>('javascript');
-  const [currentCircuit, setCurrentCircuit] = useState<QuantumCircuit | null>(null);
-  const [visualizationStep, setVisualizationStep] = useState(0);
-  const [sdk] = useState(() => new QOSimSDK({ debug: true }));
-  
-  const { circuit: visualCircuit, addGate, clearCircuit } = useCircuitState();
-
-  // Pre-built algorithm examples
-  const algorithms = {
-    'bell-states': {
-      name: 'Bell States',
-      description: 'Create maximally entangled two-qubit states',
-      category: 'Entanglement',
-      difficulty: 'Beginner',
-      execute: async () => {
-        const generator = new BellStateGenerator(sdk);
-        return await generator.quickBellState();
-      }
-    },
-    'grovers': {
-      name: "Grover's Search",
-      description: 'Quantum search algorithm for unsorted databases',
-      category: 'Search',
-      difficulty: 'Intermediate',
-      execute: async () => {
-        const grover = new GroverAlgorithm(sdk);
-        return await grover.quickGrover2Q();
-      }
-    },
-    'qft': {
-      name: 'Quantum Fourier Transform',
-      description: 'Transform between time and frequency domains',
-      category: 'Transform',
-      difficulty: 'Advanced',
-      execute: async () => {
-        const qft = new QuantumFourierTransform(sdk);
-        return await qft.quickQFT3Q();
-      }
-    },
-    'error-correction': {
-      name: 'Quantum Error Correction',
-      description: 'Protect quantum information from decoherence',
-      category: 'Error Correction',
-      difficulty: 'Advanced',
-      execute: async () => {
-        const errorCorrection = new ErrorCorrectionCodes(sdk);
-        return await errorCorrection.quickBitFlipCorrection();
-      }
-    }
-  };
-
-  const handleRunAlgorithm = async (algorithmKey: string) => {
-    try {
-      toast.info(`Running ${algorithms[algorithmKey as keyof typeof algorithms].name}...`);
-      
-      const result = await algorithms[algorithmKey as keyof typeof algorithms].execute();
-      setCurrentCircuit(result.circuit);
-      
-      toast.success(`${algorithms[algorithmKey as keyof typeof algorithms].name} executed successfully!`);
-    } catch (error) {
-      toast.error(`Failed to run ${algorithms[algorithmKey as keyof typeof algorithms].name}: ${error.message}`);
-    }
-  };
-
-  const handleCircuitGenerated = (circuit: QuantumCircuit) => {
-    setCurrentCircuit(circuit);
-  };
-
-  const handleVisualCircuitChange = (gates: any[]) => {
-    clearCircuit();
-    gates.forEach(gate => addGate(gate));
-  };
-
-  const exportToQFS = async () => {
-    if (currentCircuit) {
-      const exportData = {
-        circuit: currentCircuit,
-        language: selectedLanguage,
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-      };
-      
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${currentCircuit.name.replace(/\s+/g, '_')}_qfs_export.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      toast.success('Circuit exported to QFS format!');
-    }
-  };
+  const [activeTab, setActiveTab] = useState('library');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col h-full bg-quantum-void p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-quantum-glow quantum-float">
-            Quantum Algorithms SDK
-          </h1>
-          <p className="text-quantum-neon font-mono mt-2">
-            Advanced quantum algorithm development and visualization platform
-          </p>
-        </div>
+    <div className="flex flex-col h-full bg-background">
+      <div className="flex-none border-b p-4">
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="neon-border text-quantum-glow">
-            SDK v1.0.0
-          </Badge>
-          <Badge variant="outline" className="neon-border text-quantum-glow">
-            {selectedLanguage === 'javascript' ? 'JavaScript' : 'Python'}
-          </Badge>
+          <Code2 className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">Quantum Algorithms SDK</h2>
+          <Badge variant="secondary">v1.0.0</Badge>
         </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          Interactive quantum algorithms with Python & JavaScript support
+        </p>
       </div>
 
-      {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="quantum-panel neon-border">
-          <TabsTrigger value="algorithms" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            Pre-built Algorithms
+        <TabsList className="grid w-full grid-cols-7 m-4">
+          <TabsTrigger value="library" className="text-xs">
+            <BookOpen className="h-3 w-3 mr-1" />
+            Library
           </TabsTrigger>
-          <TabsTrigger value="editor" className="flex items-center gap-2">
-            <Code className="w-4 h-4" />
-            Code Editor
+          <TabsTrigger value="editor" className="text-xs">
+            <Code2 className="h-3 w-3 mr-1" />
+            Editor
           </TabsTrigger>
-          <TabsTrigger value="visualizer" className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            Algorithm Visualizer
+          <TabsTrigger value="visualizer" className="text-xs">
+            <Eye className="h-3 w-3 mr-1" />
+            Visualizer
           </TabsTrigger>
-          <TabsTrigger value="integration" className="flex items-center gap-2">
-            <ArrowRightLeft className="w-4 h-4" />
-            Circuit Integration
+          <TabsTrigger value="export" className="text-xs">
+            <Download className="h-3 w-3 mr-1" />
+            Export
           </TabsTrigger>
-          <TabsTrigger value="documentation" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Documentation
+          <TabsTrigger value="ai" className="text-xs">
+            <Brain className="h-3 w-3 mr-1" />
+            AI
+          </TabsTrigger>
+          <TabsTrigger value="integration" className="text-xs">
+            <GitBranch className="h-3 w-3 mr-1" />
+            Integration
+          </TabsTrigger>
+          <TabsTrigger value="docs" className="text-xs">
+            <FileText className="h-3 w-3 mr-1" />
+            Docs
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex-1 mt-6">
-          <TabsContent value="algorithms" className="h-full">
-            <div className="space-y-6">
-              {/* Language Selector */}
-              <Card className="quantum-panel neon-border">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-quantum-glow">Algorithm Library</h3>
-                      <p className="text-quantum-particle text-sm">
-                        Pre-built implementations of key quantum algorithms
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm text-quantum-neon">Language:</label>
-                      <select
-                        value={selectedLanguage}
-                        onChange={(e) => setSelectedLanguage(e.target.value as 'javascript' | 'python')}
-                        className="px-3 py-2 bg-quantum-void border border-quantum-matrix rounded text-quantum-glow"
-                      >
-                        <option value="javascript">JavaScript</option>
-                        <option value="python">Python</option>
-                      </select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Algorithm Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(algorithms).map(([key, algorithm]) => (
-                  <Card key={key} className="quantum-panel neon-border hover:bg-quantum-matrix transition-colors">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="text-quantum-glow">{algorithm.name}</span>
-                        <div className="flex gap-2">
-                          <Badge variant="secondary">{algorithm.category}</Badge>
-                          <Badge 
-                            variant={algorithm.difficulty === 'Beginner' ? 'default' : 
-                                   algorithm.difficulty === 'Intermediate' ? 'secondary' : 'destructive'}
-                          >
-                            {algorithm.difficulty}
-                          </Badge>
+        <div className="flex-1 overflow-hidden">
+          <TabsContent value="library" className="h-full m-0">
+            <div className="h-full p-4">
+              <ScrollArea className="h-full">
+                <div className="space-y-6">
+                  {algorithmCategories.map((category) => (
+                    <Card key={category.name}>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          {category.icon}
+                          {category.name}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-3">
+                          {category.algorithms.map((algorithm) => (
+                            <div
+                              key={algorithm.name}
+                              className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                              onClick={() => setSelectedAlgorithm(algorithm.name)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-medium text-sm">{algorithm.name}</h4>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {algorithm.description}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {algorithm.complexity}
+                                  </Badge>
+                                  <Button size="sm" variant="ghost">
+                                    <Play className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </CardTitle>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="editor" className="h-full m-0">
+            <SDKCodeEditor />
+          </TabsContent>
+
+          <TabsContent value="visualizer" className="h-full m-0">
+            <div className="h-full p-4">
+              <ScrollArea className="h-full">
+                <AlgorithmVisualizer />
+              </ScrollArea>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="export" className="h-full m-0">
+            <div className="h-full p-4">
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Export Options</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-quantum-particle text-sm mb-4">
-                        {algorithm.description}
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleRunAlgorithm(key)}
-                          className="bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                        >
-                          <Zap className="w-4 h-4 mr-2" />
-                          Run Algorithm
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Button variant="outline" className="justify-start">
+                          <Download className="h-4 w-4 mr-2" />
+                          Python Script
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => setActiveTab('editor')}
-                          className="neon-border"
-                        >
-                          <Code className="w-4 h-4 mr-2" />
-                          View Code
+                        <Button variant="outline" className="justify-start">
+                          <Download className="h-4 w-4 mr-2" />
+                          JavaScript
+                        </Button>
+                        <Button variant="outline" className="justify-start">
+                          <Download className="h-4 w-4 mr-2" />
+                          QASM
+                        </Button>
+                        <Button variant="outline" className="justify-start">
+                          <Download className="h-4 w-4 mr-2" />
+                          Qiskit
+                        </Button>
+                      </div>
+                      <div className="pt-4 border-t">
+                        <h4 className="font-medium mb-2">Share via QFS</h4>
+                        <Button variant="outline" className="w-full justify-start">
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share Circuit & Code
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                </div>
+              </ScrollArea>
             </div>
           </TabsContent>
 
-          <TabsContent value="editor" className="h-full">
-            <SDKCodeEditor
-              language={selectedLanguage}
-              onCircuitGenerated={handleCircuitGenerated}
-            />
+          <TabsContent value="ai" className="h-full m-0">
+            <div className="h-full p-4">
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Brain className="h-5 w-5" />
+                        AI Assistant
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-muted rounded-lg">
+                          <p className="text-sm text-muted-foreground">
+                            Describe what you want to build and I'll generate the quantum algorithm for you.
+                          </p>
+                        </div>
+                        <div className="grid gap-2">
+                          <Button variant="outline" className="justify-start">
+                            "Create a quantum search algorithm"
+                          </Button>
+                          <Button variant="outline" className="justify-start">
+                            "Optimize my circuit for fewer gates"
+                          </Button>
+                          <Button variant="outline" className="justify-start">
+                            "Explain Bell state preparation"
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
+            </div>
           </TabsContent>
 
-          <TabsContent value="visualizer" className="h-full">
-            {currentCircuit ? (
-              <AlgorithmVisualizer
-                algorithm={currentCircuit.name}
-                circuit={currentCircuit}
-                onStepChange={setVisualizationStep}
-              />
-            ) : (
-              <Card className="quantum-panel neon-border">
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <Eye className="w-16 h-16 mx-auto mb-4 text-quantum-particle opacity-50" />
-                    <h3 className="text-lg font-semibold text-quantum-glow mb-2">
-                      No Circuit Selected
-                    </h3>
-                    <p className="text-quantum-particle mb-4">
-                      Run an algorithm or create a circuit in the editor to visualize its execution
-                    </p>
-                    <Button 
-                      onClick={() => setActiveTab('algorithms')}
-                      className="neon-border"
-                    >
-                      Browse Algorithms
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          <TabsContent value="integration" className="h-full m-0">
+            <CircuitSDKBridge />
           </TabsContent>
 
-          <TabsContent value="integration" className="h-full">
-            <CircuitSDKBridge
-              visualCircuit={visualCircuit}
-              onVisualCircuitChange={handleVisualCircuitChange}
-              onSDKCircuitGenerated={handleCircuitGenerated}
-            />
-          </TabsContent>
-
-          <TabsContent value="documentation" className="h-full">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="quantum-panel neon-border">
-                <CardHeader>
-                  <CardTitle className="text-quantum-glow">Quick Start Guide</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <h4 className="font-semibold text-quantum-particle mb-2">1. Choose Your Language</h4>
-                      <p className="text-quantum-neon">
-                        Select between JavaScript and Python implementations of quantum algorithms.
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-quantum-particle mb-2">2. Run Pre-built Algorithms</h4>
-                      <p className="text-quantum-neon">
-                        Execute Bell states, Grover's search, QFT, and error correction algorithms with one click.
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-quantum-particle mb-2">3. Visualize Execution</h4>
-                      <p className="text-quantum-neon">
-                        Watch algorithms run step-by-step with Bloch spheres and entanglement visualization.
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-quantum-particle mb-2">4. Export & Share</h4>
-                      <p className="text-quantum-neon">
-                        Export to OpenQASM, share via QFS, or integrate with the visual Circuit Builder.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="quantum-panel neon-border">
-                <CardHeader>
-                  <CardTitle className="text-quantum-glow">API Reference</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm font-mono">
-                    <div className="p-3 bg-quantum-void rounded border border-quantum-matrix">
-                      <div className="text-quantum-glow mb-1">QOSimSDK.createCircuit(name, qubits)</div>
-                      <div className="text-quantum-particle">Create a new quantum circuit</div>
-                    </div>
-                    <div className="p-3 bg-quantum-void rounded border border-quantum-matrix">
-                      <div className="text-quantum-glow mb-1">sdk.h(circuit, qubit)</div>
-                      <div className="text-quantum-particle">Apply Hadamard gate</div>
-                    </div>
-                    <div className="p-3 bg-quantum-void rounded border border-quantum-matrix">
-                      <div className="text-quantum-glow mb-1">sdk.cnot(circuit, control, target)</div>
-                      <div className="text-quantum-particle">Apply CNOT gate</div>
-                    </div>
-                    <div className="p-3 bg-quantum-void rounded border border-quantum-matrix">
-                      <div className="text-quantum-glow mb-1">sdk.simulate(circuit, shots)</div>
-                      <div className="text-quantum-particle">Execute circuit simulation</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <TabsContent value="docs" className="h-full m-0">
+            <div className="h-full p-4">
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>SDK Documentation</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="grid gap-3">
+                          <Button variant="outline" className="justify-start">
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Getting Started Guide
+                          </Button>
+                          <Button variant="outline" className="justify-start">
+                            <Code2 className="h-4 w-4 mr-2" />
+                            API Reference
+                          </Button>
+                          <Button variant="outline" className="justify-start">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Example Scripts
+                          </Button>
+                          <Button variant="outline" className="justify-start">
+                            <Brain className="h-4 w-4 mr-2" />
+                            Algorithm Tutorials
+                          </Button>
+                        </div>
+                        <div className="pt-4 border-t">
+                          <h4 className="font-medium mb-2">Quick Examples</h4>
+                          <div className="bg-muted rounded-lg p-3">
+                            <pre className="text-xs">
+                              <code>{`// Create Bell State
+const qosim = new QOSimSDK();
+const circuit = qosim.createCircuit(2);
+circuit.h(0);
+circuit.cnot(0, 1);
+const result = await circuit.simulate();`}</code>
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
             </div>
           </TabsContent>
         </div>
       </Tabs>
-
-      {/* Footer Actions */}
-      {currentCircuit && (
-        <Card className="quantum-panel neon-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="neon-border">
-                  {currentCircuit.name}
-                </Badge>
-                <Badge variant="secondary">
-                  {currentCircuit.qubits} qubits
-                </Badge>
-                <Badge variant="secondary">
-                  {currentCircuit.gates.length} gates
-                </Badge>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={exportToQFS} className="neon-border">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export to QFS
-                </Button>
-                <Button variant="outline" className="neon-border">
-                  <Share className="w-4 h-4 mr-2" />
-                  Share Circuit
-                </Button>
-                <Button variant="outline" className="neon-border">
-                  <GitBranch className="w-4 h-4 mr-2" />
-                  Version Control
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

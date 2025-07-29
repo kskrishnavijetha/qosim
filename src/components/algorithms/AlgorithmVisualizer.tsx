@@ -137,6 +137,23 @@ export function AlgorithmVisualizer() {
 
   const currentStepData = selectedAlgorithm.steps[currentStep];
 
+  // Convert qubit state to BlochSphere format
+  const convertToBlochSphereState = (state: number[]) => {
+    const amplitude0 = { real: state[0], imaginary: 0 };
+    const amplitude1 = { real: state[1], imaginary: 0 };
+    const probability0 = state[0] * state[0];
+    const probability1 = state[1] * state[1];
+    const phase = Math.atan2(0, state[1]); // Simplified phase calculation
+    
+    return {
+      amplitude0,
+      amplitude1,
+      probability0,
+      probability1,
+      phase
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* Algorithm Selection */}
@@ -272,11 +289,7 @@ export function AlgorithmVisualizer() {
                     <h4 className="font-semibold mb-2">Qubit {index}</h4>
                     <div className="flex justify-center">
                       <BlochSphere
-                        vector={{
-                          x: state[1] * Math.cos(0),
-                          y: state[1] * Math.sin(0), 
-                          z: 2 * state[0] - 1
-                        }}
+                        qubitState={convertToBlochSphereState(state)}
                         size={200}
                       />
                     </div>
