@@ -7,15 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { QOSimSDK } from '@/sdk/qosim-sdk';
-import { QuantumAlgorithmsSDK } from './QuantumAlgorithmsSDK';
 import { GroverAlgorithm, GroverResult } from '@/sdk/algorithms/grovers';
 import { QuantumFourierTransform, QFTResult } from '@/sdk/algorithms/qft';
 import { BellStateGenerator, BellStateResult, BellStateType } from '@/sdk/algorithms/bellState';
 import { ErrorCorrectionCodes, ErrorCorrectionResult, ErrorCorrectionCode, ErrorType } from '@/sdk/algorithms/errorCorrection';
-import { ShorAlgorithm, ShorResult } from '@/sdk/algorithms/shor';
-import { VariationalQuantumEigensolver, VQEResult } from '@/sdk/algorithms/vqe';
-import { QAOAAlgorithm, QAOAResult } from '@/sdk/algorithms/qaoa';
-import { Search, Waves, Heart, Shield, Play, Zap, Code, Cpu, Activity, FileText } from 'lucide-react';
+import { Search, Waves, Heart, Shield, Play, Zap } from 'lucide-react';
 
 interface QuantumAlgorithmsPanelProps {
   onCircuitGenerated: (gates: any[]) => void;
@@ -97,239 +93,174 @@ export function QuantumAlgorithmsPanel({ onCircuitGenerated, onAlgorithmExecuted
     }), "Error Correction");
   };
 
-  const runShor = () => {
-    const shor = new ShorAlgorithm(sdk);
-    executeAlgorithm(() => shor.quickShor15(), "Shor's Algorithm");
-  };
-
-  const runVQE = () => {
-    const vqe = new VariationalQuantumEigensolver(sdk);
-    executeAlgorithm(() => vqe.quickVQE_H2(), "VQE Algorithm");
-  };
-
-  const runQAOA = () => {
-    const qaoa = new QAOAAlgorithm(sdk);
-    executeAlgorithm(() => qaoa.quickMaxCut(), "QAOA Algorithm");
-  };
-
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="quick-run" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="quick-run">Quick Run</TabsTrigger>
-          <TabsTrigger value="sdk">Advanced SDK</TabsTrigger>
-        </TabsList>
+    <Card className="quantum-panel neon-border">
+      <CardHeader>
+        <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
+          <Zap className="w-5 h-5" />
+          Quantum Algorithms SDK
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="grover" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 quantum-panel">
+            <TabsTrigger value="grover" className="text-xs">Grover</TabsTrigger>
+            <TabsTrigger value="qft" className="text-xs">QFT</TabsTrigger>
+            <TabsTrigger value="bell" className="text-xs">Bell</TabsTrigger>
+            <TabsTrigger value="error" className="text-xs">Error</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="quick-run">
-          <Card className="quantum-panel neon-border">
-            <CardHeader>
-              <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Quick Algorithm Runner
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Grover's Algorithm */}
-                <Card className="quantum-panel">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Search className="w-4 h-4 text-quantum-neon" />
-                      <h3 className="font-semibold text-quantum-neon">Grover's Search</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Quantum search with quadratic speedup
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={runGrover}
-                      disabled={isExecuting}
-                      className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Run 2-Qubit Search
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Bell States */}
-                <Card className="quantum-panel">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Heart className="w-4 h-4 text-quantum-neon" />
-                      <h3 className="font-semibold text-quantum-neon">Bell States</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Maximally entangled states
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Select value={selectedBellType} onValueChange={(value: BellStateType) => setSelectedBellType(value)}>
-                      <SelectTrigger className="quantum-panel neon-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="quantum-panel neon-border">
-                        <SelectItem value="phi+">|Φ+⟩ = (|00⟩ + |11⟩)/√2</SelectItem>
-                        <SelectItem value="phi-">|Φ-⟩ = (|00⟩ - |11⟩)/√2</SelectItem>
-                        <SelectItem value="psi+">|Ψ+⟩ = (|01⟩ + |10⟩)/√2</SelectItem>
-                        <SelectItem value="psi-">|Ψ-⟩ = (|01⟩ - |10⟩)/√2</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button 
-                      onClick={runBellState}
-                      disabled={isExecuting}
-                      className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Generate Bell State
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* QFT */}
-                <Card className="quantum-panel">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Waves className="w-4 h-4 text-quantum-neon" />
-                      <h3 className="font-semibold text-quantum-neon">Quantum FFT</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Frequency domain transformation
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={runQFT}
-                      disabled={isExecuting}
-                      className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Run 3-Qubit QFT
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Shor's Algorithm */}
-                <Card className="quantum-panel">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Cpu className="w-4 h-4 text-quantum-neon" />
-                      <h3 className="font-semibold text-quantum-neon">Shor's Algorithm</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Quantum factorization
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={runShor}
-                      disabled={isExecuting}
-                      className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Factor 15
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* VQE */}
-                <Card className="quantum-panel">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity className="w-4 h-4 text-quantum-neon" />
-                      <h3 className="font-semibold text-quantum-neon">VQE</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Variational optimization
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={runVQE}
-                      disabled={isExecuting}
-                      className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Optimize H₂
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* QAOA */}
-                <Card className="quantum-panel">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="w-4 h-4 text-quantum-neon" />
-                      <h3 className="font-semibold text-quantum-neon">QAOA</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Approximate optimization
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={runQAOA}
-                      disabled={isExecuting}
-                      className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Solve MaxCut
-                    </Button>
-                  </CardContent>
-                </Card>
+          <TabsContent value="grover" className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Search className="w-4 h-4 text-quantum-neon" />
+              <h3 className="font-semibold text-quantum-neon">Grover's Search Algorithm</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Quantum search algorithm that finds marked items quadratically faster than classical search.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={runGrover}
+                disabled={isExecuting}
+                className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Execute 2-Qubit Grover Search
+              </Button>
+              <div className="text-xs text-muted-foreground">
+                Searches for |11⟩ state in 2-qubit space
               </div>
+            </div>
+          </TabsContent>
 
-              {/* Results Display */}
-              {lastResult && (
-                <div className="mt-6 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
-                  <h4 className="text-sm font-mono text-quantum-neon mb-2">Algorithm Result</h4>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Circuit:</span>
-                      <Badge variant="outline" className="text-quantum-particle">
-                        {lastResult.circuit?.name || 'Generated'}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Gates:</span>
-                      <span className="text-quantum-glow">{lastResult.circuit?.gates.length || 0}</span>
-                    </div>
-                    {lastResult.successProbability && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Success Rate:</span>
-                        <span className="text-quantum-neon">{(lastResult.successProbability * 100).toFixed(1)}%</span>
-                      </div>
-                    )}
-                    {lastResult.expectedEntanglement && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Entanglement:</span>
-                        <span className="text-quantum-energy">{(lastResult.expectedEntanglement * 100).toFixed(1)}%</span>
-                      </div>
-                    )}
-                    {lastResult.groundStateEnergy && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Ground Energy:</span>
-                        <span className="text-quantum-glow">{lastResult.groundStateEnergy.toFixed(4)}</span>
-                      </div>
-                    )}
-                    {lastResult.factors && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Factors:</span>
-                        <span className="text-quantum-neon">{lastResult.factors.join(' × ')}</span>
-                      </div>
-                    )}
-                  </div>
+          <TabsContent value="qft" className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Waves className="w-4 h-4 text-quantum-neon" />
+              <h3 className="font-semibold text-quantum-neon">Quantum Fourier Transform</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Transforms between computational and frequency domains, essential for many quantum algorithms.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={runQFT}
+                disabled={isExecuting}
+                className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Execute 3-Qubit QFT
+              </Button>
+              <div className="text-xs text-muted-foreground">
+                Applies QFT to |001⟩ initial state
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="bell" className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Heart className="w-4 h-4 text-quantum-neon" />
+              <h3 className="font-semibold text-quantum-neon">Bell State Generator</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Creates maximally entangled two-qubit states for quantum communication and teleportation.
+            </p>
+            <div className="space-y-3">
+              <Select value={selectedBellType} onValueChange={(value: BellStateType) => setSelectedBellType(value)}>
+                <SelectTrigger className="quantum-panel neon-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="quantum-panel neon-border">
+                  <SelectItem value="phi+">|Φ+⟩ = (|00⟩ + |11⟩)/√2</SelectItem>
+                  <SelectItem value="phi-">|Φ-⟩ = (|00⟩ - |11⟩)/√2</SelectItem>
+                  <SelectItem value="psi+">|Ψ+⟩ = (|01⟩ + |10⟩)/√2</SelectItem>
+                  <SelectItem value="psi-">|Ψ-⟩ = (|01⟩ - |10⟩)/√2</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                onClick={runBellState}
+                disabled={isExecuting}
+                className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Generate Bell State
+              </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="error" className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-4 h-4 text-quantum-neon" />
+              <h3 className="font-semibold text-quantum-neon">Error Correction</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Protects quantum information from decoherence and errors using redundant encoding.
+            </p>
+            <div className="space-y-3">
+              <Select value={selectedErrorCode} onValueChange={(value: ErrorCorrectionCode) => setSelectedErrorCode(value)}>
+                <SelectTrigger className="quantum-panel neon-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="quantum-panel neon-border">
+                  <SelectItem value="three-qubit">3-Qubit Code</SelectItem>
+                  <SelectItem value="shor">Shor's 9-Qubit Code</SelectItem>
+                  <SelectItem value="steane">Steane 7-Qubit Code</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={selectedErrorType} onValueChange={(value: ErrorType) => setSelectedErrorType(value)}>
+                <SelectTrigger className="quantum-panel neon-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="quantum-panel neon-border">
+                  <SelectItem value="bit-flip">Bit-Flip Error</SelectItem>
+                  <SelectItem value="phase-flip">Phase-Flip Error</SelectItem>
+                  <SelectItem value="general">General Error</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                onClick={runErrorCorrection}
+                disabled={isExecuting}
+                className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Execute Error Correction
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Results Display */}
+        {lastResult && (
+          <div className="mt-6 p-4 bg-quantum-matrix rounded-lg border border-quantum-neon/20">
+            <h4 className="text-sm font-mono text-quantum-neon mb-2">Algorithm Result</h4>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Circuit:</span>
+                <Badge variant="outline" className="text-quantum-particle">
+                  {lastResult.circuit?.name || 'Generated'}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Gates:</span>
+                <span className="text-quantum-glow">{lastResult.circuit?.gates.length || 0}</span>
+              </div>
+              {lastResult.successProbability && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Success Rate:</span>
+                  <span className="text-quantum-neon">{(lastResult.successProbability * 100).toFixed(1)}%</span>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sdk">
-          <QuantumAlgorithmsSDK />
-        </TabsContent>
-      </Tabs>
-    </div>
+              {lastResult.expectedEntanglement && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Entanglement:</span>
+                  <span className="text-quantum-energy">{(lastResult.expectedEntanglement * 100).toFixed(1)}%</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
