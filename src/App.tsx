@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { nanoid } from 'nanoid';
 import { QuantumSidebar } from './components/QuantumSidebar';
@@ -12,9 +11,11 @@ import { useCircuitSharing } from './hooks/useCircuitSharing';
 import { MemoryPanel } from './components/panels/MemoryPanel';
 import { JobsPanel } from './components/panels/JobsPanel';
 import { FilesPanel } from './components/panels/FilesPanel';
-import { QuantumTestSuite as QuantumTestingPanel } from './components/testing/QuantumTestSuite';
+import { QuantumTestSuite } from './components/testing/QuantumTestSuite';
 import { LogsPanel } from './components/panels/LogsPanel';
 import { QuantumAlgorithmsSDK } from './components/quantum-algorithms-sdk/QuantumAlgorithmsSDK';
+import { QuantumSettingsPanel } from './components/settings/QuantumSettingsPanel';
+import { QuantumHelpPanel } from './components/help/QuantumHelpPanel';
 
 export default function App() {
   const {
@@ -39,14 +40,54 @@ export default function App() {
   const [isSDKActive, setIsSDKActive] = useState(false);
 
   const handleCircuitSave = useCallback(async () => {
-    await saveCircuit(circuit);
+    // Convert Gate[] to QuantumCircuit format
+    const quantumCircuit = {
+      id: nanoid(),
+      name: 'Saved Circuit',
+      description: 'Circuit saved from builder',
+      qubits: Array.from({ length: 5 }, (_, i) => ({
+        id: nanoid(),
+        index: i,
+        name: `q${i}`,
+        state: 'computational' as const
+      })),
+      gates: circuit.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubits: gate.qubits || [gate.qubit?.toString() || '0'],
+        position: { x: gate.position * 100, y: (gate.qubit || 0) * 50 },
+        layer: gate.position,
+        params: gate.params ? { angle: gate.angle } : undefined,
+        metadata: {
+          label: gate.type,
+          angle: gate.angle
+        }
+      })),
+      layers: [],
+      depth: Math.max(...circuit.map(g => g.position)) + 1,
+      metadata: {
+        created: new Date().toISOString(),
+        modified: new Date().toISOString(),
+        version: '1.0.0'
+      }
+    };
+    await saveCircuit(quantumCircuit);
   }, [circuit, saveCircuit]);
 
   const handleCircuitLoad = useCallback(async () => {
     const loadedCircuit = await loadCircuit();
-    if (loadedCircuit && Array.isArray(loadedCircuit)) {
-      setCircuit(loadedCircuit);
-      simulateQuantumState(loadedCircuit);
+    if (loadedCircuit && loadedCircuit.gates) {
+      // Convert QuantumCircuit back to Gate[] format
+      const gates = loadedCircuit.gates.map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubit: gate.qubits[0] ? parseInt(gate.qubits[0]) : 0,
+        qubits: gate.qubits.map(q => parseInt(q)),
+        position: gate.layer,
+        angle: gate.params?.angle || gate.metadata?.angle
+      }));
+      setCircuit(gates);
+      simulateQuantumState(gates);
     }
   }, [loadCircuit, setCircuit, simulateQuantumState]);
 
@@ -133,19 +174,16 @@ export default function App() {
                   <FilesPanel />
                 )}
                 {currentPanel === 'testing' && (
-                  <QuantumTestingPanel />
+                  <QuantumTestSuite 
+                    circuit={circuit}
+                    onCircuitLoad={handleCircuitLoad}
+                  />
                 )}
                 {currentPanel === 'settings' && (
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold text-quantum-glow mb-4">Settings</h2>
-                    <p className="text-quantum-particle">Settings panel coming soon...</p>
-                  </div>
+                  <QuantumSettingsPanel />
                 )}
                 {currentPanel === 'help' && (
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold text-quantum-glow mb-4">Help</h2>
-                    <p className="text-quantum-particle">Help documentation coming soon...</p>
-                  </div>
+                  <QuantumHelpPanel />
                 )}
               </>
             )}

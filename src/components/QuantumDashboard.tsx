@@ -74,13 +74,14 @@ export function QuantumDashboard() {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0 quantum-panel">
                 <QuantumSidebar 
-                  activeTab={activeTab} 
-                  onTabChange={(tab) => {
+                  currentPanel={activeTab} 
+                  onPanelChange={(tab) => {
                     handleTabChange(tab);
                     setShowSidebar(false);
                   }}
-                  onSDKSelect={(type) => {
-                    handleSDKSelect(type);
+                  isSDKActive={showSDK}
+                  onSDKToggle={() => {
+                    setShowSDK(!showSDK);
                     setShowSidebar(false);
                   }}
                 />
@@ -152,9 +153,10 @@ export function QuantumDashboard() {
         {/* Sidebar */}
         <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
           <QuantumSidebar 
-            activeTab={activeTab} 
-            onTabChange={handleTabChange}
-            onSDKSelect={handleSDKSelect}
+            currentPanel={activeTab} 
+            onPanelChange={handleTabChange}
+            isSDKActive={showSDK}
+            onSDKToggle={() => setShowSDK(!showSDK)}
           />
         </ResizablePanel>
         
