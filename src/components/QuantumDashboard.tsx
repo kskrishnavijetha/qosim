@@ -6,6 +6,7 @@ import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
+import { QuantumAlgorithmsSDKPanel } from "./panels/QuantumAlgorithmsSDKPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
@@ -49,6 +50,8 @@ export function QuantumDashboard() {
         return <EnhancedFilesPanel />;
       case "logs":
         return <LogsPanel />;
+      case "algorithms-sdk":
+        return <QuantumAlgorithmsSDKPanel />;
       case "javascript-sdk":
         return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
       case "python-sdk":
