@@ -13,7 +13,7 @@ interface CollaborativeUser {
 }
 
 interface CollaborativeChange {
-  type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved';
+  type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved' | 'comment_added' | 'circuit_exported' | 'circuit_imported' | 'circuit_optimized' | 'simulation_completed' | 'user_joined' | 'user_left';
   data: any;
   userId: string;
   timestamp: string;
@@ -27,7 +27,7 @@ export function useRealtimeCollaboration(circuitId: string | null) {
   const [isConnected, setIsConnected] = useState(false);
 
   const broadcastChange = useCallback(async (
-    type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved',
+    type: 'gate_added' | 'gate_removed' | 'gate_moved' | 'circuit_saved' | 'comment_added' | 'circuit_exported' | 'circuit_imported' | 'circuit_optimized' | 'simulation_completed' | 'user_joined' | 'user_left',
     data: any
   ) => {
     if (!circuitId || !user) return;

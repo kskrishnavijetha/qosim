@@ -29,7 +29,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
 }) {
   const {
     circuit,
-    updateCircuit,
+    setCircuit,
     simulateCircuit,
     exportCircuit,
     importCircuit
@@ -85,12 +85,11 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
         id: circuit.id, // Keep existing ID
         metadata: {
           ...importedCircuit.metadata,
-          importedFrom: format,
-          importedAt: new Date().toISOString()
+          modified: new Date().toISOString()
         }
       };
       
-      updateCircuit(newCircuit);
+      setCircuit(newCircuit);
       
       // Broadcast the import action
       if (options.enableRealTimeSync && isConnected) {
@@ -110,7 +109,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
       toast.error('Failed to import from SDK: ' + error.message);
       throw error;
     }
-  }, [circuit.id, updateCircuit, options.enableRealTimeSync, isConnected, broadcastChange]);
+  }, [circuit.id, setCircuit, options.enableRealTimeSync, isConnected, broadcastChange]);
 
   // AI-Powered Optimization
   const optimizeCircuit = useCallback(async () => {
@@ -161,7 +160,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
       // Apply optimizations
       if (optimizationSuggestions.length > 0) {
         optimizedCircuit.depth = Math.max(...optimizedCircuit.gates.map(g => g.layer)) + 1;
-        updateCircuit(optimizedCircuit);
+        setCircuit(optimizedCircuit);
         setSuggestions(optimizationSuggestions);
         
         // Broadcast optimization
@@ -182,7 +181,7 @@ export function useCircuitSDKIntegration(options: SDKIntegrationOptions = {
     } finally {
       setIsOptimizing(false);
     }
-  }, [circuit, updateCircuit, options.enableAIOptimization, options.enableRealTimeSync, isConnected, broadcastChange]);
+  }, [circuit, setCircuit, options.enableAIOptimization, options.enableRealTimeSync, isConnected, broadcastChange]);
 
   // Context-Aware Suggestions
   const getContextSuggestions = useCallback(() => {

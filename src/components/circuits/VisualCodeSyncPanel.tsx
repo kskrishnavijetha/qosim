@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { CodeEditor } from '@/components/panels/sdk-demo/CodeEditor';
 import { useCircuitSDKIntegration } from '@/hooks/useCircuitSDKIntegration';
-import { ArrowLeftRight, Eye, Code2, Sync } from 'lucide-react';
+import { ArrowLeftRight, Eye, Code2, RefreshCw } from 'lucide-react';
 
 interface VisualCodeSyncPanelProps {
   circuit: any;
@@ -129,7 +129,7 @@ export function VisualCodeSyncPanel({ circuit, onCircuitUpdate }: VisualCodeSync
                 onClick={syncCircuitToCode}
                 className="ml-auto"
               >
-                <Sync className="w-4 h-4 mr-1" />
+                <RefreshCw className="w-4 h-4 mr-1" />
                 Sync Now
               </Button>
             )}
