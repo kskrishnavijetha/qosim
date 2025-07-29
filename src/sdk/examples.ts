@@ -1,198 +1,282 @@
-
 /**
  * QOSim SDK Examples
- * Comprehensive examples demonstrating SDK capabilities
+ * Comprehensive examples showing how to use the QOSim JavaScript SDK
  */
 
-import QOSimSDK, { CircuitBuilder, QuantumCircuit } from './qosim-sdk';
+import { QOSimSDK, CircuitBuilder, QuantumCircuit } from './qosim-sdk';
 
 /**
- * Example 1: Basic Bell State Creation and Simulation
+ * Example 1: Basic Circuit Creation and Simulation
  */
-export async function basicBellStateExample() {
-  console.log('=== Basic Bell State Example ===');
+export async function basicExample() {
+  console.log('=== Basic Circuit Example ===');
   
+  // Initialize SDK
   const sdk = new QOSimSDK({
-    backend: 'local',
-    debug: true
+    defaultQubits: 2,
+    autoSave: false
   });
-
+  
   await sdk.initialize();
   
-  // Create Bell state circuit
-  let circuit = sdk.createCircuit('Bell State', 2, 'Maximally entangled two-qubit state');
-  circuit = sdk.h(circuit, 0);
-  circuit = sdk.cnot(circuit, 0, 1);
+  // Create a simple circuit
+  let circuit = sdk.createCircuit('My First Circuit', 2, 'A simple H-gate followed by CNOT');
   
-  console.log('Circuit created:', circuit.name);
-  console.log('Gates:', circuit.gates.length);
+  // Add gates
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'cnot', controlQubit: 0, qubit: 1 });
   
-  // Simulate the circuit
-  const result = await sdk.simulate(circuit, 1024);
-  console.log('Measurement probabilities:', Object.keys(result.measurementProbabilities).map(state => 
-    `|${state}⟩: ${(result.probabilities[0] * 100).toFixed(1)}%`
-  ).join(', '));
+  // Simulate
+  const result = await sdk.simulate(circuit);
+  
+  console.log('Circuit:', circuit);
+  console.log('Simulation Result:', result);
+  console.log('Probabilities:', result.probabilities);
   
   return { circuit, result };
 }
 
 /**
- * Example 2: Multi-Qubit GHZ State with Circuit Builder
+ * Example 2: Bell State Creation using Circuit Builder
  */
-export async function ghzStateExample() {
-  console.log('\n=== GHZ State Example ===');
+export async function bellStateExample() {
+  console.log('=== Bell State Example ===');
   
-  const sdk = new QOSimSDK({ debug: true });
+  const sdk = new QOSimSDK();
+  const builder = new CircuitBuilder(sdk);
+  
   await sdk.initialize();
   
-  const builder = new CircuitBuilder(sdk);
-  const circuit = builder.ghzState(3, 'GHZ State Example');
+  // Create Bell state using builder
+  const bellCircuit = builder.bellState('Bell State Demo');
   
-  const result = await sdk.simulate(circuit);
-  console.log('GHZ state created with', circuit.gates.length, 'gates');
-  console.log('Basis states:', result.basisStates.join(', '));
-  console.log('Probabilities:', result.probabilities.map(p => `${(p * 100).toFixed(1)}%`).join(', '));
+  // Simulate
+  const result = await sdk.simulate(bellCircuit);
   
-  return { circuit, result };
+  console.log('Bell State Circuit:', bellCircuit);
+  console.log('State Vector:', result.stateVector);
+  console.log('Basis States:', result.basisStates);
+  console.log('Probabilities:', result.probabilities);
+  
+  return { bellCircuit, result };
 }
 
 /**
  * Example 3: Quantum Random Number Generator
  */
-export async function quantumRandomGeneratorExample() {
-  console.log('\n=== Quantum Random Generator Example ===');
+export async function randomGeneratorExample() {
+  console.log('=== Quantum Random Generator Example ===');
   
-  const sdk = new QOSimSDK({ debug: true });
+  const sdk = new QOSimSDK();
+  const builder = new CircuitBuilder(sdk);
+  
   await sdk.initialize();
   
-  const builder = new CircuitBuilder(sdk);
-  const circuit = builder.randomGenerator(4, 'QRNG 4-bit');
+  // Create random generator with 4 qubits
+  const randomCircuit = builder.randomGenerator(4, 'Quantum RNG');
   
-  const result = await sdk.simulate(circuit);
+  // Simulate multiple times to see randomness
+  const results = [];
+  for (let i = 0; i < 5; i++) {
+    const result = await sdk.simulate(randomCircuit);
+    
+    // Simulate measurement by sampling from probabilities
+    const measurement = sampleFromProbabilities(result.probabilities, result.basisStates);
+    results.push(measurement);
+    
+    console.log(`Run ${i + 1}: Measured state ${measurement}`);
+  }
   
-  // Generate random number by sampling
-  const randomIndex = Math.floor(Math.random() * result.probabilities.length);
-  const randomState = result.basisStates[randomIndex];
-  const randomNumber = parseInt(randomState, 2);
-  
-  console.log(`Generated random number: ${randomNumber} (binary: ${randomState})`);
-  console.log(`From ${result.basisStates.length} possible states with equal probabilities`);
-  
-  return { circuit, result, randomNumber };
+  console.log('All measurements:', results);
+  return { randomCircuit, results };
 }
 
 /**
- * Example 4: Advanced Circuit Export
+ * Example 4: Advanced Circuit with Rotation Gates
  */
-export async function circuitExportExample() {
-  console.log('\n=== Circuit Export Example ===');
+export async function rotationExample() {
+  console.log('=== Rotation Gates Example ===');
   
-  const sdk = new QOSimSDK({ debug: true });
+  const sdk = new QOSimSDK();
   await sdk.initialize();
   
-  // Create a more complex circuit
-  let circuit = sdk.createCircuit('Export Demo', 3, 'Demonstration of export capabilities');
-  circuit = sdk.h(circuit, 0);
-  circuit = sdk.cnot(circuit, 0, 1);
-  circuit = sdk.cnot(circuit, 1, 2);
-  circuit = sdk.rz(circuit, 2, Math.PI / 4);
+  // Create circuit with rotation gates
+  let circuit = sdk.createCircuit('Rotation Demo', 2, 'Demonstrates X, Y, Z rotations');
+  
+  // Add rotation gates
+  circuit = sdk.addGate(circuit, { type: 'rx', qubit: 0, angle: Math.PI / 4 });
+  circuit = sdk.addGate(circuit, { type: 'ry', qubit: 1, angle: Math.PI / 3 });
+  circuit = sdk.addGate(circuit, { type: 'cnot', controlQubit: 0, qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'rz', qubit: 0, angle: Math.PI / 6 });
+  
+  const result = await sdk.simulate(circuit);
+  
+  console.log('Rotation Circuit:', circuit);
+  console.log('Final State Vector:', result.stateVector);
+  console.log('Execution Time:', result.executionTime, 'ms');
+  
+  return { circuit, result };
+}
+
+/**
+ * Example 5: Circuit Export and Import
+ */
+export async function exportImportExample() {
+  console.log('=== Export/Import Example ===');
+  
+  const sdk = new QOSimSDK();
+  const builder = new CircuitBuilder(sdk);
+  
+  await sdk.initialize();
+  
+  // Create a GHZ state
+  const ghzCircuit = builder.ghzState(3, 'GHZ-3');
   
   // Export to different formats
-  const jsonExport = sdk.exportCircuit(circuit, 'json');
-  const qasmExport = sdk.exportCircuit(circuit, 'qasm');
-  const pythonExport = sdk.exportCircuit(circuit, 'python');
+  const jsonExport = sdk.exportCircuit(ghzCircuit, 'json');
+  const qasmExport = sdk.exportCircuit(ghzCircuit, 'qasm');
+  const pythonExport = sdk.exportCircuit(ghzCircuit, 'python');
   
-  console.log('Circuit exported to JSON, QASM, and Python formats');
-  console.log('JSON length:', jsonExport.length, 'characters');
-  console.log('QASM length:', qasmExport.length, 'characters');
-  console.log('Python length:', pythonExport.length, 'characters');
+  console.log('=== JSON Export ===');
+  console.log(jsonExport);
   
-  return { circuit, jsonExport, qasmExport, pythonExport };
+  console.log('\n=== QASM Export ===');
+  console.log(qasmExport);
+  
+  console.log('\n=== Python Export ===');
+  console.log(pythonExport);
+  
+  return {
+    circuit: ghzCircuit,
+    exports: { json: jsonExport, qasm: qasmExport, python: pythonExport }
+  };
 }
 
 /**
- * Example 5: Circuit Management and Persistence
+ * Example 6: Save and Load Circuits (requires authentication)
  */
-export async function circuitManagementExample() {
-  console.log('\n=== Circuit Management Example ===');
+export async function saveLoadExample() {
+  console.log('=== Save/Load Example ===');
   
-  const sdk = new QOSimSDK({
-    backend: 'local',
-    debug: true
-  });
-
+  const sdk = new QOSimSDK({ autoSave: true });
+  const builder = new CircuitBuilder(sdk);
+  
   await sdk.initialize();
   
-  // Create multiple circuits
-  const bellCircuit = new CircuitBuilder(sdk).bellState('Bell State');
-  
-  console.log('Circuit management example completed');
-  console.log('Bell circuit:', bellCircuit.name);
-  
-  return { bellCircuit };
+  try {
+    // Create and save a circuit
+    const circuit = builder.bellState('Saved Bell State');
+    const circuitId = await sdk.saveCircuit(circuit);
+    
+    console.log('Saved circuit with ID:', circuitId);
+    
+    // Load the circuit back
+    const loadedCircuit = await sdk.loadCircuit(circuitId);
+    console.log('Loaded circuit:', loadedCircuit);
+    
+    // List all circuits
+    const allCircuits = await sdk.listCircuits();
+    console.log('All circuits:', allCircuits.map(c => ({ id: c.id, name: c.name })));
+    
+    return { circuitId, loadedCircuit, allCircuits };
+  } catch (error) {
+    console.error('Save/Load requires authentication:', error);
+    return { error: 'Authentication required for save/load operations' };
+  }
 }
 
 /**
- * Example 6: Advanced Algorithm Patterns
+ * Example 7: Complex Algorithm - Grover's Search
  */
-export async function advancedAlgorithmExample() {
-  console.log('\n=== Advanced Algorithm Example ===');
+export async function groverExample() {
+  console.log('=== Grover\'s Algorithm Example ===');
   
-  const sdk = new QOSimSDK({ debug: true });
+  const sdk = new QOSimSDK();
   await sdk.initialize();
   
-  // Create a quantum algorithm that demonstrates interference
-  let circuit = sdk.createCircuit('Interference Demo', 3, 'Quantum interference pattern');
+  // Simple 2-qubit Grover's algorithm searching for |11⟩
+  let circuit = sdk.createCircuit('Grover-2Q', 2, "Grover's algorithm for 2 qubits");
   
-  // Create superposition
-  circuit = sdk.h(circuit, 0);
-  circuit = sdk.h(circuit, 1);
-  circuit = sdk.h(circuit, 2);
+  // Initialize superposition
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 1 });
   
-  // Add some phase rotations
-  circuit = sdk.rz(circuit, 0, Math.PI / 3);
-  circuit = sdk.rz(circuit, 1, Math.PI / 4);
+  // Oracle: flip phase of |11⟩
+  circuit = sdk.addGate(circuit, { type: 'z', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'z', qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'cnot', controlQubit: 0, qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'z', qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'cnot', controlQubit: 0, qubit: 1 });
   
-  // Create entanglement
-  circuit = sdk.cnot(circuit, 0, 1);
-  circuit = sdk.cnot(circuit, 1, 2);
+  // Diffusion operator
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'x', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'x', qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'cnot', controlQubit: 0, qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'z', qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'cnot', controlQubit: 0, qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'x', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'x', qubit: 1 });
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 0 });
+  circuit = sdk.addGate(circuit, { type: 'h', qubit: 1 });
   
   const result = await sdk.simulate(circuit);
   
-  console.log('Advanced algorithm simulated');
-  console.log('Circuit depth:', result.circuitDepth);
-  console.log('Execution time:', result.executionTime.toFixed(2), 'ms');
+  console.log('Grover Circuit:', circuit);
+  console.log('Final probabilities:', result.probabilities);
+  console.log('Most likely state:', result.basisStates[result.probabilities.indexOf(Math.max(...result.probabilities))]);
   
-  // Analyze probability distribution
-  const maxProb = Math.max(...result.probabilities);
-  const minProb = Math.min(...result.probabilities.filter(p => p > 0));
-  const avgProb = result.probabilities.reduce((a, b) => a + b, 0) / result.probabilities.length;
-  
-  console.log('Probability analysis:');
-  console.log(`  Max: ${(maxProb * 100).toFixed(2)}%`);
-  console.log(`  Min: ${(minProb * 100).toFixed(2)}%`);
-  console.log(`  Avg: ${(avgProb * 100).toFixed(2)}%`);
-  
-  return { circuit, result, analysis: { maxProb, minProb, avgProb } };
+  return { circuit, result };
 }
 
 /**
- * Run all examples in sequence
+ * Helper function to sample from probability distribution
+ */
+function sampleFromProbabilities(probabilities: number[], states: string[]): string {
+  const random = Math.random();
+  let cumulative = 0;
+  
+  for (let i = 0; i < probabilities.length; i++) {
+    cumulative += probabilities[i];
+    if (random <= cumulative) {
+      return states[i];
+    }
+  }
+  
+  return states[states.length - 1];
+}
+
+/**
+ * Run all examples
  */
 export async function runAllExamples() {
-  console.log('🚀 Running all QOSim SDK examples...\n');
+  console.log('🚀 Running QOSim SDK Examples...\n');
   
   try {
-    await basicBellStateExample();
-    await ghzStateExample();
-    await quantumRandomGeneratorExample();
-    await circuitExportExample();
-    await circuitManagementExample();
-    await advancedAlgorithmExample();
+    await basicExample();
+    console.log('\n' + '='.repeat(50) + '\n');
     
-    console.log('\n✅ All examples completed successfully!');
+    await bellStateExample();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    await randomGeneratorExample();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    await rotationExample();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    await exportImportExample();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    await saveLoadExample();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    await groverExample();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    console.log('✅ All examples completed successfully!');
   } catch (error) {
     console.error('❌ Error running examples:', error);
-    throw error;
   }
 }
