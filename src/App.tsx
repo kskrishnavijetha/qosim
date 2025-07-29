@@ -1,54 +1,162 @@
+import React, { useState, useCallback } from 'react';
+import { nanoid } from 'nanoid';
+import { QuantumSidebar } from './components/QuantumSidebar';
+import { CircuitBuilderPanel } from './components/CircuitBuilderPanel';
+import { QuantumAlgorithmsPanel } from './components/algorithms/QuantumAlgorithmsPanel';
+import { SDKDemoPanel } from './components/panels/SDKDemoPanel';
+import { QuantumResultsDisplay } from './components/quantum/QuantumResultsDisplay';
+import { useCircuitState, Gate } from './hooks/useCircuitState';
+import { useQuantumBackend } from './hooks/useQuantumBackend';
+import { useCircuitSharing } from './hooks/useCircuitSharing';
+import { QuantumMemoryPanel } from './components/memory/QuantumMemoryPanel';
+import { QuantumJobsPanel } from './components/jobs/QuantumJobsPanel';
+import { QuantumFilesPanel } from './components/files/QuantumFilesPanel';
+import { QuantumTestingPanel } from './components/testing/QuantumTestingPanel';
+import { QuantumSettingsPanel } from './components/settings/QuantumSettingsPanel';
+import { QuantumHelpPanel } from './components/help/QuantumHelpPanel';
+import { QuantumLogsPanel } from './components/logs/QuantumLogsPanel';
+import { QuantumAlgorithmsSDK } from './components/quantum-algorithms-sdk/QuantumAlgorithmsSDK';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import Index from "./pages/Index";
-import LandingPage from "./pages/LandingPage";
-import RoadmapPage from "./pages/RoadmapPage";
-import AuthPage from "./pages/AuthPage";
-import IntegrationsPage from "./pages/IntegrationsPage";
-import SDKDocumentation from "./pages/SDKDocumentation";
-import PythonSDKPage from "./pages/PythonSDKPage";
-import APIReference from "./pages/APIReference";
-import TutorialsPage from "./pages/TutorialsPage";
-import ThankYou from "./pages/ThankYou";
-import SharedCircuit from "./pages/SharedCircuit";
-import EmbedCircuit from "./pages/EmbedCircuit";
-import TestingPage from "./pages/TestingPage";
-import NotFound from "./pages/NotFound";
+export default function App() {
+  const {
+    circuit,
+    setCircuit,
+    simulationResult,
+    simulateQuantumState
+  } = useCircuitState();
 
-const queryClient = new QueryClient();
+  const {
+    isExecuting,
+    lastResult,
+    executeCircuit
+  } = useQuantumBackend();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/roadmap" element={<RoadmapPage />} />
-            <Route path="/app" element={<Index />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/integrations" element={<IntegrationsPage />} />
-            <Route path="/sdk" element={<SDKDocumentation />} />
-            <Route path="/python-sdk" element={<PythonSDKPage />} />
-            <Route path="/api" element={<APIReference />} />
-            <Route path="/tutorials" element={<TutorialsPage />} />
-            <Route path="/thank-you" element={<ThankYou />} />
-            <Route path="/testing" element={<TestingPage />} />
-            <Route path="/circuit/:id" element={<SharedCircuit />} />
-            <Route path="/embed/:id" element={<EmbedCircuit />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+  const {
+    saveCircuit,
+    loadCircuit
+  } = useCircuitSharing();
 
-export default App;
+  const [currentPanel, setCurrentPanel] = useState('circuits');
+  const [isSDKActive, setIsSDKActive] = useState(false);
+
+  const handleCircuitSave = useCallback(async () => {
+    await saveCircuit(circuit);
+  }, [circuit, saveCircuit]);
+
+  const handleCircuitLoad = useCallback(async () => {
+    const loadedCircuit = await loadCircuit();
+    if (loadedCircuit) {
+      setCircuit(loadedCircuit);
+      simulateQuantumState(loadedCircuit);
+    }
+  }, [loadCircuit, setCircuit, simulateQuantumState]);
+
+  const handleAlgorithmExecuted = useCallback((result: any) => {
+    console.log('Algorithm executed:', result);
+    // Handle algorithm execution result (display, etc.)
+  }, []);
+
+  const handleSDKToggle = useCallback(() => {
+    setIsSDKActive(!isSDKActive);
+    if (!isSDKActive) {
+      setCurrentPanel('sdk');
+    }
+  }, [isSDKActive]);
+
+  const handleSDKCircuitGenerated = useCallback((gates: any[]) => {
+    // Convert SDK gates to circuit state format
+    const convertedGates = gates.map(gate => ({
+      ...gate,
+      id: gate.id || nanoid(),
+      type: gate.type,
+      qubit: gate.qubit,
+      qubits: gate.qubits,
+      position: gate.position || 0,
+      angle: gate.angle
+    }));
+
+    // Update circuit state
+    setCircuit(convertedGates);
+    simulateQuantumState(convertedGates);
+    
+    // Switch to circuits panel to show result
+    setCurrentPanel('circuits');
+    setIsSDKActive(false);
+  }, [setCircuit, simulateQuantumState]);
+
+  const handleSDKCodeExported = useCallback((code: string, format: string) => {
+    console.log(`SDK Code exported in ${format} format:`, code);
+    // Handle code export (save to file, etc.)
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-quantum-void text-quantum-neon">
+      <div className="flex h-screen">
+        <QuantumSidebar
+          currentPanel={currentPanel}
+          onPanelChange={setCurrentPanel}
+          isSDKActive={isSDKActive}
+          onSDKToggle={handleSDKToggle}
+        />
+        
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-hidden">
+            {isSDKActive ? (
+              <QuantumAlgorithmsSDK
+                onCircuitGenerated={handleSDKCircuitGenerated}
+                onCodeExported={handleSDKCodeExported}
+                currentCircuit={circuit}
+              />
+            ) : (
+              <>
+                {currentPanel === 'circuits' && (
+                  <CircuitBuilderPanel
+                    circuit={circuit}
+                    simulationResult={simulationResult}
+                    onCircuitChanged={setCircuit}
+                    onSimulate={simulateQuantumState}
+                    onCircuitSave={handleCircuitSave}
+                    onCircuitLoad={handleCircuitLoad}
+                    isExecuting={isExecuting}
+                    lastResult={lastResult}
+                    executeCircuit={executeCircuit}
+                  />
+                )}
+                {currentPanel === 'sdk' && (
+                  <SDKDemoPanel />
+                )}
+                {currentPanel === 'algorithms' && (
+                  <QuantumAlgorithmsPanel
+                    onCircuitGenerated={setCircuit}
+                    onAlgorithmExecuted={handleAlgorithmExecuted}
+                  />
+                )}
+                {currentPanel === 'memory' && (
+                  <QuantumMemoryPanel />
+                )}
+                {currentPanel === 'logs' && (
+                  <QuantumLogsPanel />
+                )}
+                {currentPanel === 'jobs' && (
+                  <QuantumJobsPanel />
+                )}
+                {currentPanel === 'files' && (
+                  <QuantumFilesPanel />
+                )}
+                {currentPanel === 'testing' && (
+                  <QuantumTestingPanel />
+                )}
+                {currentPanel === 'settings' && (
+                  <QuantumSettingsPanel />
+                )}
+                {currentPanel === 'help' && (
+                  <QuantumHelpPanel />
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
