@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BlochSphere } from '@/components/BlochSphere';
 import { Play, Pause, RotateCcw, ChevronRight, ChevronLeft } from 'lucide-react';
-import { Complex } from '@/services/complexNumbers';
+import { Complex } from '@/lib/quantumSimulator';
 
 interface AlgorithmStep {
   id: string;
@@ -139,8 +139,8 @@ export function AlgorithmVisualizer() {
 
   // Convert qubit state to BlochSphere format
   const convertToBlochSphereState = (state: number[]) => {
-    const amplitude0 = new Complex(state[0], 0);
-    const amplitude1 = new Complex(state[1], 0);
+    const amplitude0: Complex = { real: state[0], imag: 0 };
+    const amplitude1: Complex = { real: state[1], imag: 0 };
     const probability0 = state[0] * state[0];
     const probability1 = state[1] * state[1];
     const phase = Math.atan2(0, state[1]); // Simplified phase calculation
