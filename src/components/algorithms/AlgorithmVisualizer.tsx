@@ -2,339 +2,377 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, RotateCcw, ChevronRight, Eye } from 'lucide-react';
-import { QuantumCircuit, SimulationResult } from '@/sdk/qosim-sdk';
-import { BlochSphere } from '../BlochSphere';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BlochSphere } from '@/components/BlochSphere';
+import { Play, Pause, RotateCcw, ChevronRight, ChevronLeft } from 'lucide-react';
 
-interface AlgorithmVisualizerProps {
-  algorithm: string;
-  circuit: QuantumCircuit;
-  onStepChange?: (step: number) => void;
-}
-
-interface VisualizationStep {
-  stepNumber: number;
+interface AlgorithmStep {
+  id: string;
+  title: string;
   description: string;
-  gateIndex: number;
-  stateVector: { real: number; imag: number }[];
-  blochData: Array<{
-    qubit: number;
-    x: number;
-    y: number;
-    z: number;
-  }>;
-  entanglement?: {
-    pairs: [number, number][];
-    strength: number;
-  };
+  code: string;
+  qubitState: number[][];
+  entanglement?: { pairs: [number, number][], values: number[] };
+  measurements?: { [state: string]: number };
 }
 
-export function AlgorithmVisualizer({ 
-  algorithm, 
-  circuit, 
-  onStepChange 
-}: AlgorithmVisualizerProps) {
+interface AlgorithmData {
+  name: string;
+  description: string;
+  steps: AlgorithmStep[];
+  complexity: string;
+  category: 'search' | 'optimization' | 'simulation' | 'cryptography';
+}
+
+const sampleAlgorithms: AlgorithmData[] = [
+  {
+    name: "Bell State Preparation",
+    description: "Creates maximally entangled Bell states using Hadamard and CNOT gates",
+    complexity: "O(1)",
+    category: "simulation",
+    steps: [
+      {
+        id: "step1",
+        title: "Initialize Qubits",
+        description: "Start with two qubits in |00⟩ state",
+        code: "qc.initialize([1, 0, 0, 0])",
+        qubitState: [[1, 0], [1, 0]],
+        measurements: { "00": 1.0 }
+      },
+      {
+        id: "step2", 
+        title: "Apply Hadamard Gate",
+        description: "Create superposition on first qubit",
+        code: "qc.h(0)",
+        qubitState: [[0.707, 0.707], [1, 0]],
+        measurements: { "00": 0.5, "10": 0.5 }
+      },
+      {
+        id: "step3",
+        title: "Apply CNOT Gate", 
+        description: "Entangle qubits with controlled-X operation",
+        code: "qc.cx(0, 1)",
+        qubitState: [[0.707, 0.707], [0.707, 0.707]],
+        entanglement: { pairs: [[0, 1]], values: [1.0] },
+        measurements: { "00": 0.5, "11": 0.5 }
+      }
+    ]
+  },
+  {
+    name: "Grover's Search",
+    description: "Quantum search algorithm for unstructured databases",
+    complexity: "O(√N)",
+    category: "search",
+    steps: [
+      {
+        id: "step1",
+        title: "Superposition",
+        description: "Initialize all qubits in equal superposition",
+        code: "qc.h(range(n))",
+        qubitState: [[0.5, 0.5], [0.5, 0.5]],
+        measurements: { "00": 0.25, "01": 0.25, "10": 0.25, "11": 0.25 }
+      },
+      {
+        id: "step2",
+        title: "Oracle Query",
+        description: "Mark target state with phase flip",
+        code: "oracle(qc, target)",
+        qubitState: [[0.5, -0.5], [0.5, 0.5]],
+        measurements: { "00": 0.25, "01": 0.25, "10": 0.25, "11": 0.25 }
+      },
+      {
+        id: "step3",
+        title: "Diffusion Operator",
+        description: "Amplify marked state amplitude",
+        code: "diffusion(qc)",
+        qubitState: [[0.707, 0], [0, 0.707]],
+        measurements: { "00": 0.5, "11": 0.5 }
+      }
+    ]
+  }
+];
+
+export function AlgorithmVisualizer() {
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmData>(sampleAlgorithms[0]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [steps, setSteps] = useState<VisualizationStep[]>([]);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1000); // ms per step
-
-  useEffect(() => {
-    generateVisualizationSteps();
-  }, [circuit]);
+  const [animationSpeed, setAnimationSpeed] = useState(1000);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isPlaying && currentStep < steps.length - 1) {
+    if (isPlaying && currentStep < selectedAlgorithm.steps.length - 1) {
       interval = setInterval(() => {
-        setCurrentStep(prev => {
-          const next = prev + 1;
-          if (next >= steps.length - 1) {
-            setIsPlaying(false);
-          }
-          onStepChange?.(next);
-          return next;
-        });
-      }, playbackSpeed);
+        setCurrentStep(prev => prev + 1);
+      }, animationSpeed);
+    } else if (currentStep >= selectedAlgorithm.steps.length - 1) {
+      setIsPlaying(false);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, currentStep, steps.length, playbackSpeed, onStepChange]);
+  }, [isPlaying, currentStep, selectedAlgorithm.steps.length, animationSpeed]);
 
-  const generateVisualizationSteps = () => {
-    const visualizationSteps: VisualizationStep[] = [];
-    
-    // Initial state
-    const initialState = Array.from({ length: Math.pow(2, circuit.qubits) }, (_, i) => ({
-      real: i === 0 ? 1 : 0,
-      imag: 0
-    }));
-
-    visualizationSteps.push({
-      stepNumber: 0,
-      description: `Initialize ${circuit.qubits} qubits in |0⟩ state`,
-      gateIndex: -1,
-      stateVector: initialState,
-      blochData: Array.from({ length: circuit.qubits }, (_, i) => ({
-        qubit: i,
-        x: 0,
-        y: 0,
-        z: 1 // |0⟩ state points up on Bloch sphere
-      }))
-    });
-
-    // Simulate each gate step
-    let currentState = [...initialState];
-    circuit.gates.forEach((gate, index) => {
-      // Apply gate (simplified)
-      const newBlochData = calculateBlochVectors(currentState, circuit.qubits);
-      
-      visualizationSteps.push({
-        stepNumber: index + 1,
-        description: getGateDescription(gate, index),
-        gateIndex: index,
-        stateVector: [...currentState],
-        blochData: newBlochData,
-        entanglement: calculateEntanglement(currentState, circuit.qubits)
-      });
-    });
-
-    setSteps(visualizationSteps);
-  };
-
-  const calculateBlochVectors = (stateVector: { real: number; imag: number }[], qubits: number) => {
-    return Array.from({ length: qubits }, (_, qubit) => {
-      // Simplified Bloch sphere calculation
-      const angle = Math.random() * 2 * Math.PI; // Placeholder
-      const phi = Math.random() * Math.PI;
-      
-      return {
-        qubit,
-        x: Math.sin(phi) * Math.cos(angle),
-        y: Math.sin(phi) * Math.sin(angle),
-        z: Math.cos(phi)
-      };
-    });
-  };
-
-  const calculateEntanglement = (stateVector: { real: number; imag: number }[], qubits: number) => {
-    // Simplified entanglement calculation
-    const pairs: [number, number][] = [];
-    let totalStrength = 0;
-
-    for (let i = 0; i < qubits - 1; i++) {
-      for (let j = i + 1; j < qubits; j++) {
-        const strength = Math.random() * 0.5; // Placeholder
-        if (strength > 0.1) {
-          pairs.push([i, j]);
-          totalStrength += strength;
-        }
-      }
+  const handlePlay = () => {
+    if (currentStep >= selectedAlgorithm.steps.length - 1) {
+      setCurrentStep(0);
     }
-
-    return pairs.length > 0 ? { pairs, strength: totalStrength } : undefined;
-  };
-
-  const getGateDescription = (gate: any, index: number): string => {
-    switch (gate.type) {
-      case 'h':
-        return `Step ${index + 1}: Apply Hadamard gate to qubit ${gate.qubit}`;
-      case 'x':
-        return `Step ${index + 1}: Apply X gate to qubit ${gate.qubit}`;
-      case 'cnot':
-        return `Step ${index + 1}: Apply CNOT gate (control: ${gate.controlQubit}, target: ${gate.qubit})`;
-      default:
-        return `Step ${index + 1}: Apply ${gate.type} gate`;
-    }
-  };
-
-  const currentStepData = steps[currentStep];
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
+    setIsPlaying(true);
   };
 
   const handleReset = () => {
     setCurrentStep(0);
     setIsPlaying(false);
-    onStepChange?.(0);
   };
 
   const handleStepForward = () => {
-    if (currentStep < steps.length - 1) {
-      const next = currentStep + 1;
-      setCurrentStep(next);
-      onStepChange?.(next);
+    if (currentStep < selectedAlgorithm.steps.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  if (!currentStepData) {
-    return <div>Loading visualization...</div>;
-  }
+  const handleStepBackward = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const currentStepData = selectedAlgorithm.steps[currentStep];
 
   return (
     <div className="space-y-6">
-      {/* Control Panel */}
-      <Card className="quantum-panel neon-border">
+      {/* Algorithm Selection */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="text-quantum-glow flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              {algorithm} Algorithm Visualizer
-            </span>
-            <Badge variant="outline" className="neon-border">
-              Step {currentStep + 1} of {steps.length}
-            </Badge>
+          <CardTitle className="flex items-center gap-2">
+            Interactive Algorithm Visualizer
+            <Badge variant="secondary">{selectedAlgorithm.category}</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Progress Bar */}
-          <div>
-            <Progress 
-              value={(currentStep / (steps.length - 1)) * 100} 
-              className="w-full h-2"
-            />
-            <p className="text-sm text-quantum-particle mt-2">
-              {currentStepData.description}
-            </p>
-          </div>
-
-          {/* Playback Controls */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="neon-border"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePlayPause}
-              className="neon-border"
-            >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleStepForward}
-              disabled={currentStep >= steps.length - 1}
-              className="neon-border"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-            
-            {/* Speed Control */}
-            <select 
-              value={playbackSpeed}
-              onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-              className="ml-4 px-2 py-1 bg-quantum-void border border-quantum-matrix rounded text-quantum-glow"
-            >
-              <option value={2000}>0.5x</option>
-              <option value={1000}>1x</option>
-              <option value={500}>2x</option>
-              <option value={250}>4x</option>
-            </select>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {sampleAlgorithms.map((algorithm) => (
+              <Card 
+                key={algorithm.name}
+                className={`cursor-pointer transition-all ${
+                  selectedAlgorithm.name === algorithm.name 
+                    ? 'ring-2 ring-primary' 
+                    : 'hover:bg-muted/50'
+                }`}
+                onClick={() => {
+                  setSelectedAlgorithm(algorithm);
+                  setCurrentStep(0);
+                  setIsPlaying(false);
+                }}
+              >
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-sm">{algorithm.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {algorithm.description}
+                  </p>
+                  <div className="flex justify-between items-center mt-2">
+                    <Badge variant="outline" className="text-xs">
+                      {algorithm.complexity}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {algorithm.steps.length} steps
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Visualization Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bloch Spheres */}
-        <Card className="quantum-panel neon-border">
-          <CardHeader>
-            <CardTitle className="text-quantum-glow">Qubit States</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              {currentStepData.blochData.map(({ qubit, x, y, z }) => (
-                <div key={qubit} className="text-center">
-                  <h4 className="text-sm font-semibold text-quantum-particle mb-2">
-                    Qubit {qubit}
-                  </h4>
-                  <div className="w-32 h-32 mx-auto">
-                    <BlochSphere 
-                      x={x} 
-                      y={y} 
-                      z={z} 
-                      size={128} 
-                    />
-                  </div>
-                  <p className="text-xs text-quantum-neon mt-1">
-                    ({x.toFixed(2)}, {y.toFixed(2)}, {z.toFixed(2)})
-                  </p>
-                </div>
+      {/* Step Control */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>{selectedAlgorithm.name}</span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStepBackward}
+                disabled={currentStep === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={isPlaying ? () => setIsPlaying(false) : handlePlay}
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStepForward}
+                disabled={currentStep === selectedAlgorithm.steps.length - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Step Progress */}
+            <div className="flex items-center space-x-2">
+              {selectedAlgorithm.steps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-2 flex-1 rounded ${
+                    index <= currentStep ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
               ))}
             </div>
-          </CardContent>
-        </Card>
+            
+            {/* Current Step Info */}
+            <div className="text-center">
+              <Badge variant="secondary">
+                Step {currentStep + 1} of {selectedAlgorithm.steps.length}
+              </Badge>
+              <h3 className="text-lg font-semibold mt-2">{currentStepData.title}</h3>
+              <p className="text-muted-foreground">{currentStepData.description}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* State Vector & Probabilities */}
-        <Card className="quantum-panel neon-border">
-          <CardHeader>
-            <CardTitle className="text-quantum-glow">Quantum State</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Measurement Probabilities */}
-              <div>
-                <h4 className="text-sm font-semibold text-quantum-particle mb-2">
-                  Measurement Probabilities
-                </h4>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {currentStepData.stateVector.map((amplitude, index) => {
-                    const probability = amplitude.real * amplitude.real + amplitude.imag * amplitude.imag;
-                    if (probability > 0.001) {
-                      const state = index.toString(2).padStart(circuit.qubits, '0');
-                      return (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-quantum-neon font-mono">|{state}⟩</span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-20 h-2 bg-quantum-void rounded">
-                              <div 
-                                className="h-full bg-quantum-glow rounded"
-                                style={{ width: `${probability * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-quantum-particle w-12 text-right">
-                              {(probability * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              </div>
+      {/* Visualization Tabs */}
+      <Tabs defaultValue="bloch" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="bloch">Bloch Spheres</TabsTrigger>
+          <TabsTrigger value="entanglement">Entanglement</TabsTrigger>
+          <TabsTrigger value="measurements">Measurements</TabsTrigger>
+          <TabsTrigger value="code">Code</TabsTrigger>
+        </TabsList>
 
-              {/* Entanglement Information */}
-              {currentStepData.entanglement && (
-                <div>
-                  <h4 className="text-sm font-semibold text-quantum-particle mb-2">
-                    Entanglement
-                  </h4>
-                  <div className="space-y-1">
-                    {currentStepData.entanglement.pairs.map(([q1, q2], index) => (
-                      <div key={index} className="text-xs text-quantum-neon">
-                        Qubits {q1} ↔ {q2}
-                      </div>
-                    ))}
-                    <div className="text-xs text-quantum-glow mt-2">
-                      Total Entanglement: {currentStepData.entanglement.strength.toFixed(3)}
+        <TabsContent value="bloch" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Qubit States</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {currentStepData.qubitState.map((state, index) => (
+                  <div key={index} className="text-center">
+                    <h4 className="font-semibold mb-2">Qubit {index}</h4>
+                    <div className="flex justify-center">
+                      <BlochSphere
+                        vector={{
+                          x: state[1] * Math.cos(0),
+                          y: state[1] * Math.sin(0), 
+                          z: 2 * state[0] - 1
+                        }}
+                        size={200}
+                      />
                     </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      |0⟩: {(state[0] ** 2 * 100).toFixed(1)}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      |1⟩: {(state[1] ** 2 * 100).toFixed(1)}%
+                    </p>
                   </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="entanglement" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Entanglement Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {currentStepData.entanglement ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <Badge variant="secondary" className="text-lg px-4 py-2">
+                      Entangled System
+                    </Badge>
+                  </div>
+                  {currentStepData.entanglement.pairs.map((pair, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                      <span>Qubits {pair[0]} ↔ {pair[1]}</span>
+                      <Badge variant="outline">
+                        Entanglement: {(currentStepData.entanglement!.values[index] * 100).toFixed(1)}%
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  No entanglement detected in current step
                 </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="measurements" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Measurement Probabilities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {Object.entries(currentStepData.measurements || {}).map(([state, prob]) => (
+                  <div key={state} className="flex items-center justify-between">
+                    <span className="font-mono">|{state}⟩</span>
+                    <div className="flex items-center gap-2 flex-1 mx-4">
+                      <div className="flex-1 bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${prob * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground min-w-[50px]">
+                        {(prob * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="code" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Code Implementation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted rounded-lg p-4">
+                <pre className="text-sm overflow-x-auto">
+                  <code>{currentStepData.code}</code>
+                </pre>
+              </div>
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-semibold mb-2">Explanation:</h4>
+                <p className="text-sm text-muted-foreground">
+                  {currentStepData.description}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 /**
  * QOSim Quantum Algorithms SDK
  * Core SDK for quantum algorithm development and execution
@@ -74,6 +75,7 @@ export class QOSimSDK {
   private backend: string = 'local';
   private debug: boolean = false;
   private initialized: boolean = false;
+  private circuits: Map<string, QuantumCircuit> = new Map();
 
   constructor(config?: { backend?: string; debug?: boolean }) {
     this.backend = config?.backend || 'local';
@@ -177,6 +179,27 @@ export class QOSimSDK {
    */
   measure(circuit: QuantumCircuit, qubit: number): QuantumCircuit {
     return this.addGate(circuit, { type: 'measure', qubit });
+  }
+
+  /**
+   * Save circuit to memory
+   */
+  saveCircuit(circuit: QuantumCircuit): void {
+    this.circuits.set(circuit.id, circuit);
+  }
+
+  /**
+   * Load circuit from memory
+   */
+  loadCircuit(id: string): QuantumCircuit | null {
+    return this.circuits.get(id) || null;
+  }
+
+  /**
+   * List all circuits
+   */
+  listCircuits(): QuantumCircuit[] {
+    return Array.from(this.circuits.values());
   }
 
   /**
@@ -353,5 +376,4 @@ export class QOSimSDK {
   }
 }
 
-export { CircuitBuilder };
 export default QOSimSDK;
