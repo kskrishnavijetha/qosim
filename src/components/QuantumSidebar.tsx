@@ -1,3 +1,4 @@
+
 import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CircuitsPanel } from "./CircuitsPanel";
-import { TemplatesPanel } from "./TemplatesPanel";
-import { QuantumAlgorithmsPanel } from "./algorithms/QuantumAlgorithmsPanel";
-import { JavaScriptSDKDemoPanel } from "./panels/JavaScriptSDKDemoPanel";
-import { PythonSDKDemoPanel } from "./panels/PythonSDKDemoPanel";
 
 interface QuantumSidebarProps {
   onTabChange: (tab: string) => void;

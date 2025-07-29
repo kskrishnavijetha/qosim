@@ -1,545 +1,523 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Cpu, Shield, Zap, Brain, Binary } from 'lucide-react';
-import { Algorithm } from './QuantumAlgorithmsSDK';
+import { Search, Play, Code, BookOpen, Zap, Clock, Users } from 'lucide-react';
 
-const ALGORITHMS: Algorithm[] = [
+interface Algorithm {
+  id: string;
+  name: string;
+  category: 'search' | 'factoring' | 'simulation' | 'optimization' | 'basic' | 'error-correction';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  description: string;
+  code: {
+    python: string;
+    javascript: string;
+  };
+  qubits: number;
+  gates: number;
+  executionTime: string;
+  applications: string[];
+  concepts: string[];
+}
+
+const algorithms: Algorithm[] = [
+  {
+    id: 'bell-state',
+    name: 'Bell State',
+    category: 'basic',
+    difficulty: 'beginner',
+    description: 'Creates maximum entanglement between two qubits, demonstrating quantum superposition and entanglement.',
+    code: {
+      python: `# Bell State Creation
+from qiskit import QuantumCircuit, execute, Aer
+from qiskit.visualization import plot_histogram
+
+# Create quantum circuit
+qc = QuantumCircuit(2, 2)
+
+# Create Bell state |00⟩ + |11⟩
+qc.h(0)        # Hadamard on qubit 0
+qc.cx(0, 1)    # CNOT with control=0, target=1
+
+# Measure both qubits
+qc.measure_all()
+
+# Execute circuit
+backend = Aer.get_backend('qasm_simulator')
+job = execute(qc, backend, shots=1024)
+result = job.result()
+counts = result.get_counts()
+
+print("Bell State Results:", counts)
+print("Circuit:", qc.draw())`,
+      javascript: `// Bell State Creation
+import { QuantumCircuit } from 'qosim-sdk';
+
+// Create quantum circuit
+const qc = new QuantumCircuit(2, 2);
+
+// Create Bell state |00⟩ + |11⟩
+qc.h(0);        // Hadamard on qubit 0
+qc.cnot(0, 1);  // CNOT with control=0, target=1
+
+// Measure both qubits
+qc.measureAll();
+
+// Execute circuit
+const result = await qc.execute({ shots: 1024 });
+console.log('Bell State Results:', result.counts);
+console.log('Circuit:', qc.draw());`
+    },
+    qubits: 2,
+    gates: 2,
+    executionTime: '< 1ms',
+    applications: ['Quantum Communication', 'Quantum Cryptography', 'Quantum Teleportation'],
+    concepts: ['Entanglement', 'Superposition', 'Bell States']
+  },
   {
     id: 'grovers-search',
     name: "Grover's Search",
     category: 'search',
-    description: 'Quantum search algorithm providing quadratic speedup over classical search',
-    complexity: 'intermediate',
-    qubits: 2,
-    depth: 6,
-    gates: ['H', 'CZ', 'X', 'Z'],
-    visualization: { blochSpheres: true, entanglementMap: false, measurementStats: true },
-    pythonCode: `# Grover's Search Algorithm
-from qosim_sdk import QuantumSimulator
+    difficulty: 'intermediate',
+    description: 'Quantum search algorithm that finds marked items in unsorted database with quadratic speedup.',
+    code: {
+      python: `# Grover's Search Algorithm
 import numpy as np
+from qiskit import QuantumCircuit, execute, Aer
+from qiskit.circuit.library import GroverOperator
+from math import pi, sqrt
 
-def grovers_search(num_qubits=2, marked_items=[3]):
-    """
-    Grover's algorithm for searching marked items
-    """
-    sim = QuantumSimulator(num_qubits)
+def grovers_search(n_qubits, marked_items):
+    # Number of iterations
+    iterations = int(pi/4 * sqrt(2**n_qubits))
+    
+    # Create quantum circuit
+    qc = QuantumCircuit(n_qubits, n_qubits)
     
     # Initialize superposition
-    for i in range(num_qubits):
-        sim.h(i)
+    qc.h(range(n_qubits))
     
-    # Optimal iterations
-    N = 2**num_qubits
-    iterations = int(np.pi/4 * np.sqrt(N))
+    # Oracle for marked items
+    def oracle(qc, marked):
+        for item in marked:
+            # Convert item to binary and flip corresponding qubits
+            binary = format(item, f'0{n_qubits}b')
+            for i, bit in enumerate(binary):
+                if bit == '0':
+                    qc.x(i)
+            
+            # Multi-controlled Z gate
+            qc.h(n_qubits-1)
+            qc.mcx(list(range(n_qubits-1)), n_qubits-1)
+            qc.h(n_qubits-1)
+            
+            # Uncompute
+            for i, bit in enumerate(binary):
+                if bit == '0':
+                    qc.x(i)
     
+    # Diffusion operator
+    def diffusion(qc):
+        qc.h(range(n_qubits))
+        qc.x(range(n_qubits))
+        qc.h(n_qubits-1)
+        qc.mcx(list(range(n_qubits-1)), n_qubits-1)
+        qc.h(n_qubits-1)
+        qc.x(range(n_qubits))
+        qc.h(range(n_qubits))
+    
+    # Grover iterations
     for _ in range(iterations):
-        # Oracle: mark target state |11⟩
-        sim.cz(0, 1)
-        
-        # Diffusion operator
-        for i in range(num_qubits):
-            sim.h(i)
-            sim.x(i)
-        sim.cz(0, 1)
-        for i in range(num_qubits):
-            sim.x(i)
-            sim.h(i)
+        oracle(qc, marked_items)
+        diffusion(qc)
     
-    # Execute and return results
-    result = sim.run()
-    return {
-        'state_vector': result.state_vector,
-        'probabilities': result.probabilities,
-        'success_rate': result.probabilities[marked_items[0]]
-    }
+    # Measure
+    qc.measure_all()
+    
+    return qc
 
-# Execute algorithm
-result = grovers_search()
-print(f"Success probability: {result['success_rate']:.3f}")`,
-    javascriptCode: `// Grover's Search Algorithm
-import { QOSimSDK } from './qosim-sdk.js';
+# Example: Search for item 3 in 4-item database
+qc = grovers_search(2, [3])
+backend = Aer.get_backend('qasm_simulator')
+result = execute(qc, backend, shots=1024).result()
+print("Search Results:", result.get_counts())`,
+      javascript: `// Grover's Search Algorithm
+import { QuantumCircuit } from 'qosim-sdk';
 
 class GroversSearch {
-    constructor(numQubits = 2, markedItems = [3]) {
-        this.numQubits = numQubits;
-        this.markedItems = markedItems;
-        this.sdk = new QOSimSDK();
+  constructor(nQubits, markedItems) {
+    this.nQubits = nQubits;
+    this.markedItems = markedItems;
+    this.iterations = Math.floor(Math.PI/4 * Math.sqrt(2**nQubits));
+  }
+  
+  createCircuit() {
+    const qc = new QuantumCircuit(this.nQubits, this.nQubits);
+    
+    // Initialize superposition
+    for (let i = 0; i < this.nQubits; i++) {
+      qc.h(i);
     }
-
-    async execute() {
-        const circuit = this.sdk.createCircuit('Grovers Search', this.numQubits);
-        
-        // Initialize superposition
-        for (let i = 0; i < this.numQubits; i++) {
-            circuit.h(i);
-        }
-        
-        // Optimal iterations
-        const N = Math.pow(2, this.numQubits);
-        const iterations = Math.floor(Math.PI / 4 * Math.sqrt(N));
-        
-        for (let iter = 0; iter < iterations; iter++) {
-            // Oracle: mark |11⟩
-            circuit.cz(0, 1);
-            
-            // Diffusion operator
-            for (let i = 0; i < this.numQubits; i++) {
-                circuit.h(i).x(i);
-            }
-            circuit.cz(0, 1);
-            for (let i = 0; i < this.numQubits; i++) {
-                circuit.x(i).h(i);
-            }
-        }
-        
-        const result = await this.sdk.simulate(circuit);
-        return {
-            stateVector: result.stateVector,
-            probabilities: result.probabilities,
-            successRate: result.probabilities[this.markedItems[0]]
-        };
+    
+    // Grover iterations
+    for (let iter = 0; iter < this.iterations; iter++) {
+      this.oracle(qc);
+      this.diffusion(qc);
     }
+    
+    qc.measureAll();
+    return qc;
+  }
+  
+  oracle(qc) {
+    this.markedItems.forEach(item => {
+      const binary = item.toString(2).padStart(this.nQubits, '0');
+      
+      // Flip qubits for 0s
+      binary.split('').forEach((bit, i) => {
+        if (bit === '0') qc.x(i);
+      });
+      
+      // Multi-controlled Z
+      qc.h(this.nQubits - 1);
+      qc.mcx(Array.from({length: this.nQubits-1}, (_, i) => i), this.nQubits - 1);
+      qc.h(this.nQubits - 1);
+      
+      // Uncompute
+      binary.split('').forEach((bit, i) => {
+        if (bit === '0') qc.x(i);
+      });
+    });
+  }
+  
+  diffusion(qc) {
+    // Hadamard all qubits
+    for (let i = 0; i < this.nQubits; i++) qc.h(i);
+    
+    // Flip all qubits
+    for (let i = 0; i < this.nQubits; i++) qc.x(i);
+    
+    // Multi-controlled Z
+    qc.h(this.nQubits - 1);
+    qc.mcx(Array.from({length: this.nQubits-1}, (_, i) => i), this.nQubits - 1);
+    qc.h(this.nQubits - 1);
+    
+    // Unflip
+    for (let i = 0; i < this.nQubits; i++) qc.x(i);
+    
+    // Hadamard all qubits
+    for (let i = 0; i < this.nQubits; i++) qc.h(i);
+  }
 }
 
-// Execute algorithm
-const grover = new GroversSearch();
-const result = await grover.execute();
-console.log(\`Success probability: \${result.successRate.toFixed(3)}\`);`
+// Example usage
+const grover = new GroversSearch(2, [3]);
+const circuit = grover.createCircuit();
+const result = await circuit.execute({ shots: 1024 });
+console.log('Search Results:', result.counts);`
+    },
+    qubits: 4,
+    gates: 20,
+    executionTime: '2-5ms',
+    applications: ['Database Search', 'Optimization', 'Machine Learning'],
+    concepts: ['Amplitude Amplification', 'Oracle Functions', 'Quantum Speedup']
   },
   {
     id: 'qft',
     name: 'Quantum Fourier Transform',
-    category: 'optimization',
-    description: 'Transforms between computational and frequency domains',
-    complexity: 'advanced',
-    qubits: 3,
-    depth: 8,
-    gates: ['H', 'RZ', 'SWAP'],
-    visualization: { blochSpheres: true, entanglementMap: true, measurementStats: true },
-    pythonCode: `# Quantum Fourier Transform
-from qosim_sdk import QuantumSimulator
+    category: 'simulation',
+    difficulty: 'advanced',
+    description: 'Quantum version of discrete Fourier transform, essential for many quantum algorithms.',
+    code: {
+      python: `# Quantum Fourier Transform
+from qiskit import QuantumCircuit
 import numpy as np
 
-def quantum_fourier_transform(num_qubits=3):
-    """
-    Quantum Fourier Transform implementation
-    """
-    sim = QuantumSimulator(num_qubits)
-    
-    # Apply QFT
-    for i in range(num_qubits):
-        sim.h(i)
-        for j in range(i + 1, num_qubits):
-            angle = np.pi / (2**(j - i))
-            sim.controlled_phase(i, j, angle)
-    
-    # Reverse qubit order
-    for i in range(num_qubits // 2):
-        sim.swap(i, num_qubits - 1 - i)
-    
-    result = sim.run()
-    return {
-        'state_vector': result.state_vector,
-        'frequency_amplitudes': result.state_vector
-    }
+def qft_rotations(circuit, n):
+    """Applies QFT rotations to the first n qubits"""
+    if n == 0:
+        return circuit
+    n -= 1
+    circuit.h(n)
+    for qubit in range(n):
+        circuit.cp(np.pi/2**(n-qubit), qubit, n)
+    qft_rotations(circuit, n)
 
-# Execute QFT
-result = quantum_fourier_transform()
-print("QFT completed successfully")`,
-    javascriptCode: `// Quantum Fourier Transform
-import { QOSimSDK } from './qosim-sdk.js';
+def swap_registers(circuit, n):
+    """Reverses the order of qubits"""
+    for qubit in range(n//2):
+        circuit.swap(qubit, n-qubit-1)
+    return circuit
 
-class QuantumFourierTransform {
-    constructor(numQubits = 3) {
-        this.numQubits = numQubits;
-        this.sdk = new QOSimSDK();
-    }
+def qft(n_qubits):
+    """Creates QFT circuit"""
+    qc = QuantumCircuit(n_qubits, n_qubits)
+    qft_rotations(qc, n_qubits)
+    swap_registers(qc, n_qubits)
+    return qc
 
-    async execute() {
-        const circuit = this.sdk.createCircuit('QFT', this.numQubits);
-        
-        // Apply QFT
-        for (let i = 0; i < this.numQubits; i++) {
-            circuit.h(i);
-            for (let j = i + 1; j < this.numQubits; j++) {
-                const angle = Math.PI / Math.pow(2, j - i);
-                circuit.cp(i, j, angle);
-            }
-        }
-        
-        // Reverse qubit order
-        for (let i = 0; i < Math.floor(this.numQubits / 2); i++) {
-            circuit.swap(i, this.numQubits - 1 - i);
-        }
-        
-        const result = await this.sdk.simulate(circuit);
-        return {
-            stateVector: result.stateVector,
-            frequencyAmplitudes: result.stateVector
-        };
+def inverse_qft(n_qubits):
+    """Creates inverse QFT circuit"""
+    qc = qft(n_qubits)
+    return qc.inverse()
+
+# Example: 3-qubit QFT
+n = 3
+qc = QuantumCircuit(n, n)
+
+# Prepare initial state (optional)
+qc.x(0)  # |001⟩ state
+
+# Apply QFT
+qc.compose(qft(n), inplace=True)
+
+# Measure
+qc.measure_all()
+
+print("QFT Circuit:")
+print(qc.draw())`,
+      javascript: `// Quantum Fourier Transform
+import { QuantumCircuit } from 'qosim-sdk';
+
+class QFT {
+  constructor(nQubits) {
+    this.nQubits = nQubits;
+  }
+  
+  createCircuit() {
+    const qc = new QuantumCircuit(this.nQubits, this.nQubits);
+    
+    this.qftRotations(qc, this.nQubits);
+    this.swapRegisters(qc, this.nQubits);
+    
+    return qc;
+  }
+  
+  qftRotations(circuit, n) {
+    if (n === 0) return;
+    
+    const currentQubit = n - 1;
+    circuit.h(currentQubit);
+    
+    for (let qubit = 0; qubit < currentQubit; qubit++) {
+      const angle = Math.PI / (2 ** (currentQubit - qubit));
+      circuit.cp(angle, qubit, currentQubit);
     }
+    
+    this.qftRotations(circuit, n - 1);
+  }
+  
+  swapRegisters(circuit, n) {
+    for (let i = 0; i < Math.floor(n / 2); i++) {
+      circuit.swap(i, n - i - 1);
+    }
+  }
+  
+  createInverse() {
+    const qc = this.createCircuit();
+    return qc.inverse();
+  }
 }
 
-// Execute QFT
-const qft = new QuantumFourierTransform();
-const result = await qft.execute();
-console.log('QFT completed successfully');`
-  },
-  {
-    id: 'bell-states',
-    name: 'Bell States Generator',
-    category: 'quantum-ml',
-    description: 'Creates maximally entangled two-qubit states',
-    complexity: 'beginner',
-    qubits: 2,
-    depth: 2,
-    gates: ['H', 'CNOT'],
-    visualization: { blochSpheres: true, entanglementMap: true, measurementStats: true },
-    pythonCode: `# Bell States Generator
-from qosim_sdk import QuantumSimulator
+// Example usage
+const qft = new QFT(3);
+const circuit = qft.createCircuit();
 
-def create_bell_state(bell_type='phi_plus'):
-    """
-    Create different Bell states
-    phi_plus: |00⟩ + |11⟩
-    phi_minus: |00⟩ - |11⟩
-    psi_plus: |01⟩ + |10⟩
-    psi_minus: |01⟩ - |10⟩
-    """
-    sim = QuantumSimulator(2)
-    
-    # Create |Φ+⟩ = (|00⟩ + |11⟩)/√2
-    if bell_type == 'phi_plus':
-        sim.h(0)
-        sim.cnot(0, 1)
-    
-    # Create |Φ-⟩ = (|00⟩ - |11⟩)/√2
-    elif bell_type == 'phi_minus':
-        sim.h(0)
-        sim.z(0)
-        sim.cnot(0, 1)
-    
-    # Create |Ψ+⟩ = (|01⟩ + |10⟩)/√2
-    elif bell_type == 'psi_plus':
-        sim.h(0)
-        sim.x(1)
-        sim.cnot(0, 1)
-    
-    # Create |Ψ-⟩ = (|01⟩ - |10⟩)/√2
-    elif bell_type == 'psi_minus':
-        sim.h(0)
-        sim.x(1)
-        sim.z(0)
-        sim.cnot(0, 1)
-    
-    result = sim.run()
-    return {
-        'state_vector': result.state_vector,
-        'entanglement': sim.measure_entanglement(),
-        'bell_type': bell_type
-    }
+// Prepare initial state
+circuit.x(0);  // |001⟩ state
 
-# Create Bell state
-bell = create_bell_state('phi_plus')
-print(f"Entanglement strength: {bell['entanglement']:.3f}")`,
-    javascriptCode: `// Bell States Generator
-import { QOSimSDK } from './qosim-sdk.js';
+console.log('QFT Circuit:', circuit.draw());
 
-class BellStatesGenerator {
-    constructor() {
-        this.sdk = new QOSimSDK();
-    }
-
-    async createBellState(bellType = 'phi_plus') {
-        const circuit = this.sdk.createCircuit('Bell State', 2);
-        
-        // Create |Φ+⟩ = (|00⟩ + |11⟩)/√2
-        if (bellType === 'phi_plus') {
-            circuit.h(0).cnot(0, 1);
-        }
-        
-        // Create |Φ-⟩ = (|00⟩ - |11⟩)/√2
-        else if (bellType === 'phi_minus') {
-            circuit.h(0).z(0).cnot(0, 1);
-        }
-        
-        // Create |Ψ+⟩ = (|01⟩ + |10⟩)/√2
-        else if (bellType === 'psi_plus') {
-            circuit.h(0).x(1).cnot(0, 1);
-        }
-        
-        // Create |Ψ-⟩ = (|01⟩ - |10⟩)/√2
-        else if (bellType === 'psi_minus') {
-            circuit.h(0).x(1).z(0).cnot(0, 1);
-        }
-        
-        const result = await this.sdk.simulate(circuit);
-        const entanglement = this.sdk.measureEntanglement(result);
-        
-        return {
-            stateVector: result.stateVector,
-            entanglement: entanglement,
-            bellType: bellType
-        };
-    }
-}
-
-// Create Bell state
-const bellGen = new BellStatesGenerator();
-const bell = await bellGen.createBellState('phi_plus');
-console.log(\`Entanglement strength: \${bell.entanglement.toFixed(3)}\`);`
-  },
-  {
-    id: 'error-correction',
-    name: 'Quantum Error Correction',
-    category: 'error-correction',
-    description: 'Three-qubit error correction code with syndrome detection',
-    complexity: 'advanced',
+// Execute
+const result = await circuit.execute({ shots: 1024 });
+console.log('QFT Results:', result.counts);`
+    },
     qubits: 3,
-    depth: 6,
-    gates: ['H', 'CNOT', 'X'],
-    visualization: { blochSpheres: false, entanglementMap: true, measurementStats: true },
-    pythonCode: `# Quantum Error Correction
-from qosim_sdk import QuantumSimulator
-
-def three_qubit_error_correction():
-    """
-    3-qubit bit-flip error correction code
-    """
-    sim = QuantumSimulator(3)
-    
-    # Encode logical |+⟩ state
-    sim.h(0)  # Create superposition
-    sim.cnot(0, 1)  # Copy to ancilla
-    sim.cnot(0, 2)  # Copy to ancilla
-    
-    # Introduce bit-flip error on qubit 1
-    sim.x(1)
-    
-    # Error detection syndrome
-    sim.cnot(0, 1)
-    sim.cnot(0, 2)
-    
-    # Measure syndrome and apply correction
-    result = sim.run()
-    
-    return {
-        'corrected_state': result.state_vector,
-        'error_detected': True,
-        'syndrome': sim.measure_syndrome([1, 2])
-    }
-
-# Execute error correction
-result = three_qubit_error_correction()
-print(f"Error correction completed. Syndrome: {result['syndrome']}")`,
-    javascriptCode: `// Quantum Error Correction
-import { QOSimSDK } from './qosim-sdk.js';
-
-class QuantumErrorCorrection {
-    constructor() {
-        this.sdk = new QOSimSDK();
-    }
-
-    async threeQubitCorrection() {
-        const circuit = this.sdk.createCircuit('3-Qubit Error Correction', 3);
-        
-        // Encode logical |+⟩ state
-        circuit.h(0);        // Create superposition
-        circuit.cnot(0, 1);  // Copy to ancilla
-        circuit.cnot(0, 2);  // Copy to ancilla
-        
-        // Introduce bit-flip error on qubit 1
-        circuit.x(1);
-        
-        // Error detection syndrome
-        circuit.cnot(0, 1);
-        circuit.cnot(0, 2);
-        
-        const result = await this.sdk.simulate(circuit);
-        const syndrome = this.sdk.measureSyndrome(result, [1, 2]);
-        
-        return {
-            correctedState: result.stateVector,
-            errorDetected: true,
-            syndrome: syndrome
-        };
-    }
-}
-
-// Execute error correction
-const errorCorrection = new QuantumErrorCorrection();
-const result = await errorCorrection.threeQubitCorrection();
-console.log(\`Error correction completed. Syndrome: \${result.syndrome}\`);`
+    gates: 12,
+    executionTime: '1-3ms',
+    applications: ['Quantum Phase Estimation', "Shor's Algorithm", 'Quantum Simulation'],
+    concepts: ['Fourier Transform', 'Phase Rotations', 'Quantum Parallelism']
   }
 ];
 
 interface AlgorithmLibraryProps {
-  onAlgorithmSelect: (algorithm: Algorithm) => void;
-  selectedLanguage: 'python' | 'javascript';
-  onLanguageChange: (language: 'python' | 'javascript') => void;
+  onSelectAlgorithm: (algorithm: Algorithm) => void;
+  onExecuteAlgorithm: (algorithm: Algorithm) => void;
 }
 
-export function AlgorithmLibrary({ 
-  onAlgorithmSelect, 
-  selectedLanguage, 
-  onLanguageChange 
-}: AlgorithmLibraryProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export function AlgorithmLibrary({ onSelectAlgorithm, onExecuteAlgorithm }: AlgorithmLibraryProps) {
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedComplexity, setSelectedComplexity] = useState<string>('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
 
-  const filteredAlgorithms = useMemo(() => {
-    return ALGORITHMS.filter(algorithm => {
-      const matchesSearch = algorithm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           algorithm.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || algorithm.category === selectedCategory;
-      const matchesComplexity = selectedComplexity === 'all' || algorithm.complexity === selectedComplexity;
-      
-      return matchesSearch && matchesCategory && matchesComplexity;
-    });
-  }, [searchQuery, selectedCategory, selectedComplexity]);
+  const filteredAlgorithms = algorithms.filter(algorithm => {
+    const matchesSearch = algorithm.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         algorithm.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         algorithm.concepts.some(concept => concept.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCategory = selectedCategory === 'all' || algorithm.category === selectedCategory;
+    const matchesDifficulty = selectedDifficulty === 'all' || algorithm.difficulty === selectedDifficulty;
+    
+    return matchesSearch && matchesCategory && matchesDifficulty;
+  });
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'intermediate': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'advanced': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'search': return <Search className="w-4 h-4" />;
-      case 'cryptography': return <Shield className="w-4 h-4" />;
-      case 'optimization': return <Zap className="w-4 h-4" />;
-      case 'quantum-ml': return <Brain className="w-4 h-4" />;
-      case 'error-correction': return <Binary className="w-4 h-4" />;
-      default: return <Cpu className="w-4 h-4" />;
-    }
-  };
-
-  const getComplexityColor = (complexity: string) => {
-    switch (complexity) {
-      case 'beginner': return 'text-green-500';
-      case 'intermediate': return 'text-yellow-500';
-      case 'advanced': return 'text-red-500';
-      default: return 'text-muted-foreground';
+      case 'factoring': return <Zap className="w-4 h-4" />;
+      case 'simulation': return <Code className="w-4 h-4" />;
+      case 'optimization': return <Clock className="w-4 h-4" />;
+      case 'basic': return <BookOpen className="w-4 h-4" />;
+      case 'error-correction': return <Users className="w-4 h-4" />;
+      default: return <Code className="w-4 h-4" />;
     }
   };
 
   return (
-    <div className="h-full flex flex-col space-y-4">
-      {/* Language Selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-quantum-glow">Algorithm Library</h2>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={selectedLanguage === 'python' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onLanguageChange('python')}
-            className="neon-border"
-          >
-            Python
-          </Button>
-          <Button
-            variant={selectedLanguage === 'javascript' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onLanguageChange('javascript')}
-            className="neon-border"
-          >
-            JavaScript
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
+    <div className="space-y-6">
+      {/* Search and Filters */}
+      <div className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-quantum-neon w-4 h-4" />
           <Input
-            placeholder="Search algorithms..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="quantum-panel neon-border"
-            icon={<Search className="w-4 h-4" />}
+            placeholder="Search algorithms, concepts, or applications..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 quantum-panel neon-border"
           />
         </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-40 quantum-panel neon-border">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="quantum-panel neon-border">
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="search">Search</SelectItem>
-            <SelectItem value="cryptography">Cryptography</SelectItem>
-            <SelectItem value="optimization">Optimization</SelectItem>
-            <SelectItem value="quantum-ml">Quantum ML</SelectItem>
-            <SelectItem value="error-correction">Error Correction</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={selectedComplexity} onValueChange={setSelectedComplexity}>
-          <SelectTrigger className="w-36 quantum-panel neon-border">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="quantum-panel neon-border">
-            <SelectItem value="all">All Levels</SelectItem>
-            <SelectItem value="beginner">Beginner</SelectItem>
-            <SelectItem value="intermediate">Intermediate</SelectItem>
-            <SelectItem value="advanced">Advanced</SelectItem>
-          </SelectContent>
-        </Select>
+        
+        <div className="flex gap-4">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3 py-2 bg-quantum-matrix border border-quantum-neon/30 rounded-lg text-quantum-neon text-sm"
+          >
+            <option value="all">All Categories</option>
+            <option value="basic">Basic</option>
+            <option value="search">Search</option>
+            <option value="factoring">Factoring</option>
+            <option value="simulation">Simulation</option>
+            <option value="optimization">Optimization</option>
+            <option value="error-correction">Error Correction</option>
+          </select>
+          
+          <select
+            value={selectedDifficulty}
+            onChange={(e) => setSelectedDifficulty(e.target.value)}
+            className="px-3 py-2 bg-quantum-matrix border border-quantum-neon/30 rounded-lg text-quantum-neon text-sm"
+          >
+            <option value="all">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
       </div>
 
-      {/* Algorithm Grid */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredAlgorithms.map((algorithm) => (
-            <Card key={algorithm.id} className="quantum-panel neon-border hover:border-quantum-glow/50 transition-colors cursor-pointer">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    {getCategoryIcon(algorithm.category)}
-                    <CardTitle className="text-sm text-quantum-glow">{algorithm.name}</CardTitle>
-                  </div>
-                  <Badge variant="outline" className={`text-xs ${getComplexityColor(algorithm.complexity)}`}>
-                    {algorithm.complexity}
-                  </Badge>
+      {/* Algorithm Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredAlgorithms.map((algorithm) => (
+          <Card key={algorithm.id} className="quantum-panel neon-border hover:border-quantum-glow/50 transition-all duration-300">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {getCategoryIcon(algorithm.category)}
+                  <CardTitle className="text-lg text-quantum-glow">{algorithm.name}</CardTitle>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-quantum-particle mb-3">{algorithm.description}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                  <span>{algorithm.qubits} qubits</span>
-                  <span>Depth: {algorithm.depth}</span>
-                  <span>{algorithm.gates.length} gate types</span>
+                <Badge className={getDifficultyColor(algorithm.difficulty)}>
+                  {algorithm.difficulty}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {algorithm.description}
+              </p>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="text-quantum-neon font-mono">{algorithm.qubits}</div>
+                  <div className="text-muted-foreground">Qubits</div>
                 </div>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {algorithm.gates.slice(0, 4).map((gate, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {gate}
+                <div className="text-center">
+                  <div className="text-quantum-neon font-mono">{algorithm.gates}</div>
+                  <div className="text-muted-foreground">Gates</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-quantum-neon font-mono">{algorithm.executionTime}</div>
+                  <div className="text-muted-foreground">Runtime</div>
+                </div>
+              </div>
+
+              {/* Concepts */}
+              <div>
+                <h4 className="text-sm font-semibold text-quantum-glow mb-2">Key Concepts</h4>
+                <div className="flex flex-wrap gap-1">
+                  {algorithm.concepts.map((concept, index) => (
+                    <Badge key={index} variant="outline" className="text-xs border-quantum-neon/30">
+                      {concept}
                     </Badge>
                   ))}
-                  {algorithm.gates.length > 4 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{algorithm.gates.length - 4}
-                    </Badge>
-                  )}
                 </div>
-                <Button
-                  size="sm"
-                  className="w-full neon-border"
-                  onClick={() => onAlgorithmSelect(algorithm)}
-                >
-                  Use Algorithm
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </div>
 
-        {filteredAlgorithms.length === 0 && (
-          <div className="text-center py-12">
-            <Search className="w-12 h-12 mx-auto text-quantum-particle/50 mb-4" />
-            <p className="text-quantum-particle">No algorithms match your search criteria</p>
-          </div>
-        )}
+              {/* Applications */}
+              <div>
+                <h4 className="text-sm font-semibold text-quantum-glow mb-2">Applications</h4>
+                <div className="flex flex-wrap gap-1">
+                  {algorithm.applications.map((app, index) => (
+                    <Badge key={index} variant="secondary" className="text-xs bg-quantum-glow/20 text-quantum-glow">
+                      {app}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={() => onSelectAlgorithm(algorithm)}
+                  className="flex-1 bg-quantum-matrix hover:bg-quantum-neon hover:text-black transition-colors"
+                  size="sm"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  View Code
+                </Button>
+                <Button
+                  onClick={() => onExecuteAlgorithm(algorithm)}
+                  className="flex-1 bg-quantum-glow hover:bg-quantum-glow/80 text-black"
+                  size="sm"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Execute
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {filteredAlgorithms.length === 0 && (
+        <div className="text-center py-12">
+          <Search className="w-12 h-12 text-quantum-neon mx-auto mb-4 opacity-50" />
+          <p className="text-quantum-neon">No algorithms match your search criteria</p>
+          <p className="text-muted-foreground text-sm mt-2">Try adjusting your filters or search terms</p>
+        </div>
+      )}
     </div>
   );
 }
