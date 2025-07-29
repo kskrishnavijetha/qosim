@@ -122,14 +122,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-quantum-matrix border-quantum-neon/20">
                 <DropdownMenuItem 
-                  onClick={() => onSDKSelect?.('quantum-algorithms')}
-                  className="text-quantum-neon hover:bg-quantum-void/50"
-                >
-                  <Code className="w-4 h-4 mr-2" />
-                  Quantum Algorithms SDK
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-quantum-matrix" />
-                <DropdownMenuItem 
                   onClick={() => onTabChange("javascript-sdk")}
                   className="text-quantum-neon hover:bg-quantum-void/50"
                 >
