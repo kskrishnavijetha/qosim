@@ -6,8 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Brain, Sparkles, Zap, MessageSquare, Code } from 'lucide-react';
-import { quantumAI } from '@/services/QuantumAIService';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface NaturalLanguageProcessorProps {
   onCircuitGenerated: (gates: any[]) => void;
@@ -23,6 +22,8 @@ export function NaturalLanguageProcessor({
   const [lastResult, setLastResult] = useState<any>(null);
   const [processingStep, setProcessingStep] = useState('');
   const [progress, setProgress] = useState(0);
+  
+  const { toast } = useToast();
 
   const examplePrompts = [
     "Create a Bell state between qubits 0 and 1",
@@ -35,7 +36,11 @@ export function NaturalLanguageProcessor({
 
   const processNaturalLanguage = async () => {
     if (!input.trim()) {
-      toast.error('Please enter a description of what you want to create');
+      toast({
+        title: "Input Required",
+        description: "Please enter a description of what you want to create",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -49,7 +54,7 @@ export function NaturalLanguageProcessor({
       await updateProgress(50, 'Generating circuit structure...');
       await updateProgress(75, 'Optimizing gate sequence...');
       
-      const result = await quantumAI.parseNaturalLanguage(input);
+      const result = await parseNaturalLanguageInput(input);
       
       setProgress(100);
       setProcessingStep('Complete!');
@@ -59,10 +64,17 @@ export function NaturalLanguageProcessor({
       onCircuitGenerated(result.circuitGates);
       onAlgorithmGenerated(result.algorithmCode);
       
-      toast.success(`Circuit generated with ${(result.confidence * 100).toFixed(0)}% confidence`);
+      toast({
+        title: "Circuit Generated",
+        description: `Circuit generated with ${(result.confidence * 100).toFixed(0)}% confidence`
+      });
       
     } catch (error) {
-      toast.error('Failed to process natural language input');
+      toast({
+        title: "Processing Error",
+        description: "Failed to process natural language input",
+        variant: "destructive"
+      });
       console.error('Natural language processing error:', error);
     } finally {
       setIsProcessing(false);
@@ -71,6 +83,102 @@ export function NaturalLanguageProcessor({
         setProcessingStep('');
       }, 2000);
     }
+  };
+
+  const parseNaturalLanguageInput = async (input: string): Promise<{
+    circuitGates: any[];
+    algorithmCode: string;
+    confidence: number;
+    explanation: string;
+  }> => {
+    // Simulate AI processing time
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const lowerInput = input.toLowerCase();
+    
+    // Pattern matching for common quantum operations
+    if (lowerInput.includes('bell state') || lowerInput.includes('entangled')) {
+      return {
+        circuitGates: [
+          { id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] },
+          { id: 'gate2', type: 'CNOT', qubits: [0, 1], position: 1 }
+        ],
+        algorithmCode: `// Bell State Generation
+circuit.addGate("H", 0);     // Create superposition
+circuit.addGate("CNOT", 0, 1); // Create entanglement`,
+        confidence: 0.95,
+        explanation: 'Generated a Bell state circuit with Hadamard gate for superposition and CNOT for entanglement.'
+      };
+    }
+
+    if (lowerInput.includes('ghz') || lowerInput.includes('3-qubit')) {
+      return {
+        circuitGates: [
+          { id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] },
+          { id: 'gate2', type: 'CNOT', qubits: [0, 1], position: 1 },
+          { id: 'gate3', type: 'CNOT', qubits: [1, 2], position: 2 }
+        ],
+        algorithmCode: `// GHZ State Generation
+circuit.addGate("H", 0);       // Create superposition
+circuit.addGate("CNOT", 0, 1); // Entangle qubits 0 and 1
+circuit.addGate("CNOT", 1, 2); // Extend entanglement to qubit 2`,
+        confidence: 0.92,
+        explanation: 'Generated a 3-qubit GHZ state with maximal entanglement across all qubits.'
+      };
+    }
+
+    if (lowerInput.includes('superposition') || lowerInput.includes('hadamard')) {
+      const qubitCount = extractQubitCount(input) || 4;
+      const gates = Array.from({ length: qubitCount }, (_, i) => ({
+        id: `gate${i + 1}`,
+        type: 'H',
+        qubit: i,
+        position: 0,
+        qubits: [i]
+      }));
+
+      return {
+        circuitGates: gates,
+        algorithmCode: `// Superposition Creation
+${gates.map(g => `circuit.addGate("H", ${g.qubit});`).join('\n')}`,
+        confidence: 0.88,
+        explanation: `Created superposition on ${qubitCount} qubits using Hadamard gates.`
+      };
+    }
+
+    if (lowerInput.includes('grover') || lowerInput.includes('search')) {
+      return {
+        circuitGates: [
+          { id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] },
+          { id: 'gate2', type: 'H', qubit: 1, position: 0, qubits: [1] },
+          { id: 'gate3', type: 'Z', qubit: 0, position: 1, qubits: [0] },
+          { id: 'gate4', type: 'CZ', qubits: [0, 1], position: 2 },
+          { id: 'gate5', type: 'H', qubit: 0, position: 3, qubits: [0] },
+          { id: 'gate6', type: 'H', qubit: 1, position: 3, qubits: [1] }
+        ],
+        algorithmCode: `// Grover's Algorithm (simplified)
+circuit.addGate("H", 0); circuit.addGate("H", 1);  // Initialize superposition
+circuit.addGate("Z", 0);    // Oracle
+circuit.addGate("CZ", 0, 1); // Controlled oracle
+circuit.addGate("H", 0); circuit.addGate("H", 1);  // Diffusion operator`,
+        confidence: 0.85,
+        explanation: 'Generated a simplified Grover search algorithm for 2-qubit search space.'
+      };
+    }
+
+    // Default response for unrecognized input
+    return {
+      circuitGates: [{ id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] }],
+      algorithmCode: `// Basic quantum circuit
+circuit.addGate("H", 0);  // Create superposition`,
+      confidence: 0.60,
+      explanation: 'Generated a basic circuit. Try being more specific about the desired quantum operation.'
+    };
+  };
+
+  const extractQubitCount = (input: string): number | null => {
+    const match = input.match(/(\d+)[\s-]?qubit/i);
+    return match ? parseInt(match[1]) : null;
   };
 
   const updateProgress = async (value: number, step: string) => {
