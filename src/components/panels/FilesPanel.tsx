@@ -65,6 +65,8 @@ export function FilesPanel() {
       console.log('Setting selected file:', file.name);
       setSelectedFile(file);
       setShowFileViewer(true);
+    } else {
+      console.log('File not found:', fileId);
     }
   };
 

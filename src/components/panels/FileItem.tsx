@@ -60,8 +60,13 @@ export function FileItem({
     }
   };
 
-  const handleFileClick = () => {
+  const handleFileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('FileItem clicked:', file.name, file.id);
+    
     if (file.type !== "folder" && onFileSelect) {
+      console.log('Calling onFileSelect with:', file.id);
       onFileSelect(file.id);
     }
   };
