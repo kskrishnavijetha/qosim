@@ -13,7 +13,7 @@ import { CircuitExportDialog } from './CircuitExportDialog';
 import { CircuitImportDialog } from './CircuitImportDialog';
 import { CircuitSimulationPanel } from './CircuitSimulationPanel';
 import { CircuitCollaborationPanel } from './CircuitCollaborationPanel';
-import { CircuitAIAssistant } from './CircuitAIAssistant';
+import { UnifiedAIPanel } from '../ai/UnifiedAIPanel';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useZoomPan } from '@/hooks/useZoomPan';
 import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot } from 'lucide-react';
@@ -109,6 +109,57 @@ export function InteractiveCircuitBuilder() {
     }
   }, [exportCircuit]);
 
+  // AI handlers
+  const handleAICircuitGenerated = useCallback((gates: any[]) => {
+    // Convert AI gates to circuit format and load them
+    const convertedCircuit = {
+      ...circuit,
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `ai-gate-${index}`,
+        timestamp: Date.now()
+      }))
+    };
+    loadCircuit(convertedCircuit);
+    toast.success(`Generated circuit with ${gates.length} gates`);
+  }, [circuit, loadCircuit]);
+
+  const handleAIAlgorithmGenerated = useCallback((code: string) => {
+    console.log('Generated algorithm code:', code);
+    toast.success('Algorithm code generated - check console for details');
+  }, []);
+
+  const handleAICircuitOptimized = useCallback((gates: any[]) => {
+    const optimizedCircuit = {
+      ...circuit,
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `opt-gate-${index}`,
+        timestamp: Date.now()
+      }))
+    };
+    loadCircuit(optimizedCircuit);
+    toast.success('Circuit optimized successfully');
+  }, [circuit, loadCircuit]);
+
+  const handleAICircuitFixed = useCallback((gates: any[]) => {
+    const fixedCircuit = {
+      ...circuit,
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `fixed-gate-${index}`,
+        timestamp: Date.now()
+      }))
+    };
+    loadCircuit(fixedCircuit);
+    toast.success('Circuit issues fixed');
+  }, [circuit, loadCircuit]);
+
+  const handleShowStateVisualization = useCallback((step: number) => {
+    console.log('Showing state visualization for step:', step);
+    toast.info(`Visualizing quantum state at step ${step}`);
+  }, []);
+
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Toolbar */}
@@ -196,11 +247,14 @@ export function InteractiveCircuitBuilder() {
         {/* Left Panel - Gate Palette */}
         <div className="w-80 border-r bg-card">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="design">Design</TabsTrigger>
+              <TabsTrigger value="ai">
+                <Bot className="w-4 h-4 mr-1" />
+                AI
+              </TabsTrigger>
               <TabsTrigger value="simulate">Simulate</TabsTrigger>
               <TabsTrigger value="collab">Collab</TabsTrigger>
-              <TabsTrigger value="ai">AI</TabsTrigger>
             </TabsList>
             
             <TabsContent value="design" className="p-4">
@@ -208,6 +262,17 @@ export function InteractiveCircuitBuilder() {
                 onGateSelect={addGate}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate}
+              />
+            </TabsContent>
+            
+            <TabsContent value="ai" className="p-4">
+              <UnifiedAIPanel
+                circuit={circuit.gates}
+                onCircuitGenerated={handleAICircuitGenerated}
+                onAlgorithmGenerated={handleAIAlgorithmGenerated}
+                onCircuitOptimized={handleAICircuitOptimized}
+                onCircuitFixed={handleAICircuitFixed}
+                onShowStateVisualization={handleShowStateVisualization}
               />
             </TabsContent>
             
@@ -225,14 +290,6 @@ export function InteractiveCircuitBuilder() {
                 circuit={circuit}
                 onSave={saveCircuit}
                 onLoad={loadCircuit}
-              />
-            </TabsContent>
-            
-            <TabsContent value="ai" className="p-4">
-              <CircuitAIAssistant
-                circuit={circuit}
-                onOptimize={(optimizedCircuit) => loadCircuit(optimizedCircuit)}
-                onSuggestCorrection={(correction) => toast.info(correction)}
               />
             </TabsContent>
           </Tabs>
