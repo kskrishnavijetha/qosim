@@ -32,16 +32,14 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
   const handleStart = useCallback((
     clientX: number, 
     clientY: number, 
-    gateType: string,
-    target: HTMLElement
+    gateType: string
   ) => {
-    const rect = target.getBoundingClientRect();
     dragStartRef.current = { x: clientX, y: clientY };
     
     setDragState({
       isDragging: true,
       gateType,
-      dragPosition: { x: clientX - rect.left, y: clientY - rect.top },
+      dragPosition: { x: clientX, y: clientY },
       hoverQubit: null,
       hoverPosition: null
     });
@@ -49,14 +47,16 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
 
   const handleMouseDown = useCallback((e: React.MouseEvent, gateType: string) => {
     e.preventDefault();
-    handleStart(e.clientX, e.clientY, gateType, e.currentTarget as HTMLElement);
+    e.stopPropagation();
+    handleStart(e.clientX, e.clientY, gateType);
   }, [handleStart]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent, gateType: string) => {
     e.preventDefault();
+    e.stopPropagation();
     const touch = e.touches[0];
     if (touch) {
-      handleStart(touch.clientX, touch.clientY, gateType, e.currentTarget as HTMLElement);
+      handleStart(touch.clientX, touch.clientY, gateType);
     }
   }, [handleStart]);
 
@@ -67,10 +67,9 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     const relativeX = clientX - circuitRect.left;
     const relativeY = clientY - circuitRect.top;
     
-    // Calculate qubit and position with touch-friendly tolerances
-    const touchTolerance = window.innerWidth < 768 ? 30 : 16; // Larger tolerance on mobile
-    const qubit = Math.floor((relativeY - touchTolerance - 15) / 60);
-    const position = Math.floor((relativeX - touchTolerance - 20) / gridSize);
+    // Calculate qubit and position with better accuracy
+    const qubit = Math.floor((relativeY - 15) / 60);
+    const position = Math.max(0, Math.floor((relativeX - 20) / gridSize));
     
     setDragState(prev => ({
       ...prev,
@@ -81,16 +80,20 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
   }, [dragState.isDragging, gridSize, numQubits]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    handleMove(e.clientX, e.clientY);
-  }, [handleMove]);
+    if (dragState.isDragging) {
+      handleMove(e.clientX, e.clientY);
+    }
+  }, [handleMove, dragState.isDragging]);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    e.preventDefault(); // Prevent scrolling while dragging
-    const touch = e.touches[0];
-    if (touch) {
-      handleMove(touch.clientX, touch.clientY);
+    if (dragState.isDragging) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) {
+        handleMove(touch.clientX, touch.clientY);
+      }
     }
-  }, [handleMove]);
+  }, [handleMove, dragState.isDragging]);
 
   const handleEnd = useCallback(() => {
     if (!dragState.isDragging) return;
@@ -115,33 +118,17 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
           case 'SWAP':
             qubits = [dragState.hoverQubit, Math.min(dragState.hoverQubit + 1, numQubits - 1)];
             break;
-          case 'TOFFOLI':
-          case 'CCX':
-          case 'FREDKIN':
-          case 'CSWAP':
-            qubits = [
-              dragState.hoverQubit, 
-              Math.min(dragState.hoverQubit + 1, numQubits - 1),
-              Math.min(dragState.hoverQubit + 2, numQubits - 1)
-            ];
-            break;
-          case 'QFT':
-            qubits = Array.from({ length: Math.min(3, numQubits - dragState.hoverQubit) }, 
-                               (_, i) => dragState.hoverQubit + i);
+          default:
+            qubits = [dragState.hoverQubit, Math.min(dragState.hoverQubit + 1, numQubits - 1)];
             break;
         }
       }
       
       // Set default parameters for parametric gates
       let angle: number | undefined;
-      let params: number[] | undefined;
       
       if (gateType.startsWith('R') || gateType === 'U1') {
         angle = Math.PI / 4;
-      } else if (gateType === 'U2') {
-        params = [0, Math.PI / 2];
-      } else if (gateType === 'U3') {
-        params = [Math.PI / 2, 0, Math.PI / 2];
       }
       
       const newGate: Gate = {
@@ -150,8 +137,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
         qubit,
         qubits,
         position: dragState.hoverPosition,
-        angle,
-        params
+        angle
       };
       
       onGateAdd(newGate);
@@ -186,6 +172,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
       
       // Prevent scrolling on mobile during drag
       document.body.style.touchAction = 'none';
+      document.body.style.overflow = 'hidden';
       
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
@@ -193,6 +180,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
         document.body.style.touchAction = 'auto';
+        document.body.style.overflow = 'auto';
       };
     }
   }, [dragState.isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);

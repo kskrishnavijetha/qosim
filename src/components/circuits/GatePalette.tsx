@@ -17,130 +17,100 @@ export const GatePalette = memo(function GatePalette({
   const { customGates } = useCustomGates();
   const isMobile = useIsMobile();
 
-  const gateTypes = [
-    // Single-qubit gates
-    { type: 'I', name: 'Identity', color: 'bg-slate-400', description: 'Identity gate - no change to qubit state', category: 'Single' },
-    { type: 'H', name: 'Hadamard', color: 'bg-quantum-glow', description: 'Creates superposition - transforms |0⟩ to (|0⟩ + |1⟩)/√2', category: 'Single' },
-    { type: 'X', name: 'Pauli-X', color: 'bg-quantum-neon', description: 'Bit flip gate - transforms |0⟩ ↔ |1⟩', category: 'Single' },
-    { type: 'Y', name: 'Pauli-Y', color: 'bg-purple-500', description: 'Y rotation gate - bit and phase flip', category: 'Single' },
-    { type: 'Z', name: 'Pauli-Z', color: 'bg-quantum-particle', description: 'Phase flip gate - applies -1 phase to |1⟩', category: 'Single' },
-    { type: 'S', name: 'Phase S', color: 'bg-blue-500', description: 'Phase gate - applies i phase to |1⟩ (π/2)', category: 'Single' },
-    { type: 'T', name: 'T Gate', color: 'bg-cyan-500', description: 'T gate - applies e^(iπ/4) phase to |1⟩', category: 'Single' },
-    
-    // Parametric gates
-    { type: 'RX', name: 'Rotation-X', color: 'bg-quantum-energy', description: 'Rotation around X-axis by angle θ', category: 'Parametric' },
-    { type: 'RY', name: 'Rotation-Y', color: 'bg-secondary', description: 'Rotation around Y-axis by angle θ', category: 'Parametric' },
-    { type: 'RZ', name: 'Rotation-Z', color: 'bg-orange-500', description: 'Rotation around Z-axis by angle θ', category: 'Parametric' },
-    
-    // Multi-qubit gates
-    { type: 'CNOT', name: 'CNOT', color: 'bg-quantum-plasma', description: 'Controlled NOT - flips target if control is |1⟩', category: 'Multi' },
-    { type: 'CZ', name: 'CZ', color: 'bg-red-500', description: 'Controlled Z - applies Z to target if control is |1⟩', category: 'Multi' },
-    { type: 'SWAP', name: 'SWAP', color: 'bg-green-500', description: 'Swaps states of two qubits', category: 'Multi' },
-    
-    // Special gates
-    { type: 'M', name: 'Measure', color: 'bg-destructive', description: 'Measurement gate - collapses superposition', category: 'Special' },
-    { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier - no operation', category: 'Special' },
+  const singleQubitGates = [
+    { type: 'I', name: 'Identity', color: 'bg-slate-500', description: 'Identity gate - no change to qubit state' },
+    { type: 'H', name: 'Hadamard', color: 'bg-purple-500', description: 'Creates superposition - transforms |0⟩ to (|0⟩ + |1⟩)/√2' },
+    { type: 'X', name: 'Pauli-X', color: 'bg-cyan-500', description: 'Bit flip gate - transforms |0⟩ ↔ |1⟩' },
+    { type: 'Y', name: 'Pauli-Y', color: 'bg-purple-600', description: 'Y rotation gate - bit and phase flip' },
+    { type: 'Z', name: 'Pauli-Z', color: 'bg-purple-700', description: 'Phase flip gate - applies -1 phase to |1⟩' },
+    { type: 'S', name: 'Phase S', color: 'bg-blue-500', description: 'Phase gate - applies i phase to |1⟩ (π/2)' },
+    { type: 'T', name: 'T Gate', color: 'bg-cyan-600', description: 'T gate - applies e^(iπ/4) phase to |1⟩' },
   ];
 
-  // Add custom gates
-  const customGateTypes = customGates.map(gate => ({
-    type: gate.id,
-    name: gate.name,
-    color: 'bg-quantum-particle',
-    description: gate.description || 'Custom unitary gate',
-    category: 'Custom'
-  }));
+  const parametricGates = [
+    { type: 'RX', name: 'Rotation-X', color: 'bg-cyan-500', description: 'Rotation around X-axis by angle θ' },
+    { type: 'RY', name: 'Rotation-Y', color: 'bg-slate-600', description: 'Rotation around Y-axis by angle θ' },
+    { type: 'RZ', name: 'Rotation-Z', color: 'bg-orange-500', description: 'Rotation around Z-axis by angle θ' },
+  ];
 
-  const allGateTypes = [...gateTypes, ...customGateTypes];
+  const multiQubitGates = [
+    { type: 'CNOT', name: 'CNOT', color: 'bg-purple-500', description: 'Controlled NOT - flips target if control is |1⟩' },
+    { type: 'CZ', name: 'CZ', color: 'bg-red-500', description: 'Controlled Z - applies Z to target if control is |1⟩' },
+    { type: 'SWAP', name: 'SWAP', color: 'bg-green-500', description: 'Swaps states of two qubits' },
+  ];
 
-  // Group gates by category
-  const groupedGates = allGateTypes.reduce((acc, gate) => {
-    if (!acc[gate.category]) {
-      acc[gate.category] = [];
-    }
-    acc[gate.category].push(gate);
-    return acc;
-  }, {} as Record<string, typeof allGateTypes>);
+  const specialGates = [
+    { type: 'M', name: 'Measure', color: 'bg-red-600', description: 'Measurement gate - collapses superposition' },
+    { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier - no operation' },
+  ];
 
-  const categoryIcons = {
-    'Single': '🟩',
-    'Parametric': '🟦', 
-    'Multi': '🟨',
-    'Special': '⚡',
-    'Custom': '🔧'
-  };
-
-  const categoryOrder = ['Single', 'Parametric', 'Multi', 'Special', 'Custom'];
-
-  const handleGateInteraction = (gate: typeof gateTypes[0]) => (e: React.MouseEvent | React.TouchEvent) => {
+  const handleGateInteraction = (e: React.MouseEvent | React.TouchEvent, gateType: string) => {
+    e.preventDefault();
     if ('touches' in e && onGateTouchStart) {
-      onGateTouchStart(e as React.TouchEvent, gate.type);
+      onGateTouchStart(e as React.TouchEvent, gateType);
     } else if ('button' in e) {
-      onGateMouseDown(e as React.MouseEvent, gate.type);
+      onGateMouseDown(e as React.MouseEvent, gateType);
     }
   };
+
+  const renderGateSection = (title: string, gates: typeof singleQubitGates, titleColor: string = 'text-muted-foreground') => (
+    <div className="space-y-2">
+      <h4 className={cn("text-xs font-semibold flex items-center gap-1", titleColor)}>
+        ■ {title}
+      </h4>
+      <div className={cn(
+        "grid gap-2",
+        isMobile ? "grid-cols-4" : "grid-cols-3"
+      )}>
+        {gates.map(gate => (
+          <Tooltip key={gate.type}>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  `${gate.color} rounded-lg border-2 border-transparent flex items-center justify-center font-bold text-white cursor-pointer transition-all duration-200 select-none shadow-md`,
+                  isMobile 
+                    ? "w-12 h-12 text-xs touch-manipulation active:scale-95" 
+                    : "w-14 h-14 text-sm hover:scale-105 hover:shadow-lg"
+                )}
+                onMouseDown={!isMobile ? (e) => onGateMouseDown(e, gate.type) : undefined}
+                onTouchStart={isMobile && onGateTouchStart ? (e) => handleGateInteraction(e, gate.type) : undefined}
+                style={{ 
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none'
+                }}
+              >
+                {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
+              <div className="space-y-2">
+                <p className="font-semibold text-quantum-glow">{gate.name}</p>
+                <p className="text-xs text-muted-foreground">{gate.description}</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className={cn(
-      "space-y-4 overflow-y-auto",
-      isMobile ? "w-full max-h-64" : "w-64 max-h-[600px]"
+      "bg-background border border-border rounded-lg p-4 space-y-6 overflow-y-auto",
+      isMobile ? "w-full max-h-80" : "w-64 max-h-[600px]"
     )}>
       <h3 className={cn(
-        "font-mono text-quantum-neon sticky top-0 bg-background",
-        isMobile ? "text-xs mb-2" : "text-sm mb-4"
+        "font-mono text-foreground sticky top-0 bg-background border-b border-border pb-2",
+        isMobile ? "text-sm" : "text-base"
       )}>
-        🎛️ Quantum Gate Palette
+        🎛️ Quantum Gates
       </h3>
       
-      {categoryOrder.map(category => {
-        const gates = groupedGates[category] || [];
-        if (gates.length === 0) return null;
-        
-        return (
-          <div key={category} className="space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-              {categoryIcons[category]} {category} Gates
-            </h4>
-            <div className={cn(
-              "grid gap-2",
-              isMobile ? "grid-cols-4" : "grid-cols-3"
-            )}>
-              {gates.map(gate => (
-                <Tooltip key={gate.type}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={cn(
-                        `${gate.color} rounded-lg border-2 border-current flex items-center justify-center text-xs font-bold text-black cursor-pointer transition-all duration-300 quantum-glow animate-in fade-in select-none`,
-                        isMobile 
-                          ? "w-10 h-10 touch-manipulation active:scale-95" 
-                          : "w-12 h-12 hover:scale-110"
-                      )}
-                      onMouseDown={!isMobile ? (e) => onGateMouseDown(e, gate.type) : undefined}
-                      onTouchStart={isMobile && onGateTouchStart ? (e) => onGateTouchStart(e, gate.type) : undefined}
-                      style={{ 
-                        animationDelay: `${allGateTypes.indexOf(gate) * 50}ms`,
-                        WebkitTouchCallout: 'none',
-                        WebkitUserSelect: 'none'
-                      }}
-                    >
-                      {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-quantum-glow">{gate.name}</p>
-                      <p className="text-xs text-muted-foreground">{gate.description}</p>
-                      <div className="text-xs text-quantum-particle border-t pt-1">
-                        Category: {category}
-                      </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      {renderGateSection("Single Qubit Gates", singleQubitGates)}
+      {renderGateSection("Parametric Gates", parametricGates, "text-blue-400")}
+      {renderGateSection("Multi Gates", multiQubitGates, "text-green-400")}
+      {renderGateSection("Special Gates", specialGates, "text-yellow-400")}
     </div>
   );
 });
