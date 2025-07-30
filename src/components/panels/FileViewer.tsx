@@ -25,12 +25,13 @@ interface FileViewerProps {
 export function FileViewer({ file, onClose }: FileViewerProps) {
   const [activeTab, setActiveTab] = useState("content");
 
-  console.log('FileViewer - received file:', file);
-
+  console.log('=== FileViewer RENDER START ===');
+  console.log('FileViewer - Props received:', { file: file ? { id: file.id, name: file.name, type: file.type } : null });
+  
   if (!file) {
-    console.log('FileViewer - No file provided');
+    console.log('FileViewer - No file provided, showing empty state');
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 p-8">
         <div className="text-center">
           <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">No file selected</p>
@@ -39,7 +40,14 @@ export function FileViewer({ file, onClose }: FileViewerProps) {
     );
   }
 
-  console.log('FileViewer - Rendering file:', file.name, 'type:', file.type);
+  console.log('FileViewer - File details:', {
+    id: file.id,
+    name: file.name,
+    type: file.type,
+    size: file.sizeDisplay,
+    favorite: file.favorite,
+    superposition: file.superposition
+  });
 
   const getFileIcon = (type: string) => {
     switch (type) {
@@ -60,15 +68,28 @@ export function FileViewer({ file, onClose }: FileViewerProps) {
   };
 
   const renderFileContent = () => {
-    console.log('Rendering content for file type:', file.type);
+    console.log('renderFileContent called for type:', file.type);
+    
+    const commonContent = (
+      <div className="p-6">
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-4">
+            {getFileIcon(file.type)}
+          </div>
+          <h3 className="text-xl font-semibold mb-2">{file.name}</h3>
+          <Badge variant="outline" className="mb-4">{file.type.toUpperCase()}</Badge>
+          <p className="text-muted-foreground">Size: {file.sizeDisplay}</p>
+        </div>
+      </div>
+    );
     
     switch (file.type) {
       case "circuit":
         return (
-          <div className="space-y-4 p-4">
+          <div className="p-6 space-y-4">
             <div className="bg-quantum-matrix/20 rounded-lg p-4 border border-quantum-glow/20">
-              <h4 className="text-sm font-mono text-quantum-glow mb-2">Circuit Definition</h4>
-              <pre className="text-sm text-quantum-neon font-mono whitespace-pre-wrap">
+              <h4 className="text-sm font-mono text-quantum-glow mb-3">Circuit Definition</h4>
+              <pre className="text-sm text-quantum-neon font-mono whitespace-pre-wrap overflow-auto">
 {`OPENQASM 2.0;
 include "qelib1.inc";
 
@@ -103,10 +124,10 @@ measure q -> c;`}
         
       case "algorithm":
         return (
-          <div className="space-y-4 p-4">
+          <div className="p-6 space-y-4">
             <div className="bg-quantum-matrix/20 rounded-lg p-4 border border-quantum-neon/20">
-              <h4 className="text-sm font-mono text-quantum-neon mb-2">Python Code</h4>
-              <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
+              <h4 className="text-sm font-mono text-quantum-neon mb-3">Python Code</h4>
+              <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap overflow-auto">
 {`def grover_search(oracle, n_qubits):
     """
     Grover's quantum search algorithm
@@ -131,10 +152,10 @@ measure q -> c;`}
         
       case "data":
         return (
-          <div className="space-y-4 p-4">
+          <div className="p-6 space-y-4">
             <div className="bg-quantum-matrix/20 rounded-lg p-4 border border-green-400/20">
-              <h4 className="text-sm font-mono text-green-400 mb-2">Measurement Results</h4>
-              <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
+              <h4 className="text-sm font-mono text-green-400 mb-3">Measurement Results</h4>
+              <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap overflow-auto">
 {`{
   "experiment_id": "bell_state_001",
   "shots": 1024,
@@ -152,9 +173,9 @@ measure q -> c;`}
         
       case "model":
         return (
-          <div className="space-y-4 p-4">
+          <div className="p-6 space-y-4">
             <div className="bg-quantum-matrix/20 rounded-lg p-4 border border-purple-400/20">
-              <h4 className="text-sm font-mono text-purple-400 mb-2">Model Architecture</h4>
+              <h4 className="text-sm font-mono text-purple-400 mb-3">Model Architecture</h4>
               <div className="space-y-2 text-sm">
                 <p><span className="text-purple-400">Input Layer:</span> 16 qubits</p>
                 <p><span className="text-purple-400">Hidden Layers:</span> 3 variational layers</p>
@@ -167,23 +188,17 @@ measure q -> c;`}
         
       case "folder":
         return (
-          <div className="text-center py-8">
-            <Archive className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-            <h3 className="text-lg font-semibold mb-2">Directory</h3>
-            <p className="text-muted-foreground">This is a folder containing multiple files</p>
-            <p className="text-sm text-muted-foreground mt-2">{file.sizeDisplay}</p>
+          <div className="text-center py-12 px-6">
+            <Archive className="w-20 h-20 mx-auto mb-4 text-blue-400" />
+            <h3 className="text-lg font-semibold mb-2 text-blue-400">Directory</h3>
+            <p className="text-muted-foreground mb-2">This is a folder containing multiple files</p>
+            <p className="text-sm text-muted-foreground">{file.sizeDisplay}</p>
           </div>
         );
         
       default:
-        return (
-          <div className="text-center py-8 text-muted-foreground p-4">
-            <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="mb-2">File preview for <strong>{file.name}</strong></p>
-            <p className="text-sm">Type: {file.type}</p>
-            <p className="text-sm">Size: {file.sizeDisplay}</p>
-          </div>
-        );
+        console.log('Rendering default content for file:', file.name);
+        return commonContent;
     }
   };
 
@@ -197,13 +212,18 @@ measure q -> c;`}
     }
   };
 
+  console.log('FileViewer - About to render main component');
+
   return (
-    <div className="w-full min-h-[400px]">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+    <div className="w-full h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-quantum-glow/20">
+        <div className="flex items-center gap-3">
           {getFileIcon(file.type)}
-          <h3 className="text-lg font-semibold">{file.name}</h3>
-          <Badge variant="outline">{file.type.toUpperCase()}</Badge>
+          <div>
+            <h3 className="text-lg font-semibold">{file.name}</h3>
+            <Badge variant="outline" className="text-xs">{file.type.toUpperCase()}</Badge>
+          </div>
         </div>
         
         <div className="flex items-center gap-2">
@@ -218,105 +238,110 @@ measure q -> c;`}
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="quantum-panel mb-4">
-          <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="metadata">Metadata</TabsTrigger>
-        </TabsList>
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+          <TabsList className="quantum-panel mx-4 mt-4 mb-0">
+            <TabsTrigger value="content">Content</TabsTrigger>
+            <TabsTrigger value="properties">Properties</TabsTrigger>
+            <TabsTrigger value="metadata">Metadata</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="content" className="mt-0">
-          <Card className="quantum-panel">
-            <CardContent className="p-0">
-              <ScrollArea className="h-[400px]">
-                {renderFileContent()}
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <div className="flex-1 overflow-hidden">
+            <TabsContent value="content" className="h-full m-4 mt-2">
+              <Card className="quantum-panel h-full">
+                <CardContent className="p-0 h-full">
+                  <ScrollArea className="h-full">
+                    {renderFileContent()}
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="properties" className="mt-0">
-          <Card className="quantum-panel">
-            <CardHeader>
-              <CardTitle className="text-sm">File Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Name</p>
-                  <p className="font-mono">{file.name}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Type</p>
-                  <Badge variant="outline">{file.type.toUpperCase()}</Badge>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Size</p>
-                  <p className="font-mono">{file.sizeDisplay}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Modified</p>
-                  <p className="text-xs">{formatDate(file.updatedAt)}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 pt-2">
-                {file.superposition && (
-                  <Badge className="bg-quantum-glow/20 text-quantum-glow">
-                    Superposition
-                  </Badge>
-                )}
-                {file.favorite && (
-                  <Badge className="bg-yellow-400/20 text-yellow-400">
-                    Favorite
-                  </Badge>
-                )}
-              </div>
-              
-              {file.tags && file.tags.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground text-sm mb-2">Tags</p>
-                  <div className="flex flex-wrap gap-1">
-                    {file.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
+            <TabsContent value="properties" className="h-full m-4 mt-2">
+              <Card className="quantum-panel h-full">
+                <CardHeader>
+                  <CardTitle className="text-sm">File Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Name</p>
+                      <p className="font-mono">{file.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Type</p>
+                      <Badge variant="outline">{file.type.toUpperCase()}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Size</p>
+                      <p className="font-mono">{file.sizeDisplay}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Modified</p>
+                      <p className="text-xs">{formatDate(file.updatedAt)}</p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  
+                  <div className="flex items-center gap-2 pt-2">
+                    {file.superposition && (
+                      <Badge className="bg-quantum-glow/20 text-quantum-glow">
+                        Superposition
+                      </Badge>
+                    )}
+                    {file.favorite && (
+                      <Badge className="bg-yellow-400/20 text-yellow-400">
+                        Favorite
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {file.tags && file.tags.length > 0 && (
+                    <div>
+                      <p className="text-muted-foreground text-sm mb-2">Tags</p>
+                      <div className="flex flex-wrap gap-1">
+                        {file.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="metadata" className="mt-0">
-          <Card className="quantum-panel">
-            <CardHeader>
-              <CardTitle className="text-sm">Version Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-muted-foreground">Current Version</p>
-                  <p className="font-mono">{file.lastVersion || 'v1.0'}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Total Versions</p>
-                  <p className="font-mono">{file.versions || 1}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Created</p>
-                  <p className="text-xs">{formatDate(file.createdAt)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Last Modified</p>
-                  <p className="text-xs">{formatDate(file.updatedAt)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="metadata" className="h-full m-4 mt-2">
+              <Card className="quantum-panel h-full">
+                <CardHeader>
+                  <CardTitle className="text-sm">Version Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-muted-foreground">Current Version</p>
+                      <p className="font-mono">{file.lastVersion || 'v1.0'}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Total Versions</p>
+                      <p className="font-mono">{file.versions || 1}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Created</p>
+                      <p className="text-xs">{formatDate(file.createdAt)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Last Modified</p>
+                      <p className="text-xs">{formatDate(file.updatedAt)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 }

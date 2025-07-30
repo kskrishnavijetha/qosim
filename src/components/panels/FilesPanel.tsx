@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,9 +21,10 @@ export function FilesPanel() {
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
 
-  console.log('FilesPanel render - files count:', files.length);
-  console.log('FilesPanel render - selectedFile:', selectedFile);
-  console.log('FilesPanel render - showFileViewer:', showFileViewer);
+  console.log('=== FilesPanel RENDER ===');
+  console.log('FilesPanel - files count:', files.length);
+  console.log('FilesPanel - selectedFile:', selectedFile ? { id: selectedFile.id, name: selectedFile.name } : null);
+  console.log('FilesPanel - showFileViewer:', showFileViewer);
 
   // Transform files to legacy format for compatibility
   const legacyFiles = files.map(file => ({
@@ -61,17 +61,19 @@ export function FilesPanel() {
   };
 
   const handleFileSelect = (fileId: string) => {
-    console.log('handleFileSelect called with fileId:', fileId);
+    console.log('=== handleFileSelect CALLED ===');
+    console.log('handleFileSelect - fileId:', fileId);
     
     const file = files.find(f => f.id === fileId);
-    console.log('Found file:', file);
+    console.log('handleFileSelect - found file:', file ? { id: file.id, name: file.name, type: file.type } : null);
     
     if (file) {
-      console.log('Setting selected file and opening viewer');
+      console.log('handleFileSelect - Setting selectedFile and opening viewer');
       setSelectedFile(file);
       setShowFileViewer(true);
+      console.log('handleFileSelect - State should be updated');
     } else {
-      console.error('File not found with id:', fileId);
+      console.error('handleFileSelect - File not found with id:', fileId);
     }
   };
 
@@ -99,7 +101,7 @@ export function FilesPanel() {
   };
 
   const handleCloseFileViewer = () => {
-    console.log('Closing file viewer');
+    console.log('=== handleCloseFileViewer CALLED ===');
     setShowFileViewer(false);
     setSelectedFile(null);
   };
@@ -169,18 +171,24 @@ export function FilesPanel() {
 
         {/* File Viewer Dialog */}
         <Dialog open={showFileViewer} onOpenChange={handleCloseFileViewer}>
-          <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[90vh] overflow-hidden">
-            <DialogHeader>
+          <DialogContent className="quantum-panel border-quantum-glow/30 max-w-6xl max-h-[95vh] h-[90vh] p-0">
+            <DialogHeader className="p-4 pb-0">
               <DialogTitle className="text-quantum-glow">
-                {selectedFile?.name || 'Loading...'}
+                {selectedFile?.name || 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
-            {selectedFile && (
-              <FileViewer 
-                file={selectedFile} 
-                onClose={handleCloseFileViewer}
-              />
-            )}
+            <div className="flex-1 overflow-hidden">
+              {selectedFile ? (
+                <FileViewer 
+                  file={selectedFile} 
+                  onClose={handleCloseFileViewer}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Loading file...</p>
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
 
