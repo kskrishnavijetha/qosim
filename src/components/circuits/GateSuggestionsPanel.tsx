@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, Zap, BookOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Lightbulb, Brain, Sparkles, TrendingUp, BookOpen } from 'lucide-react';
+import { quantumAI, AIRecommendation } from '@/services/QuantumAIService';
 
 interface Gate {
   id: string;
@@ -28,6 +29,9 @@ interface GateSuggestionsPanelProps {
 }
 
 export function GateSuggestionsPanel({ circuit, onSuggestionClick }: GateSuggestionsPanelProps) {
+  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
   const generateSuggestions = (): Suggestion[] => {
     const suggestions: Suggestion[] = [];
     const gateTypes = circuit.map(g => g.type);
@@ -126,19 +130,45 @@ export function GateSuggestionsPanel({ circuit, onSuggestionClick }: GateSuggest
     return suggestions;
   };
 
-  const suggestions = generateSuggestions();
+  // Get AI-powered recommendations
+  useEffect(() => {
+    if (circuit.length > 0) {
+      loadAIRecommendations();
+    }
+  }, [circuit]);
 
-  if (suggestions.length === 0) {
+  const loadAIRecommendations = async () => {
+    setIsLoadingAI(true);
+    try {
+      const recommendations = await quantumAI.getContextualRecommendations(circuit);
+      setAiRecommendations(recommendations);
+    } catch (error) {
+      console.error('Failed to load AI recommendations:', error);
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
+
+  const suggestions = generateSuggestions();
+  const allRecommendations = [...suggestions.map(s => ({
+    type: s.type as any,
+    title: s.title,
+    description: s.description,
+    confidence: 0.8,
+    implementation: s.gates?.join(', ')
+  })), ...aiRecommendations];
+
+  if (allRecommendations.length === 0 && !isLoadingAI) {
     return (
       <Card className="quantum-panel neon-border">
         <CardHeader>
           <CardTitle className="text-sm font-mono text-quantum-glow flex items-center gap-2">
-            <Lightbulb className="w-4 h-4" />
-            AI Suggestions
+            <Brain className="w-4 h-4" />
+            AI-Powered Suggestions
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Build your circuit to see suggestions...</p>
+          <p className="text-sm text-muted-foreground">Build your circuit to see AI suggestions...</p>
         </CardContent>
       </Card>
     );
@@ -148,52 +178,81 @@ export function GateSuggestionsPanel({ circuit, onSuggestionClick }: GateSuggest
     <Card className="quantum-panel neon-border animate-in fade-in slide-in-from-right">
       <CardHeader>
         <CardTitle className="text-sm font-mono text-quantum-glow flex items-center gap-2">
-          <Lightbulb className="w-4 h-4" />
-          AI Suggestions
+          <Brain className="w-4 h-4" />
+          AI-Powered Suggestions
+          {isLoadingAI && <div className="w-3 h-3 border border-quantum-neon border-t-transparent rounded-full animate-spin" />}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {suggestions.map((suggestion, index) => (
+        {allRecommendations.map((recommendation, index) => (
           <div key={index} className="space-y-2">
             <div className="flex items-start gap-2">
               <div className="text-quantum-neon mt-0.5">
-                {suggestion.icon}
+                {getRecommendationIcon(recommendation.type)}
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-medium">{suggestion.title}</h4>
+                  <h4 className="text-sm font-medium">{recommendation.title}</h4>
                   <Badge 
                     variant="secondary" 
                     className="text-xs"
                   >
-                    {suggestion.type === 'next-gate' ? 'Next' : 
-                     suggestion.type === 'algorithm' ? 'Algorithm' : 'Tip'}
+                    {getRecommendationTypeLabel(recommendation.type)}
                   </Badge>
+                  {recommendation.confidence && (
+                    <Badge variant="outline" className="text-xs text-quantum-energy">
+                      {(recommendation.confidence * 100).toFixed(0)}%
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {suggestion.description}
+                  {recommendation.description}
                 </p>
-                {suggestion.gates && (
+                {recommendation.educationalContext && (
+                  <p className="text-xs text-quantum-particle italic">
+                    💡 {recommendation.educationalContext}
+                  </p>
+                )}
+                {recommendation.implementation && (
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {suggestion.gates.map((gate, gateIndex) => (
+                    {recommendation.implementation.split(',').map((item, itemIndex) => (
                       <Button
-                        key={gateIndex}
+                        key={itemIndex}
                         variant="outline"
                         size="sm"
                         className="h-6 px-2 text-xs neon-border hover:scale-105 transition-all duration-200"
-                        onClick={() => onSuggestionClick(suggestion)}
+                        onClick={() => onSuggestionClick(recommendation as any)}
                       >
-                        {gate}
+                        {item.trim()}
                       </Button>
                     ))}
                   </div>
                 )}
               </div>
             </div>
-            {index < suggestions.length - 1 && <Separator className="opacity-30" />}
+            {index < allRecommendations.length - 1 && <Separator className="opacity-30" />}
           </div>
         ))}
       </CardContent>
     </Card>
   );
+}
+
+function getRecommendationIcon(type: string) {
+  switch (type) {
+    case 'algorithm': return <Sparkles className="w-4 h-4" />;
+    case 'optimization': return <TrendingUp className="w-4 h-4" />;
+    case 'educational': return <BookOpen className="w-4 h-4" />;
+    default: return <Lightbulb className="w-4 h-4" />;
+  }
+}
+
+function getRecommendationTypeLabel(type: string) {
+  switch (type) {
+    case 'algorithm': return 'Algorithm';
+    case 'optimization': return 'Optimize';
+    case 'educational': return 'Learn';
+    case 'gate': return 'Gate';
+    default: return 'Suggestion';
+  }
 }
