@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Lightbulb, Brain, Sparkles, TrendingUp, BookOpen } from 'lucide-react';
+import { Lightbulb, Brain, Sparkles, TrendingUp, BookOpen, Zap } from 'lucide-react';
 import { quantumAI, AIRecommendation } from '@/services/QuantumAIService';
 
 interface Gate {
@@ -21,6 +21,7 @@ interface Suggestion {
   description: string;
   gates?: string[];
   icon: React.ReactNode;
+  educationalContext?: string;
 }
 
 interface GateSuggestionsPanelProps {
@@ -150,13 +151,20 @@ export function GateSuggestionsPanel({ circuit, onSuggestionClick }: GateSuggest
   };
 
   const suggestions = generateSuggestions();
-  const allRecommendations = [...suggestions.map(s => ({
-    type: s.type as any,
-    title: s.title,
-    description: s.description,
-    confidence: 0.8,
-    implementation: s.gates?.join(', ')
-  })), ...aiRecommendations];
+  const allRecommendations: (Suggestion & AIRecommendation)[] = [
+    ...suggestions.map(s => ({
+      ...s,
+      type: s.type as any,
+      confidence: 0.8,
+      implementation: s.gates?.join(', ') || '',
+      educationalContext: s.educationalContext
+    })), 
+    ...aiRecommendations.map(r => ({
+      ...r,
+      icon: getRecommendationIcon(r.type),
+      gates: r.implementation ? r.implementation.split(',') : undefined
+    }))
+  ];
 
   if (allRecommendations.length === 0 && !isLoadingAI) {
     return (
@@ -188,7 +196,7 @@ export function GateSuggestionsPanel({ circuit, onSuggestionClick }: GateSuggest
           <div key={index} className="space-y-2">
             <div className="flex items-start gap-2">
               <div className="text-quantum-neon mt-0.5">
-                {getRecommendationIcon(recommendation.type)}
+                {recommendation.icon}
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
