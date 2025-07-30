@@ -24,6 +24,7 @@ export function FilesPanel() {
 
   console.log('FilesPanel render - files count:', files.length);
   console.log('FilesPanel render - selectedFile:', selectedFile);
+  console.log('FilesPanel render - showFileViewer:', showFileViewer);
 
   // Transform files to legacy format for compatibility
   const legacyFiles = files.map(file => ({
@@ -70,17 +71,18 @@ export function FilesPanel() {
       setSelectedFile(file);
       setShowFileViewer(true);
     } else {
-      console.error('File not found:', fileId);
+      console.error('File not found with id:', fileId);
     }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
     console.log('Context action:', action, 'for file:', fileId);
+    const file = files.find(f => f.id === fileId);
+    
     if (action === "versions") {
-      setSelectedFile(files.find(f => f.id === fileId) || null);
+      setSelectedFile(file || null);
       setShowVersionHistory(true);
     } else if (action === "share") {
-      const file = files.find(f => f.id === fileId);
       if (file) {
         setShareFile(file);
         setShowShareDialog(true);
@@ -167,20 +169,18 @@ export function FilesPanel() {
 
         {/* File Viewer Dialog */}
         <Dialog open={showFileViewer} onOpenChange={handleCloseFileViewer}>
-          <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[80vh]">
+          <DialogContent className="quantum-panel border-quantum-glow/30 max-w-4xl max-h-[90vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle className="text-quantum-glow">
-                File Viewer - {selectedFile?.name || 'Loading...'}
+                {selectedFile?.name || 'Loading...'}
               </DialogTitle>
             </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto">
-              {selectedFile && (
-                <FileViewer 
-                  file={selectedFile} 
-                  onClose={handleCloseFileViewer}
-                />
-              )}
-            </div>
+            {selectedFile && (
+              <FileViewer 
+                file={selectedFile} 
+                onClose={handleCloseFileViewer}
+              />
+            )}
           </DialogContent>
         </Dialog>
 
