@@ -70,12 +70,7 @@ export function FilesPanel() {
     if (file) {
       console.log('handleFileSelect - Setting selectedFile and opening viewer');
       setSelectedFile(file);
-      
-      // Force a small delay to ensure state is updated
-      setTimeout(() => {
-        console.log('handleFileSelect - Opening file viewer dialog');
-        setShowFileViewer(true);
-      }, 10);
+      setShowFileViewer(true);
     } else {
       console.error('handleFileSelect - File not found with id:', fileId);
     }
@@ -122,12 +117,10 @@ export function FilesPanel() {
     );
   }
 
-  // Move console.log outside of JSX
-  console.log('Rendering Dialog with:', { showFileViewer, selectedFile: selectedFile?.name });
-
   return (
     <div className="h-full overflow-auto quantum-grid">
       <div className="p-6 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-quantum-glow">Quantum File System</h2>
@@ -176,28 +169,15 @@ export function FilesPanel() {
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
 
-        {/* Debug: Test Button */}
-        <Button 
-          onClick={() => {
-            console.log('Test button clicked, forcing dialog open');
-            setSelectedFile(files[0]);
-            setShowFileViewer(true);
-          }}
-          variant="outline"
-          className="mb-4"
-        >
-          Debug: Test File Viewer with First File
-        </Button>
-
         {/* File Viewer Dialog */}
         <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
-          <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] p-0">
-            <DialogHeader className="p-4">
+          <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] overflow-hidden">
+            <DialogHeader>
               <DialogTitle>
                 {selectedFile ? selectedFile.name : 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-hidden p-4">
+            <div className="flex-1 overflow-hidden">
               {selectedFile ? (
                 <FileViewer file={selectedFile} onClose={handleCloseFileViewer} />
               ) : (
