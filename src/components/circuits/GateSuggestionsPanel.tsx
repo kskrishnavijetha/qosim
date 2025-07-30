@@ -24,6 +24,18 @@ interface Suggestion {
   educationalContext?: string;
 }
 
+// Unified type for displaying recommendations
+interface DisplayRecommendation {
+  type: 'next-gate' | 'algorithm' | 'tip' | 'optimization' | 'gate' | 'educational';
+  title: string;
+  description: string;
+  gates?: string[];
+  icon: React.ReactNode;
+  confidence?: number;
+  implementation?: string;
+  educationalContext?: string;
+}
+
 interface GateSuggestionsPanelProps {
   circuit: Gate[];
   onSuggestionClick: (suggestion: Suggestion) => void;
@@ -151,17 +163,29 @@ export function GateSuggestionsPanel({ circuit, onSuggestionClick }: GateSuggest
   };
 
   const suggestions = generateSuggestions();
-  const allRecommendations: (Suggestion & AIRecommendation)[] = [
+  
+  // Convert both suggestion types to unified DisplayRecommendation format
+  const allRecommendations: DisplayRecommendation[] = [
+    // Convert local suggestions
     ...suggestions.map(s => ({
-      ...s,
-      type: s.type as any,
+      type: s.type,
+      title: s.title,
+      description: s.description,
+      gates: s.gates,
+      icon: s.icon,
       confidence: 0.8,
       implementation: s.gates?.join(', ') || '',
       educationalContext: s.educationalContext
-    })), 
+    })),
+    // Convert AI recommendations
     ...aiRecommendations.map(r => ({
-      ...r,
+      type: r.type,
+      title: r.title,
+      description: r.description,
       icon: getRecommendationIcon(r.type),
+      confidence: r.confidence,
+      implementation: r.implementation,
+      educationalContext: r.educationalContext,
       gates: r.implementation ? r.implementation.split(',') : undefined
     }))
   ];
@@ -251,6 +275,7 @@ function getRecommendationIcon(type: string) {
     case 'algorithm': return <Sparkles className="w-4 h-4" />;
     case 'optimization': return <TrendingUp className="w-4 h-4" />;
     case 'educational': return <BookOpen className="w-4 h-4" />;
+    case 'gate': return <Zap className="w-4 h-4" />;
     default: return <Lightbulb className="w-4 h-4" />;
   }
 }
@@ -261,6 +286,8 @@ function getRecommendationTypeLabel(type: string) {
     case 'optimization': return 'Optimize';
     case 'educational': return 'Learn';
     case 'gate': return 'Gate';
+    case 'next-gate': return 'Next Gate';
+    case 'tip': return 'Tip';
     default: return 'Suggestion';
   }
 }
