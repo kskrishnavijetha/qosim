@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,8 +71,12 @@ export function FilesPanel() {
     if (file) {
       console.log('handleFileSelect - Setting selectedFile and opening viewer');
       setSelectedFile(file);
-      setShowFileViewer(true);
-      console.log('handleFileSelect - State should be updated');
+      
+      // Force a small delay to ensure state is updated
+      setTimeout(() => {
+        console.log('handleFileSelect - Opening file viewer dialog');
+        setShowFileViewer(true);
+      }, 10);
     } else {
       console.error('handleFileSelect - File not found with id:', fileId);
     }
@@ -169,23 +174,34 @@ export function FilesPanel() {
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
 
+        {/* Debug: Test Button */}
+        <Button 
+          onClick={() => {
+            console.log('Test button clicked, forcing dialog open');
+            setSelectedFile(files[0]);
+            setShowFileViewer(true);
+          }}
+          variant="outline"
+          className="mb-4"
+        >
+          Debug: Test File Viewer with First File
+        </Button>
+
         {/* File Viewer Dialog */}
-        <Dialog open={showFileViewer} onOpenChange={handleCloseFileViewer}>
-          <DialogContent className="quantum-panel border-quantum-glow/30 max-w-6xl max-h-[95vh] h-[90vh] p-0">
-            <DialogHeader className="p-4 pb-0">
-              <DialogTitle className="text-quantum-glow">
-                {selectedFile?.name || 'File Viewer'}
+        {console.log('Rendering Dialog with:', { showFileViewer, selectedFile: selectedFile?.name })}
+        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
+          <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] p-0">
+            <DialogHeader className="p-4">
+              <DialogTitle>
+                {selectedFile ? selectedFile.name : 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden p-4">
               {selectedFile ? (
-                <FileViewer 
-                  file={selectedFile} 
-                  onClose={handleCloseFileViewer}
-                />
+                <FileViewer file={selectedFile} onClose={handleCloseFileViewer} />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Loading file...</p>
+                  <p>No file selected</p>
                 </div>
               )}
             </div>
