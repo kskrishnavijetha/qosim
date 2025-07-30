@@ -26,7 +26,6 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
   });
 
   const circuitRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Handle both mouse and touch events
   const handleStart = useCallback((
@@ -34,7 +33,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     clientY: number, 
     gateType: string
   ) => {
-    dragStartRef.current = { x: clientX, y: clientY };
+    console.log('Drag start:', gateType, clientX, clientY);
     
     setDragState({
       isDragging: true,
@@ -46,12 +45,14 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent, gateType: string) => {
+    console.log('Mouse down:', gateType);
     e.preventDefault();
     e.stopPropagation();
     handleStart(e.clientX, e.clientY, gateType);
   }, [handleStart]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent, gateType: string) => {
+    console.log('Touch start:', gateType);
     e.preventDefault();
     e.stopPropagation();
     const touch = e.touches[0];
@@ -96,6 +97,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
   }, [handleMove, dragState.isDragging]);
 
   const handleEnd = useCallback(() => {
+    console.log('Drag end:', dragState);
     if (!dragState.isDragging) return;
     
     if (dragState.hoverQubit !== null && dragState.hoverPosition !== null) {
@@ -140,6 +142,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
         angle
       };
       
+      console.log('Adding gate:', newGate);
       onGateAdd(newGate);
     }
     
@@ -150,7 +153,6 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
       hoverQubit: null,
       hoverPosition: null
     });
-    dragStartRef.current = null;
   }, [dragState, onGateAdd, numQubits]);
 
   const handleMouseUp = useCallback(() => {
@@ -164,6 +166,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
 
   useEffect(() => {
     if (dragState.isDragging) {
+      console.log('Adding event listeners');
       // Add both mouse and touch event listeners
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
@@ -175,6 +178,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
       document.body.style.overflow = 'hidden';
       
       return () => {
+        console.log('Removing event listeners');
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
         document.removeEventListener('touchmove', handleTouchMove);

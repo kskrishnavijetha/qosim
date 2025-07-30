@@ -18,14 +18,14 @@ interface DraggingGateProps {
 const getGateStyle = (type: string) => {
   const styles = {
     I: { bg: 'bg-slate-500', text: 'text-white', border: 'border-slate-600' },
-    H: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
+    H: { bg: 'bg-purple-600', text: 'text-white', border: 'border-purple-700' },
     X: { bg: 'bg-cyan-500', text: 'text-white', border: 'border-cyan-600' },
-    Y: { bg: 'bg-purple-600', text: 'text-white', border: 'border-purple-700' },
+    Y: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
     Z: { bg: 'bg-purple-700', text: 'text-white', border: 'border-purple-800' },
-    S: { bg: 'bg-blue-500', text: 'text-white', border: 'border-blue-600' },
+    S: { bg: 'bg-blue-600', text: 'text-white', border: 'border-blue-700' },
     T: { bg: 'bg-cyan-600', text: 'text-white', border: 'border-cyan-700' },
-    RX: { bg: 'bg-cyan-500', text: 'text-white', border: 'border-cyan-600' },
-    RY: { bg: 'bg-slate-600', text: 'text-white', border: 'border-slate-700' },
+    RX: { bg: 'bg-cyan-400', text: 'text-white', border: 'border-cyan-500' },
+    RY: { bg: 'bg-slate-500', text: 'text-white', border: 'border-slate-600' },
     RZ: { bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-600' },
     CNOT: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
     CX: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
@@ -64,7 +64,7 @@ export function DraggingGate({ dragState }: DraggingGateProps) {
         touchAction: 'none'
       }}
     >
-      {dragState.gateType}
+      {dragState.gateType === 'BARRIER' ? 'BAR' : dragState.gateType}
     </div>
   );
 }

@@ -19,17 +19,17 @@ export const GatePalette = memo(function GatePalette({
 
   const singleQubitGates = [
     { type: 'I', name: 'Identity', color: 'bg-slate-500', description: 'Identity gate - no change to qubit state' },
-    { type: 'H', name: 'Hadamard', color: 'bg-purple-500', description: 'Creates superposition - transforms |0⟩ to (|0⟩ + |1⟩)/√2' },
+    { type: 'H', name: 'Hadamard', color: 'bg-purple-600', description: 'Creates superposition - transforms |0⟩ to (|0⟩ + |1⟩)/√2' },
     { type: 'X', name: 'Pauli-X', color: 'bg-cyan-500', description: 'Bit flip gate - transforms |0⟩ ↔ |1⟩' },
-    { type: 'Y', name: 'Pauli-Y', color: 'bg-purple-600', description: 'Y rotation gate - bit and phase flip' },
+    { type: 'Y', name: 'Pauli-Y', color: 'bg-purple-500', description: 'Y rotation gate - bit and phase flip' },
     { type: 'Z', name: 'Pauli-Z', color: 'bg-purple-700', description: 'Phase flip gate - applies -1 phase to |1⟩' },
-    { type: 'S', name: 'Phase S', color: 'bg-blue-500', description: 'Phase gate - applies i phase to |1⟩ (π/2)' },
+    { type: 'S', name: 'Phase S', color: 'bg-blue-600', description: 'Phase gate - applies i phase to |1⟩ (π/2)' },
     { type: 'T', name: 'T Gate', color: 'bg-cyan-600', description: 'T gate - applies e^(iπ/4) phase to |1⟩' },
   ];
 
   const parametricGates = [
-    { type: 'RX', name: 'Rotation-X', color: 'bg-cyan-500', description: 'Rotation around X-axis by angle θ' },
-    { type: 'RY', name: 'Rotation-Y', color: 'bg-slate-600', description: 'Rotation around Y-axis by angle θ' },
+    { type: 'RX', name: 'Rotation-X', color: 'bg-cyan-400', description: 'Rotation around X-axis by angle θ' },
+    { type: 'RY', name: 'Rotation-Y', color: 'bg-slate-500', description: 'Rotation around Y-axis by angle θ' },
     { type: 'RZ', name: 'Rotation-Z', color: 'bg-orange-500', description: 'Rotation around Z-axis by angle θ' },
   ];
 
@@ -44,17 +44,22 @@ export const GatePalette = memo(function GatePalette({
     { type: 'BARRIER', name: 'Barrier', color: 'bg-amber-500', description: 'Circuit barrier - no operation' },
   ];
 
-  const handleGateInteraction = (e: React.MouseEvent | React.TouchEvent, gateType: string) => {
+  const handleMouseDown = (e: React.MouseEvent, gateType: string) => {
     e.preventDefault();
-    if ('touches' in e && onGateTouchStart) {
-      onGateTouchStart(e as React.TouchEvent, gateType);
-    } else if ('button' in e) {
-      onGateMouseDown(e as React.MouseEvent, gateType);
+    e.stopPropagation();
+    onGateMouseDown(e, gateType);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, gateType: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onGateTouchStart) {
+      onGateTouchStart(e, gateType);
     }
   };
 
   const renderGateSection = (title: string, gates: typeof singleQubitGates, titleColor: string = 'text-muted-foreground') => (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <h4 className={cn("text-xs font-semibold flex items-center gap-1", titleColor)}>
         ■ {title}
       </h4>
@@ -72,15 +77,16 @@ export const GatePalette = memo(function GatePalette({
                     ? "w-12 h-12 text-xs touch-manipulation active:scale-95" 
                     : "w-14 h-14 text-sm hover:scale-105 hover:shadow-lg"
                 )}
-                onMouseDown={!isMobile ? (e) => onGateMouseDown(e, gate.type) : undefined}
-                onTouchStart={isMobile && onGateTouchStart ? (e) => handleGateInteraction(e, gate.type) : undefined}
+                onMouseDown={(e) => handleMouseDown(e, gate.type)}
+                onTouchStart={(e) => handleTouchStart(e, gate.type)}
                 style={{ 
                   WebkitTouchCallout: 'none',
                   WebkitUserSelect: 'none',
-                  userSelect: 'none'
+                  userSelect: 'none',
+                  touchAction: 'none'
                 }}
               >
-                {gate.type.length > 4 ? gate.type.slice(0, 3) : gate.type}
+                {gate.type === 'BARRIER' ? 'BAR' : gate.type}
               </div>
             </TooltipTrigger>
             <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
