@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,6 +122,9 @@ export function FilesPanel() {
     );
   }
 
+  // Move console.log outside of JSX
+  console.log('Rendering Dialog with:', { showFileViewer, selectedFile: selectedFile?.name });
+
   return (
     <div className="h-full overflow-auto quantum-grid">
       <div className="p-6 space-y-6">
@@ -188,7 +190,6 @@ export function FilesPanel() {
         </Button>
 
         {/* File Viewer Dialog */}
-        {console.log('Rendering Dialog with:', { showFileViewer, selectedFile: selectedFile?.name })}
         <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
           <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] p-0">
             <DialogHeader className="p-4">
