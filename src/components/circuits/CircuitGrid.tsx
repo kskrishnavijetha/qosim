@@ -66,7 +66,7 @@ export function CircuitGrid({
         className="relative bg-quantum-matrix rounded-lg p-4 min-h-[320px] quantum-panel overflow-hidden"
         style={{ 
           backgroundImage: `repeating-linear-gradient(90deg, hsl(var(--quantum-neon) / 0.1) 0px, hsl(var(--quantum-neon) / 0.1) 1px, transparent 1px, transparent ${GRID_SIZE}px)`,
-          minWidth: `${Math.max(800, (maxPosition + 5) * GRID_SIZE)}px`
+          minWidth: `${Math.max(800, (maxPosition + 10) * GRID_SIZE)}px`
         }}
       >
         {/* Qubit Lines */}
@@ -83,6 +83,26 @@ export function CircuitGrid({
           </div>
         ))}
 
+        {/* Drop zones grid */}
+        {dragState.isDragging && (
+          <div className="absolute inset-0 pointer-events-none">
+            {Array.from({ length: NUM_QUBITS }).map((_, qubitIndex) => 
+              Array.from({ length: Math.floor((circuitRef.current?.offsetWidth || 800) / GRID_SIZE) }).map((_, posIndex) => (
+                <div
+                  key={`${qubitIndex}-${posIndex}`}
+                  className="absolute border border-dashed border-transparent hover:border-quantum-glow/50 transition-colors"
+                  style={{
+                    left: posIndex * GRID_SIZE + 12,
+                    top: qubitIndex * 60 + 19,
+                    width: 32,
+                    height: 24,
+                  }}
+                />
+              ))
+            )}
+          </div>
+        )}
+
         {/* Placed Gates */}
         {circuit.map((gate, index) => (
           <MemoizedGate
@@ -98,9 +118,9 @@ export function CircuitGrid({
         {/* Drop Zone Indicator */}
         {dragState.isDragging && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (
           <div
-            className="absolute w-12 h-8 border-2 border-dashed border-quantum-glow rounded bg-quantum-glow/20 flex items-center justify-center text-xs font-bold quantum-glow animate-pulse"
+            className="absolute w-8 h-6 border-2 border-dashed border-quantum-glow rounded bg-quantum-glow/20 flex items-center justify-center text-xs font-bold quantum-glow animate-pulse"
             style={{
-              left: dragState.hoverPosition * GRID_SIZE + 16,
+              left: dragState.hoverPosition * GRID_SIZE + 12,
               top: dragState.hoverQubit * 60 + 19
             }}
           >

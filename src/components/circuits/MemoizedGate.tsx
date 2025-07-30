@@ -21,20 +21,22 @@ interface MemoizedGateProps {
 
 const getGateStyle = (type: string) => {
   const styles = {
-    H: { bg: 'bg-blue-500', text: 'text-white', border: 'border-blue-600' },
-    X: { bg: 'bg-red-500', text: 'text-white', border: 'border-red-600' },
-    Y: { bg: 'bg-green-500', text: 'text-white', border: 'border-green-600' },
-    Z: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
-    S: { bg: 'bg-yellow-500', text: 'text-black', border: 'border-yellow-600' },
-    T: { bg: 'bg-pink-500', text: 'text-white', border: 'border-pink-600' },
-    RX: { bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-600' },
-    RY: { bg: 'bg-teal-500', text: 'text-white', border: 'border-teal-600' },
-    RZ: { bg: 'bg-indigo-500', text: 'text-white', border: 'border-indigo-600' },
-    CNOT: { bg: 'bg-gray-700', text: 'text-white', border: 'border-gray-800' },
-    CX: { bg: 'bg-gray-700', text: 'text-white', border: 'border-gray-800' },
-    CZ: { bg: 'bg-slate-600', text: 'text-white', border: 'border-slate-700' },
-    SWAP: { bg: 'bg-cyan-500', text: 'text-white', border: 'border-cyan-600' },
-    M: { bg: 'bg-rose-600', text: 'text-white', border: 'border-rose-700' }
+    I: { bg: 'bg-slate-500', text: 'text-white', border: 'border-slate-600' },
+    H: { bg: 'bg-purple-600', text: 'text-white', border: 'border-purple-700' },
+    X: { bg: 'bg-cyan-500', text: 'text-white', border: 'border-cyan-600' },
+    Y: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
+    Z: { bg: 'bg-purple-700', text: 'text-white', border: 'border-purple-800' },
+    S: { bg: 'bg-blue-600', text: 'text-white', border: 'border-blue-700' },
+    T: { bg: 'bg-cyan-600', text: 'text-white', border: 'border-cyan-700' },
+    RX: { bg: 'bg-cyan-400', text: 'text-white', border: 'border-cyan-500' },
+    RY: { bg: 'bg-slate-500', text: 'text-white', border: 'border-slate-600' },
+    RZ: { bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-600' },
+    CNOT: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
+    CX: { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
+    CZ: { bg: 'bg-red-500', text: 'text-white', border: 'border-red-600' },
+    SWAP: { bg: 'bg-green-500', text: 'text-white', border: 'border-green-600' },
+    M: { bg: 'bg-red-600', text: 'text-white', border: 'border-red-700' },
+    BARRIER: { bg: 'bg-amber-500', text: 'text-black', border: 'border-amber-600' }
   };
   return styles[type as keyof typeof styles] || { bg: 'bg-gray-500', text: 'text-white', border: 'border-gray-600' };
 };
@@ -47,17 +49,23 @@ export const MemoizedGate = memo(function MemoizedGate({
   qubitSpacing = 60
 }: MemoizedGateProps) {
   const isMobile = useIsMobile();
-  const gateWidth = isMobile ? 40 : 48;
-  const gateHeight = isMobile ? 24 : 28;
-  const fontSize = isMobile ? 'text-xs' : 'text-sm';
+  const gateWidth = 32;
+  const gateHeight = 24;
+  const fontSize = 'text-xs';
   
   const gateStyle = getGateStyle(gate.type);
   
   // Calculate gate position
-  const leftPosition = gate.position * gridSize + (isMobile ? 8 : 12);
+  const leftPosition = gate.position * gridSize + 12;
   const topPosition = gate.type === 'CNOT' || gate.type === 'CX' 
-    ? (gate.qubits ? gate.qubits[0] * qubitSpacing + 21 : 0) 
-    : (gate.qubit !== undefined ? gate.qubit * qubitSpacing + 21 : 0);
+    ? (gate.qubits ? gate.qubits[0] * qubitSpacing + 19 : 0) 
+    : (gate.qubit !== undefined ? gate.qubit * qubitSpacing + 19 : 0);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDeleteGate(gate.id);
+  };
 
   return (
     <>
@@ -67,7 +75,7 @@ export const MemoizedGate = memo(function MemoizedGate({
           className="absolute w-0.5 bg-quantum-neon"
           style={{
             left: leftPosition + gateWidth / 2,
-            top: gate.qubits[0] * qubitSpacing + 21 + gateHeight / 2,
+            top: gate.qubits[0] * qubitSpacing + 19 + gateHeight / 2,
             height: Math.abs(gate.qubits[1] - gate.qubits[0]) * qubitSpacing,
             animationDelay: `${index * 100 + 50}ms`
           }}
@@ -76,7 +84,7 @@ export const MemoizedGate = memo(function MemoizedGate({
       
       {/* Main gate */}
       <div
-        className={`absolute rounded border-2 flex items-center justify-center ${fontSize} font-bold cursor-pointer hover:scale-105 transition-all duration-200 shadow-md ${gateStyle.bg} ${gateStyle.text} ${gateStyle.border}`}
+        className={`absolute rounded border flex items-center justify-center ${fontSize} font-bold cursor-pointer hover:scale-110 active:scale-95 transition-all duration-200 shadow-sm ${gateStyle.bg} ${gateStyle.text} ${gateStyle.border}`}
         style={{
           width: gateWidth,
           height: gateHeight,
@@ -84,10 +92,10 @@ export const MemoizedGate = memo(function MemoizedGate({
           top: topPosition,
           animationDelay: `${index * 50}ms`
         }}
-        onClick={() => onDeleteGate(gate.id)}
-        title={`${gate.type} gate - Click to delete`}
+        onDoubleClick={handleDoubleClick}
+        title={`${gate.type} gate - Double-click to delete`}
       >
-        {gate.type}
+        {gate.type === 'BARRIER' ? 'BAR' : gate.type}
       </div>
       
       {/* Parameter display for rotation gates */}
@@ -108,13 +116,13 @@ export const MemoizedGate = memo(function MemoizedGate({
       {/* Special rendering for CNOT target */}
       {(gate.type === 'CNOT' || gate.type === 'CX') && gate.qubits && gate.qubits.length >= 2 && (
         <div
-          className="absolute w-4 h-4 rounded-full border-2 border-quantum-neon bg-white flex items-center justify-center"
+          className="absolute w-3 h-3 rounded-full border border-quantum-neon bg-white flex items-center justify-center"
           style={{
-            left: leftPosition + (gateWidth - 16) / 2,
-            top: gate.qubits[1] * qubitSpacing + 21 + (gateHeight - 16) / 2
+            left: leftPosition + (gateWidth - 12) / 2,
+            top: gate.qubits[1] * qubitSpacing + 19 + (gateHeight - 12) / 2
           }}
         >
-          <div className="w-2 h-2 bg-quantum-neon rounded-full" />
+          <div className="w-1.5 h-1.5 bg-quantum-neon rounded-full" />
         </div>
       )}
 
@@ -122,17 +130,17 @@ export const MemoizedGate = memo(function MemoizedGate({
       {gate.type === 'SWAP' && gate.qubits && gate.qubits.length >= 2 && (
         <>
           <div
-            className="absolute w-4 h-4 transform rotate-45 border-2 border-quantum-neon bg-white"
+            className="absolute w-3 h-3 transform rotate-45 border border-quantum-neon bg-white"
             style={{
-              left: leftPosition + (gateWidth - 16) / 2,
-              top: gate.qubits[0] * qubitSpacing + 21 + (gateHeight - 16) / 2
+              left: leftPosition + (gateWidth - 12) / 2,
+              top: gate.qubits[0] * qubitSpacing + 19 + (gateHeight - 12) / 2
             }}
           />
           <div
-            className="absolute w-4 h-4 transform rotate-45 border-2 border-quantum-neon bg-white"
+            className="absolute w-3 h-3 transform rotate-45 border border-quantum-neon bg-white"
             style={{
-              left: leftPosition + (gateWidth - 16) / 2,
-              top: gate.qubits[1] * qubitSpacing + 21 + (gateHeight - 16) / 2
+              left: leftPosition + (gateWidth - 12) / 2,
+              top: gate.qubits[1] * qubitSpacing + 19 + (gateHeight - 12) / 2
             }}
           />
         </>

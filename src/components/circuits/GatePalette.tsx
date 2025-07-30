@@ -59,23 +59,18 @@ export const GatePalette = memo(function GatePalette({
   };
 
   const renderGateSection = (title: string, gates: typeof singleQubitGates, titleColor: string = 'text-muted-foreground') => (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <h4 className={cn("text-xs font-semibold flex items-center gap-1", titleColor)}>
         ■ {title}
       </h4>
-      <div className={cn(
-        "grid gap-2",
-        isMobile ? "grid-cols-4" : "grid-cols-3"
-      )}>
+      <div className="grid grid-cols-3 gap-1">
         {gates.map(gate => (
           <Tooltip key={gate.type}>
             <TooltipTrigger asChild>
               <div
                 className={cn(
-                  `${gate.color} rounded-lg border-2 border-transparent flex items-center justify-center font-bold text-white cursor-pointer transition-all duration-200 select-none shadow-md`,
-                  isMobile 
-                    ? "w-12 h-12 text-xs touch-manipulation active:scale-95" 
-                    : "w-14 h-14 text-sm hover:scale-105 hover:shadow-lg"
+                  `${gate.color} rounded-md border border-transparent flex items-center justify-center font-bold text-white cursor-pointer transition-all duration-200 select-none shadow-sm`,
+                  "w-10 h-8 text-xs hover:scale-105 hover:shadow-md active:scale-95"
                 )}
                 onMouseDown={(e) => handleMouseDown(e, gate.type)}
                 onTouchStart={(e) => handleTouchStart(e, gate.type)}
@@ -89,7 +84,7 @@ export const GatePalette = memo(function GatePalette({
                 {gate.type === 'BARRIER' ? 'BAR' : gate.type}
               </div>
             </TooltipTrigger>
-            <TooltipContent side={isMobile ? "top" : "right"} className="max-w-xs">
+            <TooltipContent side="right" className="max-w-xs">
               <div className="space-y-2">
                 <p className="font-semibold text-quantum-glow">{gate.name}</p>
                 <p className="text-xs text-muted-foreground">{gate.description}</p>
@@ -102,18 +97,12 @@ export const GatePalette = memo(function GatePalette({
   );
 
   return (
-    <div className={cn(
-      "bg-background border border-border rounded-lg p-4 space-y-6 overflow-y-auto",
-      isMobile ? "w-full max-h-80" : "w-64 max-h-[600px]"
-    )}>
-      <h3 className={cn(
-        "font-mono text-foreground sticky top-0 bg-background border-b border-border pb-2",
-        isMobile ? "text-sm" : "text-base"
-      )}>
+    <div className="bg-background border border-border rounded-lg p-3 space-y-4 overflow-y-auto w-full max-h-[500px]">
+      <h3 className="font-mono text-sm text-foreground sticky top-0 bg-background border-b border-border pb-2">
         🎛️ Quantum Gates
       </h3>
       
-      {renderGateSection("Single Qubit Gates", singleQubitGates)}
+      {renderGateSection("Single Gates", singleQubitGates)}
       {renderGateSection("Parametric Gates", parametricGates, "text-blue-400")}
       {renderGateSection("Multi Gates", multiQubitGates, "text-green-400")}
       {renderGateSection("Special Gates", specialGates, "text-yellow-400")}

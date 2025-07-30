@@ -68,15 +68,19 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
     const relativeX = clientX - circuitRect.left;
     const relativeY = clientY - circuitRect.top;
     
-    // Calculate qubit and position with better accuracy
-    const qubit = Math.floor((relativeY - 15) / 60);
-    const position = Math.max(0, Math.floor((relativeX - 20) / gridSize));
+    // More precise calculation for qubit and position
+    const qubit = Math.floor((relativeY - 19) / 60);
+    const position = Math.max(0, Math.floor((relativeX - 12) / gridSize));
+    
+    // Ensure we're within bounds
+    const validQubit = qubit >= 0 && qubit < numQubits ? qubit : null;
+    const validPosition = position >= 0 ? position : null;
     
     setDragState(prev => ({
       ...prev,
       dragPosition: { x: clientX, y: clientY },
-      hoverQubit: qubit >= 0 && qubit < numQubits ? qubit : null,
-      hoverPosition: position >= 0 ? position : null
+      hoverQubit: validQubit,
+      hoverPosition: validPosition
     }));
   }, [dragState.isDragging, gridSize, numQubits]);
 
@@ -134,7 +138,7 @@ export function useCircuitDragDrop({ onGateAdd, numQubits, gridSize }: UseCircui
       }
       
       const newGate: Gate = {
-        id: `gate_${Date.now()}`,
+        id: `gate_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         type: gateType,
         qubit,
         qubits,

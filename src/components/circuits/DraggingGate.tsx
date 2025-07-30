@@ -38,19 +38,16 @@ const getGateStyle = (type: string) => {
 };
 
 export function DraggingGate({ dragState }: DraggingGateProps) {
-  const isMobile = useIsMobile();
-  
   if (!dragState.isDragging) return null;
 
   const gateStyle = getGateStyle(dragState.gateType);
-  const width = isMobile ? 48 : 56;
-  const height = isMobile ? 28 : 32;
+  const width = 32;
+  const height = 24;
 
   return (
     <div
       className={cn(
-        "fixed rounded-lg border-2 flex items-center justify-center font-bold pointer-events-none z-50 shadow-lg",
-        isMobile ? "text-xs" : "text-sm",
+        "fixed rounded border flex items-center justify-center font-bold pointer-events-none z-50 shadow-lg text-xs",
         gateStyle.bg,
         gateStyle.text,
         gateStyle.border
