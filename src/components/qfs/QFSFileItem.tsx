@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   FileText, 
@@ -53,6 +54,29 @@ export function QFSFileItem({ file, onSelect, onDelete, onExportQASM, onExportJS
       case 'data': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'model': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       default: return 'bg-muted/20 text-muted-foreground border-muted/30';
+    }
+  };
+
+  // Helper function to safely format date
+  const formatDate = (dateValue: any): string => {
+    if (!dateValue) return 'Unknown';
+    
+    try {
+      // If it's already a Date object
+      if (dateValue instanceof Date) {
+        return dateValue.toLocaleDateString();
+      }
+      
+      // If it's a string or number, try to create a Date
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      
+      return date.toLocaleDateString();
+    } catch (error) {
+      console.warn('Error formatting date:', error, dateValue);
+      return 'Invalid Date';
     }
   };
 
@@ -116,7 +140,7 @@ export function QFSFileItem({ file, onSelect, onDelete, onExportQASM, onExportJS
           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
             <span>{file.sizeDisplay}</span>
             <span>{file.metadata.version}</span>
-            <span>{file.updatedAt.toLocaleDateString()}</span>
+            <span>{formatDate(file.updatedAt)}</span>
             
             {/* Permissions */}
             <div className="flex items-center gap-1">
