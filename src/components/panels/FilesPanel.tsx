@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,25 +9,22 @@ import { FileSystemStats } from "./FileSystemStats";
 import { QuantumProperties } from "./QuantumProperties";
 import { FileItem } from "./FileItem";
 import { FileViewer } from "./FileViewer";
-
 import { useQuantumFiles, QuantumFile } from "@/hooks/useQuantumFiles";
 import { ShareDialog } from "../dialogs/ShareDialog";
 
 export function FilesPanel() {
   const { files, loading, createFile, updateFile, deleteFile, toggleFavorite, getFileStats } = useQuantumFiles();
-
+  
   const [selectedFile, setSelectedFile] = useState<QuantumFile | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
 
-  console.log('=== FilesPanel RENDER ===');
   console.log('FilesPanel - files count:', files.length);
-  console.log('FilesPanel - selectedFile:', selectedFile ? { id: selectedFile.id, name: selectedFile.name } : null);
-  console.log('FilesPanel - showFileViewer:', showFileViewer);
+  console.log('FilesPanel - loading:', loading);
 
-  // Transform files to legacy format for compatibility
+  // Transform files to legacy format for compatibility with existing components
   const legacyFiles = files.map(file => ({
     id: file.id,
     name: file.name,
@@ -40,7 +38,7 @@ export function FilesPanel() {
     lastVersion: file.lastVersion
   }));
 
-  // Simplified drag and drop state
+  // Drag and drop handlers
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, fileId: string) => {
@@ -61,23 +59,16 @@ export function FilesPanel() {
   };
 
   const handleFileSelect = (fileId: string) => {
-    console.log('=== handleFileSelect CALLED ===');
-    console.log('handleFileSelect - fileId:', fileId);
-    
+    console.log('handleFileSelect called with:', fileId);
     const file = files.find(f => f.id === fileId);
-    console.log('handleFileSelect - found file:', file ? { id: file.id, name: file.name, type: file.type } : null);
-    
     if (file) {
-      console.log('handleFileSelect - Setting selectedFile and opening viewer');
+      console.log('Setting selected file:', file.name);
       setSelectedFile(file);
       setShowFileViewer(true);
-    } else {
-      console.error('handleFileSelect - File not found with id:', fileId);
     }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
-    console.log('Context action:', action, 'for file:', fileId);
     const file = files.find(f => f.id === fileId);
     
     if (action === "versions") {
@@ -100,18 +91,54 @@ export function FilesPanel() {
   };
 
   const handleCloseFileViewer = () => {
-    console.log('=== handleCloseFileViewer CALLED ===');
     setShowFileViewer(false);
     setSelectedFile(null);
   };
 
+  // Loading state
   if (loading) {
     return (
       <div className="h-full overflow-auto quantum-grid">
         <div className="p-6 space-y-6">
           <div className="text-center">
-            <p className="text-muted-foreground">Loading files...</p>
+            <p className="text-muted-foreground">Loading quantum files...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (files.length === 0) {
+    return (
+      <div className="h-full overflow-auto quantum-grid">
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-quantum-glow">Quantum File System</h2>
+              <p className="text-muted-foreground font-mono">QFS - Enhanced with AI assistance</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="neon-border">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload
+              </Button>
+              <Button className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
+                <Plus className="w-4 h-4 mr-2" />
+                New File
+              </Button>
+            </div>
+          </div>
+
+          <Card className="quantum-panel neon-border">
+            <CardContent className="p-12 text-center">
+              <div className="text-muted-foreground">
+                <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-xl font-semibold mb-2">No files uploaded yet</h3>
+                <p className="text-sm">Upload your first quantum file or create a new one to get started.</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -168,6 +195,22 @@ export function FilesPanel() {
 
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
+
+        {/* Debug Button */}
+        <Card className="quantum-panel neon-border">
+          <CardContent className="p-4">
+            <Button 
+              onClick={() => {
+                if (files.length > 0) {
+                  handleFileSelect(files[0].id);
+                }
+              }}
+              variant="outline"
+            >
+              Debug: Open First File
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* File Viewer Dialog */}
         <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
