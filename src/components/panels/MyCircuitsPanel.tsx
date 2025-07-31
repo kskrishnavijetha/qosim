@@ -1,25 +1,37 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useCircuits } from "@/hooks/useCircuits";
+import { useAuth } from "@/contexts/AuthContext";
 import { CircuitSaveDialog } from "./CircuitSaveDialog";
 import { CircuitRenameDialog } from "./CircuitRenameDialog";
-import { Play, Edit3, Copy, Trash2, Download, Share2, Clock, Zap } from "lucide-react";
+import { Play, Edit3, Copy, Trash2, Download, Share2, Clock, Zap, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export function MyCircuitsPanel() {
+  const { user } = useAuth();
   const { circuits, loading, deleteCircuit, duplicateCircuit, loadCircuit } = useCircuits();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [selectedCircuit, setSelectedCircuit] = useState<any>(null);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
 
-  // Debug logging
+  // Enhanced debugging
+  console.log("MyCircuitsPanel - Render started");
+  console.log("MyCircuitsPanel - user:", user);
   console.log("MyCircuitsPanel - circuits:", circuits);
   console.log("MyCircuitsPanel - loading:", loading);
+  console.log("MyCircuitsPanel - circuits.length:", circuits?.length);
+
+  useEffect(() => {
+    console.log("MyCircuitsPanel - useEffect triggered");
+    console.log("MyCircuitsPanel - user in useEffect:", user);
+    console.log("MyCircuitsPanel - loading in useEffect:", loading);
+    console.log("MyCircuitsPanel - circuits in useEffect:", circuits);
+  }, [user, loading, circuits]);
 
   const handleLoadCircuit = async (circuit: any) => {
     console.log("Loading circuit:", circuit);
@@ -55,7 +67,25 @@ export function MyCircuitsPanel() {
     });
   };
 
+  // Show authentication required state
+  if (!user) {
+    console.log("MyCircuitsPanel - No user, showing auth required");
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
+          <p className="text-muted-foreground mb-6">
+            Please sign in to view your saved circuits
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state
   if (loading) {
+    console.log("MyCircuitsPanel - Showing loading state");
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
@@ -65,6 +95,8 @@ export function MyCircuitsPanel() {
       </div>
     );
   }
+
+  console.log("MyCircuitsPanel - Rendering main content");
 
   return (
     <div className="h-full overflow-auto quantum-grid">
@@ -76,7 +108,7 @@ export function MyCircuitsPanel() {
         
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-quantum-matrix">
-            {circuits.length} circuits
+            {circuits?.length || 0} circuits
           </Badge>
           <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
             <DialogTrigger asChild>
@@ -92,7 +124,7 @@ export function MyCircuitsPanel() {
       </div>
 
       <div className="p-4">
-        {circuits.length === 0 ? (
+        {!circuits || circuits.length === 0 ? (
           <div className="text-center py-12">
             <Zap className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No circuits yet</h3>

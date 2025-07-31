@@ -20,32 +20,44 @@ export function useCircuits() {
   const [circuits, setCircuits] = useState<Circuit[]>([]);
   const [loading, setLoading] = useState(false);
 
+  console.log("useCircuits - Hook initialized");
   console.log("useCircuits - user:", user);
 
   const fetchCircuits = async () => {
     if (!user) {
-      console.log("useCircuits - No user, returning early");
+      console.log("useCircuits - No user, clearing circuits and returning");
+      setCircuits([]);
       return;
     }
     
     console.log("useCircuits - Fetching circuits for user:", user.id);
     setLoading(true);
+    
     try {
+      console.log("useCircuits - Making Supabase query...");
       const { data, error } = await supabase
         .from('circuits')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
-      console.log("useCircuits - Supabase response:", { data, error });
+      console.log("useCircuits - Supabase response data:", data);
+      console.log("useCircuits - Supabase response error:", error);
 
-      if (error) throw error;
-      setCircuits(data || []);
-      console.log("useCircuits - Set circuits:", data || []);
+      if (error) {
+        console.error("useCircuits - Supabase error:", error);
+        throw error;
+      }
+
+      const circuitData = data || [];
+      console.log("useCircuits - Setting circuits to:", circuitData);
+      setCircuits(circuitData);
     } catch (error) {
-      console.error('Error fetching circuits:', error);
+      console.error('useCircuits - Error fetching circuits:', error);
       toast.error('Failed to load circuits');
+      setCircuits([]); // Set empty array on error
     } finally {
+      console.log("useCircuits - Setting loading to false");
       setLoading(false);
     }
   };
@@ -164,13 +176,22 @@ export function useCircuits() {
   };
 
   useEffect(() => {
-    console.log("useCircuits - useEffect triggered, user:", user);
+    console.log("useCircuits - useEffect triggered");
+    console.log("useCircuits - user changed to:", user);
+    
     if (user) {
+      console.log("useCircuits - User exists, fetching circuits");
       fetchCircuits();
     } else {
+      console.log("useCircuits - No user, clearing circuits");
       setCircuits([]);
+      setLoading(false);
     }
   }, [user]);
+
+  console.log("useCircuits - Returning hook values:");
+  console.log("useCircuits - circuits:", circuits);
+  console.log("useCircuits - loading:", loading);
 
   return {
     circuits,
