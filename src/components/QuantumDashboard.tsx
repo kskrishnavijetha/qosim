@@ -1,12 +1,16 @@
+
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
 import { CircuitsPanel } from "./panels/CircuitsPanel";
+import { MyCircuitsPanel } from "./panels/MyCircuitsPanel";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
 import { QuantumAlgorithmsSDKPanel } from "./panels/QuantumAlgorithmsSDKPanel";
+import { UnifiedAIPanel } from "./ai/UnifiedAIPanel";
+import { LearnWithTutorials } from "./tutorials/LearnWithTutorials";
 import { FeedbackWidget } from "./FeedbackWidget";
 import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
@@ -42,6 +46,8 @@ export function QuantumDashboard() {
     switch (activeTab) {
       case "circuits":
         return <CircuitsPanel />;
+      case "my-circuits":
+        return <MyCircuitsPanel />;
       case "jobs":
         return <JobsPanel />;
       case "memory":
@@ -52,6 +58,10 @@ export function QuantumDashboard() {
         return <LogsPanel />;
       case "algorithms-sdk":
         return <QuantumAlgorithmsSDKPanel />;
+      case "ai-panel":
+        return <UnifiedAIPanel />;
+      case "learn-tutorials":
+        return <LearnWithTutorials />;
       case "javascript-sdk":
         return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
       case "python-sdk":
