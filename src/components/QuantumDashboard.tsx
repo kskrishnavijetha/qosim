@@ -1,110 +1,207 @@
-
-
 import { useState } from "react";
+import { QuantumSidebar } from "./QuantumSidebar";
+import { QuantumConsole } from "./QuantumConsole";
 import { CircuitsPanel } from "./panels/CircuitsPanel";
-import { QuantumAlgorithmsPanel } from "./algorithms/QuantumAlgorithmsPanel";
-import { UnifiedAIPanel } from "./ai/UnifiedAIPanel";
-import { FilesPanel } from "./panels/FilesPanel";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
+import { EnhancedFilesPanel } from "./qfs/EnhancedFilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
-import { LearnWithTutorials } from "./tutorials/LearnWithTutorials";
-import { SDKDemoPanel } from "./panels/SDKDemoPanel";
-import { QuantumSidebar } from "./QuantumSidebar";
+import { QuantumAlgorithmsSDKPanel } from "./panels/QuantumAlgorithmsSDKPanel";
 import { FeedbackWidget } from "./FeedbackWidget";
-import { MyCircuitsPanel } from "./panels/MyCircuitsPanel";
+import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
+import { SDKDemoPanel } from "./panels/SDKDemoPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "./ui/button";
+import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./ui/resizable";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
 export function QuantumDashboard() {
-  const [activeTab, setActiveTab] = useState("circuit");
-  const [circuit, setCircuit] = useState<any[]>([]);
-  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("circuits");
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
+  const [consoleCollapsed, setConsoleCollapsed] = useState(true);
+  const [showSDK, setShowSDK] = useState(false);
+  const [sdkType, setSDKType] = useState<string>("");
+  const isMobile = useIsMobile();
 
-  const handleCircuitGenerated = (gates: any[]) => {
-    setCircuit(gates);
-    console.log('Circuit generated:', gates);
+  const handleSDKSelect = (type: string) => {
+    setSDKType(type);
+    setShowSDK(true);
+    setActiveTab("");
   };
 
-  const handleAlgorithmGenerated = (code: string) => {
-    console.log('Algorithm generated:', code);
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setShowSDK(false);
+    setSDKType("");
   };
 
-  const handleAlgorithmExecuted = (result: any) => {
-    setAlgorithmResult(result);
-    console.log('Algorithm executed:', result);
-  };
-
-  const handleCircuitOptimized = (gates: any[]) => {
-    setCircuit(gates);
-    console.log('Circuit optimized:', gates);
-  };
-
-  const handleCircuitFixed = (gates: any[]) => {
-    setCircuit(gates);
-    console.log('Circuit fixed:', gates);
-  };
-
-  const handleShowStateVisualization = (step: number) => {
-    console.log('Show state visualization for step:', step);
-  };
-
-  const renderActiveTab = () => {
+  const renderPanel = () => {
     switch (activeTab) {
-      case "circuit":
+      case "circuits":
         return <CircuitsPanel />;
-      case "my-circuits":
-        return <MyCircuitsPanel />;
-      case "algorithms":
-        return (
-          <QuantumAlgorithmsPanel 
-            onCircuitGenerated={handleCircuitGenerated}
-            onAlgorithmExecuted={handleAlgorithmExecuted}
-          />
-        );
-      case "ai":
-        return (
-          <UnifiedAIPanel 
-            circuit={circuit}
-            onCircuitGenerated={handleCircuitGenerated}
-            onAlgorithmGenerated={handleAlgorithmGenerated}
-            onCircuitOptimized={handleCircuitOptimized}
-            onCircuitFixed={handleCircuitFixed}
-            onShowStateVisualization={handleShowStateVisualization}
-          />
-        );
-      case "files":
-        return <FilesPanel />;
       case "jobs":
         return <JobsPanel />;
       case "memory":
         return <MemoryPanel />;
+      case "files":
+        return <EnhancedFilesPanel />;
       case "logs":
         return <LogsPanel />;
-      case "learning":
-        return <LearnWithTutorials />;
-      case "sdk":
-        return <SDKDemoPanel />;
+      case "algorithms-sdk":
+        return <QuantumAlgorithmsSDKPanel />;
+      case "javascript-sdk":
+        return <SDKDemoPanel key="javascript" defaultSDK="javascript" />;
+      case "python-sdk":
+        return <SDKDemoPanel key="python" defaultSDK="python" />;
+      case "integrations":
+        return <IntegrationsRoadmap />;
       default:
         return <CircuitsPanel />;
     }
   };
 
-  return (
-    <div className="min-h-screen bg-quantum-matrix text-quantum-glow">
-      <div className="flex h-screen">
-        <QuantumSidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-        />
-        
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full">
-            {renderActiveTab()}
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-quantum-void text-foreground flex flex-col">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-4 border-b border-quantum-matrix bg-quantum-void z-50 sticky top-0">
+          <div className="flex items-center gap-3">
+            <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 p-0 quantum-panel">
+                <QuantumSidebar 
+                  activeTab={activeTab} 
+                  onTabChange={(tab) => {
+                    handleTabChange(tab);
+                    setShowSidebar(false);
+                  }}
+                  onSDKSelect={(type) => {
+                    handleSDKSelect(type);
+                    setShowSidebar(false);
+                  }}
+                />
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-lg font-bold text-quantum-glow">Quantum OS</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConsole(!showConsole)}
+              className="text-quantum-neon"
+            >
+              Console
+            </Button>
           </div>
         </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-auto">
+            {renderPanel()}
+          </div>
+          
+          {/* Mobile Console Bottom Sheet */}
+          {showConsole && (
+            <div className="border-t border-quantum-matrix bg-quantum-void">
+              <div className="flex items-center justify-between p-3 border-b border-quantum-matrix">
+                <h3 className="text-sm font-semibold text-quantum-glow">Console</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConsoleCollapsed(!consoleCollapsed)}
+                  >
+                    {consoleCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowConsole(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className={cn(
+                "transition-all duration-300 overflow-hidden",
+                consoleCollapsed ? "h-0" : "h-64"
+              )}>
+                <div className="h-full overflow-auto">
+                  <QuantumConsole />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <FeedbackWidget />
       </div>
+    );
+  }
+
+  // Desktop/Tablet Layout
+  return (
+    <div className="min-h-screen bg-quantum-void text-foreground">
+      <ResizablePanelGroup direction="horizontal" className="min-h-screen">
+        {/* Sidebar */}
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+          <QuantumSidebar 
+            activeTab={activeTab} 
+            onTabChange={handleTabChange}
+            onSDKSelect={handleSDKSelect}
+          />
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
+        
+        {/* Main Content Area */}
+        <ResizablePanel defaultSize={60}>
+          <ResizablePanelGroup direction="vertical">
+            {/* Main Panel */}
+            <ResizablePanel defaultSize={70} minSize={50}>
+              <div className="h-full overflow-auto">
+                {renderPanel()}
+              </div>
+            </ResizablePanel>
+            
+            {/* Console Panel */}
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+              <div className="h-full border-t border-quantum-matrix">
+                <div className="flex items-center justify-between p-3 border-b border-quantum-matrix bg-quantum-matrix">
+                  <h3 className="text-sm font-semibold text-quantum-glow">Console</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConsoleCollapsed(!consoleCollapsed)}
+                  >
+                    {consoleCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                </div>
+                <div className={cn(
+                  "transition-all duration-300 overflow-hidden",
+                  consoleCollapsed ? "h-0" : "h-full"
+                )}>
+                  <div className="h-full overflow-auto">
+                    <QuantumConsole />
+                  </div>
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
       
       <FeedbackWidget />
     </div>
   );
 }
-
