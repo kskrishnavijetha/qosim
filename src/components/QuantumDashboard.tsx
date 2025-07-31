@@ -1,12 +1,13 @@
+
 import { useState } from "react";
 import { CircuitsPanel } from "./panels/CircuitsPanel";
-import { QuantumAlgorithmsPanel } from "./panels/QuantumAlgorithmsPanel";
-import { UnifiedAIPanel } from "./panels/UnifiedAIPanel";
+import { QuantumAlgorithmsPanel } from "./algorithms/QuantumAlgorithmsPanel";
+import { UnifiedAIPanel } from "./ai/UnifiedAIPanel";
 import { FilesPanel } from "./panels/FilesPanel";
 import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { LogsPanel } from "./panels/LogsPanel";
-import { LearnWithTutorials } from "./panels/LearnWithTutorials";
+import { LearnWithTutorials } from "./tutorials/LearnWithTutorials";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { FeedbackWidget } from "./FeedbackWidget";
