@@ -28,7 +28,7 @@ interface QuantumSidebarProps {
 }
 
 export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
-  const [sdkExpanded, setSdkExpanded] = useState(false);
+  const [sdkExpanded, setSdkExpanded] = useState(true);
   const [circuitsExpanded, setCircuitsExpanded] = useState(true);
 
   const menuItems = [
@@ -76,22 +76,42 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
   ];
 
   const handleItemClick = (item: any) => {
+    console.log("Sidebar item clicked:", item.id);
+    
     if (item.isSection) {
       item.onToggle();
       return;
     }
 
-    if (item.id.includes('-sdk')) {
-      onSDKSelect(item.id.replace('-sdk', ''));
+    // Handle SDK-specific items
+    if (item.id === 'javascript-sdk') {
+      console.log("Opening JavaScript SDK");
+      onTabChange('sdk-demo');
+      onSDKSelect('javascript');
+    } else if (item.id === 'python-sdk') {
+      console.log("Opening Python SDK");
+      onTabChange('sdk-demo');
+      onSDKSelect('python');
+    } else if (item.id === 'algorithms-sdk') {
+      console.log("Opening Algorithms SDK");
+      onTabChange('algorithms-sdk');
     } else {
+      // Handle regular tabs
+      console.log("Opening regular tab:", item.id);
       onTabChange(item.id);
     }
   };
 
   const isItemActive = (itemId: string) => {
-    if (itemId.includes('-sdk')) {
-      return activeTab === itemId;
+    // Check for SDK-specific active states
+    if (itemId === 'javascript-sdk') {
+      return activeTab === 'sdk-demo' || activeTab === 'javascript-sdk';
+    } else if (itemId === 'python-sdk') {
+      return activeTab === 'python-sdk';
+    } else if (itemId === 'algorithms-sdk') {
+      return activeTab === 'algorithms-sdk';
     }
+    
     return activeTab === itemId;
   };
 
