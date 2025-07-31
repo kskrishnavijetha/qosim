@@ -15,10 +15,11 @@ import { UnifiedAIPanel } from "./ai/UnifiedAIPanel";
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
   const [selectedSDK, setSelectedSDK] = useState<'javascript' | 'python'>('javascript');
-  const [circuit, setCircuit] = useState(null);
+  const [circuit, setCircuit] = useState<any[]>([]);
 
   console.log("QuantumDashboard - activeTab:", activeTab);
   console.log("QuantumDashboard - selectedSDK:", selectedSDK);
+  console.log("QuantumDashboard - circuit:", circuit);
 
   const handleSDKSelect = (sdkType: string) => {
     console.log("SDK selected:", sdkType);
@@ -30,7 +31,8 @@ export function QuantumDashboard() {
   };
 
   const handleCircuitGenerated = (newCircuit: any) => {
-    setCircuit(newCircuit);
+    console.log("Circuit generated:", newCircuit);
+    setCircuit(Array.isArray(newCircuit) ? newCircuit : []);
   };
 
   const handleAlgorithmGenerated = (algorithm: any) => {
@@ -38,15 +40,17 @@ export function QuantumDashboard() {
   };
 
   const handleCircuitOptimized = (optimizedCircuit: any) => {
-    setCircuit(optimizedCircuit);
+    console.log("Circuit optimized:", optimizedCircuit);
+    setCircuit(Array.isArray(optimizedCircuit) ? optimizedCircuit : []);
   };
 
   const handleCircuitFixed = (fixedCircuit: any) => {
-    setCircuit(fixedCircuit);
+    console.log("Circuit fixed:", fixedCircuit);
+    setCircuit(Array.isArray(fixedCircuit) ? fixedCircuit : []);
   };
 
-  const handleShowStateVisualization = () => {
-    console.log("Show state visualization");
+  const handleShowStateVisualization = (step?: number) => {
+    console.log("Show state visualization, step:", step);
   };
 
   const renderContent = () => {
@@ -75,18 +79,23 @@ export function QuantumDashboard() {
         return <QuantumAlgorithmsSDKPanel />;
       case "learn-tutorials":
         return <LearnWithTutorials />;
-      case "ai-panel":
+      case "ai-assistant":
+        console.log("Rendering AI Assistant with circuit:", circuit);
         return (
-          <UnifiedAIPanel
-            circuit={circuit}
-            onCircuitGenerated={handleCircuitGenerated}
-            onAlgorithmGenerated={handleAlgorithmGenerated}
-            onCircuitOptimized={handleCircuitOptimized}
-            onCircuitFixed={handleCircuitFixed}
-            onShowStateVisualization={handleShowStateVisualization}
-          />
+          <div className="h-full p-4">
+            <UnifiedAIPanel
+              circuit={circuit}
+              onCircuitGenerated={handleCircuitGenerated}
+              onAlgorithmGenerated={handleAlgorithmGenerated}
+              onCircuitOptimized={handleCircuitOptimized}
+              onCircuitFixed={handleCircuitFixed}
+              onShowStateVisualization={handleShowStateVisualization}
+              className="h-full"
+            />
+          </div>
         );
       default:
+        console.log("Unknown tab, showing default content");
         return (
           <div className="flex items-center justify-center h-full text-quantum-particle">
             <div className="text-center">

@@ -16,44 +16,50 @@ export interface Circuit {
 }
 
 export function useCircuits() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [circuits, setCircuits] = useState<Circuit[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   console.log("useCircuits - Hook initialized");
   console.log("useCircuits - user:", user);
+  console.log("useCircuits - authLoading:", authLoading);
 
   const fetchCircuits = async () => {
     if (!user) {
       console.log("useCircuits - No user, clearing circuits and returning");
       setCircuits([]);
+      setLoading(false);
+      setError(null);
       return;
     }
     
     console.log("useCircuits - Fetching circuits for user:", user.id);
     setLoading(true);
+    setError(null);
     
     try {
       console.log("useCircuits - Making Supabase query...");
-      const { data, error } = await supabase
+      const { data, error: supabaseError } = await supabase
         .from('circuits')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
       console.log("useCircuits - Supabase response data:", data);
-      console.log("useCircuits - Supabase response error:", error);
+      console.log("useCircuits - Supabase response error:", supabaseError);
 
-      if (error) {
-        console.error("useCircuits - Supabase error:", error);
-        throw error;
+      if (supabaseError) {
+        console.error("useCircuits - Supabase error:", supabaseError);
+        throw supabaseError;
       }
 
       const circuitData = data || [];
       console.log("useCircuits - Setting circuits to:", circuitData);
       setCircuits(circuitData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('useCircuits - Error fetching circuits:', error);
+      setError(error.message || 'Failed to load circuits');
       toast.error('Failed to load circuits');
       setCircuits([]); // Set empty array on error
     } finally {
@@ -91,7 +97,7 @@ export function useCircuits() {
       setCircuits(prev => [data, ...prev]);
       toast.success('Circuit saved successfully');
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving circuit:', error);
       toast.error('Failed to save circuit');
       return null;
@@ -120,7 +126,7 @@ export function useCircuits() {
       );
       toast.success('Circuit updated successfully');
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating circuit:', error);
       toast.error('Failed to update circuit');
       return null;
@@ -140,9 +146,8 @@ export function useCircuits() {
       if (error) throw error;
 
       setCircuits(prev => prev.filter(circuit => circuit.id !== id));
-      toast.success('Circuit deleted successfully');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting circuit:', error);
       toast.error('Failed to delete circuit');
       return false;
@@ -168,7 +173,7 @@ export function useCircuits() {
 
       if (error) throw error;
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading circuit:', error);
       toast.error('Failed to load circuit');
       return null;
@@ -178,24 +183,31 @@ export function useCircuits() {
   useEffect(() => {
     console.log("useCircuits - useEffect triggered");
     console.log("useCircuits - user changed to:", user);
+    console.log("useCircuits - authLoading:", authLoading);
     
-    if (user) {
-      console.log("useCircuits - User exists, fetching circuits");
-      fetchCircuits();
-    } else {
-      console.log("useCircuits - No user, clearing circuits");
-      setCircuits([]);
-      setLoading(false);
+    // Only fetch when auth is not loading
+    if (!authLoading) {
+      if (user) {
+        console.log("useCircuits - User exists, fetching circuits");
+        fetchCircuits();
+      } else {
+        console.log("useCircuits - No user, clearing circuits");
+        setCircuits([]);
+        setLoading(false);
+        setError(null);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   console.log("useCircuits - Returning hook values:");
   console.log("useCircuits - circuits:", circuits);
   console.log("useCircuits - loading:", loading);
+  console.log("useCircuits - error:", error);
 
   return {
     circuits,
     loading,
+    error,
     saveCircuit,
     updateCircuit,
     deleteCircuit,

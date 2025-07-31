@@ -9,12 +9,12 @@ import { useCircuits } from "@/hooks/useCircuits";
 import { useAuth } from "@/contexts/AuthContext";
 import { CircuitSaveDialog } from "./CircuitSaveDialog";
 import { CircuitRenameDialog } from "./CircuitRenameDialog";
-import { Play, Edit3, Copy, Trash2, Download, Share2, Clock, Zap, AlertCircle } from "lucide-react";
+import { Play, Edit3, Copy, Trash2, Download, Share2, Clock, Zap, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function MyCircuitsPanel() {
-  const { user } = useAuth();
-  const { circuits, loading, deleteCircuit, duplicateCircuit, loadCircuit } = useCircuits();
+  const { user, loading: authLoading } = useAuth();
+  const { circuits, loading, error, deleteCircuit, duplicateCircuit, loadCircuit } = useCircuits();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [selectedCircuit, setSelectedCircuit] = useState<any>(null);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
@@ -22,16 +22,20 @@ export function MyCircuitsPanel() {
   // Enhanced debugging
   console.log("MyCircuitsPanel - Render started");
   console.log("MyCircuitsPanel - user:", user);
+  console.log("MyCircuitsPanel - authLoading:", authLoading);
   console.log("MyCircuitsPanel - circuits:", circuits);
   console.log("MyCircuitsPanel - loading:", loading);
+  console.log("MyCircuitsPanel - error:", error);
   console.log("MyCircuitsPanel - circuits.length:", circuits?.length);
 
   useEffect(() => {
     console.log("MyCircuitsPanel - useEffect triggered");
     console.log("MyCircuitsPanel - user in useEffect:", user);
+    console.log("MyCircuitsPanel - authLoading in useEffect:", authLoading);
     console.log("MyCircuitsPanel - loading in useEffect:", loading);
     console.log("MyCircuitsPanel - circuits in useEffect:", circuits);
-  }, [user, loading, circuits]);
+    console.log("MyCircuitsPanel - error in useEffect:", error);
+  }, [user, authLoading, loading, circuits, error]);
 
   const handleLoadCircuit = async (circuit: any) => {
     console.log("Loading circuit:", circuit);
@@ -67,6 +71,19 @@ export function MyCircuitsPanel() {
     });
   };
 
+  // Show loading state while auth is loading
+  if (authLoading) {
+    console.log("MyCircuitsPanel - Auth is loading, showing loading state");
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-quantum-glow mx-auto mb-4" />
+          <p className="text-muted-foreground">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Show authentication required state
   if (!user) {
     console.log("MyCircuitsPanel - No user, showing auth required");
@@ -78,6 +95,23 @@ export function MyCircuitsPanel() {
           <p className="text-muted-foreground mb-6">
             Please sign in to view your saved circuits
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    console.log("MyCircuitsPanel - Showing error state:", error);
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Error Loading Circuits</h3>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()} className="neon-border">
+            Retry
+          </Button>
         </div>
       </div>
     );
