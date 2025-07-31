@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
 import { QuantumConsole } from "./QuantumConsole";
@@ -20,6 +19,7 @@ import { Menu, X, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./ui/resizable";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { toast } from "sonner";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -28,6 +28,7 @@ export function QuantumDashboard() {
   const [consoleCollapsed, setConsoleCollapsed] = useState(true);
   const [showSDK, setShowSDK] = useState(false);
   const [sdkType, setSDKType] = useState<string>("");
+  const [currentCircuit, setCurrentCircuit] = useState<any[]>([]);
   const isMobile = useIsMobile();
 
   const handleSDKSelect = (type: string) => {
@@ -40,6 +41,32 @@ export function QuantumDashboard() {
     setActiveTab(tab);
     setShowSDK(false);
     setSDKType("");
+  };
+
+  // AI Panel handlers
+  const handleCircuitGenerated = (gates: any[]) => {
+    setCurrentCircuit(gates);
+    toast.success(`Generated circuit with ${gates.length} gates`);
+  };
+
+  const handleAlgorithmGenerated = (code: string) => {
+    console.log('Generated algorithm code:', code);
+    toast.success('Algorithm code generated - check console');
+  };
+
+  const handleCircuitOptimized = (gates: any[]) => {
+    setCurrentCircuit(gates);
+    toast.success('Circuit optimized successfully');
+  };
+
+  const handleCircuitFixed = (gates: any[]) => {
+    setCurrentCircuit(gates);
+    toast.success('Circuit issues fixed');
+  };
+
+  const handleShowStateVisualization = (step: number) => {
+    console.log('Showing state visualization for step:', step);
+    toast.info(`Visualizing quantum state at step ${step}`);
   };
 
   const renderPanel = () => {
@@ -59,7 +86,16 @@ export function QuantumDashboard() {
       case "algorithms-sdk":
         return <QuantumAlgorithmsSDKPanel />;
       case "ai-panel":
-        return <UnifiedAIPanel />;
+        return (
+          <UnifiedAIPanel
+            circuit={currentCircuit}
+            onCircuitGenerated={handleCircuitGenerated}
+            onAlgorithmGenerated={handleAlgorithmGenerated}
+            onCircuitOptimized={handleCircuitOptimized}
+            onCircuitFixed={handleCircuitFixed}
+            onShowStateVisualization={handleShowStateVisualization}
+          />
+        );
       case "learn-tutorials":
         return <LearnWithTutorials />;
       case "javascript-sdk":
