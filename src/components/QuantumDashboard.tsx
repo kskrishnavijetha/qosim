@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { CircuitsPanel } from "./panels/CircuitsPanel";
 import { QuantumAlgorithmsPanel } from "./algorithms/QuantumAlgorithmsPanel";
@@ -15,6 +16,36 @@ import { MyCircuitsPanel } from "./panels/MyCircuitsPanel";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuit");
+  const [circuit, setCircuit] = useState<any[]>([]);
+  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
+
+  const handleCircuitGenerated = (gates: any[]) => {
+    setCircuit(gates);
+    console.log('Circuit generated:', gates);
+  };
+
+  const handleAlgorithmGenerated = (code: string) => {
+    console.log('Algorithm generated:', code);
+  };
+
+  const handleAlgorithmExecuted = (result: any) => {
+    setAlgorithmResult(result);
+    console.log('Algorithm executed:', result);
+  };
+
+  const handleCircuitOptimized = (gates: any[]) => {
+    setCircuit(gates);
+    console.log('Circuit optimized:', gates);
+  };
+
+  const handleCircuitFixed = (gates: any[]) => {
+    setCircuit(gates);
+    console.log('Circuit fixed:', gates);
+  };
+
+  const handleShowStateVisualization = (step: number) => {
+    console.log('Show state visualization for step:', step);
+  };
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -23,9 +54,23 @@ export function QuantumDashboard() {
       case "my-circuits":
         return <MyCircuitsPanel />;
       case "algorithms":
-        return <QuantumAlgorithmsPanel />;
+        return (
+          <QuantumAlgorithmsPanel 
+            onCircuitGenerated={handleCircuitGenerated}
+            onAlgorithmExecuted={handleAlgorithmExecuted}
+          />
+        );
       case "ai":
-        return <UnifiedAIPanel />;
+        return (
+          <UnifiedAIPanel 
+            circuit={circuit}
+            onCircuitGenerated={handleCircuitGenerated}
+            onAlgorithmGenerated={handleAlgorithmGenerated}
+            onCircuitOptimized={handleCircuitOptimized}
+            onCircuitFixed={handleCircuitFixed}
+            onShowStateVisualization={handleShowStateVisualization}
+          />
+        );
       case "files":
         return <FilesPanel />;
       case "jobs":
@@ -62,3 +107,4 @@ export function QuantumDashboard() {
     </div>
   );
 }
+
