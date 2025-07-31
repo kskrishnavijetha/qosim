@@ -17,7 +17,12 @@ export function MyCircuitsPanel() {
   const [selectedCircuit, setSelectedCircuit] = useState<any>(null);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
 
+  // Debug logging
+  console.log("MyCircuitsPanel - circuits:", circuits);
+  console.log("MyCircuitsPanel - loading:", loading);
+
   const handleLoadCircuit = async (circuit: any) => {
+    console.log("Loading circuit:", circuit);
     const loaded = await loadCircuit(circuit.id);
     if (loaded) {
       toast.success(`Circuit "${circuit.name}" loaded successfully`);

@@ -20,9 +20,15 @@ export function useCircuits() {
   const [circuits, setCircuits] = useState<Circuit[]>([]);
   const [loading, setLoading] = useState(false);
 
+  console.log("useCircuits - user:", user);
+
   const fetchCircuits = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("useCircuits - No user, returning early");
+      return;
+    }
     
+    console.log("useCircuits - Fetching circuits for user:", user.id);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -31,8 +37,11 @@ export function useCircuits() {
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
+      console.log("useCircuits - Supabase response:", { data, error });
+
       if (error) throw error;
       setCircuits(data || []);
+      console.log("useCircuits - Set circuits:", data || []);
     } catch (error) {
       console.error('Error fetching circuits:', error);
       toast.error('Failed to load circuits');
@@ -155,6 +164,7 @@ export function useCircuits() {
   };
 
   useEffect(() => {
+    console.log("useCircuits - useEffect triggered, user:", user);
     if (user) {
       fetchCircuits();
     } else {
