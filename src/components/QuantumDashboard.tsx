@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { QuantumSidebar } from "./QuantumSidebar";
+import { UserProfileDropdown } from "./UserProfileDropdown";
 import { CircuitsPanel } from "./panels/CircuitsPanel";
 import { MyCircuitsPanel } from "./panels/MyCircuitsPanel";
 import { JobsPanel } from "./panels/JobsPanel";
@@ -108,16 +109,29 @@ export function QuantumDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-quantum-void text-quantum-glow">
-      <div className="w-64 border-r border-quantum-matrix">
-        <QuantumSidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-          onSDKSelect={handleSDKSelect}
-        />
+    <div className="flex flex-col h-screen bg-quantum-void text-quantum-glow">
+      {/* Header */}
+      <div className="h-14 border-b border-quantum-matrix bg-quantum-void/95 backdrop-blur-sm flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-semibold text-quantum-glow">Quantum OS Dashboard</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <UserProfileDropdown />
+        </div>
       </div>
-      <div className="flex-1 overflow-auto">
-        {renderContent()}
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        <div className="w-64 border-r border-quantum-matrix">
+          <QuantumSidebar 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+            onSDKSelect={handleSDKSelect}
+          />
+        </div>
+        <div className="flex-1 overflow-auto">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
