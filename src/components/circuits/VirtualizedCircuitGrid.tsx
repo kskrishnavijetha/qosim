@@ -78,6 +78,26 @@ export function VirtualizedCircuitGrid({
   // Responsive qubit line spacing
   const qubitSpacing = isMobile ? 50 : 60;
 
+  // Helper function to safely render qubit state
+  const renderQubitState = (qubitState: any) => {
+    if (!qubitState) return '|0⟩';
+    
+    // If it's already a string, return it
+    if (typeof qubitState === 'string') return qubitState;
+    
+    // If it's an object with a state property that's a string
+    if (typeof qubitState === 'object' && qubitState.state && typeof qubitState.state === 'string') {
+      return qubitState.state;
+    }
+    
+    // If it's an object, try to convert to readable format
+    if (typeof qubitState === 'object') {
+      return '|ψ⟩';
+    }
+    
+    return '|0⟩';
+  };
+
   // Memoized qubit lines
   const qubitLines = useMemo(() => (
     Array.from({ length: NUM_QUBITS }).map((_, i) => (
@@ -90,7 +110,7 @@ export function VirtualizedCircuitGrid({
           style={{ width: totalWidth }}
         />
         <div className={`text-xs font-mono text-muted-foreground absolute ${isMobile ? '-right-16 w-14' : '-right-20 w-16'} truncate`}>
-          {simulationResult?.qubitStates[i]?.state || '|0⟩'}
+          {renderQubitState(simulationResult?.qubitStates?.[i])}
         </div>
       </div>
     ))
