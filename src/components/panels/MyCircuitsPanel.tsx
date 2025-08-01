@@ -19,23 +19,13 @@ export function MyCircuitsPanel() {
   const [selectedCircuit, setSelectedCircuit] = useState<any>(null);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
 
-  // Enhanced debugging
-  console.log("MyCircuitsPanel - Render started");
-  console.log("MyCircuitsPanel - user:", user);
-  console.log("MyCircuitsPanel - authLoading:", authLoading);
-  console.log("MyCircuitsPanel - circuits:", circuits);
-  console.log("MyCircuitsPanel - loading:", loading);
-  console.log("MyCircuitsPanel - error:", error);
-  console.log("MyCircuitsPanel - circuits.length:", circuits?.length);
-
-  useEffect(() => {
-    console.log("MyCircuitsPanel - useEffect triggered");
-    console.log("MyCircuitsPanel - user in useEffect:", user);
-    console.log("MyCircuitsPanel - authLoading in useEffect:", authLoading);
-    console.log("MyCircuitsPanel - loading in useEffect:", loading);
-    console.log("MyCircuitsPanel - circuits in useEffect:", circuits);
-    console.log("MyCircuitsPanel - error in useEffect:", error);
-  }, [user, authLoading, loading, circuits, error]);
+  console.log("MyCircuitsPanel - Current state:", {
+    user: user?.id,
+    authLoading,
+    circuits: circuits?.length,
+    loading,
+    error
+  });
 
   const handleLoadCircuit = async (circuit: any) => {
     console.log("Loading circuit:", circuit);
@@ -73,12 +63,11 @@ export function MyCircuitsPanel() {
 
   // Show loading state while auth is loading
   if (authLoading) {
-    console.log("MyCircuitsPanel - Auth is loading, showing loading state");
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-quantum-void">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-quantum-glow mx-auto mb-4" />
-          <p className="text-muted-foreground">Initializing...</p>
+          <p className="text-quantum-glow">Initializing...</p>
         </div>
       </div>
     );
@@ -86,15 +75,20 @@ export function MyCircuitsPanel() {
 
   // Show authentication required state
   if (!user) {
-    console.log("MyCircuitsPanel - No user, showing auth required");
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
+      <div className="h-full flex items-center justify-center bg-quantum-void">
+        <div className="text-center p-8">
           <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
-          <p className="text-muted-foreground mb-6">
+          <h3 className="text-lg font-semibold mb-2 text-quantum-glow">Authentication Required</h3>
+          <p className="text-quantum-particle mb-6">
             Please sign in to view your saved circuits
           </p>
+          <Button 
+            onClick={() => window.location.href = '/auth'} 
+            className="neon-border bg-quantum-matrix hover:bg-quantum-glow"
+          >
+            Sign In
+          </Button>
         </div>
       </div>
     );
@@ -102,14 +96,16 @@ export function MyCircuitsPanel() {
 
   // Show error state
   if (error) {
-    console.log("MyCircuitsPanel - Showing error state:", error);
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
+      <div className="h-full flex items-center justify-center bg-quantum-void">
+        <div className="text-center p-8">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Error Loading Circuits</h3>
-          <p className="text-muted-foreground mb-6">{error}</p>
-          <Button onClick={() => window.location.reload()} className="neon-border">
+          <h3 className="text-lg font-semibold mb-2 text-quantum-glow">Error Loading Circuits</h3>
+          <p className="text-quantum-particle mb-6">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="neon-border bg-quantum-matrix hover:bg-quantum-glow"
+          >
             Retry
           </Button>
         </div>
@@ -119,21 +115,18 @@ export function MyCircuitsPanel() {
 
   // Show loading state
   if (loading) {
-    console.log("MyCircuitsPanel - Showing loading state");
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-quantum-void">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-quantum-glow mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading circuits...</p>
+          <p className="text-quantum-glow">Loading circuits...</p>
         </div>
       </div>
     );
   }
 
-  console.log("MyCircuitsPanel - Rendering main content");
-
   return (
-    <div className="h-full overflow-auto quantum-grid">
+    <div className="h-full overflow-auto bg-quantum-void text-quantum-glow">
       <div className="flex items-center justify-between p-4 border-b border-quantum-matrix">
         <div className="flex items-center gap-3">
           <Zap className="w-5 h-5 text-quantum-neon" />
@@ -141,7 +134,7 @@ export function MyCircuitsPanel() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-quantum-matrix">
+          <Badge variant="outline" className="bg-quantum-matrix border-quantum-glow text-quantum-glow">
             {circuits?.length || 0} circuits
           </Badge>
           <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
@@ -150,7 +143,7 @@ export function MyCircuitsPanel() {
                 Save New
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="quantum-panel">
               <CircuitSaveDialog onClose={() => setShowSaveDialog(false)} />
             </DialogContent>
           </Dialog>
@@ -160,41 +153,44 @@ export function MyCircuitsPanel() {
       <div className="p-4">
         {!circuits || circuits.length === 0 ? (
           <div className="text-center py-12">
-            <Zap className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No circuits yet</h3>
-            <p className="text-muted-foreground mb-6">
+            <Zap className="w-16 h-16 text-quantum-particle mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-quantum-glow">No circuits yet</h3>
+            <p className="text-quantum-particle mb-6">
               Create your first quantum circuit and save it here
             </p>
-            <Button onClick={() => setShowSaveDialog(true)} className="neon-border">
+            <Button 
+              onClick={() => setShowSaveDialog(true)} 
+              className="neon-border bg-quantum-matrix hover:bg-quantum-glow"
+            >
               Save Current Circuit
             </Button>
           </div>
         ) : (
           <div className="grid gap-4">
             {circuits.map((circuit) => (
-              <Card key={circuit.id} className="quantum-panel neon-border">
+              <Card key={circuit.id} className="quantum-panel neon-border bg-quantum-matrix/50">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-mono">{circuit.name}</CardTitle>
+                    <CardTitle className="text-lg font-mono text-quantum-glow">{circuit.name}</CardTitle>
                     <div className="flex items-center gap-2">
                       {circuit.is_public && (
-                        <Badge variant="secondary" className="text-xs">Public</Badge>
+                        <Badge variant="secondary" className="text-xs bg-quantum-glow text-black">Public</Badge>
                       )}
-                      <Badge variant="outline" className="text-xs bg-quantum-matrix">
+                      <Badge variant="outline" className="text-xs bg-quantum-matrix border-quantum-glow text-quantum-glow">
                         {circuit.circuit_data?.qubits || 0} qubits
                       </Badge>
                     </div>
                   </div>
                   {circuit.description && (
-                    <p className="text-sm text-muted-foreground">{circuit.description}</p>
+                    <p className="text-sm text-quantum-particle">{circuit.description}</p>
                   )}
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4 text-sm font-mono">
                       <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span className="text-muted-foreground">
+                        <Clock className="w-3 h-3 text-quantum-particle" />
+                        <span className="text-quantum-particle">
                           {formatDate(circuit.updated_at)}
                         </span>
                       </div>
@@ -239,8 +235,8 @@ export function MyCircuitsPanel() {
                         </AlertDialogTrigger>
                         <AlertDialogContent className="quantum-panel">
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Circuit</AlertDialogTitle>
-                            <AlertDialogDescription>
+                            <AlertDialogTitle className="text-quantum-glow">Delete Circuit</AlertDialogTitle>
+                            <AlertDialogDescription className="text-quantum-particle">
                               Are you sure you want to delete "{circuit.name}"? This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
@@ -259,14 +255,14 @@ export function MyCircuitsPanel() {
                   </div>
 
                   {/* Circuit Preview */}
-                  <div className="bg-quantum-matrix rounded-lg p-3 quantum-panel">
-                    <div className="text-xs text-muted-foreground mb-2">Circuit Preview</div>
+                  <div className="bg-quantum-matrix rounded-lg p-3 border border-quantum-glow/20">
+                    <div className="text-xs text-quantum-particle mb-2">Circuit Preview</div>
                     <div className="space-y-2">
                       {Array.from({ length: Math.min(circuit.circuit_data?.qubits || 2, 4) }).map((_, i) => (
                         <div key={i} className="flex items-center">
                           <div className="w-6 text-xs font-mono text-quantum-neon">q{i}</div>
                           <div className="flex-1 relative h-4 flex items-center">
-                            <div className="w-full h-0.5 bg-quantum-neon relative entanglement-line"></div>
+                            <div className="w-full h-0.5 bg-quantum-neon relative"></div>
                             <div className="absolute left-1/4 w-6 h-6 bg-quantum-glow rounded border border-quantum-glow flex items-center justify-center text-xs font-bold text-black">
                               H
                             </div>
@@ -277,7 +273,7 @@ export function MyCircuitsPanel() {
                         </div>
                       ))}
                       {(circuit.circuit_data?.qubits || 0) > 4 && (
-                        <div className="text-xs text-muted-foreground text-center">
+                        <div className="text-xs text-quantum-particle text-center">
                           ... and {(circuit.circuit_data?.qubits || 0) - 4} more qubits
                         </div>
                       )}
@@ -292,7 +288,7 @@ export function MyCircuitsPanel() {
 
       {/* Rename Dialog */}
       <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
-        <DialogContent>
+        <DialogContent className="quantum-panel">
           <CircuitRenameDialog 
             circuit={selectedCircuit}
             onClose={() => {
