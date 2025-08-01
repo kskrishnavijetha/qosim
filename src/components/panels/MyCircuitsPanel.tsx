@@ -61,6 +61,14 @@ export function MyCircuitsPanel() {
     });
   };
 
+  // Helper function to safely get qubit count
+  const getQubitCount = (circuit: any) => {
+    if (!circuit.circuit_data) return 0;
+    if (typeof circuit.circuit_data.qubits === 'number') return circuit.circuit_data.qubits;
+    if (Array.isArray(circuit.circuit_data)) return circuit.circuit_data.length;
+    return 2; // default fallback
+  };
+
   // Show loading state while auth is loading
   if (authLoading) {
     return (
@@ -167,121 +175,125 @@ export function MyCircuitsPanel() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {circuits.map((circuit) => (
-              <Card key={circuit.id} className="quantum-panel neon-border bg-quantum-matrix/50">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-mono text-quantum-glow">{circuit.name}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      {circuit.is_public && (
-                        <Badge variant="secondary" className="text-xs bg-quantum-glow text-black">Public</Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs bg-quantum-matrix border-quantum-glow text-quantum-glow">
-                        {circuit.circuit_data?.qubits || 0} qubits
-                      </Badge>
-                    </div>
-                  </div>
-                  {circuit.description && (
-                    <p className="text-sm text-quantum-particle">{circuit.description}</p>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4 text-sm font-mono">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-quantum-particle" />
-                        <span className="text-quantum-particle">
-                          {formatDate(circuit.updated_at)}
-                        </span>
+            {circuits.map((circuit) => {
+              const qubitCount = getQubitCount(circuit);
+              
+              return (
+                <Card key={circuit.id} className="quantum-panel neon-border bg-quantum-matrix/50">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg font-mono text-quantum-glow">{circuit.name || 'Untitled Circuit'}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        {circuit.is_public && (
+                          <Badge variant="secondary" className="text-xs bg-quantum-glow text-black">Public</Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs bg-quantum-matrix border-quantum-glow text-quantum-glow">
+                          {qubitCount} qubits
+                        </Badge>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-1">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="neon-border"
-                        onClick={() => handleLoadCircuit(circuit)}
-                      >
-                        <Play className="w-3 h-3" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="neon-border"
-                        onClick={() => handleRename(circuit)}
-                      >
-                        <Edit3 className="w-3 h-3" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="neon-border"
-                        onClick={() => handleDuplicateCircuit(circuit)}
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                      <Button variant="outline" size="sm" className="neon-border">
-                        <Share2 className="w-3 h-3" />
-                      </Button>
-                      <Button variant="outline" size="sm" className="neon-border">
-                        <Download className="w-3 h-3" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="neon-border text-red-400 hover:text-red-300">
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="quantum-panel">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-quantum-glow">Delete Circuit</AlertDialogTitle>
-                            <AlertDialogDescription className="text-quantum-particle">
-                              Are you sure you want to delete "{circuit.name}"? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDeleteCircuit(circuit.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                    {circuit.description && (
+                      <p className="text-sm text-quantum-particle">{circuit.description}</p>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4 text-sm font-mono">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-quantum-particle" />
+                          <span className="text-quantum-particle">
+                            {formatDate(circuit.updated_at)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="neon-border"
+                          onClick={() => handleLoadCircuit(circuit)}
+                        >
+                          <Play className="w-3 h-3" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="neon-border"
+                          onClick={() => handleRename(circuit)}
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="neon-border"
+                          onClick={() => handleDuplicateCircuit(circuit)}
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button variant="outline" size="sm" className="neon-border">
+                          <Share2 className="w-3 h-3" />
+                        </Button>
+                        <Button variant="outline" size="sm" className="neon-border">
+                          <Download className="w-3 h-3" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="neon-border text-red-400 hover:text-red-300">
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="quantum-panel">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-quantum-glow">Delete Circuit</AlertDialogTitle>
+                              <AlertDialogDescription className="text-quantum-particle">
+                                Are you sure you want to delete "{circuit.name || 'this circuit'}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDeleteCircuit(circuit.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Circuit Preview */}
-                  <div className="bg-quantum-matrix rounded-lg p-3 border border-quantum-glow/20">
-                    <div className="text-xs text-quantum-particle mb-2">Circuit Preview</div>
-                    <div className="space-y-2">
-                      {Array.from({ length: Math.min(circuit.circuit_data?.qubits || 2, 4) }).map((_, i) => (
-                        <div key={i} className="flex items-center">
-                          <div className="w-6 text-xs font-mono text-quantum-neon">q{i}</div>
-                          <div className="flex-1 relative h-4 flex items-center">
-                            <div className="w-full h-0.5 bg-quantum-neon relative"></div>
-                            <div className="absolute left-1/4 w-6 h-6 bg-quantum-glow rounded border border-quantum-glow flex items-center justify-center text-xs font-bold text-black">
-                              H
-                            </div>
-                            <div className="absolute left-3/5 w-6 h-6 bg-quantum-neon rounded border border-quantum-neon flex items-center justify-center text-xs font-bold text-black">
-                              X
+                    {/* Circuit Preview */}
+                    <div className="bg-quantum-matrix rounded-lg p-3 border border-quantum-glow/20">
+                      <div className="text-xs text-quantum-particle mb-2">Circuit Preview</div>
+                      <div className="space-y-2">
+                        {Array.from({ length: Math.min(qubitCount, 4) }).map((_, i) => (
+                          <div key={i} className="flex items-center">
+                            <div className="w-6 text-xs font-mono text-quantum-neon">q{i}</div>
+                            <div className="flex-1 relative h-4 flex items-center">
+                              <div className="w-full h-0.5 bg-quantum-neon relative"></div>
+                              <div className="absolute left-1/4 w-6 h-6 bg-quantum-glow rounded border border-quantum-glow flex items-center justify-center text-xs font-bold text-black">
+                                H
+                              </div>
+                              <div className="absolute left-3/5 w-6 h-6 bg-quantum-neon rounded border border-quantum-neon flex items-center justify-center text-xs font-bold text-black">
+                                X
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                      {(circuit.circuit_data?.qubits || 0) > 4 && (
-                        <div className="text-xs text-quantum-particle text-center">
-                          ... and {(circuit.circuit_data?.qubits || 0) - 4} more qubits
-                        </div>
-                      )}
+                        ))}
+                        {qubitCount > 4 && (
+                          <div className="text-xs text-quantum-particle text-center">
+                            ... and {qubitCount - 4} more qubits
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
