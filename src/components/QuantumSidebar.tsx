@@ -17,7 +17,10 @@ import {
   ChevronDown,
   ChevronRight,
   Brain,
-  Layers
+  Layers,
+  ShoppingBag,
+  Users,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +33,7 @@ interface QuantumSidebarProps {
 export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
   const [sdkExpanded, setSdkExpanded] = useState(true);
   const [circuitsExpanded, setCircuitsExpanded] = useState(true);
+  const [communityExpanded, setCommunityExpanded] = useState(true);
 
   const menuItems = [
     // Circuits Section
@@ -55,6 +59,20 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
     // AI & Learning
     { id: "ai-panel", label: "AI Assistant", icon: Brain },
     { id: "learn-tutorials", label: "Learn", icon: BookOpen },
+    
+    // Community & Marketplace Section
+    {
+      id: "community-section",
+      label: "Community & Marketplace",
+      icon: Users,
+      isSection: true,
+      expanded: communityExpanded,
+      onToggle: () => setCommunityExpanded(!communityExpanded),
+      children: [
+        { id: "marketplace", label: "Marketplace", icon: ShoppingBag },
+        { id: "community-hub", label: "Community Hub", icon: MessageSquare },
+      ]
+    },
     
     // Development Section
     {

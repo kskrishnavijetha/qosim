@@ -8,55 +8,23 @@ import { JobsPanel } from "./panels/JobsPanel";
 import { MemoryPanel } from "./panels/MemoryPanel";
 import { FilesPanel } from "./panels/FilesPanel";
 import { LogsPanel } from "./panels/LogsPanel";
+import { UnifiedAIPanel } from "./ai/UnifiedAIPanel";
+import { LearnWithTutorials } from "./tutorials/LearnWithTutorials";
 import { SDKDemoPanel } from "./panels/SDKDemoPanel";
 import { QuantumAlgorithmsSDKPanel } from "./panels/QuantumAlgorithmsSDKPanel";
-import { LearnWithTutorials } from "./tutorials/LearnWithTutorials";
-import { UnifiedAIPanel } from "./ai/UnifiedAIPanel";
+import { IntegrationsRoadmap } from "./IntegrationsRoadmap";
+import { MarketplacePanel } from "./marketplace/MarketplacePanel";
+import { CommunityHubPanel } from "./community/CommunityHubPanel";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
-  const [selectedSDK, setSelectedSDK] = useState<'javascript' | 'python'>('javascript');
-  const [circuit, setCircuit] = useState<any[]>([]);
+  const [selectedSDK, setSelectedSDK] = useState<string>("javascript");
 
-  console.log("QuantumDashboard - activeTab:", activeTab);
-  console.log("QuantumDashboard - selectedSDK:", selectedSDK);
-  console.log("QuantumDashboard - circuit:", circuit);
-
-  const handleSDKSelect = (sdkType: string) => {
-    console.log("SDK selected:", sdkType);
-    if (sdkType === 'javascript') {
-      setSelectedSDK('javascript');
-    } else if (sdkType === 'python') {
-      setSelectedSDK('python');
-    }
-  };
-
-  const handleCircuitGenerated = (newCircuit: any) => {
-    console.log("Circuit generated:", newCircuit);
-    setCircuit(Array.isArray(newCircuit) ? newCircuit : []);
-  };
-
-  const handleAlgorithmGenerated = (algorithm: any) => {
-    console.log("Algorithm generated:", algorithm);
-  };
-
-  const handleCircuitOptimized = (optimizedCircuit: any) => {
-    console.log("Circuit optimized:", optimizedCircuit);
-    setCircuit(Array.isArray(optimizedCircuit) ? optimizedCircuit : []);
-  };
-
-  const handleCircuitFixed = (fixedCircuit: any) => {
-    console.log("Circuit fixed:", fixedCircuit);
-    setCircuit(Array.isArray(fixedCircuit) ? fixedCircuit : []);
-  };
-
-  const handleShowStateVisualization = (step?: number) => {
-    console.log("Show state visualization, step:", step);
+  const handleSDKSelect = (type: string) => {
+    setSelectedSDK(type);
   };
 
   const renderContent = () => {
-    console.log("Rendering content for tab:", activeTab);
-    
     switch (activeTab) {
       case "circuits":
         return <CircuitsPanel />;
@@ -70,41 +38,22 @@ export function QuantumDashboard() {
         return <FilesPanel />;
       case "logs":
         return <LogsPanel />;
-      case "sdk-demo":
-        return <SDKDemoPanel defaultSDK={selectedSDK} />;
-      case "javascript-sdk":
-        return <SDKDemoPanel defaultSDK="javascript" />;
-      case "python-sdk":
-        return <SDKDemoPanel defaultSDK="python" />;
-      case "algorithms-sdk":
-        return <QuantumAlgorithmsSDKPanel />;
+      case "ai-panel":
+        return <UnifiedAIPanel />;
       case "learn-tutorials":
         return <LearnWithTutorials />;
-      case "ai-assistant":
-        console.log("Rendering AI Assistant with circuit:", circuit);
-        return (
-          <div className="h-full p-4">
-            <UnifiedAIPanel
-              circuit={circuit}
-              onCircuitGenerated={handleCircuitGenerated}
-              onAlgorithmGenerated={handleAlgorithmGenerated}
-              onCircuitOptimized={handleCircuitOptimized}
-              onCircuitFixed={handleCircuitFixed}
-              onShowStateVisualization={handleShowStateVisualization}
-              className="h-full"
-            />
-          </div>
-        );
+      case "sdk-demo":
+        return <SDKDemoPanel selectedSDK={selectedSDK} />;
+      case "algorithms-sdk":
+        return <QuantumAlgorithmsSDKPanel />;
+      case "integrations":
+        return <IntegrationsRoadmap />;
+      case "marketplace":
+        return <MarketplacePanel />;
+      case "community-hub":
+        return <CommunityHubPanel />;
       default:
-        console.log("Unknown tab, showing default content");
-        return (
-          <div className="flex items-center justify-center h-full text-quantum-particle">
-            <div className="text-center">
-              <h2 className="text-2xl font-mono mb-4">Coming Soon</h2>
-              <p>This panel is under development</p>
-            </div>
-          </div>
-        );
+        return <CircuitsPanel />;
     }
   };
 

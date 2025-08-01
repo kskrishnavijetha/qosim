@@ -49,6 +49,44 @@ export type Database = {
           },
         ]
       }
+      circuit_collaboration: {
+        Row: {
+          change_data: Json
+          change_type: string
+          circuit_id: string
+          created_at: string
+          id: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          change_data?: Json
+          change_type: string
+          circuit_id: string
+          created_at?: string
+          id?: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          change_data?: Json
+          change_type?: string
+          circuit_id?: string
+          created_at?: string
+          id?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circuit_collaboration_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "circuits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circuit_collaborators: {
         Row: {
           accepted_at: string | null
@@ -90,6 +128,47 @@ export type Database = {
           },
         ]
       }
+      circuit_comments: {
+        Row: {
+          circuit_id: string
+          content: string
+          created_at: string
+          gate_id: string
+          id: string
+          resolved: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          circuit_id: string
+          content: string
+          created_at?: string
+          gate_id: string
+          id?: string
+          resolved?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          circuit_id?: string
+          content?: string
+          created_at?: string
+          gate_id?: string
+          id?: string
+          resolved?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circuit_comments_circuit_id_fkey"
+            columns: ["circuit_id"]
+            isOneToOne: false
+            referencedRelation: "circuits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circuits: {
         Row: {
           circuit_data: Json
@@ -122,6 +201,577 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      classrooms: {
+        Row: {
+          access_code: string
+          created_at: string
+          description: string | null
+          educator_id: string
+          id: string
+          is_active: boolean
+          max_students: number
+          name: string
+          semester: string | null
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_code?: string
+          created_at?: string
+          description?: string | null
+          educator_id: string
+          id?: string
+          is_active?: boolean
+          max_students?: number
+          name: string
+          semester?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_code?: string
+          created_at?: string
+          description?: string | null
+          educator_id?: string
+          id?: string
+          is_active?: boolean
+          max_students?: number
+          name?: string
+          semester?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classrooms_educator_id_fkey"
+            columns: ["educator_id"]
+            isOneToOne: false
+            referencedRelation: "educator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collaboration_projects: {
+        Row: {
+          collaborator_ids: string[] | null
+          content_data: Json | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          max_collaborators: number | null
+          project_type: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_ids?: string[] | null
+          content_data?: Json | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          max_collaborators?: number | null
+          project_type?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_ids?: string[] | null
+          content_data?: Json | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          max_collaborators?: number | null
+          project_type?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_forums: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          moderator_ids: string[] | null
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          moderator_ids?: string[] | null
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          moderator_ids?: string[] | null
+          name?: string
+        }
+        Relationships: []
+      }
+      community_profiles: {
+        Row: {
+          badges: Json | null
+          bio: string | null
+          created_at: string
+          followers_count: number | null
+          following_ids: string[] | null
+          github_url: string | null
+          id: string
+          is_creator: boolean | null
+          reputation_score: number | null
+          total_contributions: number | null
+          total_downloads: number | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          badges?: Json | null
+          bio?: string | null
+          created_at?: string
+          followers_count?: number | null
+          following_ids?: string[] | null
+          github_url?: string | null
+          id?: string
+          is_creator?: boolean | null
+          reputation_score?: number | null
+          total_contributions?: number | null
+          total_downloads?: number | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          badges?: Json | null
+          bio?: string | null
+          created_at?: string
+          followers_count?: number | null
+          following_ids?: string[] | null
+          github_url?: string | null
+          id?: string
+          is_creator?: boolean | null
+          reputation_score?: number | null
+          total_contributions?: number | null
+          total_downloads?: number | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      educator_profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          id: string
+          institution_name: string | null
+          institution_type: string | null
+          max_simulations_per_month: number
+          max_students: number
+          plan_type: string
+          subjects: string[] | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          id?: string
+          institution_name?: string | null
+          institution_type?: string | null
+          max_simulations_per_month?: number
+          max_students?: number
+          plan_type?: string
+          subjects?: string[] | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          id?: string
+          institution_name?: string | null
+          institution_type?: string | null
+          max_simulations_per_month?: number
+          max_students?: number
+          plan_type?: string
+          subjects?: string[] | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+        }
+        Relationships: []
+      }
+      forum_replies: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          parent_reply_id: string | null
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          parent_reply_id?: string | null
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          parent_reply_id?: string | null
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_replies_parent_reply_id_fkey"
+            columns: ["parent_reply_id"]
+            isOneToOne: false
+            referencedRelation: "forum_replies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_topics: {
+        Row: {
+          content: string
+          created_at: string
+          creator_id: string
+          forum_id: string
+          id: string
+          is_locked: boolean | null
+          is_pinned: boolean | null
+          last_reply_at: string | null
+          replies_count: number | null
+          title: string
+          updated_at: string
+          views_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          creator_id: string
+          forum_id: string
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_reply_at?: string | null
+          replies_count?: number | null
+          title: string
+          updated_at?: string
+          views_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          creator_id?: string
+          forum_id?: string
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_reply_at?: string | null
+          replies_count?: number | null
+          title?: string
+          updated_at?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_topics_forum_id_fkey"
+            columns: ["forum_id"]
+            isOneToOne: false
+            referencedRelation: "community_forums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_integrations: {
+        Row: {
+          created_at: string
+          educator_id: string
+          id: string
+          integration_data: Json
+          is_active: boolean
+          lms_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          educator_id: string
+          id?: string
+          integration_data?: Json
+          is_active?: boolean
+          lms_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          educator_id?: string
+          id?: string
+          integration_data?: Json
+          is_active?: boolean
+          lms_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_integrations_educator_id_fkey"
+            columns: ["educator_id"]
+            isOneToOne: false
+            referencedRelation: "educator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          parent_category_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          parent_category_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_category_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_item_versions: {
+        Row: {
+          changelog: string | null
+          content_data: Json
+          created_at: string
+          id: string
+          item_id: string
+          version: string
+        }
+        Insert: {
+          changelog?: string | null
+          content_data?: Json
+          created_at?: string
+          id?: string
+          item_id: string
+          version: string
+        }
+        Update: {
+          changelog?: string | null
+          content_data?: Json
+          created_at?: string
+          id?: string
+          item_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_item_versions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_items: {
+        Row: {
+          category_id: string | null
+          content_data: Json
+          created_at: string
+          creator_id: string
+          description: string | null
+          downloads_count: number | null
+          id: string
+          is_featured: boolean | null
+          is_free: boolean | null
+          is_published: boolean | null
+          item_type: string
+          price_cents: number | null
+          rating_average: number | null
+          rating_count: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          content_data?: Json
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          downloads_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_free?: boolean | null
+          is_published?: boolean | null
+          item_type: string
+          price_cents?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          content_data?: Json
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          downloads_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_free?: boolean | null
+          is_published?: boolean | null
+          item_type?: string
+          price_cents?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_purchases: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          id: string
+          item_id: string
+          price_paid_cents: number
+          transaction_id: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          id?: string
+          item_id: string
+          price_paid_cents: number
+          transaction_id?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          price_paid_cents?: number
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_purchases_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          rating: number
+          review_text: string | null
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          rating: number
+          review_text?: string | null
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       memory_states: {
         Row: {
@@ -418,6 +1068,97 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      student_activity: {
+        Row: {
+          activity_data: Json
+          activity_type: string
+          id: string
+          student_enrollment_id: string
+          timestamp: string
+        }
+        Insert: {
+          activity_data?: Json
+          activity_type: string
+          id?: string
+          student_enrollment_id: string
+          timestamp?: string
+        }
+        Update: {
+          activity_data?: Json
+          activity_type?: string
+          id?: string
+          student_enrollment_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_activity_student_enrollment_id_fkey"
+            columns: ["student_enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "student_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_enrollments: {
+        Row: {
+          classroom_id: string
+          enrollment_date: string
+          id: string
+          is_active: boolean
+          student_email: string
+          student_name: string
+          student_user_id: string
+        }
+        Insert: {
+          classroom_id: string
+          enrollment_date?: string
+          id?: string
+          is_active?: boolean
+          student_email: string
+          student_name: string
+          student_user_id: string
+        }
+        Update: {
+          classroom_id?: string
+          enrollment_date?: string
+          id?: string
+          is_active?: boolean
+          student_email?: string
+          student_name?: string
+          student_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
