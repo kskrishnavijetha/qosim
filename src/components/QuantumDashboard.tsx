@@ -34,7 +34,11 @@ export function QuantumDashboard() {
     gates: [],
     layers: [],
     depth: 0,
-    metadata: {}
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      version: '1.0.0'
+    }
   };
 
   const renderContent = () => {
