@@ -213,7 +213,7 @@ class QuantumHardwareService {
       ...baseDevice,
       id: `emulator-${baseDevice.id}`,
       name: `${baseDevice.name} Emulator`,
-      type: 'emulator',
+      provider: 'emulator',
       isOnline: true,
       cost: { perShot: 0, currency: 'USD' },
       errorRate: baseDevice.errorRate * 1.1 // Slightly higher error rate for realism

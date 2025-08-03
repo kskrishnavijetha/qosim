@@ -1,14 +1,14 @@
+
 import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
-import { CircuitBuilder } from './CircuitBuilder';
-import { QuantumSimulationPanel } from './simulation/QuantumSimulationPanel';
+import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
+import { QuantumSimulationPanel } from './circuits/CircuitSimulationPanel';
 import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
-import { SDKDemoPanel } from './sdk/SDKDemoPanel';
+import { SDKDemoPanel } from './panels/SDKDemoPanel';
 import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
-import { OptimizationPanel } from './optimization/OptimizationPanel';
-import { QuantumMemoryPanel } from './memory/QuantumMemoryPanel';
-import { QuantumFileSystemPanel } from './filesystem/QuantumFileSystemPanel';
-import { QuantumJobsPanel } from './jobs/QuantumJobsPanel';
+import { MemoryPanel } from './panels/MemoryPanel';
+import { EnhancedFilesPanel } from './qfs/EnhancedFilesPanel';
+import { JobsPanel } from './panels/JobsPanel';
 import { MarketplacePanel } from './marketplace/MarketplacePanel';
 import { CommunityHubPanel } from './community/CommunityHubPanel';
 import { HardwareIntegrationHub } from './hardware/HardwareIntegrationHub';
@@ -30,7 +30,7 @@ export function QuantumDashboard() {
     switch (activeTab) {
       case "circuits":
         return (
-          <CircuitBuilder 
+          <InteractiveCircuitBuilder 
             onSimulationComplete={handleSimulationComplete}
           />
         );
@@ -47,12 +47,12 @@ export function QuantumDashboard() {
             onCircuitGenerated={() => {}}
             onAlgorithmGenerated={() => {}}
             onCircuitOptimized={() => {}}
-            simulationResult={simulationResult}
-            onSimulationComplete={handleSimulationComplete}
+            onCircuitFixed={() => {}}
+            onShowStateVisualization={() => {}}
           />
         );
       case "sdk":
-        return <SDKDemoPanel />;
+        return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
       case "hardware":
         return (
           <HardwareIntegrationHub 
@@ -73,16 +73,16 @@ export function QuantumDashboard() {
           />
         );
       case "optimization":
-        return <OptimizationPanel />;
+        return <div className="p-6 text-center text-quantum-neon">Optimization Panel Coming Soon</div>;
       case "memory":
-        return <QuantumMemoryPanel />;
+        return <MemoryPanel />;
       case "files":
-        return <QuantumFileSystemPanel />;
+        return <EnhancedFilesPanel />;
       case "jobs":
-        return <QuantumJobsPanel />;
+        return <JobsPanel />;
       default:
         return (
-          <CircuitBuilder 
+          <InteractiveCircuitBuilder 
             onSimulationComplete={handleSimulationComplete}
           />
         );
