@@ -18,11 +18,6 @@ import { CommunityHubPanel } from "./community/CommunityHubPanel";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
-  const [selectedSDK, setSelectedSDK] = useState<string>("javascript");
-
-  const handleSDKSelect = (type: string) => {
-    setSelectedSDK(type);
-  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -39,11 +34,20 @@ export function QuantumDashboard() {
       case "logs":
         return <LogsPanel />;
       case "ai-panel":
-        return <UnifiedAIPanel />;
+        return (
+          <UnifiedAIPanel
+            circuit={[]}
+            onCircuitGenerated={() => {}}
+            onAlgorithmGenerated={() => {}}
+            onCircuitOptimized={() => {}}
+            onCircuitFixed={() => {}}
+            onShowStateVisualization={() => {}}
+          />
+        );
       case "learn-tutorials":
         return <LearnWithTutorials />;
       case "sdk-demo":
-        return <SDKDemoPanel selectedSDK={selectedSDK} />;
+        return <SDKDemoPanel />;
       case "algorithms-sdk":
         return <QuantumAlgorithmsSDKPanel />;
       case "integrations":
@@ -75,7 +79,6 @@ export function QuantumDashboard() {
           <QuantumSidebar 
             activeTab={activeTab} 
             onTabChange={setActiveTab}
-            onSDKSelect={handleSDKSelect}
           />
         </div>
         <div className="flex-1 overflow-auto">

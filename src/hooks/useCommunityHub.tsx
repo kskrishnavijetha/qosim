@@ -3,58 +3,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
 
-export interface CommunityForum {
-  id: string;
-  name: string;
-  description?: string;
-  category: string;
-  is_active: boolean;
-  moderator_ids: string[];
-  created_at: string;
-}
-
-export interface ForumTopic {
-  id: string;
-  forum_id: string;
-  creator_id: string;
-  title: string;
-  content: string;
-  is_pinned: boolean;
-  is_locked: boolean;
-  views_count: number;
-  replies_count: number;
-  last_reply_at?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ForumReply {
-  id: string;
-  topic_id: string;
-  author_id: string;
-  content: string;
-  parent_reply_id?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CommunityProfile {
-  id: string;
-  user_id: string;
-  bio?: string;
-  website_url?: string;
-  github_url?: string;
-  reputation_score: number;
-  total_downloads: number;
-  total_contributions: number;
-  badges: any[];
-  following_ids: string[];
-  followers_count: number;
-  is_creator: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// Use Supabase generated types
+export type CommunityForum = Database['public']['Tables']['community_forums']['Row'];
+export type ForumTopic = Database['public']['Tables']['forum_topics']['Row'];
+export type ForumReply = Database['public']['Tables']['forum_replies']['Row'];
+export type CommunityProfile = Database['public']['Tables']['community_profiles']['Row'];
+export type CommunityProfileInsert = Database['public']['Tables']['community_profiles']['Insert'];
 
 export function useCommunityHub() {
   const { user } = useAuth();
@@ -200,13 +156,13 @@ export function useCommunityHub() {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      setUserProfile(data);
+      setUserProfile(data as CommunityProfile);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
   }, [user]);
 
-  const createUserProfile = useCallback(async (profileData: Partial<CommunityProfile>) => {
+  const createUserProfile = useCallback(async (profileData: CommunityProfileInsert) => {
     if (!user) return null;
 
     try {
@@ -221,7 +177,7 @@ export function useCommunityHub() {
 
       if (error) throw error;
 
-      setUserProfile(data);
+      setUserProfile(data as CommunityProfile);
       toast.success('Profile created successfully');
       return data;
     } catch (error) {

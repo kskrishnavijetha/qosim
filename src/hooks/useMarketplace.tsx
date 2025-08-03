@@ -3,35 +3,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
 
-export interface MarketplaceItem {
-  id: string;
-  creator_id: string;
-  title: string;
-  description?: string;
-  item_type: 'circuit' | 'algorithm' | 'tutorial' | 'learning_module';
-  category_id?: string;
-  content_data: any;
-  price_cents: number;
-  is_free: boolean;
-  tags: string[];
-  version: string;
-  downloads_count: number;
-  rating_average: number;
-  rating_count: number;
-  is_featured: boolean;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface MarketplaceCategory {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-  parent_category_id?: string;
-}
+// Use Supabase generated types
+export type MarketplaceItem = Database['public']['Tables']['marketplace_items']['Row'];
+export type MarketplaceCategory = Database['public']['Tables']['marketplace_categories']['Row'];
+export type MarketplaceItemInsert = Database['public']['Tables']['marketplace_items']['Insert'];
 
 export function useMarketplace() {
   const { user } = useAuth();
@@ -94,7 +71,7 @@ export function useMarketplace() {
     }
   }, [user]);
 
-  const createItem = useCallback(async (itemData: Partial<MarketplaceItem>) => {
+  const createItem = useCallback(async (itemData: MarketplaceItemInsert) => {
     if (!user) {
       toast.error('You must be signed in to create items');
       return null;
