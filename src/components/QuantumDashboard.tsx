@@ -18,6 +18,11 @@ import { CommunityHubPanel } from "./community/CommunityHubPanel";
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
+  const [selectedSDK, setSelectedSDK] = useState("javascript");
+
+  const handleSDKSelect = (sdkType: string) => {
+    setSelectedSDK(sdkType);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -79,6 +84,7 @@ export function QuantumDashboard() {
           <QuantumSidebar 
             activeTab={activeTab} 
             onTabChange={setActiveTab}
+            onSDKSelect={handleSDKSelect}
           />
         </div>
         <div className="flex-1 overflow-auto">
