@@ -1,56 +1,50 @@
-
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { 
   Zap, 
   Play, 
-  FileCode, 
   Database, 
   Folder, 
-  ScrollText, 
-  Cpu, 
-  Code, 
-  BookOpen,
+  Brain, 
+  BookOpen, 
+  ShoppingBag, 
+  MessageSquare, 
+  FileCode, 
+  Cpu,
   ChevronDown,
-  ChevronRight,
-  Brain,
-  Layers,
-  ShoppingBag,
-  Users,
-  MessageSquare
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  ChevronRight
+} from 'lucide-react';
 
 interface QuantumSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onSDKSelect: (type: string) => void;
+  onSDKSelect: (sdk: string) => void;
 }
 
 export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
-  const [sdkExpanded, setSdkExpanded] = useState(true);
   const [circuitsExpanded, setCircuitsExpanded] = useState(true);
-  const [communityExpanded, setCommunityExpanded] = useState(true);
+  const [communityExpanded, setCommunityExpanded] = useState(false);
+  const [sdkExpanded, setSdkExpanded] = useState(false);
 
   const menuItems = [
-    // Circuits Section
+    // Circuit Design Section
     {
-      id: "circuits-section",
-      label: "Quantum Circuits",
-      icon: Layers,
-      isSection: true,
+      id: "circuit-design",
+      label: "Circuit Design",
+      icon: Zap,
+      isGroup: true,
       expanded: circuitsExpanded,
       onToggle: () => setCircuitsExpanded(!circuitsExpanded),
       children: [
         { id: "circuits", label: "Circuit Builder", icon: Zap },
+        { id: "my-circuits", label: "My Circuits", icon: Database },
         { id: "simulation", label: "Simulation", icon: Play },
       ]
     },
     
-    // Core Features
+    // Quantum Operations
     { id: "jobs", label: "Jobs", icon: Play },
     { id: "memory", label: "Memory", icon: Database },
     { id: "files", label: "QFS", icon: Folder },
@@ -66,8 +60,8 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
     {
       id: "community-section",
       label: "Community & Marketplace",
-      icon: Users,
-      isSection: true,
+      icon: MessageSquare,
+      isGroup: true,
       expanded: communityExpanded,
       onToggle: () => setCommunityExpanded(!communityExpanded),
       children: [
@@ -76,12 +70,12 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
       ]
     },
     
-    // Development Section
+    // Development SDKs Section
     {
       id: "sdk-section",
       label: "Development SDKs",
-      icon: Code,
-      isSection: true,
+      icon: FileCode,
+      isGroup: true,
       expanded: sdkExpanded,
       onToggle: () => setSdkExpanded(!sdkExpanded),
       children: [
@@ -91,9 +85,9 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
   ];
 
   const handleItemClick = (item: any) => {
-    console.log("Sidebar item clicked:", item.id);
+    console.log("Clicked item:", item.id);
     
-    if (item.isSection) {
+    if (item.isGroup) {
       item.onToggle();
       return;
     }
@@ -114,36 +108,36 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
     return activeTab === itemId;
   };
 
-  const renderMenuItem = (item: any, level = 0) => {
+  const renderMenuItem = (item: any, isChild = false) => {
     const isActive = isItemActive(item.id);
-    const Icon = item.icon;
-
-    if (item.isSection) {
+    const IconComponent = item.icon;
+    
+    if (item.isGroup && !isChild) {
       return (
-        <div key={item.id} className="mb-2">
-          <Collapsible open={item.expanded} onOpenChange={item.onToggle}>
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start gap-2 px-3 py-2 h-auto font-medium text-muted-foreground hover:text-quantum-glow hover:bg-quantum-matrix/50 transition-colors",
-                  level > 0 && "ml-4"
-                )}
-                onClick={() => handleItemClick(item)}
-              >
-                {item.expanded ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-1 mt-1">
-              {item.children?.map((child: any) => renderMenuItem(child, level + 1))}
-            </CollapsibleContent>
-          </Collapsible>
+        <div key={item.id} className="space-y-1">
+          <Button
+            variant="ghost"
+            className={`w-full justify-between text-left font-normal text-quantum-text hover:bg-quantum-matrix hover:text-quantum-glow transition-all duration-200 ${
+              isActive ? 'bg-quantum-matrix text-quantum-glow neon-border' : ''
+            }`}
+            onClick={() => handleItemClick(item)}
+          >
+            <div className="flex items-center gap-3">
+              <IconComponent className="w-4 h-4" />
+              <span className="text-sm">{item.label}</span>
+            </div>
+            {item.expanded ? (
+              <ChevronDown className="w-4 h-4 text-quantum-particle" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-quantum-particle" />
+            )}
+          </Button>
+          
+          {item.expanded && item.children && (
+            <div className="ml-6 space-y-1 border-l border-quantum-matrix pl-4">
+              {item.children.map((child: any) => renderMenuItem(child, true))}
+            </div>
+          )}
         </div>
       );
     }
@@ -152,59 +146,62 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
       <Button
         key={item.id}
         variant="ghost"
-        className={cn(
-          "w-full justify-start gap-2 px-3 py-2 h-auto transition-colors",
-          level > 0 && "ml-6",
-          isActive
-            ? "bg-quantum-matrix text-quantum-glow neon-border"
-            : "text-muted-foreground hover:text-quantum-glow hover:bg-quantum-matrix/50"
-        )}
+        className={`w-full justify-start text-left font-normal text-quantum-text hover:bg-quantum-matrix hover:text-quantum-glow transition-all duration-200 ${
+          isActive ? 'bg-quantum-matrix text-quantum-glow neon-border' : ''
+        } ${isChild ? 'text-xs py-2' : 'text-sm'}`}
         onClick={() => handleItemClick(item)}
       >
-        <Icon className="w-4 h-4" />
-        <span>{item.label}</span>
-        {item.badge && (
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {item.badge}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <IconComponent className={`${isChild ? 'w-3 h-3' : 'w-4 h-4'}`} />
+          <span>{item.label}</span>
+        </div>
       </Button>
     );
   };
 
   return (
-    <div className="h-full bg-quantum-void border-r border-quantum-matrix flex flex-col quantum-panel">
+    <div className="h-full flex flex-col bg-quantum-dark border-r border-quantum-matrix">
       {/* Header */}
-      <div className="p-4 border-b border-quantum-matrix">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-quantum-glow to-quantum-neon rounded-lg flex items-center justify-center">
-            <Zap className="w-4 h-4 text-black" />
+      <div className="p-6 border-b border-quantum-matrix">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-quantum-glow to-quantum-neon rounded-lg flex items-center justify-center">
+            <Zap className="w-5 h-5 text-black font-bold" />
           </div>
           <div>
-            <h1 className="font-bold text-quantum-glow">Quantum OS</h1>
-            <p className="text-xs text-muted-foreground">v2.0.1</p>
+            <h1 className="text-lg font-bold text-quantum-glow">QoSim</h1>
+            <p className="text-xs text-quantum-particle">Quantum Simulator</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 p-4 space-y-2 overflow-y-auto">
         <div className="space-y-1">
           {menuItems.map((item) => renderMenuItem(item))}
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-quantum-matrix">
-        <div className="text-xs text-muted-foreground space-y-1">
-          <div className="flex justify-between">
-            <span>Quantum State:</span>
-            <span className="text-quantum-glow">Coherent</span>
+      {/* Status Footer */}
+      <div className="p-4 border-t border-quantum-matrix space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-quantum-particle">Status</span>
+          <Badge variant="outline" className="text-xs bg-quantum-matrix border-quantum-glow text-quantum-glow">
+            Online
+          </Badge>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-quantum-particle">Quantum State</span>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-quantum-glow rounded-full animate-pulse"></div>
+            <span className="text-xs text-quantum-glow">Active</span>
           </div>
-          <div className="flex justify-between">
-            <span>Entanglement:</span>
-            <span className="text-quantum-neon">Active</span>
-          </div>
+        </div>
+        
+        <Separator className="bg-quantum-matrix" />
+        
+        <div className="text-xs text-quantum-particle text-center">
+          v2.0.0 - Quantum Ready
         </div>
       </div>
     </div>

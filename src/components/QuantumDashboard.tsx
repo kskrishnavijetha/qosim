@@ -12,6 +12,7 @@ import { JobsPanel } from './panels/JobsPanel';
 import { MarketplacePanel } from './marketplace/MarketplacePanel';
 import { CommunityHubPanel } from './community/CommunityHubPanel';
 import { HardwareIntegrationHub } from './hardware/HardwareIntegrationHub';
+import { MyCircuitsPanel } from './panels/MyCircuitsPanel';
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -45,6 +46,8 @@ export function QuantumDashboard() {
     switch (activeTab) {
       case "circuits":
         return <InteractiveCircuitBuilder />;
+      case "my-circuits":
+        return <MyCircuitsPanel />;
       case "simulation":
         return (
           <CircuitSimulationPanel 
