@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
-import { QuantumSimulationPanel } from './circuits/CircuitSimulationPanel';
+import { CircuitSimulationPanel } from './circuits/CircuitSimulationPanel';
 import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
 import { SDKDemoPanel } from './panels/SDKDemoPanel';
 import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
@@ -29,15 +29,14 @@ export function QuantumDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case "circuits":
-        return (
-          <InteractiveCircuitBuilder 
-            onSimulationComplete={handleSimulationComplete}
-          />
-        );
+        return <InteractiveCircuitBuilder />;
       case "simulation":
         return (
-          <QuantumSimulationPanel 
-            onSimulationComplete={handleSimulationComplete}
+          <CircuitSimulationPanel 
+            circuit={{ qubits: [], gates: [], depth: 0 }}
+            simulationResult={simulationResult}
+            onSimulate={async () => {}}
+            isSimulating={false}
           />
         );
       case "ai":
@@ -81,11 +80,7 @@ export function QuantumDashboard() {
       case "jobs":
         return <JobsPanel />;
       default:
-        return (
-          <InteractiveCircuitBuilder 
-            onSimulationComplete={handleSimulationComplete}
-          />
-        );
+        return <InteractiveCircuitBuilder />;
     }
   };
 
