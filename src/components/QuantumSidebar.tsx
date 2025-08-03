@@ -40,7 +40,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
       children: [
         { id: "circuits", label: "Circuit Builder", icon: Zap },
         { id: "my-circuits", label: "My Circuits", icon: Database },
-        { id: "simulation", label: "Simulation", icon: Play },
       ]
     },
     
