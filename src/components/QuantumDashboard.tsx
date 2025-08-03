@@ -26,6 +26,17 @@ export function QuantumDashboard() {
     setSimulationResult(result);
   };
 
+  // Create a default circuit object that matches the QuantumCircuit interface
+  const defaultCircuit = {
+    id: 'default-circuit',
+    name: 'Default Circuit',
+    qubits: [],
+    gates: [],
+    layers: [],
+    depth: 0,
+    metadata: {}
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "circuits":
@@ -33,7 +44,7 @@ export function QuantumDashboard() {
       case "simulation":
         return (
           <CircuitSimulationPanel 
-            circuit={{ qubits: [], gates: [], depth: 0 }}
+            circuit={defaultCircuit}
             simulationResult={simulationResult}
             onSimulate={async () => {}}
             isSimulating={false}
