@@ -46,7 +46,7 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
       onToggle: () => setCircuitsExpanded(!circuitsExpanded),
       children: [
         { id: "circuits", label: "Circuit Builder", icon: Zap },
-        { id: "my-circuits", label: "My Circuits", icon: Database },
+        { id: "simulation", label: "Simulation", icon: Play },
       ]
     },
     
@@ -54,11 +54,13 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
     { id: "jobs", label: "Jobs", icon: Play },
     { id: "memory", label: "Memory", icon: Database },
     { id: "files", label: "QFS", icon: Folder },
-    { id: "logs", label: "Logs", icon: ScrollText },
     
     // AI & Learning
-    { id: "ai-panel", label: "AI Assistant", icon: Brain },
-    { id: "learn-tutorials", label: "Learn", icon: BookOpen },
+    { id: "ai", label: "AI Assistant", icon: Brain },
+    { id: "algorithms", label: "Algorithms", icon: BookOpen },
+    
+    // Hardware Integration
+    { id: "hardware", label: "Hardware Integration", icon: Cpu },
     
     // Community & Marketplace Section
     {
@@ -70,7 +72,7 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
       onToggle: () => setCommunityExpanded(!communityExpanded),
       children: [
         { id: "marketplace", label: "Marketplace", icon: ShoppingBag },
-        { id: "community-hub", label: "Community Hub", icon: MessageSquare },
+        { id: "community", label: "Community Hub", icon: MessageSquare },
       ]
     },
     
@@ -83,14 +85,9 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
       expanded: sdkExpanded,
       onToggle: () => setSdkExpanded(!sdkExpanded),
       children: [
-        { id: "algorithms-sdk", label: "Algorithms SDK", icon: Cpu },
-        { id: "javascript-sdk", label: "JavaScript SDK", icon: FileCode },
-        { id: "python-sdk", label: "Python SDK", icon: FileCode },
+        { id: "sdk", label: "SDK Demo", icon: FileCode },
       ]
     },
-    
-    // Integrations
-    { id: "integrations", label: "Integrations", icon: Layers },
   ];
 
   const handleItemClick = (item: any) => {
@@ -102,17 +99,10 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
     }
 
     // Handle SDK-specific items
-    if (item.id === 'javascript-sdk') {
-      console.log("Opening JavaScript SDK");
-      onTabChange('sdk-demo');
+    if (item.id === 'sdk') {
+      console.log("Opening SDK Demo");
+      onTabChange('sdk');
       onSDKSelect('javascript');
-    } else if (item.id === 'python-sdk') {
-      console.log("Opening Python SDK");
-      onTabChange('sdk-demo');
-      onSDKSelect('python');
-    } else if (item.id === 'algorithms-sdk') {
-      console.log("Opening Algorithms SDK");
-      onTabChange('algorithms-sdk');
     } else {
       // Handle regular tabs
       console.log("Opening regular tab:", item.id);
@@ -121,15 +111,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
   };
 
   const isItemActive = (itemId: string) => {
-    // Check for SDK-specific active states
-    if (itemId === 'javascript-sdk') {
-      return activeTab === 'sdk-demo' || activeTab === 'javascript-sdk';
-    } else if (itemId === 'python-sdk') {
-      return activeTab === 'python-sdk';
-    } else if (itemId === 'algorithms-sdk') {
-      return activeTab === 'algorithms-sdk';
-    }
-    
     return activeTab === itemId;
   };
 
