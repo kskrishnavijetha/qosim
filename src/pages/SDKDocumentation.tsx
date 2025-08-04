@@ -36,12 +36,6 @@ export default function SDKDocumentation() {
           
           {/* Quick Links */}
           <div className="flex items-center justify-center gap-4 flex-wrap">
-            <Link to="/tutorials">
-              <Button variant="default" className="gap-2">
-                <BookOpen className="h-4 w-4" />
-                Learn with Tutorials
-              </Button>
-            </Link>
             <Link to="/docs/api">
               <Button variant="outline" className="gap-2">
                 <Book className="h-4 w-4" />
