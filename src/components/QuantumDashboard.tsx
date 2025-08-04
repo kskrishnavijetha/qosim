@@ -13,6 +13,7 @@ import { MarketplacePanel } from './marketplace/MarketplacePanel';
 import { CommunityHubPanel } from './community/CommunityHubPanel';
 import { HardwareIntegrationHub } from './hardware/HardwareIntegrationHub';
 import { MyCircuitsPanel } from './panels/MyCircuitsPanel';
+import { UserProfileDropdown } from './UserProfileDropdown';
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -112,6 +113,10 @@ export function QuantumDashboard() {
         />
       </div>
       <div className="flex-1 overflow-auto">
+        <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
+          <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
+          <UserProfileDropdown />
+        </div>
         <div className="p-6">
           {renderContent()}
         </div>
