@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Activity, BookOpen, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,18 +24,7 @@ interface CircuitGate {
 export default function QuantumDashboard() {
   const [circuit, setCircuit] = useState<CircuitGate[]>([]);
   const [showLearningMode, setShowLearningMode] = useState(false);
-  const [activeFile, setActiveFile] = useState<string | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [memory, setMemory] = useState<{ [key: string]: string }>({});
   const [showGitHubPanel, setShowGitHubPanel] = useState(false);
-
-  const addLog = (log: string) => {
-    setLogs((prevLogs) => [...prevLogs, log]);
-  };
-
-  const updateMemory = (address: string, value: string) => {
-    setMemory((prevMemory) => ({ ...prevMemory, [address]: value }));
-  };
 
   const handleCircuitChange = (newCircuit: CircuitGate[]) => {
     setCircuit(newCircuit);
@@ -92,20 +82,20 @@ export default function QuantumDashboard() {
       <div className="flex-grow flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="h-full w-full">
           <ResizablePanel defaultSize={20}>
-            <FilesPanel setActiveFile={setActiveFile} />
+            <FilesPanel />
             <ResizableHandle className="bg-quantum-matrix" />
             <CircuitsPanel />
           </ResizablePanel>
 
           <ResizablePanel defaultSize={60} className="flex flex-col">
-            <InteractiveCircuitBuilder onCircuitChange={handleCircuitChange} />
+            <InteractiveCircuitBuilder />
           </ResizablePanel>
 
           <ResizablePanel defaultSize={20}>
             <JobsPanel />
             <ResizableHandle className="bg-quantum-matrix" />
-            <LogsPanel logs={logs} />
-            <MemoryPanel memory={memory} />
+            <LogsPanel />
+            <MemoryPanel />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
