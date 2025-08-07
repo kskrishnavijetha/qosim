@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Github, Chrome, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthPage() {
@@ -15,7 +16,7 @@ export default function AuthPage() {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, signInWithProvider, user } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +24,6 @@ export default function AuthPage() {
       navigate('/app');
     }
   }, [user, navigate]);
-
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,19 +48,7 @@ export default function AuthPage() {
     if (error) {
       setError(error.message);
     } else {
-      setError('Check your email for the confirmation link!');
-    }
-    setLoading(false);
-  };
-
-  const handleProviderSignIn = async (provider: 'google' | 'github') => {
-    setLoading(true);
-    setError(null);
-
-    const { error } = await signInWithProvider(provider);
-    
-    if (error) {
-      setError(error.message);
+      setError('Account created successfully! You can now sign in.');
     }
     setLoading(false);
   };
@@ -166,36 +154,6 @@ export default function AuthPage() {
                 </form>
               </TabsContent>
             </Tabs>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-quantum-matrix"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-quantum-void px-2 text-quantum-neon">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                onClick={() => handleProviderSignIn('github')}
-                disabled={loading}
-                className="quantum-panel border-quantum-matrix hover:bg-quantum-matrix"
-              >
-                <Github className="w-4 h-4 mr-2" />
-                GitHub
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleProviderSignIn('google')}
-                disabled={loading}
-                className="quantum-panel border-quantum-matrix hover:bg-quantum-matrix"
-              >
-                <Chrome className="w-4 h-4 mr-2" />
-                Google
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
