@@ -14,11 +14,16 @@ import { CommunityHubPanel } from './community/CommunityHubPanel';
 import { HardwareIntegrationHub } from './hardware/HardwareIntegrationHub';
 import { MyCircuitsPanel } from './panels/MyCircuitsPanel';
 import { UserProfileDropdown } from './UserProfileDropdown';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Github } from 'lucide-react';
+import GitHubIntegration from './github/GitHubIntegration';
 
-export function QuantumDashboard() {
+export default function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
   const [selectedSDK, setSelectedSDK] = useState("javascript");
   const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
 
   const handleSDKSelect = (sdkType: string) => {
     setSelectedSDK(sdkType);
@@ -115,7 +120,25 @@ export function QuantumDashboard() {
       <div className="flex-1 overflow-auto">
         <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
           <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
-          <UserProfileDropdown />
+          <div className="flex items-center gap-3">
+            <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-quantum-dark border-quantum-neon/30">
+                <DialogHeader>
+                  <DialogTitle className="text-quantum-glow">GitHub Integration</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
+                  <GitHubIntegration />
+                </div>
+              </DialogContent>
+            </Dialog>
+            <UserProfileDropdown />
+          </div>
         </div>
         <div className="p-6">
           {renderContent()}
