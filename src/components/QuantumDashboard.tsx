@@ -21,7 +21,7 @@ interface CircuitGate {
   targets: string[];
 }
 
-export default function QuantumDashboard() {
+const QuantumDashboard = () => {
   const [circuit, setCircuit] = useState<CircuitGate[]>([]);
   const [showLearningMode, setShowLearningMode] = useState(false);
   const [showGitHubPanel, setShowGitHubPanel] = useState(false);
@@ -101,4 +101,6 @@ export default function QuantumDashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default QuantumDashboard;
