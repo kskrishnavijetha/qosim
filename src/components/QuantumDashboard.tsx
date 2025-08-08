@@ -1,137 +1,147 @@
 
-import React, { useState, useCallback } from 'react';
-import { Github, Shield, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
-import GitHubIntegration from './github/GitHubIntegration';
+import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
-import { FourDTopologicalQEC } from './error-correction/FourDTopologicalQEC';
-import { Gate } from '@/hooks/useCircuitState';
-
-interface User {
-  name: string;
-  email: string;
-  imageUrl: string;
-}
-
-const mockUser: User = {
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  imageUrl: '/placeholder-avatar.jpg',
-};
+import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
+import { CircuitSimulationPanel } from './circuits/CircuitSimulationPanel';
+import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
+import { SDKDemoPanel } from './panels/SDKDemoPanel';
+import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
+import { MemoryPanel } from './panels/MemoryPanel';
+import { EnhancedFilesPanel } from './qfs/EnhancedFilesPanel';
+import { JobsPanel } from './panels/JobsPanel';
+import { MarketplacePanel } from './marketplace/MarketplacePanel';
+import { CommunityHubPanel } from './community/CommunityHubPanel';
+import { HardwareIntegrationHub } from './hardware/HardwareIntegrationHub';
+import { MyCircuitsPanel } from './panels/MyCircuitsPanel';
+import { UserProfileDropdown } from './UserProfileDropdown';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Github } from 'lucide-react';
+import GitHubIntegration from './github/GitHubIntegration';
 
 export default function QuantumDashboard() {
-  const [activePanel, setActivePanel] = useState<'circuit-builder' | 'simulator' | 'hardware' | 'algorithms' | 'error-correction'>('circuit-builder');
-  const [circuitGates, setCircuitGates] = useState<Gate[]>([]);
-  const [algorithmResult, setAlgorithmResult] = useState<any>(null);
-  const [visualCircuit, setVisualCircuit] = useState<any>(null);
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("circuits");
+  const [selectedSDK, setSelectedSDK] = useState("javascript");
+  const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [githubDialogOpen, setGithubDialogOpen] = useState(false);
 
-  const handleLogout = useCallback(() => {
-    alert('Logged out!');
-  }, []);
+  const handleSDKSelect = (sdkType: string) => {
+    setSelectedSDK(sdkType);
+  };
 
-  const handlePanelChange = (panel: string) => {
-    setActivePanel(panel as 'circuit-builder' | 'simulator' | 'hardware' | 'algorithms' | 'error-correction');
+  const handleSimulationComplete = (result: any) => {
+    setSimulationResult(result);
+  };
+
+  // Create a default circuit object that matches the QuantumCircuit interface
+  const defaultCircuit = {
+    id: 'default-circuit',
+    name: 'Default Circuit',
+    qubits: [],
+    gates: [],
+    layers: [],
+    depth: 0,
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      version: '1.0.0'
+    }
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "circuits":
+        return <InteractiveCircuitBuilder />;
+      case "my-circuits":
+        return <MyCircuitsPanel />;
+      case "simulation":
+        return (
+          <CircuitSimulationPanel 
+            circuit={defaultCircuit}
+            simulationResult={simulationResult}
+            onSimulate={async () => {}}
+            isSimulating={false}
+          />
+        );
+      case "ai":
+        return (
+          <UnifiedAIPanel 
+            circuit={[]}
+            onCircuitGenerated={() => {}}
+            onAlgorithmGenerated={() => {}}
+            onCircuitOptimized={() => {}}
+            onCircuitFixed={() => {}}
+            onShowStateVisualization={() => {}}
+          />
+        );
+      case "sdk":
+        return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
+      case "hardware":
+        return (
+          <HardwareIntegrationHub 
+            circuit={[]}
+            simulationResult={simulationResult}
+            onExecutionComplete={handleSimulationComplete}
+          />
+        );
+      case "marketplace":
+        return <MarketplacePanel />;
+      case "community":
+        return <CommunityHubPanel />;
+      case "algorithms":
+        return (
+          <QuantumAlgorithmsSDK
+            onCircuitGenerated={() => {}}
+            onAlgorithmExecuted={() => {}}
+          />
+        );
+      case "optimization":
+        return <div className="p-6 text-center text-quantum-neon">Optimization Panel Coming Soon</div>;
+      case "memory":
+        return <MemoryPanel />;
+      case "files":
+        return <EnhancedFilesPanel />;
+      case "jobs":
+        return <JobsPanel />;
+      default:
+        return <InteractiveCircuitBuilder />;
+    }
   };
 
   return (
-    <div className="flex h-screen bg-black text-white overflow-hidden">
-      <QuantumSidebar 
-        activePanel={activePanel} 
-        onPanelChange={handlePanelChange}
-        user={mockUser}
-        onLogout={handleLogout}
-      />
-      
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-quantum-glow/20">
-          <div className="flex items-center gap-4">
-            <div className="text-lg font-semibold">
-              {activePanel === 'circuit-builder' && 'Quantum Circuit Builder'}
-              {activePanel === 'simulator' && 'Quantum Simulator'}
-              {activePanel === 'hardware' && 'Hardware Integration'}
-              {activePanel === 'algorithms' && 'Quantum Algorithms SDK'}
-              {activePanel === 'error-correction' && 'Error Correction'}
-            </div>
-            <Badge variant="secondary">QOSim v1.0</Badge>
+    <div className="flex h-screen bg-quantum-void text-quantum-text">
+      <div className="w-64 bg-quantum-dark border-r border-quantum-neon/30">
+        <QuantumSidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab}
+          onSDKSelect={handleSDKSelect}
+        />
+      </div>
+      <div className="flex-1 overflow-auto">
+        <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
+          <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
+          <div className="flex items-center gap-3">
+            <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-quantum-dark border-quantum-neon/30">
+                <DialogHeader>
+                  <DialogTitle className="text-quantum-glow">GitHub Integration</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
+                  <GitHubIntegration />
+                </div>
+              </DialogContent>
+            </Dialog>
+            <UserProfileDropdown />
           </div>
-          
-          {/* Add GitHub Integration Button */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="neon-border"
-              >
-                <Github className="w-4 h-4 mr-2" />
-                GitHub
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto quantum-panel">
-              <DialogHeader>
-                <DialogTitle className="text-quantum-glow">GitHub Integration</DialogTitle>
-              </DialogHeader>
-              <GitHubIntegration />
-            </DialogContent>
-          </Dialog>
         </div>
-
-        {/* Main Content */}
-        <div className="flex-1 overflow-hidden">
-          {activePanel === 'circuit-builder' && (
-            <div className="h-full p-4 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-xl text-quantum-glow mb-4">Circuit Builder</h2>
-                <p className="text-muted-foreground">Circuit builder panel would go here</p>
-              </div>
-            </div>
-          )}
-          
-          {activePanel === 'simulator' && (
-            <div className="h-full p-4 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-xl text-quantum-neon mb-4">Quantum Simulator</h2>
-                <p className="text-muted-foreground">Simulation panel would go here</p>
-              </div>
-            </div>
-          )}
-          
-          {activePanel === 'hardware' && (
-            <div className="h-full p-4 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-xl text-quantum-particle mb-4">Hardware Integration</h2>
-                <p className="text-muted-foreground">Hardware integration panel would go here</p>
-              </div>
-            </div>
-          )}
-          
-          {activePanel === 'algorithms' && (
-            <div className="h-full p-4 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-xl text-quantum-energy mb-4">Algorithms SDK</h2>
-                <p className="text-muted-foreground">Algorithms SDK panel would go here</p>
-              </div>
-            </div>
-          )}
-          
-          {activePanel === 'error-correction' && (
-            <div className="h-full overflow-y-auto p-4">
-              <FourDTopologicalQEC
-                onSimulationComplete={(result) => {
-                  console.log('4D QEC simulation completed:', result);
-                  toast({
-                    title: "4D Error Correction Complete",
-                    description: `Simulation finished with ${result.correctedErrors} errors corrected`,
-                  });
-                }}
-              />
-            </div>
-          )}
+        <div className="p-6">
+          {renderContent()}
         </div>
       </div>
     </div>
