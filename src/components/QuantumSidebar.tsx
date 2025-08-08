@@ -1,11 +1,9 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Circuit,
   Cpu,
   Brain,
   Code,
@@ -33,7 +31,7 @@ const sidebarSections = [
   {
     title: "Core Tools",
     items: [
-      { id: "circuits", label: "Circuit Builder", icon: Circuit },
+      { id: "circuits", label: "Circuit Builder", icon: Cpu },
       { id: "my-circuits", label: "My Circuits", icon: Database },
       { id: "simulation", label: "Simulation", icon: Play },
       { id: "ai", label: "AI Assistant", icon: Brain },
