@@ -1,11 +1,10 @@
-
 import React, { forwardRef, useState, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { QNNLayer } from '@/hooks/useQNNBuilder';
 import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
-import { ZoomIn, ZoomOut, RotateCcw, Move } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Move, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QNNCanvasProps {

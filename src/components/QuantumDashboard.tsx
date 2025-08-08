@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
@@ -15,6 +14,7 @@ import { HardwareIntegrationHub } from './hardware/HardwareIntegrationHub';
 import { MyCircuitsPanel } from './panels/MyCircuitsPanel';
 import { UserProfileDropdown } from './UserProfileDropdown';
 import { QuantumErrorCorrectionPanel } from './error-correction/QuantumErrorCorrectionPanel';
+import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Github } from 'lucide-react';
@@ -98,6 +98,8 @@ export default function QuantumDashboard() {
         );
       case "error-correction":
         return <QuantumErrorCorrectionPanel />;
+      case "qnn-builder":
+        return <QNNVisualBuilder />;
       case "optimization":
         return <div className="p-6 text-center text-quantum-neon">Optimization Panel Coming Soon</div>;
       case "memory":
