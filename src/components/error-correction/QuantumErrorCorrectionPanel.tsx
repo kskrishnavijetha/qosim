@@ -16,6 +16,8 @@ interface EducationalContent {
 }
 
 export function QuantumErrorCorrectionPanel() {
+  console.log('QuantumErrorCorrectionPanel: Component is rendering');
+  
   const [activeTab, setActiveTab] = useState('4d-simulator');
   const [showEducationalInfo, setShowEducationalInfo] = useState(false);
 
@@ -43,6 +45,8 @@ export function QuantumErrorCorrectionPanel() {
       ]
     }
   };
+
+  console.log('QuantumErrorCorrectionPanel: Active tab:', activeTab);
 
   return (
     <div className="h-full w-full space-y-4 p-4">
@@ -117,11 +121,59 @@ export function QuantumErrorCorrectionPanel() {
         </TabsList>
 
         <TabsContent value="4d-simulator" className="h-[calc(100%-80px)] mt-4">
-          <FourDToricCode />
+          {console.log('QuantumErrorCorrectionPanel: Rendering FourDToricCode')}
+          <div className="p-4 bg-quantum-dark border border-quantum-neon/30 rounded-lg">
+            <h2 className="text-xl text-quantum-glow mb-4">4D Toric Code Simulator</h2>
+            <p className="text-quantum-text mb-4">
+              This is a placeholder for the 4D Toric Code simulator. The 3D visualization components 
+              may be causing rendering issues.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-quantum-void/50 rounded border border-quantum-neon/20">
+                <h3 className="text-quantum-neon mb-2">Lattice Parameters</h3>
+                <p className="text-sm text-quantum-text">Size: 3×3×3 lattice</p>
+                <p className="text-sm text-quantum-text">Physical Qubits: 81</p>
+                <p className="text-sm text-quantum-text">Stabilizers: 162</p>
+              </div>
+              <div className="p-4 bg-quantum-void/50 rounded border border-quantum-neon/20">
+                <h3 className="text-quantum-neon mb-2">Error Rates</h3>
+                <p className="text-sm text-quantum-text">Bit Flip: 1.0%</p>
+                <p className="text-sm text-quantum-text">Phase Flip: 1.0%</p>
+                <p className="text-sm text-quantum-text">Depolarizing: 0.5%</p>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="comparison" className="h-[calc(100%-80px)] mt-4">
-          <ErrorCorrectionComparison />
+          {console.log('QuantumErrorCorrectionPanel: Rendering ErrorCorrectionComparison')}
+          <div className="p-4 bg-quantum-dark border border-quantum-neon/30 rounded-lg">
+            <h2 className="text-xl text-quantum-glow mb-4">Multi-Dimensional Comparison</h2>
+            <p className="text-quantum-text mb-4">
+              This is a placeholder for the error correction comparison. The complex 3D visualizations 
+              may be causing performance issues.
+            </p>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-quantum-void/50 rounded border border-quantum-neon/20">
+                <h3 className="text-quantum-neon mb-2">2D Surface Code</h3>
+                <p className="text-sm text-quantum-text">Threshold: 1.1%</p>
+                <p className="text-sm text-quantum-text">Physical Qubits: 25</p>
+                <p className="text-sm text-quantum-text">Overhead: 1.0×</p>
+              </div>
+              <div className="p-4 bg-quantum-void/50 rounded border border-quantum-neon/20">
+                <h3 className="text-quantum-neon mb-2">3D Surface Code</h3>
+                <p className="text-sm text-quantum-text">Threshold: 3.1%</p>
+                <p className="text-sm text-quantum-text">Physical Qubits: 216</p>
+                <p className="text-sm text-quantum-text">Overhead: 2.5×</p>
+              </div>
+              <div className="p-4 bg-quantum-void/50 rounded border border-quantum-neon/20">
+                <h3 className="text-quantum-neon mb-2">4D Toric Code</h3>
+                <p className="text-sm text-quantum-text">Threshold: 5.0%</p>
+                <p className="text-sm text-quantum-text">Physical Qubits: 1296</p>
+                <p className="text-sm text-quantum-text">Overhead: 5.0×</p>
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
