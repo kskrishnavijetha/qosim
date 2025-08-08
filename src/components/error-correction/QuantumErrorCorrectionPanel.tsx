@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -18,6 +18,8 @@ interface EducationalContent {
 export function QuantumErrorCorrectionPanel() {
   const [activeTab, setActiveTab] = useState('4d-simulator');
   const [showEducationalInfo, setShowEducationalInfo] = useState(false);
+
+  console.log('QuantumErrorCorrectionPanel rendering', { activeTab, showEducationalInfo });
 
   const educationalContent: Record<string, EducationalContent> = {
     '4d-simulator': {
@@ -117,27 +119,21 @@ export function QuantumErrorCorrectionPanel() {
         </TabsList>
 
         <TabsContent value="4d-simulator" className="h-[calc(100%-80px)] mt-4">
-          <React.Suspense fallback={
-            <Card className="h-full bg-quantum-dark border-quantum-neon/30">
-              <CardContent className="flex items-center justify-center h-full">
-                <div className="text-quantum-text">Loading 4D TQEC Simulator...</div>
-              </CardContent>
-            </Card>
-          }>
-            <FourDToricCode />
-          </React.Suspense>
+          <FourDToricCode />
         </TabsContent>
 
         <TabsContent value="comparison" className="h-[calc(100%-80px)] mt-4">
-          <React.Suspense fallback={
-            <Card className="h-full bg-quantum-dark border-quantum-neon/30">
-              <CardContent className="flex items-center justify-center h-full">
-                <div className="text-quantum-text">Loading Comparison Tool...</div>
-              </CardContent>
-            </Card>
-          }>
-            <ErrorCorrectionComparison />
-          </React.Suspense>
+          <Card className="h-full bg-quantum-dark border-quantum-neon/30">
+            <CardContent className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4">
+                <Zap className="w-12 h-12 mx-auto text-quantum-neon" />
+                <div className="text-quantum-text">
+                  <h3 className="font-semibold mb-2 text-quantum-glow">Multi-Dimensional TQEC Comparison</h3>
+                  <p className="text-sm">Advanced comparison tools coming soon!</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
