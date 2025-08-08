@@ -111,9 +111,14 @@ function LatticeConnections({
     const connections: { start: [number, number, number], end: [number, number, number] }[] = [];
     
     for (const [key, qubit] of qubits) {
-      const [x, y, z, t, dir] = key.split(',').map((v, i) => i < 4 ? Number(v) : v);
+      const parts = key.split(',');
+      const x = Number(parts[0]);
+      const y = Number(parts[1]);
+      const z = Number(parts[2]);
+      const t = Number(parts[3]);
+      const dir = parts[4];
       
-      if (Number(t) !== timeLayer) continue;
+      if (t !== timeLayer) continue;
       
       // Create connections based on direction
       const start: [number, number, number] = [x, y, z];
@@ -176,7 +181,7 @@ function FourDLatticeScene({
   const qubits = simulator.getQubits();
   const stabilizers = simulator.getStabilizers();
   const errors = simulator.getErrors();
-  const [latticeSize] = useState(simulator.getLatticeSize());
+  const latticeSize = simulator.getLatticeSize();
   
   const visibleQubits = useMemo(() => {
     const visible: Array<{
@@ -187,7 +192,11 @@ function FourDLatticeScene({
     }> = [];
     
     for (const [key, qubit] of qubits) {
-      const [x, y, z, t] = key.split(',').map(Number);
+      const parts = key.split(',');
+      const x = Number(parts[0]);
+      const y = Number(parts[1]);
+      const z = Number(parts[2]);
+      const t = Number(parts[3]);
       
       if (t === timeSlice) {
         visible.push({

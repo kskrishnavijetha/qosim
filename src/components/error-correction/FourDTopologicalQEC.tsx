@@ -33,7 +33,7 @@ interface FourDTopologicalQECProps {
 }
 
 export function FourDTopologicalQEC({ onSimulationComplete }: FourDTopologicalQECProps) {
-  const [latticeSize, setLatticeSize] = useState([4, 4, 4, 4]);
+  const [latticeSize, setLatticeSize] = useState<[number, number, number, number]>([4, 4, 4, 4]);
   const [timeSteps, setTimeSteps] = useState(10);
   const [currentTimeStep, setCurrentTimeStep] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -70,7 +70,7 @@ export function FourDTopologicalQEC({ onSimulationComplete }: FourDTopologicalQE
         description: `4D toric code simulation finished with ${results.correctedErrors} errors corrected`,
       });
       
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "❌ Simulation Error",
         description: `Failed to run 4D QEC simulation: ${error.message}`,
@@ -266,7 +266,7 @@ export function FourDTopologicalQEC({ onSimulationComplete }: FourDTopologicalQE
               simulator.injectError(errorType, position);
               toast({
                 title: "🎯 Error Injected",
-                description: `${errorType} error added at position ${position.join(',')}`
+                description: `${errorType} error added at position [${position.x},${position.y},${position.z},${position.t}]`
               });
             }}
           />

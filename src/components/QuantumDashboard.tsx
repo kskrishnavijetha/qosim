@@ -1,17 +1,14 @@
+
 import React, { useState, useCallback } from 'react';
 import { Github, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { GitHubIntegration } from './GitHubIntegration';
+import { GitHubIntegration } from './github/GitHubIntegration';
 import { QuantumSidebar } from './QuantumSidebar';
-import { CircuitBuilderPanel } from './CircuitBuilderPanel';
-import { QuantumSimulatorPanel } from './QuantumSimulatorPanel';
-import { HardwareIntegrationHub } from './HardwareIntegrationHub';
-import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
-import { Gate } from '@/hooks/useCircuitState';
-import { BlochSphere } from './BlochSphere';
 import { FourDTopologicalQEC } from './error-correction/FourDTopologicalQEC';
+import { Gate } from '@/hooks/useCircuitState';
 
 interface User {
   name: string;
@@ -36,11 +33,15 @@ export default function QuantumDashboard() {
     alert('Logged out!');
   }, []);
 
+  const handlePanelChange = (panel: string) => {
+    setActivePanel(panel as 'circuit-builder' | 'simulator' | 'hardware' | 'algorithms' | 'error-correction');
+  };
+
   return (
     <div className="flex h-screen bg-black text-white overflow-hidden">
       <QuantumSidebar 
         activePanel={activePanel} 
-        onPanelChange={setActivePanel}
+        onPanelChange={handlePanelChange}
         user={mockUser}
         onLogout={handleLogout}
       />
@@ -83,58 +84,38 @@ export default function QuantumDashboard() {
         {/* Main Content */}
         <div className="flex-1 overflow-hidden">
           {activePanel === 'circuit-builder' && (
-            <div className="h-full p-4">
-              <CircuitBuilderPanel
-                onCircuitChange={(gates) => {
-                  setCircuitGates(gates);
-                }}
-              />
+            <div className="h-full p-4 flex items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-xl text-quantum-glow mb-4">Circuit Builder</h2>
+                <p className="text-muted-foreground">Circuit builder panel would go here</p>
+              </div>
             </div>
           )}
           
           {activePanel === 'simulator' && (
-            <div className="h-full p-4">
-              <QuantumSimulatorPanel circuit={circuitGates} />
+            <div className="h-full p-4 flex items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-xl text-quantum-neon mb-4">Quantum Simulator</h2>
+                <p className="text-muted-foreground">Simulation panel would go here</p>
+              </div>
             </div>
           )}
           
           {activePanel === 'hardware' && (
-            <div className="h-full p-4">
-              <HardwareIntegrationHub
-                circuit={circuitGates}
-                simulationResult={algorithmResult}
-                onExecutionComplete={(result) => {
-                  console.log('Hardware execution completed:', result);
-                  toast({
-                    title: "Hardware Execution Complete",
-                    description: `Job finished on ${result.jobInfo.device} with cost $${result.jobInfo.cost}`,
-                  });
-                }}
-              />
+            <div className="h-full p-4 flex items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-xl text-quantum-particle mb-4">Hardware Integration</h2>
+                <p className="text-muted-foreground">Hardware integration panel would go here</p>
+              </div>
             </div>
           )}
           
           {activePanel === 'algorithms' && (
-            <div className="h-full p-4">
-              <QuantumAlgorithmsSDK
-                onCircuitGenerated={(gates) => {
-                  setCircuitGates(gates);
-                  toast({
-                    title: "Circuit Generated",
-                    description: "Algorithm generated a quantum circuit",
-                  });
-                }}
-                onAlgorithmExecuted={(result) => {
-                  setAlgorithmResult(result);
-                  console.log('Algorithm executed:', result);
-                  toast({
-                    title: "Algorithm Executed",
-                    description: "Algorithm simulation completed",
-                  });
-                }}
-                visualCircuit={visualCircuit}
-                onVisualCircuitChange={setVisualCircuit}
-              />
+            <div className="h-full p-4 flex items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-xl text-quantum-energy mb-4">Algorithms SDK</h2>
+                <p className="text-muted-foreground">Algorithms SDK panel would go here</p>
+              </div>
             </div>
           )}
           

@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ModeToggle } from "@/components/ModeToggle";
 import { useToast } from "@/hooks/use-toast";
 import {
   Home,
@@ -26,15 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { GitHubIntegration } from './GitHubIntegration';
 
 interface QuantumSidebarProps {
   activePanel: string;
@@ -45,7 +36,6 @@ interface QuantumSidebarProps {
 
 export function QuantumSidebar({ activePanel, onPanelChange, user, onLogout }: QuantumSidebarProps) {
   const { toast } = useToast();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handlePanelChange = (panel: string) => {
     onPanelChange(panel);
@@ -135,10 +125,6 @@ export function QuantumSidebar({ activePanel, onPanelChange, user, onLogout }: Q
         <Separator />
 
         <div className="mt-4 p-2">
-          <div className="mb-2">
-            <ModeToggle />
-          </div>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start">
