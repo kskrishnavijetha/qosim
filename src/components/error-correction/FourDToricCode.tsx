@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,18 +29,28 @@ interface NoiseModel {
   depolarizingRate: number;
 }
 
+interface ErrorPattern {
+  id: string;
+  name: string;
+  qubits: number[];
+  pattern: 'single' | 'chain' | 'cluster' | 'anyonic';
+}
+
 interface FourDToricCodeState {
   L: number; // Lattice size
   currentTimeStep: number;
   maxTimeSteps: number;
   stabilizers: Stabilizer[];
   logicalQubits: LogicalQubit[];
-  physicalQubits: Array<{ id: number; position: Vector3; state: 'up' | 'down'; hasError: boolean; }>;
+  physicalQubits: Array<{ id: number; position: Vector3; state: 'up' | 'down'; hasError: boolean; decoherenceLevel: number; }>;
   syndromes: boolean[];
   noiseModel: NoiseModel;
   showEducationalOverlay: boolean;
   showStabilizers: boolean;
   showSyndromes: boolean;
+  showAnyonicPaths: boolean;
+  autoCorrection: boolean;
+  selectedErrorPattern: ErrorPattern | null;
 }
 
 export function FourDToricCode() {
@@ -60,20 +69,32 @@ export function FourDToricCode() {
     },
     showEducationalOverlay: true,
     showStabilizers: true,
-    showSyndromes: true
+    showSyndromes: true,
+    showAnyonicPaths: false,
+    autoCorrection: true,
+    selectedErrorPattern: null
   });
 
   const [isSimulating, setIsSimulating] = useState(false);
   const [decodingSteps, setDecodingSteps] = useState<string[]>([]);
+  const [correctionHistory, setCorrectionHistory] = useState<Array<{ step: number; corrections: number; syndromes: number }>>([]);
 
-  // Initialize 4D toric code lattice
+  const errorPatterns: ErrorPattern[] = useMemo(() => [
+    { id: 'single', name: 'Single Qubit Error', qubits: [0], pattern: 'single' },
+    { id: 'chain', name: 'Error Chain', qubits: [0, 1, 2], pattern: 'chain' },
+    { id: 'cluster', name: 'Error Cluster', qubits: [0, 1, 3, 4], pattern: 'cluster' },
+    { id: 'anyonic', name: 'Anyonic Braiding Path', qubits: [0, 2, 5, 8], pattern: 'anyonic' }
+  ], []);
+
+  // Initialize 4D toric code lattice with enhanced features
   const initializeLattice = useCallback(() => {
+    console.log('FourDToricCode: Initializing 4D lattice with enhanced TQEC features');
     const { L } = state;
     const physicalQubits = [];
     const stabilizers = [];
     const logicalQubits = [];
 
-    // Create physical qubits in 4D lattice (3D space + time)
+    // Create physical qubits in 4D lattice (3D space + time) with decoherence tracking
     for (let t = 0; t < state.maxTimeSteps; t++) {
       for (let x = 0; x < L; x++) {
         for (let y = 0; y < L; y++) {
@@ -83,14 +104,15 @@ export function FourDToricCode() {
               id,
               position: new Vector3(x, y, z + t * (L + 1)),
               state: 'up' as const,
-              hasError: false
+              hasError: false,
+              decoherenceLevel: 0
             });
           }
         }
       }
     }
 
-    // Create X and Z stabilizers for 4D toric code
+    // Create X and Z stabilizers for 4D toric code with syndrome tracking
     for (let t = 0; t < state.maxTimeSteps; t++) {
       for (let x = 0; x < L; x++) {
         for (let y = 0; y < L; y++) {
@@ -132,7 +154,7 @@ export function FourDToricCode() {
       }
     }
 
-    // Create logical qubits
+    // Create logical qubits with enhanced tracking
     for (let i = 0; i < 2; i++) {
       logicalQubits.push({
         id: `L${i}`,
@@ -158,18 +180,22 @@ export function FourDToricCode() {
     return t * L * L * L + x * L * L + y * L + z;
   };
 
-  // Inject noise into the system
+  // Enhanced noise injection with decoherence tracking
   const injectNoise = useCallback(() => {
+    console.log('FourDToricCode: Injecting noise with decoherence tracking');
     setState(prev => {
       const newPhysicalQubits = prev.physicalQubits.map(qubit => {
         const shouldAddError = Math.random() < prev.noiseModel.bitFlipRate + 
                               prev.noiseModel.phaseFlipRate + 
                               prev.noiseModel.depolarizingRate;
         
+        const newDecoherence = Math.min(1.0, qubit.decoherenceLevel + Math.random() * 0.1);
+        
         return {
           ...qubit,
           hasError: shouldAddError,
-          state: shouldAddError ? (qubit.state === 'up' ? 'down' : 'up') : qubit.state
+          state: shouldAddError ? (qubit.state === 'up' ? 'down' : 'up') : qubit.state,
+          decoherenceLevel: newDecoherence
         };
       });
 
@@ -177,8 +203,30 @@ export function FourDToricCode() {
     });
   }, []);
 
-  // Calculate syndrome measurements
+  // Apply user-defined error patterns for anyonic braiding simulation
+  const applyErrorPattern = useCallback((pattern: ErrorPattern) => {
+    console.log('FourDToricCode: Applying error pattern:', pattern.name);
+    setState(prev => {
+      const newPhysicalQubits = prev.physicalQubits.map((qubit, idx) => {
+        const shouldApplyError = pattern.qubits.includes(idx % prev.L);
+        return {
+          ...qubit,
+          hasError: shouldApplyError || qubit.hasError,
+          state: shouldApplyError ? (qubit.state === 'up' ? 'down' : 'up') : qubit.state
+        };
+      });
+
+      return { 
+        ...prev, 
+        physicalQubits: newPhysicalQubits,
+        selectedErrorPattern: pattern
+      };
+    });
+  }, []);
+
+  // Real-time syndrome measurement and tracking
   const measureSyndromes = useCallback(() => {
+    console.log('FourDToricCode: Measuring syndromes in real-time');
     setState(prev => {
       const newSyndromes = prev.stabilizers.map(stabilizer => {
         const measurement = stabilizer.qubits.reduce((acc, qubitId) => {
@@ -194,6 +242,9 @@ export function FourDToricCode() {
         syndrome: newSyndromes[idx]
       }));
 
+      const activeSyndromes = newSyndromes.filter(Boolean).length;
+      console.log(`FourDToricCode: Found ${activeSyndromes} active syndromes`);
+
       return {
         ...prev,
         syndromes: newSyndromes,
@@ -202,41 +253,57 @@ export function FourDToricCode() {
     });
   }, []);
 
-  // Run error correction decoding
-  const runDecoding = useCallback(() => {
+  // Automatic correction algorithm with performance tracking
+  const runAutomaticCorrection = useCallback(() => {
+    console.log('FourDToricCode: Running automatic correction algorithm');
     const steps = [];
     const activeSyndromes = state.syndromes
       .map((syndrome, idx) => syndrome ? idx : -1)
       .filter(idx => idx !== -1);
 
-    steps.push(`Found ${activeSyndromes.length} active syndromes`);
+    steps.push(`Real-time syndrome detection: ${activeSyndromes.length} active syndromes`);
     
     if (activeSyndromes.length > 0) {
-      steps.push('Running minimum-weight perfect matching...');
-      steps.push('Applying correction operators...');
+      steps.push('Executing minimum-weight perfect matching algorithm...');
+      steps.push('Applying topological correction operators...');
+      steps.push('Tracking anyonic paths and braiding operations...');
       
-      // Simulate correction
+      // Simulate correction with visual feedback
       setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          physicalQubits: prev.physicalQubits.map(qubit => ({
+        setState(prev => {
+          const correctedQubits = prev.physicalQubits.map(qubit => ({
             ...qubit,
             hasError: false,
-            state: 'up'
-          })),
-          syndromes: new Array(prev.syndromes.length).fill(false),
-          stabilizers: prev.stabilizers.map(stab => ({ ...stab, syndrome: false }))
-        }));
+            state: 'up' as const,
+            decoherenceLevel: Math.max(0, qubit.decoherenceLevel - 0.2)
+          }));
+
+          const newHistory = [...correctionHistory, {
+            step: prev.currentTimeStep,
+            corrections: activeSyndromes.length,
+            syndromes: prev.syndromes.filter(Boolean).length
+          }];
+
+          setCorrectionHistory(newHistory);
+
+          return {
+            ...prev,
+            physicalQubits: correctedQubits,
+            syndromes: new Array(prev.syndromes.length).fill(false),
+            stabilizers: prev.stabilizers.map(stab => ({ ...stab, syndrome: false }))
+          };
+        });
       }, 1000);
     } else {
-      steps.push('No errors detected - system is stable');
+      steps.push('No errors detected - topological protection active');
     }
 
     setDecodingSteps(steps);
-  }, [state.syndromes]);
+  }, [state.syndromes, correctionHistory]);
 
-  // Start simulation
+  // Enhanced simulation with auto-correction
   const startSimulation = useCallback(() => {
+    console.log('FourDToricCode: Starting enhanced 4D TQEC simulation');
     setIsSimulating(true);
     const interval = setInterval(() => {
       setState(prev => {
@@ -245,22 +312,42 @@ export function FourDToricCode() {
           clearInterval(interval);
           return prev;
         }
+
+        // Auto-inject noise and run correction if enabled
+        if (prev.autoCorrection && prev.currentTimeStep % 3 === 0) {
+          setTimeout(() => {
+            injectNoise();
+            setTimeout(() => {
+              measureSyndromes();
+              setTimeout(runAutomaticCorrection, 500);
+            }, 300);
+          }, 200);
+        }
+
         return { ...prev, currentTimeStep: prev.currentTimeStep + 1 };
       });
-    }, 500);
-  }, []);
+    }, 1500);
+  }, [injectNoise, measureSyndromes, runAutomaticCorrection]);
 
-  // Reset simulation
+  // Reset simulation with history clearing
   const resetSimulation = useCallback(() => {
+    console.log('FourDToricCode: Resetting simulation');
     setIsSimulating(false);
     setState(prev => ({
       ...prev,
       currentTimeStep: 0,
-      physicalQubits: prev.physicalQubits.map(q => ({ ...q, hasError: false, state: 'up' })),
+      physicalQubits: prev.physicalQubits.map(q => ({ 
+        ...q, 
+        hasError: false, 
+        state: 'up', 
+        decoherenceLevel: 0 
+      })),
       syndromes: new Array(prev.syndromes.length).fill(false),
-      stabilizers: prev.stabilizers.map(s => ({ ...s, syndrome: false }))
+      stabilizers: prev.stabilizers.map(s => ({ ...s, syndrome: false })),
+      selectedErrorPattern: null
     }));
     setDecodingSteps([]);
+    setCorrectionHistory([]);
   }, []);
 
   // Initialize lattice on component mount
@@ -272,18 +359,23 @@ export function FourDToricCode() {
     <div className="h-full w-full space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-quantum-glow">4D Topological Quantum Error Correction</h2>
-        <Badge variant="outline" className="text-quantum-neon border-quantum-neon">
-          Time Step: {state.currentTimeStep + 1}/{state.maxTimeSteps}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-quantum-neon border-quantum-neon">
+            Step: {state.currentTimeStep + 1}/{state.maxTimeSteps}
+          </Badge>
+          <Badge variant="outline" className="text-quantum-neon border-quantum-neon">
+            Syndromes: {state.syndromes.filter(Boolean).length}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
-        {/* 3D Visualization */}
+        {/* Enhanced 3D Visualization */}
         <div className="lg:col-span-2">
           <Card className="h-full bg-quantum-dark border-quantum-neon/30">
             <CardHeader>
-              <CardTitle className="text-quantum-glow">4D Toric Code Lattice</CardTitle>
-              <div className="flex gap-2">
+              <CardTitle className="text-quantum-glow">4D TQEC Lattice with WebGL</CardTitle>
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   variant="outline"
                   size="sm"
@@ -303,20 +395,20 @@ export function FourDToricCode() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={runDecoding}
+                  onClick={runAutomaticCorrection}
                   className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10"
                 >
-                  Run Decoding
+                  Run Correction
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="h-[calc(100%-120px)]">
               <Canvas camera={{ position: [10, 10, 10], fov: 75 }}>
-                <ambientLight intensity={0.5} />
+                <ambientLight intensity={0.6} />
                 <directionalLight position={[10, 10, 5]} intensity={1} />
                 <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
                 
-                {/* Physical Qubits */}
+                {/* Physical Qubits with decoherence visualization */}
                 {state.physicalQubits
                   .filter((_, idx) => Math.floor(idx / (state.L * state.L * state.L)) <= state.currentTimeStep)
                   .map(qubit => (
@@ -326,31 +418,53 @@ export function FourDToricCode() {
                       args={[0.2, 0.2, 0.2]}
                     >
                       <meshStandardMaterial 
-                        color={qubit.hasError ? '#ff4444' : (qubit.state === 'up' ? '#00ff88' : '#0088ff')}
+                        color={qubit.hasError ? '#ff4444' : 
+                               qubit.decoherenceLevel > 0.5 ? '#ffaa44' :
+                               (qubit.state === 'up' ? '#00ff88' : '#0088ff')}
                         transparent
-                        opacity={0.8}
+                        opacity={0.9 - qubit.decoherenceLevel * 0.3}
                       />
                     </Box>
                   ))
                 }
 
-                {/* Stabilizers */}
+                {/* Enhanced Stabilizers with syndrome visualization */}
                 {state.showStabilizers && state.stabilizers
                   .filter((_, idx) => Math.floor(idx / (state.L * state.L * state.L * 2)) <= state.currentTimeStep)
                   .map(stabilizer => (
                     <Box
                       key={stabilizer.id}
                       position={stabilizer.position}
-                      args={[0.1, 0.1, 0.1]}
+                      args={[0.15, 0.15, 0.15]}
                     >
                       <meshStandardMaterial 
-                        color={stabilizer.syndrome ? '#ff0000' : (stabilizer.type === 'X' ? '#ffff00' : '#ff00ff')}
+                        color={stabilizer.syndrome ? '#ff0000' : 
+                               (stabilizer.type === 'X' ? '#ffff00' : '#ff00ff')}
                         transparent
-                        opacity={0.6}
+                        opacity={stabilizer.syndrome ? 1.0 : 0.6}
                       />
                     </Box>
                   ))
                 }
+
+                {/* Anyonic paths visualization */}
+                {state.showAnyonicPaths && state.selectedErrorPattern && (
+                  state.selectedErrorPattern.qubits.map((qubitIdx, i) => {
+                    if (i === 0) return null;
+                    const prevQubit = state.physicalQubits[state.selectedErrorPattern!.qubits[i-1]];
+                    const currQubit = state.physicalQubits[qubitIdx];
+                    if (!prevQubit || !currQubit) return null;
+                    
+                    return (
+                      <Line
+                        key={`anyonic-${i}`}
+                        points={[prevQubit.position, currQubit.position]}
+                        color="#ff8800"
+                        lineWidth={3}
+                      />
+                    );
+                  })
+                )}
 
                 {/* Time layer separators */}
                 {Array.from({ length: state.maxTimeSteps - 1 }, (_, t) => (
@@ -360,12 +474,12 @@ export function FourDToricCode() {
                   </mesh>
                 ))}
 
-                {/* Educational overlays */}
+                {/* Enhanced educational overlays */}
                 {state.showEducationalOverlay && (
                   <>
                     <Text
                       position={[-1, state.L + 1, 0]}
-                      fontSize={0.5}
+                      fontSize={0.4}
                       color="#00ff88"
                       anchorX="center"
                       anchorY="middle"
@@ -373,8 +487,26 @@ export function FourDToricCode() {
                       Physical Qubits
                     </Text>
                     <Text
+                      position={[-1, state.L + 2, 0]}
+                      fontSize={0.3}
+                      color="#ffff00"
+                      anchorX="center"
+                      anchorY="middle"
+                    >
+                      X-Stabilizers (Yellow)
+                    </Text>
+                    <Text
+                      position={[-1, state.L + 3, 0]}
+                      fontSize={0.3}
+                      color="#ff00ff"
+                      anchorX="center"
+                      anchorY="middle"
+                    >
+                      Z-Stabilizers (Magenta)
+                    </Text>
+                    <Text
                       position={[-1, state.L + 1, state.maxTimeSteps * (state.L + 1)]}
-                      fontSize={0.5}
+                      fontSize={0.4}
                       color="#ffff00"
                       anchorX="center"
                       anchorY="middle"
@@ -388,11 +520,11 @@ export function FourDToricCode() {
           </Card>
         </div>
 
-        {/* Control Panel */}
-        <div className="space-y-4">
+        {/* Enhanced Control Panel */}
+        <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           <Card className="bg-quantum-dark border-quantum-neon/30">
             <CardHeader>
-              <CardTitle className="text-quantum-glow">Simulation Controls</CardTitle>
+              <CardTitle className="text-quantum-glow">Enhanced TQEC Controls</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -423,17 +555,24 @@ export function FourDToricCode() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
+                  <label className="text-sm text-quantum-text">Auto Correction</label>
+                  <Switch
+                    checked={state.autoCorrection}
+                    onCheckedChange={(checked) => setState(prev => ({ ...prev, autoCorrection: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-quantum-text">Show Anyonic Paths</label>
+                  <Switch
+                    checked={state.showAnyonicPaths}
+                    onCheckedChange={(checked) => setState(prev => ({ ...prev, showAnyonicPaths: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
                   <label className="text-sm text-quantum-text">Show Stabilizers</label>
                   <Switch
                     checked={state.showStabilizers}
                     onCheckedChange={(checked) => setState(prev => ({ ...prev, showStabilizers: checked }))}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-quantum-text">Educational Overlay</label>
-                  <Switch
-                    checked={state.showEducationalOverlay}
-                    onCheckedChange={(checked) => setState(prev => ({ ...prev, showEducationalOverlay: checked }))}
                   />
                 </div>
               </div>
@@ -444,7 +583,7 @@ export function FourDToricCode() {
                   disabled={isSimulating}
                   className="flex-1 bg-quantum-neon/20 hover:bg-quantum-neon/30 text-quantum-glow border-quantum-neon/50"
                 >
-                  {isSimulating ? 'Running...' : 'Start'}
+                  {isSimulating ? 'Running...' : 'Start TQEC'}
                 </Button>
                 <Button 
                   onClick={resetSimulation}
@@ -454,6 +593,29 @@ export function FourDToricCode() {
                   Reset
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-quantum-dark border-quantum-neon/30">
+            <CardHeader>
+              <CardTitle className="text-quantum-glow">Error Patterns</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {errorPatterns.map((pattern) => (
+                <Button
+                  key={pattern.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyErrorPattern(pattern)}
+                  className={`w-full text-left justify-start ${
+                    state.selectedErrorPattern?.id === pattern.id 
+                      ? 'border-quantum-neon bg-quantum-neon/20' 
+                      : 'border-quantum-neon/30'
+                  } text-quantum-glow hover:bg-quantum-neon/10`}
+                >
+                  {pattern.name}
+                </Button>
+              ))}
             </CardContent>
           </Card>
 
@@ -497,10 +659,10 @@ export function FourDToricCode() {
 
           <Card className="bg-quantum-dark border-quantum-neon/30">
             <CardHeader>
-              <CardTitle className="text-quantum-glow">Decoding Status</CardTitle>
+              <CardTitle className="text-quantum-glow">Real-time Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
+              <div className="space-y-2 max-h-32 overflow-y-auto">
                 {decodingSteps.length > 0 ? (
                   decodingSteps.map((step, idx) => (
                     <div key={idx} className="text-xs text-quantum-text p-2 bg-quantum-void/50 rounded">
@@ -508,15 +670,18 @@ export function FourDToricCode() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-sm text-quantum-text/60">No decoding steps yet</div>
+                  <div className="text-sm text-quantum-text/60">Ready for TQEC simulation</div>
                 )}
               </div>
-              <div className="mt-3 text-sm">
+              <div className="mt-3 text-sm space-y-1">
                 <div className="text-quantum-text">
                   Active Syndromes: <span className="text-quantum-neon">{state.syndromes.filter(Boolean).length}</span>
                 </div>
                 <div className="text-quantum-text">
                   Total Stabilizers: <span className="text-quantum-neon">{state.stabilizers.length}</span>
+                </div>
+                <div className="text-quantum-text">
+                  Corrections Applied: <span className="text-quantum-neon">{correctionHistory.length}</span>
                 </div>
               </div>
             </CardContent>
