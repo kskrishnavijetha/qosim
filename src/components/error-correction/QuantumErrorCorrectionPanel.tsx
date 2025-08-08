@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,7 +120,6 @@ export function QuantumErrorCorrectionPanel() {
         </TabsList>
 
         <TabsContent value="4d-simulator" className="h-[calc(100%-80px)] mt-4">
-          {console.log('QuantumErrorCorrectionPanel: Rendering FourDToricCode')}
           <div className="p-4 bg-quantum-dark border border-quantum-neon/30 rounded-lg">
             <h2 className="text-xl text-quantum-glow mb-4">4D Toric Code Simulator</h2>
             <p className="text-quantum-text mb-4">
@@ -146,7 +144,6 @@ export function QuantumErrorCorrectionPanel() {
         </TabsContent>
 
         <TabsContent value="comparison" className="h-[calc(100%-80px)] mt-4">
-          {console.log('QuantumErrorCorrectionPanel: Rendering ErrorCorrectionComparison')}
           <div className="p-4 bg-quantum-dark border border-quantum-neon/30 rounded-lg">
             <h2 className="text-xl text-quantum-glow mb-4">Multi-Dimensional Comparison</h2>
             <p className="text-quantum-text mb-4">
