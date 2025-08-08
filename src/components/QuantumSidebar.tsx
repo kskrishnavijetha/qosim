@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Circuit,
+  CircuitBoard,
   Zap,
   Bot,
   Code,
@@ -31,7 +31,7 @@ interface QuantumSidebarProps {
 
 export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
   const menuItems = [
-    { id: "circuits", label: "Circuit Builder", icon: Circuit, description: "Design quantum circuits" },
+    { id: "circuits", label: "Circuit Builder", icon: CircuitBoard, description: "Design quantum circuits" },
     { id: "my-circuits", label: "My Circuits", icon: FileCode, description: "Saved circuits" },
     { id: "qnn-builder", label: "QNN Builder", icon: BrainCircuit, description: "Quantum Neural Networks", badge: "NEW" },
     { id: "simulation", label: "Simulation", icon: Zap, description: "Run simulations" },
