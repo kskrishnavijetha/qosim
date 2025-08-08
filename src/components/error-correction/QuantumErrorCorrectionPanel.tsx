@@ -16,8 +16,6 @@ interface EducationalContent {
 }
 
 export function QuantumErrorCorrectionPanel() {
-  console.log('QuantumErrorCorrectionPanel: Component is rendering');
-  
   const [activeTab, setActiveTab] = useState('4d-simulator');
   const [showEducationalInfo, setShowEducationalInfo] = useState(false);
 
@@ -45,8 +43,6 @@ export function QuantumErrorCorrectionPanel() {
       ]
     }
   };
-
-  console.log('QuantumErrorCorrectionPanel: Active tab:', activeTab);
 
   return (
     <div className="h-full w-full space-y-4 p-4">
@@ -121,11 +117,27 @@ export function QuantumErrorCorrectionPanel() {
         </TabsList>
 
         <TabsContent value="4d-simulator" className="h-[calc(100%-80px)] mt-4">
-          <FourDToricCode />
+          <React.Suspense fallback={
+            <Card className="h-full bg-quantum-dark border-quantum-neon/30">
+              <CardContent className="flex items-center justify-center h-full">
+                <div className="text-quantum-text">Loading 4D TQEC Simulator...</div>
+              </CardContent>
+            </Card>
+          }>
+            <FourDToricCode />
+          </React.Suspense>
         </TabsContent>
 
         <TabsContent value="comparison" className="h-[calc(100%-80px)] mt-4">
-          <ErrorCorrectionComparison />
+          <React.Suspense fallback={
+            <Card className="h-full bg-quantum-dark border-quantum-neon/30">
+              <CardContent className="flex items-center justify-center h-full">
+                <div className="text-quantum-text">Loading Comparison Tool...</div>
+              </CardContent>
+            </Card>
+          }>
+            <ErrorCorrectionComparison />
+          </React.Suspense>
         </TabsContent>
       </Tabs>
     </div>
