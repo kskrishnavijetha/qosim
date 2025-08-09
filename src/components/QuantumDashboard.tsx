@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useCircuitBuilder } from '@/hooks/useCircuitBuilder';
 import { useQuantumBackend } from '@/hooks/useQuantumBackend';
@@ -6,6 +7,7 @@ import { QNNVisualBuilder } from '@/components/qnn/QNNVisualBuilder';
 import { SDKPlayground } from '@/components/sdk/SDKPlayground';
 import { QuantumErrorCorrectionPanel } from '@/components/error-correction/QuantumErrorCorrectionPanel';
 import { HybridSimulatorPanelWrapper } from './panels/HybridSimulatorPanelWrapper';
+import { QuantumSidebar } from './QuantumSidebar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,6 +83,11 @@ export function QuantumDashboard() {
     };
   };
 
+  const handleSDKSelect = (sdkType: string) => {
+    console.log('SDK selected:', sdkType);
+    // SDK selection logic can be handled here
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'circuits':
@@ -118,6 +125,18 @@ export function QuantumDashboard() {
                     Simulate
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case 'my-circuits':
+        return (
+          <Card className="quantum-panel neon-border">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow mb-4">My Circuits</h3>
+              <div className="text-center py-8">
+                <p className="text-quantum-text">Your saved circuits will appear here.</p>
+                <p className="text-sm text-quantum-text/60 mt-2">Create and save circuits to see them listed here.</p>
               </div>
             </CardContent>
           </Card>
@@ -201,9 +220,17 @@ export function QuantumDashboard() {
       case 'ai':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">AI Quantum Assistant</h3>
-              <p>Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">AI Quantum Assistant</h3>
+              <p className="mt-2 text-quantum-text">Get intelligent help with quantum circuit design and optimization.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Circuit optimization suggestions</p>
+                <p className="text-sm text-quantum-particle">• Algorithm recommendations</p>
+                <p className="text-sm text-quantum-particle">• Error analysis and corrections</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
@@ -212,9 +239,18 @@ export function QuantumDashboard() {
       case 'algorithms':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">Quantum Algorithms</h3>
-              <p>Explore pre-built quantum algorithms. Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Quantum Algorithms</h3>
+              <p className="mt-2 text-quantum-text">Explore and implement pre-built quantum algorithms.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Grover's Search Algorithm</p>
+                <p className="text-sm text-quantum-particle">• Shor's Factoring Algorithm</p>
+                <p className="text-sm text-quantum-particle">• Quantum Fourier Transform</p>
+                <p className="text-sm text-quantum-particle">• Variational Quantum Eigensolver</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
@@ -222,39 +258,92 @@ export function QuantumDashboard() {
         return <QuantumErrorCorrectionPanel />;
       case 'qnn-builder':
         return <QNNVisualBuilder />;
+      case 'qmm':
+        return <QuantumMemoryMap />;
+      case 'optimization':
+        return (
+          <Card className="quantum-panel neon-border">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Circuit Optimization</h3>
+              <p className="mt-2 text-quantum-text">Optimize your quantum circuits for better performance.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Gate count reduction</p>
+                <p className="text-sm text-quantum-particle">• Depth minimization</p>
+                <p className="text-sm text-quantum-particle">• Noise-aware optimization</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      case 'hybrid-simulator':
+        return <HybridSimulatorPanelWrapper />;
       case 'hardware':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">Quantum Hardware</h3>
-              <p>Connect to real quantum hardware. Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Quantum Hardware</h3>
+              <p className="mt-2 text-quantum-text">Connect to real quantum hardware devices.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• IBM Quantum devices</p>
+                <p className="text-sm text-quantum-particle">• AWS Braket</p>
+                <p className="text-sm text-quantum-particle">• IonQ systems</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
       case 'jobs':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">Quantum Jobs</h3>
-              <p>Manage your quantum computing jobs. Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Quantum Jobs</h3>
+              <p className="mt-2 text-quantum-text">Manage your quantum computing jobs and view execution history.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Job queue management</p>
+                <p className="text-sm text-quantum-particle">• Execution status tracking</p>
+                <p className="text-sm text-quantum-particle">• Results history</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
       case 'marketplace':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">Quantum Marketplace</h3>
-              <p>Discover quantum apps and tools. Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Quantum Marketplace</h3>
+              <p className="mt-2 text-quantum-text">Discover quantum apps, algorithms, and tools from the community.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Community algorithms</p>
+                <p className="text-sm text-quantum-particle">• Custom gate libraries</p>
+                <p className="text-sm text-quantum-particle">• Educational resources</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
       case 'community':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">Quantum Community</h3>
-              <p>Connect with other quantum enthusiasts. Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Quantum Community</h3>
+              <p className="mt-2 text-quantum-text">Connect with other quantum computing enthusiasts and researchers.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Discussion forums</p>
+                <p className="text-sm text-quantum-particle">• Collaborative projects</p>
+                <p className="text-sm text-quantum-particle">• Knowledge sharing</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
@@ -263,20 +352,33 @@ export function QuantumDashboard() {
       case 'files':
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">File Management</h3>
-              <p>Manage your files. Coming soon...</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">File Management</h3>
+              <p className="mt-2 text-quantum-text">Manage your quantum circuits, algorithms, and project files.</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">• Circuit file storage</p>
+                <p className="text-sm text-quantum-particle">• Import/Export functionality</p>
+                <p className="text-sm text-quantum-particle">• Version control</p>
+              </div>
+              <Button className="mt-4" disabled>
+                Coming Soon
+              </Button>
             </CardContent>
           </Card>
         );
-      case 'hybrid-simulator':
-        return <HybridSimulatorPanelWrapper />;
       default:
         return (
           <Card className="quantum-panel neon-border">
-            <CardContent>
-              <h3 className="text-lg font-semibold">Welcome to QOSim</h3>
-              <p>Select a tool from the sidebar to get started.</p>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-quantum-glow">Welcome to QOSim</h3>
+              <p className="mt-2 text-quantum-text">Your Quantum Operating System Interface</p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-quantum-particle">Select a tool from the sidebar to get started:</p>
+                <p className="text-sm text-quantum-particle">• Build quantum circuits</p>
+                <p className="text-sm text-quantum-particle">• Run simulations</p>
+                <p className="text-sm text-quantum-particle">• Explore algorithms</p>
+                <p className="text-sm text-quantum-particle">• Connect to quantum hardware</p>
+              </div>
             </CardContent>
           </Card>
         );
@@ -285,13 +387,22 @@ export function QuantumDashboard() {
 
   return (
     <div className="flex h-screen bg-quantum-void">
+      {/* Sidebar */}
+      <div className="w-80 flex-shrink-0">
+        <QuantumSidebar 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange}
+          onSDKSelect={handleSDKSelect}
+        />
+      </div>
+      
       {/* Main Content */}
       <div className="flex flex-col flex-1">
         {/* Header */}
         <div className="flex items-center justify-between h-16 p-4 border-b border-quantum-matrix">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-bold text-quantum-glow">
-              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
             </h2>
             <Badge variant="secondary" className="text-xs">
               {circuit.qubits.length} Qubits
