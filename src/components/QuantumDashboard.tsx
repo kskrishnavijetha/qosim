@@ -4,7 +4,7 @@ import { useQuantumBackend } from '@/hooks/useQuantumBackend';
 import { CircuitSimulationPanel } from '@/components/circuits/CircuitSimulationPanel';
 import { QNNVisualBuilder } from '@/components/qnn/QNNVisualBuilder';
 import { SDKPlayground } from '@/components/sdk/SDKPlayground';
-import { ErrorCorrectionPlayground } from '@/components/algorithms/ErrorCorrectionPlayground';
+import { QuantumErrorCorrectionPanel } from '@/components/error-correction/QuantumErrorCorrectionPanel';
 import { HybridSimulatorPanelWrapper } from './panels/HybridSimulatorPanelWrapper';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -219,7 +219,7 @@ export function QuantumDashboard() {
           </Card>
         );
       case 'error-correction':
-        return <ErrorCorrectionPlayground />;
+        return <QuantumErrorCorrectionPanel />;
       case 'qnn-builder':
         return <QNNVisualBuilder />;
       case 'hardware':
