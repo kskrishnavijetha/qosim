@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { Complex } from '@/services/complexNumbers';
 
 export interface ClassicalNode {
   id: string;

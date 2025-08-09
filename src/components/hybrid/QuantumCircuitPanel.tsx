@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Atom, Zap } from 'lucide-react';
 import { QuantumGate, Connection } from '@/hooks/useHybridSimulation';
+import { Complex } from '@/services/complexNumbers';
 
 interface QuantumCircuitPanelProps {
   state: {
