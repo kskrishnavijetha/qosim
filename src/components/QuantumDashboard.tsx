@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { useCircuitBuilder } from '@/hooks/useCircuitBuilder';
 import { useQuantumBackend } from '@/hooks/useQuantumBackend';
@@ -12,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from "@/hooks/use-toast"
 import { QuantumMemoryMap } from '@/components/qmm/QuantumMemoryMap';
+import type { Gate } from '@/hooks/useCircuitState';
+import type { CircuitSimulationResult } from '@/hooks/useCircuitBuilder';
 
 export function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState('circuits');
@@ -54,6 +55,30 @@ export function QuantumDashboard() {
       title: "Circuit Saved",
       description: "Your circuit has been saved successfully",
     })
+  };
+
+  // Helper function to convert CircuitGate[] to Gate[]
+  const convertCircuitGatesToGates = (circuitGates: any[]): Gate[] => {
+    return circuitGates.map((gate, index) => ({
+      id: gate.id,
+      type: gate.type,
+      qubit: gate.qubits?.[0] ? circuit.qubits.findIndex(q => q.id === gate.qubits[0]) : 0,
+      qubits: gate.qubits?.map((qId: string) => circuit.qubits.findIndex(q => q.id === qId)) || [],
+      position: gate.layer || index,
+      angle: gate.params?.angle || gate.metadata?.angle,
+      params: gate.params ? Object.values(gate.params) : undefined
+    }));
+  };
+
+  // Helper function to ensure result has fidelity property
+  const ensureSimulationResult = (result: any): CircuitSimulationResult => {
+    if (!result) return null;
+    
+    return {
+      ...result,
+      fidelity: result.fidelity ?? 1.0, // Default fidelity if missing
+      entanglement: result.entanglement || { pairs: [], strength: 0 }
+    };
   };
 
   const renderContent = () => {
@@ -101,7 +126,7 @@ export function QuantumDashboard() {
         return (
           <CircuitSimulationPanel
             circuit={circuit}
-            simulationResult={simulationResult || lastResult}
+            simulationResult={ensureSimulationResult(simulationResult || lastResult)}
             onSimulate={async () => {
               await simulateCircuit();
             }}
@@ -115,7 +140,10 @@ export function QuantumDashboard() {
               <h3 className="text-lg font-semibold text-quantum-glow mb-4">Quantum Execution</h3>
               <div className="space-y-4">
                 <div className="flex gap-2">
-                  <Button onClick={() => executeCircuit(circuit.gates)} disabled={isExecuting}>
+                  <Button 
+                    onClick={() => executeCircuit(convertCircuitGatesToGates(circuit.gates))} 
+                    disabled={isExecuting}
+                  >
                     Execute Circuit
                   </Button>
                   <Button onClick={clearHistory} variant="outline">
@@ -144,7 +172,11 @@ export function QuantumDashboard() {
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-quantum-glow">Qiskit Integration</h3>
               <p className="mt-2 text-quantum-text">Execute circuits on IBM Quantum devices</p>
-              <Button className="mt-4" onClick={() => executeOnQiskit?.(circuit.gates)} disabled={isExecuting}>
+              <Button 
+                className="mt-4" 
+                onClick={() => executeOnQiskit?.(convertCircuitGatesToGates(circuit.gates))} 
+                disabled={isExecuting}
+              >
                 Run on Qiskit
               </Button>
             </CardContent>
@@ -156,7 +188,11 @@ export function QuantumDashboard() {
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-quantum-glow">Amazon Braket Integration</h3>
               <p className="mt-2 text-quantum-text">Execute circuits on AWS quantum devices</p>
-              <Button className="mt-4" onClick={() => executeOnBraket?.(circuit.gates)} disabled={isExecuting}>
+              <Button 
+                className="mt-4" 
+                onClick={() => executeOnBraket?.(convertCircuitGatesToGates(circuit.gates))} 
+                disabled={isExecuting}
+              >
                 Run on Braket
               </Button>
             </CardContent>
