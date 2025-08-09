@@ -50,7 +50,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
         { id: "qnn-builder", label: "QNN Builder", icon: BrainCircuit, description: "Quantum Neural Networks", badge: "NEW" },
         { id: "qmm", label: "Memory Map", icon: Map, description: "Qubit evolution visualization", badge: "NEW" },
         { id: "optimization", label: "Optimization", icon: Gauge, description: "Circuit optimization" },
-        { id: "hybrid-simulator", label: "Hybrid Simulator", icon: Zap, description: "Classical-Quantum Interface", badge: "NEW" },
       ]
     },
     {

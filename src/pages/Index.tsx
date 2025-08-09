@@ -1,5 +1,5 @@
 
-import { QuantumDashboard } from "@/components/QuantumDashboard";
+import QuantumDashboard from "@/components/QuantumDashboard";
 import { AuthGuard } from "@/components/AuthGuard";
 
 const Index = () => {
