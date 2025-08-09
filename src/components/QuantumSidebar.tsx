@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -21,7 +20,8 @@ import {
   Brain,
   Briefcase,
   FileCode,
-  Cloud
+  Cloud,
+  Map
 } from 'lucide-react';
 
 interface QuantumSidebarProps {
@@ -48,6 +48,7 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
         { id: "algorithms", label: "Algorithms", icon: Calculator, description: "Pre-built algorithms" },
         { id: "error-correction", label: "Error Correction", icon: ShieldCheck, description: "Quantum error correction", badge: "NEW" },
         { id: "qnn-builder", label: "QNN Builder", icon: BrainCircuit, description: "Quantum Neural Networks", badge: "NEW" },
+        { id: "qmm", label: "Memory Map", icon: Map, description: "Qubit evolution visualization", badge: "NEW" },
         { id: "optimization", label: "Optimization", icon: Gauge, description: "Circuit optimization" },
       ]
     },
