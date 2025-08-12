@@ -1123,7 +1123,7 @@ export type Database = {
             foreignKeyName: "student_activity_student_enrollment_id_fkey"
             columns: ["student_enrollment_id"]
             isOneToOne: false
-            referencedRelation: "classroom_enrollments_with_profiles"
+            referencedRelation: "classroom_enrollments_safe"
             referencedColumns: ["id"]
           },
           {
@@ -1190,13 +1190,12 @@ export type Database = {
       }
     }
     Views: {
-      classroom_enrollments_with_profiles: {
+      classroom_enrollments_safe: {
         Row: {
           classroom_id: string | null
           enrollment_date: string | null
           id: string | null
           is_active: boolean | null
-          student_email: string | null
           student_name: string | null
           student_user_id: string | null
         }
@@ -1212,7 +1211,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_student_email_if_authorized: {
+        Args: { student_id: string; classroom_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
