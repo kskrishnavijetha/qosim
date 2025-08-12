@@ -420,6 +420,33 @@ export type Database = {
         }
         Relationships: []
       }
+      enrollment_access_log: {
+        Row: {
+          access_type: string
+          accessed_by: string | null
+          classroom_id: string
+          id: string
+          student_user_id: string
+          timestamp: string | null
+        }
+        Insert: {
+          access_type: string
+          accessed_by?: string | null
+          classroom_id: string
+          id?: string
+          student_user_id: string
+          timestamp?: string | null
+        }
+        Update: {
+          access_type?: string
+          accessed_by?: string | null
+          classroom_id?: string
+          id?: string
+          student_user_id?: string
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       forum_replies: {
         Row: {
           author_id: string
@@ -1096,6 +1123,13 @@ export type Database = {
             foreignKeyName: "student_activity_student_enrollment_id_fkey"
             columns: ["student_enrollment_id"]
             isOneToOne: false
+            referencedRelation: "classroom_enrollments_with_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_activity_student_enrollment_id_fkey"
+            columns: ["student_enrollment_id"]
+            isOneToOne: false
             referencedRelation: "student_enrollments"
             referencedColumns: ["id"]
           },
@@ -1107,8 +1141,6 @@ export type Database = {
           enrollment_date: string
           id: string
           is_active: boolean
-          student_email: string
-          student_name: string
           student_user_id: string
         }
         Insert: {
@@ -1116,8 +1148,6 @@ export type Database = {
           enrollment_date?: string
           id?: string
           is_active?: boolean
-          student_email: string
-          student_name: string
           student_user_id: string
         }
         Update: {
@@ -1125,8 +1155,6 @@ export type Database = {
           enrollment_date?: string
           id?: string
           is_active?: boolean
-          student_email?: string
-          student_name?: string
           student_user_id?: string
         }
         Relationships: [
@@ -1162,7 +1190,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      classroom_enrollments_with_profiles: {
+        Row: {
+          classroom_id: string | null
+          enrollment_date: string | null
+          id: string | null
+          is_active: boolean | null
+          student_email: string | null
+          student_name: string | null
+          student_user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
