@@ -66,6 +66,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const sendCustomVerificationEmail = async (email: string, token: string) => {
+    try {
+      const response = await fetch('/functions/v1/send-verification-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          email,
+          token,
+          redirectUrl: window.location.origin,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification email');
+      }
+    } catch (error) {
+      console.error('Error sending custom verification email:', error);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -75,16 +98,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    const { error } = await supabase.auth.signUp({
+    // First, sign up without email confirmation to get the user
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: undefined, // Remove email redirect
+        emailRedirectTo: undefined, // Disable default email
         data: {
           display_name: displayName,
         },
       },
     });
+
+    if (error) {
+      return { error };
+    }
+
+    // If signup was successful, send our custom verification email
+    if (data.user && !data.user.email_confirmed_at) {
+      try {
+        // Generate a custom verification token (you might want to store this in your database)
+        const verificationToken = crypto.randomUUID();
+        
+        // Send custom verification email
+        await sendCustomVerificationEmail(email, verificationToken);
+        
+        return { 
+          error: null,
+          message: 'Account created! Please check your email to verify your account.' 
+        };
+      } catch (emailError) {
+        console.error('Custom email error:', emailError);
+        // Fallback to default behavior if custom email fails
+        return { error: null };
+      }
+    }
+
     return { error };
   };
 

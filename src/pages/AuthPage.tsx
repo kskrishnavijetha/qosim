@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Activity } from 'lucide-react';
+import { Activity, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthPage() {
@@ -15,6 +15,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     const { error } = await signIn(email, password);
     
@@ -42,13 +44,14 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
-    const { error } = await signUp(email, password, displayName);
+    const result = await signUp(email, password, displayName);
     
-    if (error) {
-      setError(error.message);
+    if (result.error) {
+      setError(result.error.message);
     } else {
-      setError('Account created successfully! You can now sign in.');
+      setSuccess('Account created successfully! Please check your email to verify your account and complete the registration.');
     }
     setLoading(false);
   };
@@ -81,6 +84,13 @@ export default function AuthPage() {
               {error && (
                 <Alert className="border-red-500/50 bg-red-500/10">
                   <AlertDescription className="text-red-400">{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {success && (
+                <Alert className="border-green-500/50 bg-green-500/10">
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                  <AlertDescription className="text-green-400">{success}</AlertDescription>
                 </Alert>
               )}
 
