@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { AuthGuard } from "@/components/AuthGuard";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import LandingPage from "./pages/LandingPage";
@@ -47,11 +46,7 @@ function App() {
               <AuthProvider>
                 <ErrorBoundary>
                   <Routes>
-                    <Route path="/" element={
-                      <ErrorBoundary>
-                        <Index />
-                      </ErrorBoundary>
-                    } />
+                    <Route path="/" element={<Index />} />
                     <Route path="/auth" element={
                       <ErrorBoundary>
                         <AuthPage />
