@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Undo, Download, Trash2, FileDown, Play, Edit, Copy, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,12 +34,29 @@ export function CircuitActions({
       {/* Main action buttons */}
       {onPlay && (
         <Button 
-          onClick={onPlay} 
+          onClick={() => {
+            console.log('Play button clicked in CircuitActions');
+            onPlay();
+          }} 
           variant="outline" 
           className="neon-border hover:scale-105 transition-all duration-300 bg-quantum-glow/10 hover:bg-quantum-glow/20"
         >
           <Play className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">Play</span>
+        </Button>
+      )}
+      
+      {onShare && (
+        <Button 
+          onClick={() => {
+            console.log('Share button clicked in CircuitActions');
+            onShare();
+          }} 
+          variant="outline" 
+          className="neon-border hover:scale-105 transition-all duration-300 bg-quantum-neon/10 hover:bg-quantum-neon/20"
+        >
+          <Share2 className="w-4 h-4 mr-2" />
+          <span className="hidden sm:inline">Share</span>
         </Button>
       )}
       
@@ -63,17 +79,6 @@ export function CircuitActions({
         >
           <Copy className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">Copy</span>
-        </Button>
-      )}
-      
-      {onShare && (
-        <Button 
-          onClick={onShare} 
-          variant="outline" 
-          className="neon-border hover:scale-105 transition-all duration-300 bg-quantum-neon/10 hover:bg-quantum-neon/20"
-        >
-          <Share2 className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Share</span>
         </Button>
       )}
       
@@ -110,7 +115,10 @@ export function CircuitActions({
       
       {/* Export buttons */}
       <Button 
-        onClick={onExportJSON} 
+        onClick={() => {
+          console.log('JSON export button clicked');
+          onExportJSON();
+        }} 
         variant="outline" 
         className="neon-border hover:scale-105 transition-all duration-300"
       >
@@ -119,7 +127,10 @@ export function CircuitActions({
       </Button>
       
       <Button 
-        onClick={onExportQASM} 
+        onClick={() => {
+          console.log('QASM export button clicked');
+          onExportQASM();
+        }} 
         variant="outline" 
         className="neon-border hover:scale-105 transition-all duration-300"
       >
@@ -128,7 +139,10 @@ export function CircuitActions({
       </Button>
       
       <Button 
-        onClick={onShowExportDialog} 
+        onClick={() => {
+          console.log('Advanced export button clicked');
+          onShowExportDialog();
+        }} 
         className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow"
       >
         <FileDown className="w-4 h-4 mr-2" />

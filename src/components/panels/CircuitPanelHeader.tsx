@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Undo, Trash2, Download, FileText, Share2, GitFork, Users, Save, Play, Edit, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -116,7 +115,7 @@ export function CircuitPanelHeader({
     setTimeout(() => {
       setIsPlaying(false);
       toast({
-        title: "Circuit Simulation Complete",
+        title: "Circuit Simulation Complete", 
         description: `Executed ${circuit.length} gates successfully`,
       });
     }, 2000);
@@ -179,14 +178,13 @@ export function CircuitPanelHeader({
       return;
     }
 
-    // For now, just create a temporary share link
-    const shareData = {
-      title: 'Quantum Circuit',
-      text: `Check out this quantum circuit with ${circuit.length} gates!`,
-      url: window.location.href
-    };
-
     try {
+      const shareData = {
+        title: 'Quantum Circuit',
+        text: `Check out this quantum circuit with ${circuit.length} gates!`,
+        url: window.location.href
+      };
+
       if (navigator.share) {
         await navigator.share(shareData);
         toast({
@@ -194,7 +192,6 @@ export function CircuitPanelHeader({
           description: "Share dialog opened successfully",
         });
       } else {
-        // Fallback: copy link to clipboard
         await navigator.clipboard.writeText(window.location.href);
         toast({
           title: "Share Link Copied",
@@ -203,10 +200,10 @@ export function CircuitPanelHeader({
       }
     } catch (error) {
       console.error('Failed to share circuit:', error);
+      await navigator.clipboard.writeText(window.location.href);
       toast({
-        title: "Share Failed",
-        description: "Could not share the circuit",
-        variant: "destructive",
+        title: "Share Link Copied",
+        description: "Circuit link copied to clipboard",
       });
     }
   };
@@ -231,6 +228,11 @@ export function CircuitPanelHeader({
     });
   };
 
+  const handleDownload = () => {
+    console.log('💾 Download button clicked - Opening export dialog');
+    onShowExportDialog();
+  };
+
   return (
     <>
       <Card className="quantum-panel neon-border">
@@ -247,7 +249,7 @@ export function CircuitPanelHeader({
             onClear={onClear}
             onExportJSON={onExportJSON}
             onExportQASM={onExportQASM}
-            onShowExportDialog={onShowExportDialog}
+            onShowExportDialog={handleDownload}
             onPlay={handlePlay}
             onEdit={handleEdit}
             onCopy={handleCopy}
