@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Undo, Trash2, Download, FileText, Share2, GitFork, Users, Save, Play, Edit, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CircuitActions } from "@/components/circuits/CircuitActions";
+import { useExportHandlers } from "@/hooks/useExportHandlers";
 
 interface CircuitPanelHeaderProps {
   onUndo: () => void;
@@ -48,6 +48,12 @@ export function CircuitPanelHeader({
   const { saveCircuit } = useCircuits();
   const { forkCircuit, createShareLink } = useCircuitSharing();
   const { toast } = useToast();
+
+  const { handleExportJSON, handleExportQASM, handleExportPython } = useExportHandlers(
+    circuit, 
+    5, // numQubits
+    { projectName: 'quantum_circuit' }
+  );
 
   const handleSaveCircuit = async () => {
     if (!circuitName.trim()) {
@@ -245,7 +251,7 @@ export function CircuitPanelHeader({
   };
 
   const handleDownload = () => {
-    console.log('💾 Download button clicked - Opening export dialog');
+    console.log('💾 Download button clicked - Downloading circuit as JSON');
     
     if (!circuit || circuit.length === 0) {
       toast({
@@ -256,7 +262,8 @@ export function CircuitPanelHeader({
       return;
     }
     
-    setShowExportDialog(true);
+    // Directly download as JSON file
+    handleExportJSON();
   };
 
   return (
@@ -273,9 +280,9 @@ export function CircuitPanelHeader({
           <CircuitActions
             onUndo={onUndo}
             onClear={onClear}
-            onExportJSON={onExportJSON}
-            onExportQASM={onExportQASM}
-            onShowExportDialog={handleDownload}
+            onExportJSON={handleExportJSON}
+            onExportQASM={handleExportQASM}
+            onShowExportDialog={() => setShowExportDialog(true)}
             onPlay={handlePlay}
             onEdit={handleEdit}
             onCopy={handleCopy}
