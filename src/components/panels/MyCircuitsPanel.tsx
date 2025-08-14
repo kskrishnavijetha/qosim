@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +26,19 @@ export function MyCircuitsPanel() {
     error
   });
 
+  // Filter out duplicate circuits with "Copy" in the name
+  const uniqueCircuits = circuits?.filter(circuit => {
+    // Keep circuits that don't have "Copy" in the name
+    if (!circuit.name.includes('Copy') && !circuit.name.includes('(Copy)')) {
+      return true;
+    }
+    
+    // For circuits with "Copy", only keep if there's no original version
+    const originalName = circuit.name.replace(/ \(Copy\)$/, '').replace(/ Copy$/, '');
+    const hasOriginal = circuits?.some(c => c.name === originalName && c.id !== circuit.id);
+    return !hasOriginal;
+  }) || [];
+
   const handleLoadCircuit = async (circuit: any) => {
     console.log("Loading circuit:", circuit);
     const loaded = await loadCircuit(circuit.id);
@@ -43,7 +55,20 @@ export function MyCircuitsPanel() {
   };
 
   const handleDuplicateCircuit = async (circuit: any) => {
-    await duplicateCircuit(circuit);
+    // Create a unique name without "Copy" suffix
+    const baseName = circuit.name.replace(/ \(Copy\)$/, '').replace(/ Copy$/, '');
+    const timestamp = new Date().getTime();
+    const newName = `${baseName} - ${timestamp}`;
+    
+    // Create the duplicate with a unique name
+    const duplicatedCircuit = await duplicateCircuit({
+      ...circuit,
+      name: newName
+    });
+    
+    if (duplicatedCircuit) {
+      toast.success(`Circuit duplicated as "${newName}"`);
+    }
   };
 
   const handleRename = (circuit: any) => {
@@ -61,7 +86,6 @@ export function MyCircuitsPanel() {
     });
   };
 
-  // Helper function to safely get qubit count
   const getQubitCount = (circuit: any) => {
     if (!circuit.circuit_data) return 0;
     if (typeof circuit.circuit_data.qubits === 'number') return circuit.circuit_data.qubits;
@@ -69,7 +93,6 @@ export function MyCircuitsPanel() {
     return 2; // default fallback
   };
 
-  // Show loading state while auth is loading
   if (authLoading) {
     return (
       <div className="h-full flex items-center justify-center bg-quantum-void">
@@ -81,7 +104,6 @@ export function MyCircuitsPanel() {
     );
   }
 
-  // Show authentication required state
   if (!user) {
     return (
       <div className="h-full flex items-center justify-center bg-quantum-void">
@@ -102,7 +124,6 @@ export function MyCircuitsPanel() {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="h-full flex items-center justify-center bg-quantum-void">
@@ -121,7 +142,6 @@ export function MyCircuitsPanel() {
     );
   }
 
-  // Show loading state
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center bg-quantum-void">
@@ -143,7 +163,7 @@ export function MyCircuitsPanel() {
         
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-quantum-matrix border-quantum-glow text-quantum-glow">
-            {circuits?.length || 0} circuits
+            {uniqueCircuits.length || 0} circuits
           </Badge>
           <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
             <DialogTrigger asChild>
@@ -159,7 +179,7 @@ export function MyCircuitsPanel() {
       </div>
 
       <div className="p-4">
-        {!circuits || circuits.length === 0 ? (
+        {!uniqueCircuits || uniqueCircuits.length === 0 ? (
           <div className="text-center py-12">
             <Zap className="w-16 h-16 text-quantum-particle mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2 text-quantum-glow">No circuits yet</h3>
@@ -175,7 +195,7 @@ export function MyCircuitsPanel() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {circuits.map((circuit) => {
+            {uniqueCircuits.map((circuit) => {
               const qubitCount = getQubitCount(circuit);
               
               return (
@@ -265,7 +285,6 @@ export function MyCircuitsPanel() {
                       </div>
                     </div>
 
-                    {/* Circuit Preview */}
                     <div className="bg-quantum-matrix rounded-lg p-3 border border-quantum-glow/20">
                       <div className="text-xs text-quantum-particle mb-2">Circuit Preview</div>
                       <div className="space-y-2">
