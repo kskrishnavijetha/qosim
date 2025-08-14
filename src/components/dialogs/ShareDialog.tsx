@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Share2, Copy, Eye, Edit, Code, Twitter, Linkedin, MessageCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,36 +28,18 @@ export function ShareDialog({ open, onOpenChange, file }: ShareDialogProps) {
   const { toast } = useToast();
 
   const generateShareUrl = () => {
-    try {
-      const baseUrl = window.location.origin;
-      const permissions = isEditable ? "edit" : "view";
-      const expiry = expiresIn !== "never" ? `&expires=${Date.now() + (parseInt(expiresIn) * 24 * 60 * 60 * 1000)}` : "";
-      const url = `${baseUrl}/shared/${file.id}?permission=${permissions}${expiry}`;
-      setShareUrl(url);
-      
-      // Generate embed code
-      const embed = `<iframe src="${baseUrl}/embed/${file.id}?permission=${permissions}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
-      setEmbedCode(embed);
-    } catch (error) {
-      console.error('Error generating share URL:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate share URL",
-        variant: "destructive",
-      });
-    }
+    const baseUrl = window.location.origin;
+    const permissions = isEditable ? "edit" : "view";
+    const expiry = expiresIn !== "never" ? `&expires=${Date.now() + (parseInt(expiresIn) * 24 * 60 * 60 * 1000)}` : "";
+    const url = `${baseUrl}/shared/${file.id}?permission=${permissions}${expiry}`;
+    setShareUrl(url);
+    
+    // Generate embed code
+    const embed = `<iframe src="${baseUrl}/embed/${file.id}?permission=${permissions}" width="800" height="600" frameborder="0" allowfullscreen></iframe>`;
+    setEmbedCode(embed);
   };
 
   const copyToClipboard = async (text: string, type: string) => {
-    if (!text) {
-      toast({
-        title: "Error",
-        description: "Nothing to copy",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       await navigator.clipboard.writeText(text);
       toast({
@@ -66,75 +47,36 @@ export function ShareDialog({ open, onOpenChange, file }: ShareDialogProps) {
         description: `${type} copied to clipboard`,
       });
     } catch (err) {
-      console.error('Copy failed:', err);
-      // Fallback for browsers that don't support clipboard API
-      try {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        toast({
-          title: "Copied!",
-          description: `${type} copied to clipboard`,
-        });
-      } catch (fallbackErr) {
-        toast({
-          title: "Copy failed",
-          description: "Please copy manually",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const shareToSocial = (platform: string) => {
-    if (!shareUrl) {
-      generateShareUrl();
-    }
-    
-    const text = `Check out this quantum circuit: ${file.name}`;
-    const url = shareUrl || `${window.location.origin}/shared/${file.id}`;
-    
-    try {
-      const socialUrls = {
-        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-        discord: url // For Discord, we'll copy the message
-      };
-      
-      if (platform === "discord") {
-        copyToClipboard(`${text} ${url}`, "Discord message");
-      } else {
-        const socialUrl = socialUrls[platform as keyof typeof socialUrls];
-        if (socialUrl) {
-          window.open(socialUrl, '_blank', 'noopener,noreferrer');
-        }
-      }
-    } catch (error) {
-      console.error('Error sharing to social:', error);
       toast({
-        title: "Error",
-        description: "Failed to share to social platform",
+        title: "Copy failed",
+        description: "Please copy manually",
         variant: "destructive",
       });
     }
   };
 
+  const shareToSocial = (platform: string) => {
+    const text = `Check out this quantum circuit: ${file.name}`;
+    const url = shareUrl || `${window.location.origin}/shared/${file.id}`;
+    
+    const socialUrls = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      discord: `https://discord.com/channels/@me`
+    };
+    
+    if (platform === "discord") {
+      copyToClipboard(`${text} ${url}`, "Discord message");
+    } else {
+      window.open(socialUrls[platform as keyof typeof socialUrls], '_blank');
+    }
+  };
+
   React.useEffect(() => {
-    if (open && file?.id) {
+    if (open) {
       generateShareUrl();
     }
-  }, [open, isEditable, expiresIn, file?.id]);
-
-  if (!file) {
-    return null;
-  }
+  }, [open, isEditable, expiresIn]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -162,7 +104,10 @@ export function ShareDialog({ open, onOpenChange, file }: ShareDialogProps) {
                   <Switch
                     id="editable"
                     checked={isEditable}
-                    onCheckedChange={setIsEditable}
+                    onCheckedChange={(checked) => {
+                      setIsEditable(checked);
+                      generateShareUrl();
+                    }}
                   />
                   <Edit className="w-4 h-4 text-quantum-glow" />
                 </div>
@@ -179,7 +124,10 @@ export function ShareDialog({ open, onOpenChange, file }: ShareDialogProps) {
                 <select
                   className="w-full p-2 rounded border border-quantum-glow/30 bg-quantum-void"
                   value={expiresIn}
-                  onChange={(e) => setExpiresIn(e.target.value)}
+                  onChange={(e) => {
+                    setExpiresIn(e.target.value);
+                    generateShareUrl();
+                  }}
                 >
                   <option value="never">Never</option>
                   <option value="1">1 Day</option>
@@ -196,13 +144,11 @@ export function ShareDialog({ open, onOpenChange, file }: ShareDialogProps) {
                     value={shareUrl}
                     readOnly
                     className="flex-1"
-                    placeholder="Share URL will appear here..."
                   />
                   <Button
                     onClick={() => copyToClipboard(shareUrl, "Share link")}
                     size="sm"
                     variant="outline"
-                    disabled={!shareUrl}
                   >
                     <Copy className="w-4 h-4" />
                   </Button>
@@ -226,14 +172,12 @@ export function ShareDialog({ open, onOpenChange, file }: ShareDialogProps) {
                     readOnly
                     rows={4}
                     className="font-mono text-sm"
-                    placeholder="Embed code will appear here..."
                   />
                   <Button
                     onClick={() => copyToClipboard(embedCode, "Embed code")}
                     size="sm"
                     variant="outline"
                     className="absolute top-2 right-2"
-                    disabled={!embedCode}
                   >
                     <Copy className="w-4 h-4" />
                   </Button>

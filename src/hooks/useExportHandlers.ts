@@ -1,4 +1,3 @@
-
 import { useToast } from '@/hooks/use-toast';
 import { trackEvent } from '@/lib/analytics';
 
@@ -36,40 +35,19 @@ export function useExportHandlers(
       }));
   };
 
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    try {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      return true;
-    } catch (error) {
-      console.error('Download failed:', error);
-      return false;
-    }
-  };
-
   const handleExportJSON = () => {
     try {
       const data = generateCircuitData(circuit);
-      const jsonContent = JSON.stringify(data, null, 2);
-      const success = downloadFile(jsonContent, `${options.projectName}.json`, 'application/json');
-      
-      if (success) {
-        trackEvent('circuit_exported', { format: 'json', gateCount: circuit.length });
-        toast({ title: "JSON exported successfully!" });
-      } else {
-        throw new Error('Download failed');
-      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${options.projectName}.json`;
+      a.click();
+      trackEvent('circuit_exported', { format: 'json', gateCount: circuit.length });
+      toast({ title: "JSON exported successfully!" });
     } catch (error) {
-      console.error('JSON export error:', error);
-      toast({ title: "Export failed", description: "Could not export JSON file", variant: "destructive" });
+      toast({ title: "Export failed", description: String(error), variant: "destructive" });
     }
   };
 
@@ -77,9 +55,7 @@ export function useExportHandlers(
     try {
       let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[${numQubits}];\ncreg c[${numQubits}];\n\n`;
       
-      const sortedCircuit = [...circuit].sort((a, b) => a.position - b.position);
-      
-      sortedCircuit.forEach(gate => {
+      circuit.forEach(gate => {
         switch (gate.type) {
           case 'H':
             qasm += `h q[${gate.qubit}];\n`;
@@ -87,31 +63,17 @@ export function useExportHandlers(
           case 'X':
             qasm += `x q[${gate.qubit}];\n`;
             break;
-          case 'Y':
-            qasm += `y q[${gate.qubit}];\n`;
-            break;
           case 'Z':
             qasm += `z q[${gate.qubit}];\n`;
             break;
-          case 'S':
-            qasm += `s q[${gate.qubit}];\n`;
-            break;
-          case 'T':
-            qasm += `t q[${gate.qubit}];\n`;
-            break;
           case 'CNOT':
-            if (gate.qubits && gate.qubits.length >= 2) {
-              qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
-            }
+            if (gate.qubits) qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
             break;
           case 'RX':
-            qasm += `rx(${gate.angle || Math.PI/2}) q[${gate.qubit}];\n`;
+            qasm += `rx(${gate.angle}) q[${gate.qubit}];\n`;
             break;
           case 'RY':
-            qasm += `ry(${gate.angle || Math.PI/2}) q[${gate.qubit}];\n`;
-            break;
-          case 'RZ':
-            qasm += `rz(${gate.angle || Math.PI/2}) q[${gate.qubit}];\n`;
+            qasm += `ry(${gate.angle}) q[${gate.qubit}];\n`;
             break;
           case 'M':
             qasm += `measure q[${gate.qubit}] -> c[${gate.qubit}];\n`;
@@ -119,17 +81,16 @@ export function useExportHandlers(
         }
       });
       
-      const success = downloadFile(qasm, `${options.projectName}.qasm`, 'text/plain');
-      
-      if (success) {
-        trackEvent('circuit_exported', { format: 'qasm', gateCount: circuit.length });
-        toast({ title: "QASM exported successfully!" });
-      } else {
-        throw new Error('Download failed');
-      }
+      const blob = new Blob([qasm], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${options.projectName}.qasm`;
+      a.click();
+      trackEvent('circuit_exported', { format: 'qasm', gateCount: circuit.length });
+      toast({ title: "QASM exported successfully!" });
     } catch (error) {
-      console.error('QASM export error:', error);
-      toast({ title: "Export failed", description: "Could not export QASM file", variant: "destructive" });
+      toast({ title: "Export failed", description: String(error), variant: "destructive" });
     }
   };
 
@@ -143,9 +104,7 @@ export function useExportHandlers(
       python += `# Create quantum circuit\n`;
       python += `qc = QuantumCircuit(${numQubits}, ${numQubits})\n\n`;
       
-      const sortedCircuit = [...circuit].sort((a, b) => a.position - b.position);
-      
-      sortedCircuit.forEach(gate => {
+      circuit.forEach(gate => {
         switch (gate.type) {
           case 'H':
             python += `qc.h(${gate.qubit})  # Hadamard gate\n`;
@@ -159,16 +118,8 @@ export function useExportHandlers(
           case 'Z':
             python += `qc.z(${gate.qubit})  # Pauli-Z gate\n`;
             break;
-          case 'S':
-            python += `qc.s(${gate.qubit})  # S gate\n`;
-            break;
-          case 'T':
-            python += `qc.t(${gate.qubit})  # T gate\n`;
-            break;
           case 'CNOT':
-            if (gate.qubits && gate.qubits.length >= 2) {
-              python += `qc.cx(${gate.qubits[0]}, ${gate.qubits[1]})  # CNOT gate\n`;
-            }
+            if (gate.qubits) python += `qc.cx(${gate.qubits[0]}, ${gate.qubits[1]})  # CNOT gate\n`;
             break;
           case 'RX':
             python += `qc.rx(${gate.angle || 'np.pi/2'}, ${gate.qubit})  # RX rotation\n`;
@@ -178,6 +129,12 @@ export function useExportHandlers(
             break;
           case 'RZ':
             python += `qc.rz(${gate.angle || 'np.pi/2'}, ${gate.qubit})  # RZ rotation\n`;
+            break;
+          case 'S':
+            python += `qc.s(${gate.qubit})  # S gate\n`;
+            break;
+          case 'T':
+            python += `qc.t(${gate.qubit})  # T gate\n`;
             break;
           case 'M':
             python += `qc.measure(${gate.qubit}, ${gate.qubit})  # Measurement\n`;
@@ -197,17 +154,16 @@ export function useExportHandlers(
       python += `# plot_histogram(counts)\n`;
       python += `# print(qc.draw())\n`;
       
-      const success = downloadFile(python, `${options.projectName}.py`, 'text/plain');
-      
-      if (success) {
-        trackEvent('circuit_exported', { format: 'python', gateCount: circuit.length });
-        toast({ title: "Python exported successfully!" });
-      } else {
-        throw new Error('Download failed');
-      }
+      const blob = new Blob([python], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${options.projectName}.py`;
+      a.click();
+      trackEvent('circuit_exported', { format: 'python' as any, gateCount: circuit.length });
+      toast({ title: "Python exported successfully!" });
     } catch (error) {
-      console.error('Python export error:', error);
-      toast({ title: "Export failed", description: "Could not export Python file", variant: "destructive" });
+      toast({ title: "Export failed", description: String(error), variant: "destructive" });
     }
   };
 
