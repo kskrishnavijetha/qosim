@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Undo, Trash2, Download, FileText, Share2, GitFork, Users, Save, Play, Edit, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -102,7 +103,7 @@ export function CircuitPanelHeader({
   const handlePlay = () => {
     console.log('🎬 Play button clicked - Starting circuit simulation');
     
-    if (circuit.length === 0) {
+    if (!circuit || circuit.length === 0) {
       toast({
         title: "No Circuit to Play",
         description: "Please add some gates to the circuit first",
@@ -113,19 +114,19 @@ export function CircuitPanelHeader({
 
     setIsPlaying(true);
     
+    toast({
+      title: "Running Circuit Simulation",
+      description: `Executing ${circuit.length} gates...`,
+    });
+
     // Simulate running the circuit
     setTimeout(() => {
       setIsPlaying(false);
       toast({
         title: "Circuit Simulation Complete", 
-        description: `Executed ${circuit.length} gates successfully`,
+        description: `Successfully executed ${circuit.length} gates`,
       });
     }, 2000);
-
-    toast({
-      title: "Running Circuit Simulation",
-      description: "Circuit is being executed...",
-    });
   };
 
   const handleEdit = () => {
@@ -141,7 +142,7 @@ export function CircuitPanelHeader({
   const handleCopy = async () => {
     console.log('📋 Copy button clicked - Copying circuit to clipboard');
     
-    if (circuit.length === 0) {
+    if (!circuit || circuit.length === 0) {
       toast({
         title: "Nothing to Copy",
         description: "Circuit is empty",
@@ -171,7 +172,7 @@ export function CircuitPanelHeader({
   const handleShare = async () => {
     console.log('🔗 Share button clicked - Creating share link');
     
-    if (circuit.length === 0) {
+    if (!circuit || circuit.length === 0) {
       toast({
         title: "Nothing to Share",
         description: "Please add some gates to the circuit first",
@@ -181,39 +182,52 @@ export function CircuitPanelHeader({
     }
 
     try {
+      const currentUrl = window.location.href;
       const shareData = {
-        title: 'Quantum Circuit',
-        text: `Check out this quantum circuit with ${circuit.length} gates!`,
-        url: window.location.href
+        title: 'Quantum Circuit - QOSim',
+        text: `Check out this quantum circuit with ${circuit.length} gates created in QOSim!`,
+        url: currentUrl
       };
 
-      if (navigator.share) {
+      // Try native sharing first (mobile/modern browsers)
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
         toast({
           title: "Circuit Shared",
           description: "Share dialog opened successfully",
         });
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(currentUrl);
         toast({
           title: "Share Link Copied",
-          description: "Circuit link copied to clipboard",
+          description: "Circuit link copied to clipboard. Share it with others!",
         });
       }
     } catch (error) {
       console.error('Failed to share circuit:', error);
-      await navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Share Link Copied",
-        description: "Circuit link copied to clipboard",
-      });
+      
+      // Final fallback - just copy URL
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link Copied",
+          description: "Circuit link copied to clipboard",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Share Failed",
+          description: "Unable to share or copy link",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const handleDelete = () => {
     console.log('🗑️ Delete button clicked - Clearing circuit');
     
-    if (circuit.length === 0) {
+    if (!circuit || circuit.length === 0) {
       toast({
         title: "Nothing to Delete",
         description: "Circuit is already empty",
@@ -232,6 +246,16 @@ export function CircuitPanelHeader({
 
   const handleDownload = () => {
     console.log('💾 Download button clicked - Opening export dialog');
+    
+    if (!circuit || circuit.length === 0) {
+      toast({
+        title: "Nothing to Export",
+        description: "Please add some gates to the circuit first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setShowExportDialog(true);
   };
 
