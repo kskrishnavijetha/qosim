@@ -255,7 +255,7 @@ export function CircuitPanelHeader({
             onPlay={handlePlay}
             onEdit={handleEdit}
             onCopy={handleCopy}
-            onShare={onShare}
+            onShare={handleShare}
             onDelete={handleDelete}
             canUndo={canUndo}
           />
