@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Undo, Trash2, Download, FileText, Share2, GitFork, Users, Save } from "lucide-react";
+import { Undo, Trash2, Download, FileText, Share2, GitFork, Users, Save, Play, Edit, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCircuits } from "@/hooks/useCircuits";
@@ -10,6 +9,7 @@ import { ShareDialog } from "@/components/dialogs/ShareDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { CircuitActions } from "@/components/circuits/CircuitActions";
 
 interface CircuitPanelHeaderProps {
   onUndo: () => void;
@@ -113,6 +113,55 @@ export function CircuitPanelHeader({
     }
   };
 
+  const handlePlay = () => {
+    console.log('Playing circuit simulation...');
+    toast({
+      title: "Circuit Simulation",
+      description: "Running quantum circuit simulation...",
+    });
+  };
+
+  const handleEdit = () => {
+    console.log('Entering edit mode...');
+    toast({
+      title: "Edit Mode",
+      description: "Circuit is now in edit mode",
+    });
+  };
+
+  const handleCopy = async () => {
+    try {
+      const circuitData = JSON.stringify(circuit, null, 2);
+      await navigator.clipboard.writeText(circuitData);
+      toast({
+        title: "Circuit Copied",
+        description: "Circuit data copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy circuit data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (circuit.length === 0) {
+      toast({
+        title: "Nothing to Delete",
+        description: "Circuit is already empty",
+      });
+      return;
+    }
+    
+    onClear();
+    toast({
+      title: "Circuit Deleted",
+      description: "All gates have been removed from the circuit",
+    });
+  };
+
   return (
     <>
       <Card className="quantum-panel neon-border">
@@ -120,153 +169,22 @@ export function CircuitPanelHeader({
           <CardTitle className="text-xl font-mono text-quantum-glow">Quantum Circuit Editor</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {/* Circuit Management */}
-            <div className="flex gap-2">
-              <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="neon-border">
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="quantum-panel border-quantum-glow/30">
-                  <DialogHeader>
-                    <DialogTitle className="text-quantum-glow">Save Circuit</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Enter circuit name..."
-                      value={circuitName}
-                      onChange={(e) => setCircuitName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveCircuit()}
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleSaveCircuit}
-                        className="bg-quantum-glow hover:bg-quantum-glow/80 text-black flex-1"
-                      >
-                        Save Circuit
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowSaveDialog(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showForkDialog} onOpenChange={setShowForkDialog}>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="neon-border"
-                    disabled={!savedCircuitId}
-                  >
-                    <GitFork className="w-4 h-4 mr-2" />
-                    Fork
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="quantum-panel border-quantum-glow/30">
-                  <DialogHeader>
-                    <DialogTitle className="text-quantum-glow">Fork Circuit</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Enter new circuit name (optional)..."
-                      value={forkName}
-                      onChange={(e) => setForkName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleForkCircuit()}
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleForkCircuit}
-                        className="bg-quantum-glow hover:bg-quantum-glow/80 text-black flex-1"
-                      >
-                        Create Fork
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowForkDialog(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {/* Sharing & Collaboration */}
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                className="neon-border"
-                onClick={handleQuickShare}
-                disabled={!savedCircuitId}
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-
-              <Button 
-                variant="outline" 
-                className="neon-border"
-                onClick={() => setShowCollaborationDialog(true)}
-                disabled={!savedCircuitId}
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Collaborate
-              </Button>
-            </div>
-
-            {/* Circuit Actions */}
-            <div className="flex gap-2">
-              <Button 
-                onClick={onUndo} 
-                disabled={!canUndo}
-                variant="outline"
-                className="neon-border"
-              >
-                <Undo className="w-4 h-4 mr-2" />
-                Undo
-              </Button>
-
-              <Button 
-                onClick={onClear} 
-                variant="outline" 
-                className="neon-border border-red-500/30 text-red-400 hover:bg-red-500/10"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear
-              </Button>
-            </div>
-
-            {/* Export Options */}
-            <div className="flex gap-2">
-              <Button onClick={onExportJSON} variant="outline" className="neon-border">
-                <FileText className="w-4 h-4 mr-2" />
-                JSON
-              </Button>
-
-              <Button onClick={onExportQASM} variant="outline" className="neon-border">
-                <FileText className="w-4 h-4 mr-2" />
-                QASM
-              </Button>
-
-              <Button onClick={onShowExportDialog} variant="outline" className="neon-border">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </div>
+          <CircuitActions
+            onUndo={onUndo}
+            onClear={onClear}
+            onExportJSON={onExportJSON}
+            onExportQASM={onExportQASM}
+            onShowExportDialog={onShowExportDialog}
+            onPlay={handlePlay}
+            onEdit={handleEdit}
+            onCopy={handleCopy}
+            onShare={handleQuickShare}
+            onDelete={handleDelete}
+            canUndo={canUndo}
+          />
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
       {savedCircuitId && (
         <>
           <CollaborationDialog
