@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -50,9 +49,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={
                       <ErrorBoundary>
-                        <AuthGuard>
-                          <Index />
-                        </AuthGuard>
+                        <Index />
                       </ErrorBoundary>
                     } />
                     <Route path="/auth" element={
