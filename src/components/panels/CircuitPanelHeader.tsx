@@ -6,6 +6,7 @@ import { useCircuits } from "@/hooks/useCircuits";
 import { useCircuitSharing } from "@/hooks/useCircuitSharing";
 import { CollaborationDialog } from "@/components/dialogs/CollaborationDialog";
 import { ShareDialog } from "@/components/dialogs/ShareDialog";
+import { ExportDialog } from "@/components/dialogs/ExportDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -36,6 +37,7 @@ export function CircuitPanelHeader({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showForkDialog, setShowForkDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const [circuitName, setCircuitName] = useState("");
   const [forkName, setForkName] = useState("");
   const [savedCircuitId, setSavedCircuitId] = useState<string | null>(null);
@@ -230,7 +232,7 @@ export function CircuitPanelHeader({
 
   const handleDownload = () => {
     console.log('💾 Download button clicked - Opening export dialog');
-    onShowExportDialog();
+    setShowExportDialog(true);
   };
 
   return (
@@ -253,12 +255,23 @@ export function CircuitPanelHeader({
             onPlay={handlePlay}
             onEdit={handleEdit}
             onCopy={handleCopy}
-            onShare={handleShare}
+            onShare={onShare}
             onDelete={handleDelete}
             canUndo={canUndo}
           />
         </CardContent>
       </Card>
+
+      {/* Export Dialog */}
+      {showExportDialog && (
+        <ExportDialog
+          open={showExportDialog}
+          onOpenChange={setShowExportDialog}
+          circuit={circuit}
+          circuitRef={React.createRef()}
+          numQubits={5}
+        />
+      )}
 
       {/* Save Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
