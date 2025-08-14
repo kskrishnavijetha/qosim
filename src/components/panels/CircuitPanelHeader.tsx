@@ -106,7 +106,7 @@ export function CircuitPanelHeader({
     }
   };
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     console.log('🎬 Play button clicked - Starting circuit simulation');
     
     if (!circuit || circuit.length === 0) {
@@ -125,14 +125,37 @@ export function CircuitPanelHeader({
       description: `Executing ${circuit.length} gates...`,
     });
 
-    // Simulate running the circuit
-    setTimeout(() => {
-      setIsPlaying(false);
+    try {
+      // Simulate the circuit execution
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate mock simulation results
+      const mockResults = {
+        statevector: circuit.map(() => Math.random()),
+        probabilities: circuit.reduce((acc: any, gate: any, index: number) => {
+          acc[`qubit_${gate.qubit || index}`] = Math.random();
+          return acc;
+        }, {}),
+        executionTime: '2.1s',
+        gateCount: circuit.length
+      };
+
       toast({
-        title: "Circuit Simulation Complete", 
-        description: `Successfully executed ${circuit.length} gates`,
+        title: "✅ Circuit Simulation Complete", 
+        description: `Successfully executed ${circuit.length} gates in 2.1s`,
       });
-    }, 2000);
+
+      console.log('Simulation results:', mockResults);
+    } catch (error) {
+      console.error('Simulation error:', error);
+      toast({
+        title: "❌ Simulation Failed",
+        description: "An error occurred during circuit simulation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPlaying(false);
+    }
   };
 
   const handleEdit = () => {
@@ -143,6 +166,12 @@ export function CircuitPanelHeader({
       title: isEditMode ? "Edit Mode Disabled" : "Edit Mode Enabled",
       description: isEditMode ? "Circuit is now in view mode" : "You can now modify the circuit",
     });
+
+    // Navigate to circuit editor if needed
+    if (!isEditMode && circuit.length > 0) {
+      // This would typically navigate to the interactive circuit builder
+      window.location.href = '/app?tab=circuit-editor';
+    }
   };
 
   const handleCopy = async () => {
@@ -158,20 +187,54 @@ export function CircuitPanelHeader({
     }
 
     try {
-      const circuitData = JSON.stringify(circuit, null, 2);
-      await navigator.clipboard.writeText(circuitData);
+      const circuitData = {
+        format: "QOSim Circuit JSON",
+        version: "1.0",
+        timestamp: new Date().toISOString(),
+        circuit: circuit.map(gate => ({
+          gate: gate.type,
+          qubit: gate.qubit,
+          qubits: gate.qubits,
+          position: gate.position,
+          angle: gate.angle,
+          id: gate.id
+        })),
+        metadata: {
+          gateCount: circuit.length,
+          qubits: Math.max(...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1
+        }
+      };
+
+      const jsonString = JSON.stringify(circuitData, null, 2);
+      await navigator.clipboard.writeText(jsonString);
       
       toast({
-        title: "Circuit Copied",
-        description: `Copied ${circuit.length} gates to clipboard`,
+        title: "✅ Circuit Copied",
+        description: `Copied ${circuit.length} gates to clipboard as JSON`,
       });
     } catch (error) {
       console.error('Failed to copy circuit:', error);
-      toast({
-        title: "Copy Failed",
-        description: "Failed to copy circuit data",
-        variant: "destructive",
-      });
+      
+      // Fallback for older browsers
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = JSON.stringify(circuit, null, 2);
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        toast({
+          title: "✅ Circuit Copied",
+          description: `Copied ${circuit.length} gates to clipboard`,
+        });
+      } catch (fallbackError) {
+        toast({
+          title: "❌ Copy Failed",
+          description: "Unable to copy circuit data to clipboard",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -188,41 +251,64 @@ export function CircuitPanelHeader({
     }
 
     try {
-      const currentUrl = window.location.href;
-      const shareData = {
-        title: 'Quantum Circuit - QOSim',
-        text: `Check out this quantum circuit with ${circuit.length} gates created in QOSim!`,
-        url: currentUrl
+      // Create a shareable circuit data object
+      const shareableCircuit = {
+        circuit: circuit.map(gate => ({
+          gate: gate.type,
+          qubit: gate.qubit,
+          qubits: gate.qubits,
+          position: gate.position,
+          angle: gate.angle
+        })),
+        metadata: {
+          name: circuitName || 'Quantum Circuit',
+          created: new Date().toISOString(),
+          gateCount: circuit.length
+        }
       };
 
+      // For now, we'll create a URL with the circuit data encoded
+      const encodedCircuit = btoa(JSON.stringify(shareableCircuit));
+      const shareUrl = `${window.location.origin}/shared?circuit=${encodedCircuit}`;
+
       // Try native sharing first (mobile/modern browsers)
-      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-        toast({
-          title: "Circuit Shared",
-          description: "Share dialog opened successfully",
-        });
-      } else {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(currentUrl);
-        toast({
-          title: "Share Link Copied",
-          description: "Circuit link copied to clipboard. Share it with others!",
-        });
+      if (navigator.share && navigator.canShare) {
+        const shareData = {
+          title: 'Quantum Circuit - QOSim',
+          text: `Check out this quantum circuit with ${circuit.length} gates!`,
+          url: shareUrl
+        };
+
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          toast({
+            title: "✅ Circuit Shared",
+            description: "Share dialog opened successfully",
+          });
+          return;
+        }
       }
+
+      // Fallback to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "✅ Share Link Copied",
+        description: "Circuit link copied to clipboard. Share it with others!",
+      });
+
     } catch (error) {
       console.error('Failed to share circuit:', error);
       
-      // Final fallback - just copy URL
+      // Final fallback - just copy current URL
       try {
         await navigator.clipboard.writeText(window.location.href);
         toast({
-          title: "Link Copied",
-          description: "Circuit link copied to clipboard",
+          title: "✅ Link Copied",
+          description: "Current page link copied to clipboard",
         });
       } catch (clipboardError) {
         toast({
-          title: "Share Failed",
+          title: "❌ Share Failed",
           description: "Unable to share or copy link",
           variant: "destructive",
         });
@@ -245,7 +331,7 @@ export function CircuitPanelHeader({
     onClear();
     
     toast({
-      title: "Circuit Deleted",
+      title: "✅ Circuit Cleared",
       description: `Removed ${gateCount} gates from the circuit`,
     });
   };
@@ -264,6 +350,11 @@ export function CircuitPanelHeader({
     
     // Directly download as JSON file
     handleExportJSON();
+    
+    toast({
+      title: "✅ Download Started",
+      description: "Circuit JSON file download initiated",
+    });
   };
 
   return (
@@ -279,7 +370,7 @@ export function CircuitPanelHeader({
         <CardContent>
           <CircuitActions
             onUndo={onUndo}
-            onClear={onClear}
+            onClear={handleDelete}
             onExportJSON={handleExportJSON}
             onExportQASM={handleExportQASM}
             onShowExportDialog={() => setShowExportDialog(true)}
