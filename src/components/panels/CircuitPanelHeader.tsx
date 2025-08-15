@@ -59,6 +59,7 @@ export function CircuitPanelHeader({
 
   const handlePlay = async () => {
     console.log('🎬 Play button clicked - Starting circuit simulation');
+    console.log('🎬 Circuit data:', circuit);
     
     if (!circuit || circuit.length === 0) {
       toast({
@@ -77,18 +78,42 @@ export function CircuitPanelHeader({
         description: `Executing circuit with ${circuit.length} gates...`,
       });
 
-      // Convert circuit format for quantum backend
-      const quantumGates = circuit.map(gate => ({
-        id: gate.id,
-        type: gate.type || 'H',
-        qubit: gate.qubit !== undefined ? gate.qubit : 0,
-        qubits: gate.qubits || [],
-        position: gate.position !== undefined ? gate.position : 0,
-        angle: gate.angle
-      }));
+      // Convert circuit format for quantum backend - handle different possible formats
+      const quantumGates = circuit.map((gate, index) => {
+        console.log('🎬 Processing gate:', gate);
+        
+        // Handle different circuit data formats
+        let gateType = gate.type || gate.gate || 'H';
+        let qubitIndex = gate.qubit !== undefined ? gate.qubit : 
+                        gate.qubits && gate.qubits.length > 0 ? gate.qubits[0] : 0;
+        let position = gate.position !== undefined ? gate.position : 
+                      gate.time !== undefined ? gate.time : index;
+
+        // Handle multi-qubit gates
+        let qubits = [];
+        if (gate.qubits && Array.isArray(gate.qubits)) {
+          qubits = gate.qubits;
+        } else if (gate.qubit !== undefined) {
+          qubits = [gate.qubit];
+        }
+
+        return {
+          id: gate.id || `gate_${index}`,
+          type: gateType,
+          qubit: qubitIndex,
+          qubits: qubits,
+          position: position,
+          angle: gate.angle || 0,
+          params: gate.params || []
+        };
+      });
+
+      console.log('🎬 Converted gates for backend:', quantumGates);
 
       // Execute the circuit using the quantum backend
       const result = await executeCircuit(quantumGates, 'local', 1024);
+      
+      console.log('🎬 Backend execution result:', result);
       
       if (result && !result.error) {
         toast({
@@ -97,7 +122,7 @@ export function CircuitPanelHeader({
         });
 
         // Dispatch simulation results to update visualization components
-        window.dispatchEvent(new CustomEvent('simulationComplete', { 
+        const simulationEvent = new CustomEvent('simulationComplete', { 
           detail: {
             stateVector: result.stateVector,
             measurementProbabilities: result.measurementProbabilities,
@@ -105,11 +130,14 @@ export function CircuitPanelHeader({
             blochSphereData: result.blochSphereData,
             executionTime: result.executionTime,
             backend: result.backend,
-            entanglement: result.entanglement
+            entanglement: result.entanglement,
+            counts: result.counts
           }
-        }));
+        });
+        
+        window.dispatchEvent(simulationEvent);
+        console.log('✅ Simulation event dispatched:', simulationEvent.detail);
 
-        console.log('✅ Simulation completed successfully:', result);
       } else {
         throw new Error(result?.error || 'Simulation failed');
       }
