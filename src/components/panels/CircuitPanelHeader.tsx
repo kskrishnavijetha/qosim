@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CircuitActions } from "@/components/circuits/CircuitActions";
 import { useExportHandlers } from "@/hooks/useExportHandlers";
+import { useQuantumBackend } from "@/hooks/useQuantumBackend";
 
 interface CircuitPanelHeaderProps {
   onUndo: () => void;
@@ -48,6 +49,7 @@ export function CircuitPanelHeader({
   const { saveCircuit } = useCircuits();
   const { forkCircuit, createShareLink } = useCircuitSharing();
   const { toast } = useToast();
+  const { executeCircuit, isExecuting } = useQuantumBackend();
 
   const { handleExportJSON, handleExportQASM, handleExportPython } = useExportHandlers(
     circuit, 
@@ -55,7 +57,6 @@ export function CircuitPanelHeader({
     { projectName: 'quantum_circuit' }
   );
 
-  // Fixed Play function with actual simulation logic
   const handlePlay = async () => {
     console.log('🎬 Play button clicked - Starting circuit simulation');
     
@@ -73,48 +74,51 @@ export function CircuitPanelHeader({
     try {
       toast({
         title: "🚀 Running Simulation",
-        description: `Simulating circuit with ${circuit.length} gates...`,
+        description: `Executing circuit with ${circuit.length} gates...`,
       });
 
-      // Simulate realistic quantum computation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate realistic quantum results
-      const numQubits = 5;
-      const stateSize = Math.pow(2, numQubits);
-      const mockResults = {
-        statevector: Array.from({ length: stateSize }, (_, i) => ({
-          real: Math.random() * 0.5 - 0.25,
-          imag: Math.random() * 0.5 - 0.25
-        })),
-        probabilities: circuit.reduce((acc: any, gate: any, index: number) => {
-          const qubit = gate.qubit !== undefined ? gate.qubit : index % numQubits;
-          acc[`${qubit.toString().padStart(numQubits, '0')}`] = Math.random();
-          return acc;
-        }, {}),
-        measurements: Array.from({ length: 1024 }, () => 
-          Array.from({ length: numQubits }, () => Math.random() > 0.5 ? '1' : '0').join('')
-        ),
-        executionTime: 2.0,
-        fidelity: 0.98 + Math.random() * 0.02,
-        gateCount: circuit.length
-      };
-
-      toast({
-        title: "✅ Simulation Complete", 
-        description: `Successfully executed ${circuit.length} gates in ${mockResults.executionTime}s`,
-      });
-
-      // Dispatch results to parent components
-      window.dispatchEvent(new CustomEvent('simulationComplete', { 
-        detail: mockResults 
+      // Convert circuit format for quantum backend
+      const quantumGates = circuit.map(gate => ({
+        id: gate.id,
+        type: gate.type || 'H',
+        qubit: gate.qubit !== undefined ? gate.qubit : 0,
+        qubits: gate.qubits || [],
+        position: gate.position !== undefined ? gate.position : 0,
+        angle: gate.angle
       }));
+
+      // Execute the circuit using the quantum backend
+      const result = await executeCircuit(quantumGates, 'local', 1024);
+      
+      if (result && !result.error) {
+        toast({
+          title: "✅ Simulation Complete", 
+          description: `Circuit executed successfully in ${result.executionTime?.toFixed(2)}ms`,
+        });
+
+        // Dispatch simulation results to update visualization components
+        window.dispatchEvent(new CustomEvent('simulationComplete', { 
+          detail: {
+            stateVector: result.stateVector,
+            measurementProbabilities: result.measurementProbabilities,
+            qubitStates: result.qubitStates,
+            blochSphereData: result.blochSphereData,
+            executionTime: result.executionTime,
+            backend: result.backend,
+            entanglement: result.entanglement
+          }
+        }));
+
+        console.log('✅ Simulation completed successfully:', result);
+      } else {
+        throw new Error(result?.error || 'Simulation failed');
+      }
 
     } catch (error) {
       console.error('❌ Simulation error:', error);
       toast({
         title: "❌ Simulation Failed",
-        description: "Circuit simulation encountered an error",
+        description: error instanceof Error ? error.message : "Circuit simulation encountered an error",
         variant: "destructive",
       });
     } finally {
@@ -122,7 +126,6 @@ export function CircuitPanelHeader({
     }
   };
 
-  // Fixed Share function with proper URL generation
   const handleShare = async () => {
     console.log('🔗 Share button clicked - Creating shareable link');
     
@@ -185,7 +188,6 @@ export function CircuitPanelHeader({
     }
   };
 
-  // Fixed Download function using export handlers
   const handleDownload = () => {
     console.log('💾 Download button clicked - Downloading circuit');
     
@@ -217,7 +219,6 @@ export function CircuitPanelHeader({
     }
   };
 
-  // Copy function for circuit data
   const handleCopy = async () => {
     if (!circuit || circuit.length === 0) {
       toast({
@@ -250,7 +251,6 @@ export function CircuitPanelHeader({
     }
   };
 
-  // Edit mode toggle
   const handleEdit = () => {
     const newEditMode = !isEditMode;
     setIsEditMode(newEditMode);
@@ -340,7 +340,7 @@ export function CircuitPanelHeader({
             <span>Quantum Circuit Editor</span>
             <div className="flex items-center gap-2">
               {isEditMode && <span className="text-sm text-quantum-energy animate-pulse">EDIT MODE</span>}
-              {isPlaying && <span className="text-sm text-quantum-neon animate-pulse">RUNNING...</span>}
+              {(isPlaying || isExecuting) && <span className="text-sm text-quantum-neon animate-pulse">RUNNING...</span>}
               {circuit && circuit.length > 0 && (
                 <span className="text-xs text-muted-foreground">{circuit.length} gates</span>
               )}
@@ -364,7 +364,6 @@ export function CircuitPanelHeader({
         </CardContent>
       </Card>
 
-      {/* Export Dialog */}
       {showExportDialog && (
         <ExportDialog
           open={showExportDialog}
@@ -375,7 +374,6 @@ export function CircuitPanelHeader({
         />
       )}
 
-      {/* Save Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
         <DialogContent>
           <DialogHeader>
