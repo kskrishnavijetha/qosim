@@ -1,8 +1,16 @@
 
-import { useState } from "react";
-import { Folder, FolderOpen, ChevronRight, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { QFSDirectory } from "@/lib/qfs/qfsCore";
+import React, { useState } from 'react';
+import { Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export interface QFSDirectory {
+  id: string;
+  name: string;
+  path: string;
+  parentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface QFSDirectoryTreeProps {
   directories: QFSDirectory[];
@@ -13,13 +21,8 @@ interface QFSDirectoryTreeProps {
 export function QFSDirectoryTree({ directories, currentDirectory, onNavigate }: QFSDirectoryTreeProps) {
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
 
-  console.log('QFSDirectoryTree - directories:', directories);
-  console.log('QFSDirectoryTree - currentDirectory:', currentDirectory);
-  console.log('QFSDirectoryTree - expandedDirs:', Array.from(expandedDirs));
-
   const toggleExpanded = (dirId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('Toggling expansion for directory:', dirId);
     const newExpanded = new Set(expandedDirs);
     if (newExpanded.has(dirId)) {
       newExpanded.delete(dirId);
@@ -32,54 +35,54 @@ export function QFSDirectoryTree({ directories, currentDirectory, onNavigate }: 
   const handleDirectoryClick = (dirId: string) => {
     console.log('Directory clicked:', dirId);
     onNavigate(dirId);
+    // Also expand the directory when clicked
+    const newExpanded = new Set(expandedDirs);
+    newExpanded.add(dirId);
+    setExpandedDirs(newExpanded);
   };
 
-  const renderDirectory = (dir: QFSDirectory, level = 0) => {
+  const renderDirectory = (dir: QFSDirectory, level: number = 0) => {
     const isExpanded = expandedDirs.has(dir.id);
-    const isSelected = currentDirectory === dir.id;
+    const isActive = currentDirectory === dir.id;
     const hasChildren = directories.some(d => d.parentId === dir.id);
-
-    console.log(`Rendering directory: ${dir.name}, hasChildren: ${hasChildren}, isExpanded: ${isExpanded}, isSelected: ${isSelected}`);
 
     return (
       <div key={dir.id} className="select-none">
-        <div
-          className={`
-            flex items-center gap-1 py-1 px-2 rounded cursor-pointer hover:bg-quantum-glow/10 transition-colors
-            ${isSelected ? 'bg-quantum-glow/20 text-quantum-glow' : 'text-quantum-text'}
-          `}
-          style={{ paddingLeft: `${8 + level * 16}px` }}
+        <div 
+          className={`flex items-center py-1 px-2 rounded cursor-pointer hover:bg-quantum-matrix/50 transition-colors ${
+            isActive ? 'bg-quantum-glow/20 text-quantum-glow' : 'text-quantum-text'
+          }`}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => handleDirectoryClick(dir.id)}
         >
           {hasChildren ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-4 w-4 p-0 hover:bg-quantum-glow/20"
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 h-4 w-4 mr-1"
               onClick={(e) => toggleExpanded(dir.id, e)}
             >
               {isExpanded ? (
-                <ChevronDown className="h-3 w-3 text-quantum-glow" />
+                <ChevronDown className="h-3 w-3" />
               ) : (
-                <ChevronRight className="h-3 w-3 text-quantum-glow" />
+                <ChevronRight className="h-3 w-3" />
               )}
             </Button>
           ) : (
-            <div className="w-4 h-4" />
+            <div className="w-4 mr-1" />
           )}
           
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {isExpanded ? (
-              <FolderOpen className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-            ) : (
-              <Folder className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-            )}
-            <span className="text-sm truncate font-medium">{dir.name}</span>
-          </div>
+          {isExpanded ? (
+            <FolderOpen className="w-4 h-4 mr-2 text-quantum-neon" />
+          ) : (
+            <Folder className="w-4 h-4 mr-2 text-quantum-neon" />
+          )}
+          
+          <span className="text-sm font-mono truncate">{dir.name}</span>
         </div>
-
+        
         {isExpanded && hasChildren && (
-          <div className="ml-2">
+          <div>
             {directories
               .filter(d => d.parentId === dir.id)
               .map(childDir => renderDirectory(childDir, level + 1))}
@@ -89,36 +92,24 @@ export function QFSDirectoryTree({ directories, currentDirectory, onNavigate }: 
     );
   };
 
-  const rootDirectories = directories.filter(d => !d.parentId);
+  // Get root directories (those without parentId)
+  const rootDirectories = directories.filter(dir => !dir.parentId);
 
   return (
     <div className="space-y-1">
-      {/* Root Directory */}
-      <div
-        className={`
-          flex items-center gap-2 py-2 px-2 rounded cursor-pointer hover:bg-quantum-glow/10 transition-colors
-          ${!currentDirectory ? 'bg-quantum-glow/20 text-quantum-glow' : 'text-quantum-text'}
-        `}
-        onClick={() => {
-          console.log('Root directory clicked');
-          onNavigate();
-        }}
+      {/* Root level */}
+      <div 
+        className={`flex items-center py-1 px-2 rounded cursor-pointer hover:bg-quantum-matrix/50 transition-colors ${
+          !currentDirectory ? 'bg-quantum-glow/20 text-quantum-glow' : 'text-quantum-text'
+        }`}
+        onClick={() => onNavigate(undefined)}
       >
-        <FolderOpen className="h-4 w-4 text-yellow-400" />
-        <span className="text-sm font-medium">Root</span>
-        {!currentDirectory && (
-          <span className="text-xs text-quantum-glow ml-auto">●</span>
-        )}
+        <Folder className="w-4 h-4 mr-2 text-quantum-neon" />
+        <span className="text-sm font-mono">Root</span>
       </div>
-
-      {/* Child Directories */}
-      {rootDirectories.map(dir => renderDirectory(dir))}
       
-      {directories.length === 0 && (
-        <div className="text-xs text-quantum-text/50 px-2 py-1">
-          No directories created yet
-        </div>
-      )}
+      {/* Directory tree */}
+      {rootDirectories.map(dir => renderDirectory(dir))}
     </div>
   );
 }
