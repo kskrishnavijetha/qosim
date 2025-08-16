@@ -1,4 +1,3 @@
-
 import { FileText, Folder, Star, StarOff, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,8 +63,11 @@ export function FileItem({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('FileItem clicked for file:', file.name, 'type:', file.type);
+    
     // Only call onFileSelect for non-folder types
     if (file.type !== "folder" && onFileSelect) {
+      console.log('Calling onFileSelect for file:', file.id);
       onFileSelect(file.id);
     }
   };
@@ -75,6 +77,7 @@ export function FileItem({
       e.preventDefault();
       e.stopPropagation();
     }
+    console.log('Context menu action triggered:', action, 'for file:', file.name);
     onContextAction(action, file.id);
   };
 
@@ -162,7 +165,12 @@ export function FileItem({
       </ContextMenuTrigger>
       
       <ContextMenuContent className="quantum-panel border-quantum-glow/30">
-        <ContextMenuItem onClick={(e) => handleContextMenuAction("view-details", e)}>
+        <ContextMenuItem 
+          onClick={(e) => {
+            console.log('View Details context menu item clicked');
+            handleContextMenuAction("view-details", e);
+          }}
+        >
           <Eye className="w-4 h-4 mr-2" />
           View Details
         </ContextMenuItem>

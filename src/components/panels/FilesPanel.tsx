@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +22,8 @@ export function FilesPanel() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
+
+  console.log('FilesPanel render - showFileViewer:', showFileViewer, 'selectedFile:', selectedFile?.name);
 
   // Filter files by current directory
   const currentFiles = files.filter(file => {
@@ -72,22 +73,32 @@ export function FilesPanel() {
   };
 
   const handleFileSelect = (fileId: string) => {
+    console.log('handleFileSelect called with fileId:', fileId);
     const file = files.find(f => f.id === fileId);
     if (file) {
+      console.log('Setting selected file and opening viewer for:', file.name);
       setSelectedFile(file);
       setShowFileViewer(true);
+    } else {
+      console.error('File not found with id:', fileId);
     }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
+    console.log('handleContextAction called with action:', action, 'fileId:', fileId);
     const file = files.find(f => f.id === fileId);
+    console.log('Found file for context action:', file?.name);
     
     switch (action) {
       case "view":
       case "view-details":
+        console.log('Processing view-details action for file:', file?.name);
         if (file) {
           setSelectedFile(file);
           setShowFileViewer(true);
+          console.log('Set showFileViewer to true for file:', file.name);
+        } else {
+          console.error('No file found for view-details action');
         }
         break;
       case "versions":
@@ -117,6 +128,7 @@ export function FilesPanel() {
   };
 
   const handleCloseFileViewer = () => {
+    console.log('Closing file viewer');
     setShowFileViewer(false);
     setSelectedFile(null);
   };
