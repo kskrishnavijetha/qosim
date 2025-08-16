@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QFSFile } from "@/lib/qfs/qfsCore";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Unlock, Eye, Edit, Play, Share2, Globe } from "lucide-react";
+import { Lock, Unlock, Eye, Edit, Play, Share2, Globe, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 interface QFSPermissionManagerProps {
   files: QFSFile[];
@@ -16,6 +19,8 @@ interface QFSPermissionManagerProps {
 
 export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermissionManagerProps) {
   const [selectedFileId, setSelectedFileId] = useState(selectedFile || '');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   
   const file = files.find(f => f.id === selectedFileId);
 
@@ -30,6 +35,103 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
   const getPermissionColor = (enabled: boolean) => 
     enabled ? 'text-green-400' : 'text-red-400';
 
+  const handlePermissionChange = async (permission: string, enabled: boolean) => {
+    if (!file) return;
+    
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update file permissions (in a real app, this would update the backend)
+      file.permissions[permission as keyof typeof file.permissions] = enabled;
+      
+      toast({
+        title: "Permission Updated",
+        description: `${permission} permission ${enabled ? 'enabled' : 'disabled'} for ${file.name}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update permission",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkPermissionAction = async (action: string) => {
+    if (!file) return;
+    
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      switch (action) {
+        case 'grant-all':
+          Object.keys(file.permissions).forEach(key => {
+            if (key !== 'owner') {
+              file.permissions[key as keyof typeof file.permissions] = true;
+            }
+          });
+          break;
+        case 'revoke-all':
+          Object.keys(file.permissions).forEach(key => {
+            if (key !== 'owner') {
+              file.permissions[key as keyof typeof file.permissions] = false;
+            }
+          });
+          break;
+        case 'readonly':
+          file.permissions.readable = true;
+          file.permissions.writable = false;
+          file.permissions.executable = false;
+          break;
+        case 'readwrite':
+          file.permissions.readable = true;
+          file.permissions.writable = true;
+          file.permissions.executable = false;
+          break;
+      }
+      
+      toast({
+        title: "Bulk Action Complete",
+        description: `Applied ${action} to ${file.name}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to apply bulk action",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const savePermissions = async () => {
+    if (!file) return;
+    
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Permissions Saved",
+        description: `Successfully saved permissions for ${file.name}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save permissions",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* File Selection */}
@@ -39,7 +141,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
           <SelectTrigger className="quantum-input">
             <SelectValue placeholder="Choose a file to manage permissions" />
           </SelectTrigger>
-          <SelectContent className="quantum-panel border-quantum-glow/30">
+          <SelectContent className="quantum-panel border-quantum-glow/30 bg-background">
             {files.map((f) => (
               <SelectItem key={f.id} value={f.id}>
                 <div className="flex items-center gap-2">
@@ -82,6 +184,42 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                 </div>
               </div>
             </CardContent>
+          </Card>
+
+          {/* Quick Actions Dropdown */}
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-quantum-glow flex items-center justify-between">
+                Quick Actions
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={isLoading}>
+                      Bulk Actions
+                      <ChevronDown className="w-4 h-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="quantum-panel border-quantum-glow/30 bg-background">
+                    <DropdownMenuItem onClick={() => handleBulkPermissionAction('grant-all')}>
+                      <Unlock className="w-4 h-4 mr-2" />
+                      Grant All Permissions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkPermissionAction('revoke-all')}>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Revoke All Permissions
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleBulkPermissionAction('readonly')}>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Set Read-Only
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkPermissionAction('readwrite')}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Set Read-Write
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardTitle>
+            </CardHeader>
           </Card>
 
           {/* Current Permissions Overview */}
@@ -134,10 +272,8 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     <Switch
                       id="readable"
                       checked={file.permissions.readable}
-                      onCheckedChange={(checked) => {
-                        // Handle permission change
-                        console.log('Toggle readable:', checked);
-                      }}
+                      onCheckedChange={(checked) => handlePermissionChange('readable', checked)}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -152,9 +288,8 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     <Switch
                       id="writable"
                       checked={file.permissions.writable}
-                      onCheckedChange={(checked) => {
-                        console.log('Toggle writable:', checked);
-                      }}
+                      onCheckedChange={(checked) => handlePermissionChange('writable', checked)}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -169,9 +304,8 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     <Switch
                       id="executable"
                       checked={file.permissions.executable}
-                      onCheckedChange={(checked) => {
-                        console.log('Toggle executable:', checked);
-                      }}
+                      onCheckedChange={(checked) => handlePermissionChange('executable', checked)}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -191,9 +325,8 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     <Switch
                       id="shared"
                       checked={file.permissions.shared}
-                      onCheckedChange={(checked) => {
-                        console.log('Toggle shared:', checked);
-                      }}
+                      onCheckedChange={(checked) => handlePermissionChange('shared', checked)}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -208,9 +341,8 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     <Switch
                       id="public"
                       checked={file.permissions.public}
-                      onCheckedChange={(checked) => {
-                        console.log('Toggle public:', checked);
-                      }}
+                      onCheckedChange={(checked) => handlePermissionChange('public', checked)}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -220,10 +352,14 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button className="bg-quantum-glow text-black">
-              Save Permissions
+            <Button 
+              className="bg-quantum-glow text-black hover:bg-quantum-glow/80"
+              onClick={savePermissions}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : 'Save Permissions'}
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
           </div>
