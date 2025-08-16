@@ -141,7 +141,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 max-h-[80vh] overflow-y-auto">
       {/* File Selection */}
       <div className="space-y-2">
         <Label htmlFor="file-select">Select File</Label>
@@ -149,7 +149,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
           <SelectTrigger className="quantum-input">
             <SelectValue placeholder="Choose a file to manage permissions" />
           </SelectTrigger>
-          <SelectContent className="quantum-panel border-quantum-glow/30 bg-background z-50">
+          <SelectContent className="quantum-panel border-quantum-glow/30 bg-background z-[100]">
             {files.map((f) => (
               <SelectItem key={f.id} value={f.id}>
                 <div className="flex items-center gap-2">
@@ -166,14 +166,14 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
         <>
           {/* File Information */}
           <Card className="quantum-panel neon-border">
-            <CardHeader>
-              <CardTitle className="text-quantum-glow flex items-center gap-2">
-                <Lock className="w-5 h-5" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-quantum-glow flex items-center gap-2 text-lg">
+                <Lock className="w-4 h-4" />
                 {file.name}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="text-muted-foreground">Type:</span>
                   <span className="ml-2 font-medium">{file.type}</span>
@@ -196,8 +196,8 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
 
           {/* Quick Actions Dropdown */}
           <Card className="quantum-panel neon-border">
-            <CardHeader>
-              <CardTitle className="text-quantum-glow flex items-center justify-between">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-quantum-glow flex items-center justify-between text-lg">
                 Quick Actions
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -206,7 +206,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                       <ChevronDown className="w-4 h-4 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="quantum-panel border-quantum-glow/30 bg-background z-50">
+                  <DropdownMenuContent className="quantum-panel border-quantum-glow/30 bg-background z-[100]">
                     <DropdownMenuItem onClick={() => handleBulkPermissionAction('grant-all')}>
                       <Unlock className="w-4 h-4 mr-2" />
                       Grant All Permissions
@@ -232,24 +232,24 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
 
           {/* Current Permissions Overview */}
           <Card className="quantum-panel neon-border">
-            <CardHeader>
-              <CardTitle className="text-quantum-glow">Current Permissions</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-quantum-glow text-lg">Current Permissions</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {Object.entries(file.permissions).map(([key, enabled]) => {
                   if (key === 'owner') return null;
                   
                   const Icon = permissionIcons[key as keyof typeof permissionIcons];
                   return (
-                    <div key={key} className="flex flex-col items-center gap-2 p-3 rounded-lg border border-muted/20">
-                      <Icon className={`w-6 h-6 ${getPermissionColor(Boolean(enabled))}`} />
-                      <span className="text-sm font-medium capitalize">{key}</span>
+                    <div key={key} className="flex flex-col items-center gap-2 p-2 rounded-lg border border-muted/20">
+                      <Icon className={`w-5 h-5 ${getPermissionColor(Boolean(enabled))}`} />
+                      <span className="text-xs font-medium capitalize">{key}</span>
                       <Badge 
                         variant={enabled ? "default" : "secondary"}
-                        className={enabled ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}
+                        className={`text-xs ${enabled ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
                       >
-                        {enabled ? 'Enabled' : 'Disabled'}
+                        {enabled ? 'On' : 'Off'}
                       </Badge>
                     </div>
                   );
@@ -260,20 +260,20 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
 
           {/* Permission Controls */}
           <Card className="quantum-panel neon-border">
-            <CardHeader>
-              <CardTitle className="text-quantum-glow">Modify Permissions</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-quantum-glow text-lg">Modify Permissions</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <div className="space-y-6">
                 {/* Basic Permissions */}
                 <div className="space-y-4">
                   <h4 className="font-medium text-foreground">Basic Permissions</h4>
                   
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
                       <Eye className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <Label htmlFor="readable">Readable</Label>
+                        <Label htmlFor="readable" className="text-sm">Readable</Label>
                         <p className="text-xs text-muted-foreground">Allow viewing file content</p>
                       </div>
                     </div>
@@ -285,11 +285,11 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
                       <Edit className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <Label htmlFor="writable">Writable</Label>
+                        <Label htmlFor="writable" className="text-sm">Writable</Label>
                         <p className="text-xs text-muted-foreground">Allow modifying file content</p>
                       </div>
                     </div>
@@ -301,11 +301,11 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
                       <Play className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <Label htmlFor="executable">Executable</Label>
+                        <Label htmlFor="executable" className="text-sm">Executable</Label>
                         <p className="text-xs text-muted-foreground">Allow running/executing file</p>
                       </div>
                     </div>
@@ -322,11 +322,11 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                 <div className="space-y-4">
                   <h4 className="font-medium text-foreground">Sharing Permissions</h4>
                   
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
                       <Share2 className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <Label htmlFor="shared">Shared</Label>
+                        <Label htmlFor="shared" className="text-sm">Shared</Label>
                         <p className="text-xs text-muted-foreground">Allow sharing with specific users</p>
                       </div>
                     </div>
@@ -338,11 +338,11 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
                       <Globe className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <Label htmlFor="public">Public</Label>
+                        <Label htmlFor="public" className="text-sm">Public</Label>
                         <p className="text-xs text-muted-foreground">Make publicly accessible</p>
                       </div>
                     </div>
@@ -359,7 +359,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
           </Card>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-2">
             <Button 
               className="bg-quantum-glow text-black hover:bg-quantum-glow/80"
               onClick={savePermissions}
