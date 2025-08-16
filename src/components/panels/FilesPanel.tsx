@@ -28,7 +28,7 @@ export function FilesPanel() {
   console.log('FilesPanel - current directory:', currentDirectory);
   console.log('FilesPanel - directories:', directories.length);
 
-  // Filter files by current directory - this is the key fix
+  // Filter files by current directory
   const currentFiles = files.filter(file => {
     if (currentDirectory) {
       // Show files that belong to the current directory
@@ -139,8 +139,16 @@ export function FilesPanel() {
   const handleCreateNewDirectory = () => {
     const dirName = prompt("Enter directory name:");
     if (dirName) {
-      createDirectory(dirName);
+      console.log('Creating directory:', dirName, 'in parent:', currentDirectory);
+      createDirectory(dirName, currentDirectory);
     }
+  };
+
+  // Get current directory name for display
+  const getCurrentDirectoryName = () => {
+    if (!currentDirectory) return 'Root Directory';
+    const dir = directories.find(d => d.id === currentDirectory);
+    return dir ? dir.name : 'Unknown Directory';
   };
 
   // Loading state
@@ -164,6 +172,9 @@ export function FilesPanel() {
           <div>
             <h2 className="text-2xl font-bold text-quantum-glow">Quantum File System</h2>
             <p className="text-muted-foreground font-mono">QFS - Enhanced with AI assistance</p>
+            <div className="text-sm text-quantum-neon mt-1">
+              Current: {getCurrentDirectoryName()}
+            </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="neon-border">
@@ -207,16 +218,9 @@ export function FilesPanel() {
               <CardHeader>
                 <CardTitle className="text-lg font-mono text-quantum-glow">
                   File Browser
-                  {currentDirectory && (
-                    <span className="text-sm font-normal text-quantum-neon ml-2">
-                      - {directories.find(d => d.id === currentDirectory)?.name || 'Unknown'}
-                    </span>
-                  )}
-                  {!currentDirectory && (
-                    <span className="text-sm font-normal text-quantum-neon ml-2">
-                      - Root Directory
-                    </span>
-                  )}
+                  <span className="text-sm font-normal text-quantum-neon ml-2">
+                    - {getCurrentDirectoryName()}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
