@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +30,7 @@ export function FilesPanel() {
 
   // Filter files by current directory
   const currentFiles = files.filter(file => 
-    currentDirectory ? file.parentId === currentDirectory : !file.parentId
+    currentDirectory ? file.parentFolderId === currentDirectory : !file.parentFolderId
   );
 
   // Transform files to legacy format for compatibility with existing components
@@ -118,25 +117,11 @@ export function FilesPanel() {
       createFile({
         name: fileName,
         type: 'circuit',
-        path: currentDirectory ? `/${directories.find(d => d.id === currentDirectory)?.name}/${fileName}` : `/${fileName}`,
-        parentId: currentDirectory,
-        size: 0,
+        parentFolderId: currentDirectory,
+        sizeBytes: 0,
         sizeDisplay: '0 B',
         contentData: {},
-        permissions: {
-          owner: 'current_user',
-          readable: true,
-          writable: true,
-          executable: false,
-          shared: false,
-          public: false
-        },
-        metadata: {
-          version: 'v1.0',
-          description: 'New quantum circuit file'
-        },
         superposition: false,
-        favorite: false,
         tags: ['circuit', 'new']
       });
     }
@@ -145,7 +130,7 @@ export function FilesPanel() {
   const handleCreateNewDirectory = () => {
     const dirName = prompt("Enter directory name:");
     if (dirName) {
-      createDirectory(dirName, currentDirectory);
+      createDirectory(dirName);
     }
   };
 
