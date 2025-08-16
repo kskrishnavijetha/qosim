@@ -43,8 +43,12 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Update file permissions (in a real app, this would update the backend)
-      file.permissions[permission as keyof typeof file.permissions] = enabled;
+      // Update file permissions with type safety
+      const updatedPermissions = { ...file.permissions };
+      if (permission in updatedPermissions && permission !== 'owner') {
+        (updatedPermissions as any)[permission] = enabled;
+        file.permissions = updatedPermissions;
+      }
       
       toast({
         title: "Permission Updated",
@@ -68,32 +72,36 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       
+      const updatedPermissions = { ...file.permissions };
+      
       switch (action) {
         case 'grant-all':
-          Object.keys(file.permissions).forEach(key => {
+          Object.keys(updatedPermissions).forEach(key => {
             if (key !== 'owner') {
-              file.permissions[key as keyof typeof file.permissions] = true;
+              (updatedPermissions as any)[key] = true;
             }
           });
           break;
         case 'revoke-all':
-          Object.keys(file.permissions).forEach(key => {
+          Object.keys(updatedPermissions).forEach(key => {
             if (key !== 'owner') {
-              file.permissions[key as keyof typeof file.permissions] = false;
+              (updatedPermissions as any)[key] = false;
             }
           });
           break;
         case 'readonly':
-          file.permissions.readable = true;
-          file.permissions.writable = false;
-          file.permissions.executable = false;
+          (updatedPermissions as any).readable = true;
+          (updatedPermissions as any).writable = false;
+          (updatedPermissions as any).executable = false;
           break;
         case 'readwrite':
-          file.permissions.readable = true;
-          file.permissions.writable = true;
-          file.permissions.executable = false;
+          (updatedPermissions as any).readable = true;
+          (updatedPermissions as any).writable = true;
+          (updatedPermissions as any).executable = false;
           break;
       }
+      
+      file.permissions = updatedPermissions;
       
       toast({
         title: "Bulk Action Complete",
@@ -141,7 +149,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
           <SelectTrigger className="quantum-input">
             <SelectValue placeholder="Choose a file to manage permissions" />
           </SelectTrigger>
-          <SelectContent className="quantum-panel border-quantum-glow/30 bg-background">
+          <SelectContent className="quantum-panel border-quantum-glow/30 bg-background z-50">
             {files.map((f) => (
               <SelectItem key={f.id} value={f.id}>
                 <div className="flex items-center gap-2">
@@ -198,7 +206,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                       <ChevronDown className="w-4 h-4 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="quantum-panel border-quantum-glow/30 bg-background">
+                  <DropdownMenuContent className="quantum-panel border-quantum-glow/30 bg-background z-50">
                     <DropdownMenuItem onClick={() => handleBulkPermissionAction('grant-all')}>
                       <Unlock className="w-4 h-4 mr-2" />
                       Grant All Permissions
@@ -235,7 +243,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                   const Icon = permissionIcons[key as keyof typeof permissionIcons];
                   return (
                     <div key={key} className="flex flex-col items-center gap-2 p-3 rounded-lg border border-muted/20">
-                      <Icon className={`w-6 h-6 ${getPermissionColor(enabled)}`} />
+                      <Icon className={`w-6 h-6 ${getPermissionColor(Boolean(enabled))}`} />
                       <span className="text-sm font-medium capitalize">{key}</span>
                       <Badge 
                         variant={enabled ? "default" : "secondary"}
@@ -271,7 +279,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     </div>
                     <Switch
                       id="readable"
-                      checked={file.permissions.readable}
+                      checked={Boolean((file.permissions as any).readable)}
                       onCheckedChange={(checked) => handlePermissionChange('readable', checked)}
                       disabled={isLoading}
                     />
@@ -287,7 +295,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     </div>
                     <Switch
                       id="writable"
-                      checked={file.permissions.writable}
+                      checked={Boolean((file.permissions as any).writable)}
                       onCheckedChange={(checked) => handlePermissionChange('writable', checked)}
                       disabled={isLoading}
                     />
@@ -303,7 +311,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     </div>
                     <Switch
                       id="executable"
-                      checked={file.permissions.executable}
+                      checked={Boolean((file.permissions as any).executable)}
                       onCheckedChange={(checked) => handlePermissionChange('executable', checked)}
                       disabled={isLoading}
                     />
@@ -324,7 +332,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     </div>
                     <Switch
                       id="shared"
-                      checked={file.permissions.shared}
+                      checked={Boolean((file.permissions as any).shared)}
                       onCheckedChange={(checked) => handlePermissionChange('shared', checked)}
                       disabled={isLoading}
                     />
@@ -340,7 +348,7 @@ export function QFSPermissionManager({ files, selectedFile, onClose }: QFSPermis
                     </div>
                     <Switch
                       id="public"
-                      checked={file.permissions.public}
+                      checked={Boolean((file.permissions as any).public)}
                       onCheckedChange={(checked) => handlePermissionChange('public', checked)}
                       disabled={isLoading}
                     />
