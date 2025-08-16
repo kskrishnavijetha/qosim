@@ -23,6 +23,8 @@ export function FilesPanel() {
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
 
+  console.log('FilesPanel render - showFileViewer:', showFileViewer);
+  console.log('FilesPanel render - selectedFile:', selectedFile?.name);
   console.log('FilesPanel - files count:', files.length);
   console.log('FilesPanel - loading:', loading);
   console.log('FilesPanel - current directory:', currentDirectory);
@@ -84,18 +86,25 @@ export function FilesPanel() {
   const handleFileSelect = (fileId: string) => {
     console.log('handleFileSelect called with fileId:', fileId);
     const file = files.find(f => f.id === fileId);
+    console.log('Found file:', file ? file.name : 'NOT FOUND');
+    console.log('All files:', files.map(f => ({ id: f.id, name: f.name })));
+    
     if (file) {
-      console.log('Found file, setting selected file:', file.name);
+      console.log('Setting selected file and opening viewer:', file.name);
       setSelectedFile(file);
       setShowFileViewer(true);
+      console.log('State set - selectedFile should be:', file.name);
+      console.log('State set - showFileViewer should be:', true);
     } else {
       console.log('File not found for id:', fileId);
+      console.log('Available file IDs:', files.map(f => f.id));
     }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
     console.log('Context action:', action, 'for file:', fileId);
     const file = files.find(f => f.id === fileId);
+    console.log('Context action - found file:', file?.name);
     
     if (action === "versions") {
       setSelectedFile(file || null);
@@ -110,7 +119,9 @@ export function FilesPanel() {
     } else if (action === "view" || action === "open" || action === "view-details") {
       // Handle all view-related actions
       console.log('Opening file viewer for:', fileId);
+      console.log('Before handleFileSelect - showFileViewer:', showFileViewer);
       handleFileSelect(fileId);
+      console.log('After handleFileSelect - showFileViewer should be true');
     }
   };
 
@@ -270,7 +281,9 @@ export function FilesPanel() {
 
         {/* File Viewer Dialog */}
         <Dialog open={showFileViewer} onOpenChange={(open) => {
-          console.log('File viewer dialog state changing to:', open);
+          console.log('File viewer dialog onOpenChange triggered, open:', open);
+          console.log('Current showFileViewer state:', showFileViewer);
+          console.log('Current selectedFile:', selectedFile?.name);
           if (!open) {
             handleCloseFileViewer();
           }
