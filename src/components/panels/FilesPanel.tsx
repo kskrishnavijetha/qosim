@@ -9,11 +9,14 @@ import { FileSystemStats } from "./FileSystemStats";
 import { QuantumProperties } from "./QuantumProperties";
 import { FileItem } from "./FileItem";
 import { FileViewer } from "./FileViewer";
+import { QFSDirectoryTree } from "../qfs/QFSDirectoryTree";
 import { useQuantumFiles, QuantumFile } from "@/hooks/useQuantumFiles";
+import { useEnhancedQFS } from "@/hooks/useEnhancedQFS";
 import { ShareDialog } from "../dialogs/ShareDialog";
 
 export function FilesPanel() {
   const { files, loading, createFile, updateFile, deleteFile, toggleFavorite, getFileStats } = useQuantumFiles();
+  const { directories, currentDirectory, navigateToDirectory, createDirectory } = useEnhancedQFS();
   
   const [selectedFile, setSelectedFile] = useState<QuantumFile | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
@@ -23,9 +26,16 @@ export function FilesPanel() {
 
   console.log('FilesPanel - files count:', files.length);
   console.log('FilesPanel - loading:', loading);
+  console.log('FilesPanel - current directory:', currentDirectory);
+  console.log('FilesPanel - directories:', directories.length);
+
+  // Filter files by current directory
+  const currentFiles = files.filter(file => 
+    currentDirectory ? file.parentId === currentDirectory : !file.parentId
+  );
 
   // Transform files to legacy format for compatibility with existing components
-  const legacyFiles = files.map(file => ({
+  const legacyFiles = currentFiles.map(file => ({
     id: file.id,
     name: file.name,
     type: file.type,
@@ -56,6 +66,11 @@ export function FilesPanel() {
   const handleDrop = (e: React.DragEvent, fileId: string) => {
     e.preventDefault();
     handleDragEnd();
+  };
+
+  const handleDirectoryNavigate = (directoryId?: string) => {
+    console.log('Navigating to directory:', directoryId);
+    navigateToDirectory(directoryId);
   };
 
   const handleFileSelect = (fileId: string) => {
@@ -97,6 +112,43 @@ export function FilesPanel() {
     setSelectedFile(null);
   };
 
+  const handleCreateNewFile = () => {
+    const fileName = prompt("Enter file name:");
+    if (fileName) {
+      createFile({
+        name: fileName,
+        type: 'circuit',
+        path: currentDirectory ? `/${directories.find(d => d.id === currentDirectory)?.name}/${fileName}` : `/${fileName}`,
+        parentId: currentDirectory,
+        size: 0,
+        sizeDisplay: '0 B',
+        contentData: {},
+        permissions: {
+          owner: 'current_user',
+          readable: true,
+          writable: true,
+          executable: false,
+          shared: false,
+          public: false
+        },
+        metadata: {
+          version: 'v1.0',
+          description: 'New quantum circuit file'
+        },
+        superposition: false,
+        favorite: false,
+        tags: ['circuit', 'new']
+      });
+    }
+  };
+
+  const handleCreateNewDirectory = () => {
+    const dirName = prompt("Enter directory name:");
+    if (dirName) {
+      createDirectory(dirName, currentDirectory);
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -105,42 +157,6 @@ export function FilesPanel() {
           <div className="text-center">
             <p className="text-muted-foreground">Loading quantum files...</p>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Empty state
-  if (files.length === 0) {
-    return (
-      <div className="h-full overflow-auto quantum-grid">
-        <div className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-quantum-glow">Quantum File System</h2>
-              <p className="text-muted-foreground font-mono">QFS - Enhanced with AI assistance</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="neon-border">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload
-              </Button>
-              <Button className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
-                <Plus className="w-4 h-4 mr-2" />
-                New File
-              </Button>
-            </div>
-          </div>
-
-          <Card className="quantum-panel neon-border">
-            <CardContent className="p-12 text-center">
-              <div className="text-muted-foreground">
-                <Upload className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No files uploaded yet</h3>
-                <p className="text-sm">Upload your first quantum file or create a new one to get started.</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     );
@@ -160,9 +176,13 @@ export function FilesPanel() {
               <Upload className="w-4 h-4 mr-2" />
               Upload
             </Button>
-            <Button className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
+            <Button onClick={handleCreateNewFile} className="bg-quantum-glow hover:bg-quantum-glow/80 text-black quantum-glow">
               <Plus className="w-4 h-4 mr-2" />
               New File
+            </Button>
+            <Button onClick={handleCreateNewDirectory} variant="outline" className="neon-border">
+              <Plus className="w-4 h-4 mr-2" />
+              New Folder
             </Button>
           </div>
         </div>
@@ -170,49 +190,76 @@ export function FilesPanel() {
         {/* File System Stats */}
         <FileSystemStats favoriteCount={getFileStats.favoriteCount} />
 
-        {/* File Browser */}
-        <Card className="quantum-panel neon-border">
-          <CardHeader>
-            <CardTitle className="text-lg font-mono text-quantum-glow">File Browser</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {legacyFiles.map((file) => (
-                <FileItem
-                  key={file.id}
-                  file={file}
-                  draggedItem={draggedItem}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onDragEnd={handleDragEnd}
-                  onToggleFavorite={handleToggleFavorite}
-                  onContextAction={handleContextAction}
-                  onFileSelect={handleFileSelect}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Directory Tree */}
+          <div className="lg:col-span-1">
+            <Card className="quantum-panel neon-border">
+              <CardHeader>
+                <CardTitle className="text-sm font-mono text-quantum-glow">Directory Tree</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <QFSDirectoryTree
+                  directories={directories}
+                  currentDirectory={currentDirectory}
+                  onNavigate={handleDirectoryNavigate}
                 />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* File Browser */}
+          <div className="lg:col-span-3">
+            <Card className="quantum-panel neon-border">
+              <CardHeader>
+                <CardTitle className="text-lg font-mono text-quantum-glow">
+                  File Browser
+                  {currentDirectory && (
+                    <span className="text-sm font-normal text-quantum-neon ml-2">
+                      - {directories.find(d => d.id === currentDirectory)?.name || 'Unknown'}
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {legacyFiles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      {currentDirectory ? 'No files in this directory' : 'No files uploaded yet'}
+                    </p>
+                    <Button 
+                      onClick={handleCreateNewFile} 
+                      variant="outline" 
+                      className="mt-4 neon-border"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create First File
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {legacyFiles.map((file) => (
+                      <FileItem
+                        key={file.id}
+                        file={file}
+                        draggedItem={draggedItem}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        onDragEnd={handleDragEnd}
+                        onToggleFavorite={handleToggleFavorite}
+                        onContextAction={handleContextAction}
+                        onFileSelect={handleFileSelect}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* Quantum File Properties */}
         <QuantumProperties files={legacyFiles} />
-
-        {/* Debug Button */}
-        <Card className="quantum-panel neon-border">
-          <CardContent className="p-4">
-            <Button 
-              onClick={() => {
-                if (files.length > 0) {
-                  handleFileSelect(files[0].id);
-                }
-              }}
-              variant="outline"
-            >
-              Debug: Open First File
-            </Button>
-          </CardContent>
-        </Card>
 
         {/* File Viewer Dialog */}
         <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>

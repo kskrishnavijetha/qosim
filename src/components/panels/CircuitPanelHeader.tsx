@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,17 +84,17 @@ export function CircuitPanelHeader({
           description: "Circuit executed successfully!",
         });
 
-        // Create and dispatch simulation event
+        // Create and dispatch simulation event - using correct property names
         const simulationEvent = new CustomEvent('simulationComplete', { 
           detail: {
             stateVector: result.stateVector || [[1, 0]],
-            measurementProbabilities: result.measurementProbabilities || [0.5, 0.5],
-            measurements: result.measurements || { '0': 512, '1': 512 },
+            measurementProbabilities: result.measurementProbabilities || { '0': 0.5, '1': 0.5 },
+            measurements: result.measurementProbabilities || { '0': 512, '1': 512 }, // Use measurementProbabilities instead of measurements
             blochSphereData: result.blochSphereData || [],
             executionTime: result.executionTime || 0,
             backend: result.backend || 'local',
             entanglement: result.entanglement || [],
-            counts: result.counts || { '0': 512, '1': 512 },
+            counts: result.measurementProbabilities || { '0': 512, '1': 512 },
             success: true
           }
         });
