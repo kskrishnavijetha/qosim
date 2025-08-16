@@ -63,14 +63,10 @@ export function FileItem({
   const handleFileClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('FileItem clicked:', file.name, file.id, 'type:', file.type);
     
     // Only call onFileSelect for non-folder types
     if (file.type !== "folder" && onFileSelect) {
-      console.log('Calling onFileSelect with:', file.id);
       onFileSelect(file.id);
-    } else {
-      console.log('Skipping file select - type is folder or no onFileSelect handler');
     }
   };
 
@@ -79,7 +75,6 @@ export function FileItem({
       e.preventDefault();
       e.stopPropagation();
     }
-    console.log('Context menu action triggered:', action, 'for file:', file.id);
     onContextAction(action, file.id);
   };
 
@@ -167,7 +162,7 @@ export function FileItem({
       </ContextMenuTrigger>
       
       <ContextMenuContent className="quantum-panel border-quantum-glow/30">
-        <ContextMenuItem onClick={(e) => handleContextMenuAction("view", e)}>
+        <ContextMenuItem onClick={(e) => handleContextMenuAction("view-details", e)}>
           <Eye className="w-4 h-4 mr-2" />
           View Details
         </ContextMenuItem>

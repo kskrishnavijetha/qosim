@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,26 +24,14 @@ export function FilesPanel() {
   const [shareFile, setShareFile] = useState<any>(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
 
-  console.log('FilesPanel render - showFileViewer:', showFileViewer);
-  console.log('FilesPanel render - selectedFile:', selectedFile?.name);
-  console.log('FilesPanel - files count:', files.length);
-  console.log('FilesPanel - loading:', loading);
-  console.log('FilesPanel - current directory:', currentDirectory);
-  console.log('FilesPanel - directories:', directories.length);
-
   // Filter files by current directory
   const currentFiles = files.filter(file => {
     if (currentDirectory) {
-      // Show files that belong to the current directory
       return file.parentFolderId === currentDirectory;
     } else {
-      // Show files that don't have a parent (root level files)
       return !file.parentFolderId;
     }
   });
-
-  console.log('FilesPanel - current files after filtering:', currentFiles.length);
-  console.log('FilesPanel - filtered files:', currentFiles.map(f => ({ name: f.name, parentId: f.parentFolderId })));
 
   // Transform files to legacy format for compatibility with existing components
   const legacyFiles = currentFiles.map(file => ({
@@ -79,49 +68,47 @@ export function FilesPanel() {
   };
 
   const handleDirectoryNavigate = (directoryId?: string) => {
-    console.log('Navigating to directory:', directoryId);
     navigateToDirectory(directoryId);
   };
 
   const handleFileSelect = (fileId: string) => {
-    console.log('handleFileSelect called with fileId:', fileId);
     const file = files.find(f => f.id === fileId);
-    console.log('Found file:', file ? file.name : 'NOT FOUND');
-    console.log('All files:', files.map(f => ({ id: f.id, name: f.name })));
-    
     if (file) {
-      console.log('Setting selected file and opening viewer:', file.name);
       setSelectedFile(file);
       setShowFileViewer(true);
-      console.log('State set - selectedFile should be:', file.name);
-      console.log('State set - showFileViewer should be:', true);
-    } else {
-      console.log('File not found for id:', fileId);
-      console.log('Available file IDs:', files.map(f => f.id));
     }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
-    console.log('Context action:', action, 'for file:', fileId);
     const file = files.find(f => f.id === fileId);
-    console.log('Context action - found file:', file?.name);
     
-    if (action === "versions") {
-      setSelectedFile(file || null);
-      setShowVersionHistory(true);
-    } else if (action === "share") {
-      if (file) {
-        setShareFile(file);
-        setShowShareDialog(true);
-      }
-    } else if (action === "delete") {
-      deleteFile(fileId);
-    } else if (action === "view" || action === "open" || action === "view-details") {
-      // Handle all view-related actions
-      console.log('Opening file viewer for:', fileId);
-      console.log('Before handleFileSelect - showFileViewer:', showFileViewer);
-      handleFileSelect(fileId);
-      console.log('After handleFileSelect - showFileViewer should be true');
+    switch (action) {
+      case "view":
+      case "view-details":
+        if (file) {
+          setSelectedFile(file);
+          setShowFileViewer(true);
+        }
+        break;
+      case "versions":
+        if (file) {
+          setSelectedFile(file);
+          setShowVersionHistory(true);
+        }
+        break;
+      case "share":
+        if (file) {
+          setShareFile(file);
+          setShowShareDialog(true);
+        }
+        break;
+      case "delete":
+        if (file) {
+          deleteFile(fileId);
+        }
+        break;
+      default:
+        console.log('Unhandled context action:', action);
     }
   };
 
@@ -130,7 +117,6 @@ export function FilesPanel() {
   };
 
   const handleCloseFileViewer = () => {
-    console.log('Closing file viewer');
     setShowFileViewer(false);
     setSelectedFile(null);
   };
@@ -154,7 +140,6 @@ export function FilesPanel() {
   const handleCreateNewDirectory = () => {
     const dirName = prompt("Enter directory name:");
     if (dirName) {
-      console.log('Creating directory:', dirName);
       createDirectory(dirName);
     }
   };
@@ -280,14 +265,7 @@ export function FilesPanel() {
         <QuantumProperties files={legacyFiles} />
 
         {/* File Viewer Dialog */}
-        <Dialog open={showFileViewer} onOpenChange={(open) => {
-          console.log('File viewer dialog onOpenChange triggered, open:', open);
-          console.log('Current showFileViewer state:', showFileViewer);
-          console.log('Current selectedFile:', selectedFile?.name);
-          if (!open) {
-            handleCloseFileViewer();
-          }
-        }}>
+        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
           <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>
