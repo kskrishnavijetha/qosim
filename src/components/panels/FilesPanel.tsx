@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +107,9 @@ export function FilesPanel() {
       }
     } else if (action === "delete") {
       deleteFile(fileId);
-    } else if (action === "view" || action === "open") {
+    } else if (action === "view" || action === "open" || action === "view-details") {
+      // Handle all view-related actions
+      console.log('Opening file viewer for:', fileId);
       handleFileSelect(fileId);
     }
   };
@@ -118,6 +119,7 @@ export function FilesPanel() {
   };
 
   const handleCloseFileViewer = () => {
+    console.log('Closing file viewer');
     setShowFileViewer(false);
     setSelectedFile(null);
   };
@@ -267,11 +269,16 @@ export function FilesPanel() {
         <QuantumProperties files={legacyFiles} />
 
         {/* File Viewer Dialog */}
-        <Dialog open={showFileViewer} onOpenChange={setShowFileViewer}>
+        <Dialog open={showFileViewer} onOpenChange={(open) => {
+          console.log('File viewer dialog state changing to:', open);
+          if (!open) {
+            handleCloseFileViewer();
+          }
+        }}>
           <DialogContent className="max-w-6xl max-h-[90vh] h-[80vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>
-                {selectedFile ? selectedFile.name : 'File Viewer'}
+                {selectedFile ? `File Viewer - ${selectedFile.name}` : 'File Viewer'}
               </DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden">

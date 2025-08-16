@@ -74,6 +74,15 @@ export function FileItem({
     }
   };
 
+  const handleContextMenuAction = (action: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Context menu action triggered:', action, 'for file:', file.id);
+    onContextAction(action, file.id);
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -158,30 +167,30 @@ export function FileItem({
       </ContextMenuTrigger>
       
       <ContextMenuContent className="quantum-panel border-quantum-glow/30">
-        <ContextMenuItem onClick={() => onContextAction("view", file.id)}>
+        <ContextMenuItem onClick={(e) => handleContextMenuAction("view", e)}>
           <Eye className="w-4 h-4 mr-2" />
-          View
+          View Details
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => onContextAction("rename", file.id)}>
+        <ContextMenuItem onClick={(e) => handleContextMenuAction("rename", e)}>
           <Edit className="w-4 h-4 mr-2" />
           Rename
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => onContextAction("duplicate", file.id)}>
+        <ContextMenuItem onClick={(e) => handleContextMenuAction("duplicate", e)}>
           <Copy className="w-4 h-4 mr-2" />
           Duplicate
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => onContextAction("share", file.id)}>
+        <ContextMenuItem onClick={(e) => handleContextMenuAction("share", e)}>
           <Share className="w-4 h-4 mr-2" />
           Share
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem onClick={() => onContextAction("versions", file.id)}>
+        <ContextMenuItem onClick={(e) => handleContextMenuAction("versions", e)}>
           <History className="w-4 h-4 mr-2" />
           Version History
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem 
-          onClick={() => onContextAction("delete", file.id)}
+          onClick={(e) => handleContextMenuAction("delete", e)}
           className="text-red-400"
         >
           <Trash2 className="w-4 h-4 mr-2" />
