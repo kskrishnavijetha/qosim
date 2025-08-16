@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,18 +83,19 @@ export function FilesPanel() {
   };
 
   const handleFileSelect = (fileId: string) => {
-    console.log('handleFileSelect called with:', fileId);
+    console.log('handleFileSelect called with fileId:', fileId);
     const file = files.find(f => f.id === fileId);
     if (file) {
-      console.log('Setting selected file:', file.name);
+      console.log('Found file, setting selected file:', file.name);
       setSelectedFile(file);
       setShowFileViewer(true);
     } else {
-      console.log('File not found:', fileId);
+      console.log('File not found for id:', fileId);
     }
   };
 
   const handleContextAction = (action: string, fileId: string) => {
+    console.log('Context action:', action, 'for file:', fileId);
     const file = files.find(f => f.id === fileId);
     
     if (action === "versions") {
@@ -244,11 +246,11 @@ export function FilesPanel() {
                       <FileItem
                         key={file.id}
                         file={file}
-                        draggedItem={null}
-                        onDragStart={() => {}}
-                        onDragOver={() => {}}
-                        onDrop={() => {}}
-                        onDragEnd={() => {}}
+                        draggedItem={draggedItem}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        onDragEnd={handleDragEnd}
                         onToggleFavorite={handleToggleFavorite}
                         onContextAction={handleContextAction}
                         onFileSelect={handleFileSelect}
