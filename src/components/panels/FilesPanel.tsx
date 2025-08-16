@@ -139,8 +139,8 @@ export function FilesPanel() {
   const handleCreateNewDirectory = () => {
     const dirName = prompt("Enter directory name:");
     if (dirName) {
-      console.log('Creating directory:', dirName, 'in parent:', currentDirectory);
-      createDirectory(dirName, currentDirectory);
+      console.log('Creating directory:', dirName);
+      createDirectory(dirName);
     }
   };
 
