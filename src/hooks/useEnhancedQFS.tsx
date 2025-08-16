@@ -168,10 +168,12 @@ export function useEnhancedQFS() {
   // ============= DIRECTORY OPERATIONS =============
 
   const createDirectory = useCallback((name: string) => {
-    return qfs.createDirectory(name, currentDirectory);
+    const newDir = qfs.createDirectory(name, currentDirectory);
+    return newDir;
   }, [qfs, currentDirectory]);
 
   const navigateToDirectory = useCallback((directoryId?: string) => {
+    console.log('Navigating to directory:', directoryId);
     setCurrentDirectory(directoryId);
   }, []);
 
@@ -314,14 +316,85 @@ export function useEnhancedQFS() {
     
     // File operations
     saveFile,
-    loadFile,
-    deleteFile,
+    loadFile: useCallback((fileId: string) => qfs.loadFile(fileId), [qfs]),
+    deleteFile: useCallback(async (fileId: string) => {
+      try {
+        const file = qfs.loadFile(fileId);
+        if (!file) return false;
+
+        // Delete from QFS
+        const qfsSuccess = qfs.deleteFile(fileId);
+        
+        // Find and delete from Supabase
+        const supabaseFile = quantumFiles.files.find(f => f.name === file.name);
+        if (supabaseFile) {
+          await quantumFiles.deleteFile(supabaseFile.id);
+        }
+
+        return qfsSuccess;
+      } catch (error) {
+        console.error('Error deleting file:', error);
+        toast.error('Failed to delete file');
+        return false;
+      }
+    }, [qfs, quantumFiles]),
     files: getFilteredFiles(),
     
     // QASM operations
-    exportQASM,
-    importQASM,
-    handleQASMFileUpload,
+    exportQASM: useCallback((fileId: string) => {
+      const qasmContent = qfs.exportQASM(fileId);
+      if (qasmContent) {
+        const blob = new Blob([qasmContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${qfs.loadFile(fileId)?.name || 'circuit'}.qasm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('QASM file exported successfully');
+      }
+      return qasmContent;
+    }, [qfs]),
+    importQASM: useCallback((qasmContent: string, fileName: string) => {
+      const file = qfs.importQASM(qasmContent, fileName);
+      if (file) {
+        // Also save to Supabase
+        quantumFiles.createFile({
+          name: file.name,
+          type: 'qasm',
+          sizeBytes: file.size,
+          sizeDisplay: file.sizeDisplay,
+          contentData: file.contentData,
+          superposition: false,
+          tags: file.tags
+        });
+      }
+      return file;
+    }, [qfs, quantumFiles]),
+    handleQASMFileUpload: useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        const importedFile = qfs.importQASM(content, file.name.replace('.qasm', ''));
+        if (importedFile) {
+          quantumFiles.createFile({
+            name: importedFile.name,
+            type: 'qasm',
+            sizeBytes: importedFile.size,
+            sizeDisplay: importedFile.sizeDisplay,
+            contentData: importedFile.contentData,
+            superposition: false,
+            tags: importedFile.tags
+          });
+        }
+      };
+      reader.readAsText(file);
+    }, [qfs, quantumFiles]),
     
     // Directory operations
     createDirectory,
@@ -332,18 +405,61 @@ export function useEnhancedQFS() {
     directories: qfs.getAllDirectories(),
     
     // Permission management
-    setFilePermissions,
-    checkFilePermission,
+    setFilePermissions: useCallback((fileId: string, permissions: any) => {
+      return qfs.setPermissions(fileId, permissions);
+    }, [qfs]),
+    checkFilePermission: useCallback((fileId: string, permission: 'read' | 'write' | 'execute') => {
+      return qfs.checkPermission(fileId, permission);
+    }, [qfs]),
     
     // Search and filter
-    searchFiles,
-    filterByType,
+    searchFiles: useCallback((query: string) => {
+      setSearchQuery(query);
+    }, []),
+    filterByType: useCallback((type: string) => {
+      setSelectedType(type);
+    }, []),
     searchQuery,
     selectedType,
     
     // Import/Export
-    exportFileAsJSON,
-    importJSONFile,
+    exportFileAsJSON: useCallback((fileId: string) => {
+      const file = qfs.loadFile(fileId);
+      if (!file) return;
+
+      const exportData = {
+        ...file,
+        exportedAt: new Date().toISOString(),
+        exportedBy: 'QFS'
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${file.name}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success('File exported as JSON');
+    }, [qfs]),
+    importJSONFile: useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target?.result as string);
+          saveFile(data.name || 'imported_file', data.contentData || data, data.type || 'data');
+        } catch (error) {
+          toast.error('Invalid JSON file format');
+        }
+      };
+      reader.readAsText(file);
+    }, [saveFile]),
     
     // Stats
     stats: getEnhancedStats(),
