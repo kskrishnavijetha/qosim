@@ -1,209 +1,160 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Activity, CheckCircle, AlertCircle, Mail } from 'lucide-react';
+import { SecureAuthForm } from '@/components/security/SecureAuthForm';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { generateCSRFToken } from '@/lib/security';
 
-export default function AuthPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
-  const { signIn, signUp, user } = useAuth();
+const AuthPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [loading, setLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState('');
 
   useEffect(() => {
+    // Generate CSRF token on component mount
+    setCsrfToken(generateCSRFToken());
+    
+    // Redirect if already authenticated
     if (user) {
       navigate('/app');
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    // Check for verification-related URL parameters
-    const message = searchParams.get('message');
-    const errorDescription = searchParams.get('error_description');
-    const type = searchParams.get('type');
-
-    if (type === 'signup') {
-      setSuccess('Account created successfully! Please check your email and click the verification link to complete your registration.');
-      setActiveTab('signin');
-    } else if (message === 'Email confirmed') {
-      setSuccess('Email verified successfully! You can now sign in with your credentials.');
-      setActiveTab('signin');
-    } else if (errorDescription) {
-      setError(errorDescription);
-    }
-  }, [searchParams]);
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async (email: string, password: string, displayName?: string) => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-    setInfo(null);
-
-    const { error } = await signIn(email, password);
     
-    if (error) {
-      if (error.message.includes('Email not confirmed')) {
-        setError('Please check your email and click the verification link before signing in.');
-        setInfo('Didn\'t receive the email? Try checking your spam folder or sign up again to receive a new verification email.');
+    try {
+      if (mode === 'signup') {
+        const redirectUrl = `${window.location.origin}/app`;
+        
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              display_name: displayName,
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        // Log security event
+        if (data.user) {
+          await supabase
+            .from('security_audit_log')
+            .insert({
+              user_id: data.user.id,
+              event_type: 'signup',
+              event_data: { email },
+              ip_address: null, // Will be populated by edge function if needed
+              user_agent: navigator.userAgent,
+            });
+        }
+
+        return { error: null };
       } else {
-        setError(error.message);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          // Log failed login attempt
+          await supabase
+            .from('security_audit_log')
+            .insert({
+              user_id: null,
+              event_type: 'failed_login',
+              event_data: { email, reason: error.message },
+              ip_address: null,
+              user_agent: navigator.userAgent,
+            });
+          throw error;
+        }
+
+        // Log successful login
+        if (data.user) {
+          await supabase
+            .from('security_audit_log')
+            .insert({
+              user_id: data.user.id,
+              event_type: 'login',
+              event_data: { email },
+              ip_address: null,
+              user_agent: navigator.userAgent,
+            });
+        }
+
+        return { error: null };
       }
+    } catch (error: any) {
+      console.error('Authentication error:', error);
+      return { error };
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    setInfo(null);
-
-    const result = await signUp(email, password, displayName);
-    
-    if (result.error) {
-      setError(result.error.message);
-    } else {
-      setSuccess('Account created! Please check your email for a verification link.');
-      setInfo('After clicking the verification link in your email, return here to sign in.');
-      setActiveTab('signin');
-    }
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-quantum-void flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Activity className="w-8 h-8 text-quantum-glow particle-animation" />
-            <h1 className="text-2xl font-bold text-quantum-glow">Quantum OS</h1>
-          </div>
-          <p className="text-quantum-neon font-mono">Enter the quantum realm</p>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold">QoSim</h1>
+          <p className="text-muted-foreground">
+            {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+          </p>
         </div>
 
-        <Card className="quantum-panel neon-border">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-quantum-glow">Access Your Workspace</CardTitle>
-            <CardDescription className="text-quantum-neon">
-              Sign in to save and sync your quantum circuits across devices
+            <CardTitle>
+              {mode === 'signin' ? 'Sign In' : 'Sign Up'}
+            </CardTitle>
+            <CardDescription>
+              {mode === 'signin' 
+                ? 'Enter your credentials to access your quantum workspace'
+                : 'Create an account to start building quantum circuits'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-
-              {error && (
-                <Alert className="border-red-500/50 bg-red-500/10">
-                  <AlertCircle className="h-4 w-4 text-red-400" />
-                  <AlertDescription className="text-red-400">{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {success && (
-                <Alert className="border-green-500/50 bg-green-500/10">
-                  <CheckCircle className="h-4 w-4 text-green-400" />
-                  <AlertDescription className="text-green-400">{success}</AlertDescription>
-                </Alert>
-              )}
-
-              {info && (
-                <Alert className="border-blue-500/50 bg-blue-500/10">
-                  <Mail className="h-4 w-4 text-blue-400" />
-                  <AlertDescription className="text-blue-400">{info}</AlertDescription>
-                </Alert>
-              )}
-
-              <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div>
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="quantum-panel"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="quantum-panel"
-                    />
-                  </div>
-                  <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? 'Signing in...' : 'Sign In'}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div>
-                    <Label htmlFor="signup-name">Display Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="quantum-panel"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="quantum-panel"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="quantum-panel"
-                    />
-                  </div>
-                  <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? 'Creating account...' : 'Sign Up'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <SecureAuthForm
+              mode={mode}
+              onSubmit={handleAuth}
+              loading={loading}
+            />
+            
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                disabled={loading}
+              >
+                {mode === 'signin' 
+                  ? "Don't have an account? Sign up" 
+                  : 'Already have an account? Sign in'
+                }
+              </button>
+            </div>
           </CardContent>
         </Card>
+
+        <div className="text-xs text-center text-muted-foreground space-y-1">
+          <p>🔒 Your data is encrypted and secure</p>
+          <p>🛡️ Protected by advanced security measures</p>
+        </div>
+
+        {/* Hidden CSRF token for additional security */}
+        <input type="hidden" name="csrf_token" value={csrfToken} />
       </div>
     </div>
   );
-}
+};
+
+export default AuthPage;
