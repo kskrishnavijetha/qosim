@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -134,14 +135,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       console.log('Custom verification email sent');
 
-      // Create the user account with email confirmation completely disabled
+      // Create the user account with Supabase's email confirmation completely disabled
       const { data, error } = await supabase.auth.signUp({
         email: sanitizeInput(email),
         password,
         options: {
-          emailRedirectTo: undefined, // Disable redirect
+          emailRedirectTo: undefined, // Disable any redirect
+          captchaToken: undefined, // No captcha
           data: {
             display_name: displayName ? sanitizeInput(displayName) : undefined,
+            email_confirm: true, // Try to bypass email confirmation
           },
         },
       });
@@ -149,24 +152,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         console.error('Sign up error:', error);
         return { error: { message: 'Failed to create account' } };
-      }
-
-      // Immediately confirm the user's email to bypass Supabase's email confirmation
-      if (data.user) {
-        try {
-          // This is an admin operation that bypasses email confirmation
-          const { error: confirmError } = await supabase.auth.admin.updateUserById(
-            data.user.id,
-            { email_confirm: true }
-          );
-          
-          if (confirmError) {
-            console.log('Could not auto-confirm email, user will need to verify manually');
-          }
-        } catch (adminError) {
-          // This will fail in client-side code, which is expected
-          console.log('Admin confirmation not available on client side');
-        }
       }
 
       console.log('Sign up successful:', data.user?.email);
