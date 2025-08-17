@@ -71,14 +71,9 @@ export function useEmailVerification() {
 
       if (updateError) throw updateError;
 
-      // Update user email_confirmed_at in auth.users if needed
-      const { error: confirmError } = await supabase.auth.updateUser({
-        email_confirm: true
-      });
-
-      if (confirmError) {
-        console.warn('Could not update email confirmation status:', confirmError);
-      }
+      // Note: Supabase auth doesn't have email_confirm property in updateUser
+      // The email verification should be handled by auth.users table directly
+      // This is typically managed by Supabase's built-in email confirmation flow
 
       toast.success('Email verified successfully!');
       return { success: true, userId: tokenData.user_id };
