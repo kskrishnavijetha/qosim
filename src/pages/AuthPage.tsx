@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Activity, CheckCircle } from 'lucide-react';
+import { Activity, CheckCircle, AlertCircle, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthPage() {
@@ -16,9 +16,12 @@ export default function AuthPage() {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (user) {
@@ -26,16 +29,39 @@ export default function AuthPage() {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    // Check for verification-related URL parameters
+    const message = searchParams.get('message');
+    const errorDescription = searchParams.get('error_description');
+    const type = searchParams.get('type');
+
+    if (type === 'signup') {
+      setSuccess('Account created successfully! Please check your email and click the verification link to complete your registration.');
+      setActiveTab('signin');
+    } else if (message === 'Email confirmed') {
+      setSuccess('Email verified successfully! You can now sign in with your credentials.');
+      setActiveTab('signin');
+    } else if (errorDescription) {
+      setError(errorDescription);
+    }
+  }, [searchParams]);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
+    setInfo(null);
 
     const { error } = await signIn(email, password);
     
     if (error) {
-      setError(error.message);
+      if (error.message.includes('Email not confirmed')) {
+        setError('Please check your email and click the verification link before signing in.');
+        setInfo('Didn\'t receive the email? Try checking your spam folder or sign up again to receive a new verification email.');
+      } else {
+        setError(error.message);
+      }
     }
     setLoading(false);
   };
@@ -45,13 +71,16 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+    setInfo(null);
 
     const result = await signUp(email, password, displayName);
     
     if (result.error) {
       setError(result.error.message);
     } else {
-      setSuccess('Account created successfully! Please check your email to verify your account and complete the registration.');
+      setSuccess('Account created! Please check your email for a verification link.');
+      setInfo('After clicking the verification link in your email, return here to sign in.');
+      setActiveTab('signin');
     }
     setLoading(false);
   };
@@ -75,7 +104,7 @@ export default function AuthPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="space-y-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -83,6 +112,7 @@ export default function AuthPage() {
 
               {error && (
                 <Alert className="border-red-500/50 bg-red-500/10">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
                   <AlertDescription className="text-red-400">{error}</AlertDescription>
                 </Alert>
               )}
@@ -91,6 +121,13 @@ export default function AuthPage() {
                 <Alert className="border-green-500/50 bg-green-500/10">
                   <CheckCircle className="h-4 w-4 text-green-400" />
                   <AlertDescription className="text-green-400">{success}</AlertDescription>
+                </Alert>
+              )}
+
+              {info && (
+                <Alert className="border-blue-500/50 bg-blue-500/10">
+                  <Mail className="h-4 w-4 text-blue-400" />
+                  <AlertDescription className="text-blue-400">{info}</AlertDescription>
                 </Alert>
               )}
 

@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -66,39 +68,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const sendCustomVerificationEmail = async (email: string, token: string) => {
-    try {
-      const response = await supabase.functions.invoke('send-verification-email', {
-        body: {
-          email,
-          token,
-          redirectUrl: 'https://qosim.app',
-        },
-      });
-
-      if (response.error) {
-        throw new Error('Failed to send verification email');
-      }
-    } catch (error) {
-      console.error('Error sending custom verification email:', error);
-    }
-  };
-
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting sign in for:', email);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (error) {
+      console.error('Sign in error:', error);
+    }
+    
     return { error };
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    // First, sign up without email confirmation to get the user
+    console.log('Attempting sign up for:', email);
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: 'https://qosim.app',
+        emailRedirectTo: `${window.location.origin}/`,
         data: {
           display_name: displayName,
         },
@@ -106,29 +97,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
+      console.error('Sign up error:', error);
       return { error };
     }
 
-    // If signup was successful, send our custom verification email
-    if (data.user && !data.user.email_confirmed_at) {
-      try {
-        // Generate a custom verification token
-        const verificationToken = crypto.randomUUID();
-        
-        // Send custom verification email
-        await sendCustomVerificationEmail(email, verificationToken);
-        
-        return { 
-          error: null,
-          message: 'Account created! Please check your email to verify your account.' 
-        };
-      } catch (emailError) {
-        console.error('Custom email error:', emailError);
-        return { error: null };
-      }
-    }
-
-    return { error };
+    console.log('Sign up successful:', data.user?.email, 'Email confirmed:', data.user?.email_confirmed_at);
+    return { error: null };
   };
 
   const signOut = async () => {
@@ -146,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Continue even if sign out fails
       console.error('Sign out error:', error);
     } finally {
-      // Always redirect to qosim.app for clean state
-      window.location.href = 'https://qosim.app';
+      // Always redirect to home for clean state
+      window.location.href = '/';
     }
   };
 
