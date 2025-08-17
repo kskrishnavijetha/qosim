@@ -9,6 +9,7 @@ export interface Circuit {
   description?: string;
   circuit_data: any;
   is_public: boolean;
+  privacy_level: 'private' | 'authenticated_only' | 'public';
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -72,11 +73,21 @@ export function useCircuits() {
     name: string,
     circuitData: any,
     description?: string,
-    isPublic = false
+    privacyLevel: 'private' | 'authenticated_only' | 'public' = 'private'
   ) => {
     if (!user) {
       toast.error('You must be signed in to save circuits');
       return null;
+    }
+
+    // Show warning for public circuits
+    if (privacyLevel === 'public') {
+      const confirmed = window.confirm(
+        'Are you sure you want to make this circuit public? It will be visible to anyone on the internet. Do not include sensitive research or proprietary algorithms.'
+      );
+      if (!confirmed) {
+        return null;
+      }
     }
 
     try {
@@ -86,7 +97,8 @@ export function useCircuits() {
           name,
           description,
           circuit_data: circuitData,
-          is_public: isPublic,
+          privacy_level: privacyLevel,
+          is_public: privacyLevel === 'public', // Keep for backward compatibility
           user_id: user.id,
         })
         .select()
@@ -110,10 +122,26 @@ export function useCircuits() {
   ) => {
     if (!user) return null;
 
+    // Show warning if making circuit public
+    if (updates.privacy_level === 'public') {
+      const confirmed = window.confirm(
+        'Are you sure you want to make this circuit public? It will be visible to anyone on the internet.'
+      );
+      if (!confirmed) {
+        return null;
+      }
+    }
+
     try {
+      // Keep is_public in sync with privacy_level for backward compatibility
+      const updateData = {
+        ...updates,
+        is_public: updates.privacy_level === 'public'
+      };
+
       const { data, error } = await supabase
         .from('circuits')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
@@ -159,7 +187,7 @@ export function useCircuits() {
       `${circuit.name} (Copy)`,
       circuit.circuit_data,
       circuit.description,
-      false
+      'private' // Always duplicate as private for security
     );
   };
 

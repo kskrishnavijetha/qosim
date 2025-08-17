@@ -177,6 +177,9 @@ export type Database = {
           id: string
           is_public: boolean | null
           name: string
+          privacy_level:
+            | Database["public"]["Enums"]["circuit_privacy_level"]
+            | null
           updated_at: string
           user_id: string
         }
@@ -187,6 +190,9 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           name: string
+          privacy_level?:
+            | Database["public"]["Enums"]["circuit_privacy_level"]
+            | null
           updated_at?: string
           user_id: string
         }
@@ -197,6 +203,9 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           name?: string
+          privacy_level?:
+            | Database["public"]["Enums"]["circuit_privacy_level"]
+            | null
           updated_at?: string
           user_id?: string
         }
@@ -1203,7 +1212,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      circuit_privacy_level: "private" | "authenticated_only" | "public"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1330,6 +1339,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      circuit_privacy_level: ["private", "authenticated_only", "public"],
+    },
   },
 } as const

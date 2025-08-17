@@ -1,6 +1,8 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeInput, emailSchema, passwordSchema } from '@/lib/security';
 
 interface AuthContextType {
   user: User | null;
@@ -56,9 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (!existingProfile) {
+        // Sanitize display name from metadata
+        const rawDisplayName = user.user_metadata?.display_name || user.email?.split('@')[0];
+        const sanitizedDisplayName = sanitizeInput(rawDisplayName);
+        
         await supabase.from('profiles').insert({
           user_id: user.id,
-          display_name: user.user_metadata?.display_name || user.email?.split('@')[0],
+          display_name: sanitizedDisplayName,
           avatar_url: user.user_metadata?.avatar_url,
         });
       }
@@ -69,23 +75,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     console.log('Attempting sign in for:', email);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
     
-    if (error) {
-      console.error('Sign in error:', error);
+    // Validate inputs
+    try {
+      emailSchema.parse(email);
+      if (password.length < 1) {
+        throw new Error('Password is required');
+      }
+    } catch (validationError: any) {
+      return { error: { message: validationError.message || 'Invalid input' } };
     }
-    
-    return { error };
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: sanitizeInput(email),
+        password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        // Don't expose detailed auth errors to prevent enumeration attacks
+        return { error: { message: 'Invalid email or password' } };
+      }
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      return { error: { message: 'Authentication failed' } };
+    }
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     console.log('Attempting sign up for:', email);
     
-    // First, send only our custom verification email BEFORE creating the user
+    // Validate inputs
     try {
+      emailSchema.parse(email);
+      passwordSchema.parse(password);
+      if (displayName && displayName.trim().length < 1) {
+        throw new Error('Display name is required');
+      }
+    } catch (validationError: any) {
+      return { error: { message: validationError.message || 'Invalid input' } };
+    }
+
+    try {
+      // First, send only our custom verification email BEFORE creating the user
       console.log('Sending custom verification email...');
       const customRedirectUrl = window.location.hostname.includes('qosim.app') 
         ? 'https://qosim.app/auth'
@@ -93,37 +128,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
       await supabase.functions.invoke('send-verification-email', {
         body: {
-          email: email,
+          email: sanitizeInput(email),
           token: 'custom-token',
           redirectUrl: customRedirectUrl
         }
       });
       console.log('Custom verification email sent');
-    } catch (emailError) {
-      console.error('Error sending custom verification email:', emailError);
-      return { error: emailError };
-    }
 
-    // Then create the user account with email confirmation disabled
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: undefined, // Explicitly disable
-        data: {
-          display_name: displayName,
-          email_confirm: false, // Disable Supabase's email confirmation
+      // Then create the user account with email confirmation disabled
+      const { data, error } = await supabase.auth.signUp({
+        email: sanitizeInput(email),
+        password,
+        options: {
+          emailRedirectTo: undefined, // Explicitly disable
+          data: {
+            display_name: displayName ? sanitizeInput(displayName) : undefined,
+            email_confirm: false, // Disable Supabase's email confirmation
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Sign up error:', error);
+        // Don't expose detailed errors to prevent information disclosure
+        return { error: { message: 'Failed to create account' } };
+      }
+
+      console.log('Sign up successful:', data.user?.email);
+      return { error: null };
+    } catch (error: any) {
       console.error('Sign up error:', error);
-      return { error };
+      return { error: { message: 'Failed to create account' } };
     }
-
-    console.log('Sign up successful:', data.user?.email);
-    return { error: null };
   };
 
   const signOut = async () => {
