@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -85,13 +84,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, displayName?: string) => {
     console.log('Attempting sign up for:', email);
     
-    // Sign up with Supabase WITHOUT emailRedirectTo to prevent default email
+    // First, send only our custom verification email BEFORE creating the user
+    try {
+      console.log('Sending custom verification email...');
+      const customRedirectUrl = window.location.hostname.includes('qosim.app') 
+        ? 'https://qosim.app/auth'
+        : `${window.location.origin}/auth`;
+        
+      await supabase.functions.invoke('send-verification-email', {
+        body: {
+          email: email,
+          token: 'custom-token',
+          redirectUrl: customRedirectUrl
+        }
+      });
+      console.log('Custom verification email sent');
+    } catch (emailError) {
+      console.error('Error sending custom verification email:', emailError);
+      return { error: emailError };
+    }
+
+    // Then create the user account with email confirmation disabled
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: undefined, // Explicitly disable
         data: {
           display_name: displayName,
+          email_confirm: false, // Disable Supabase's email confirmation
         },
       },
     });
@@ -101,30 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error };
     }
 
-    console.log('Sign up successful:', data.user?.email, 'Email confirmed:', data.user?.email_confirmed_at);
-    
-    // Send only our custom verification email
-    if (data.user && !data.user.email_confirmed_at) {
-      try {
-        console.log('Sending custom verification email...');
-        const customRedirectUrl = window.location.hostname.includes('qosim.app') 
-          ? 'https://qosim.app/auth'
-          : `${window.location.origin}/auth`;
-          
-        await supabase.functions.invoke('send-verification-email', {
-          body: {
-            email: data.user.email,
-            token: 'custom-token', // This would ideally be a proper token
-            redirectUrl: customRedirectUrl
-          }
-        });
-        console.log('Custom verification email sent');
-      } catch (emailError) {
-        console.error('Error sending custom verification email:', emailError);
-        // Don't fail the signup if custom email fails
-      }
-    }
-
+    console.log('Sign up successful:', data.user?.email);
     return { error: null };
   };
 
