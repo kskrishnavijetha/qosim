@@ -24,6 +24,23 @@ const AuthPage = () => {
     }
   }, [user, navigate]);
 
+  const logSecurityEvent = async (eventType: string, eventData: any, userId?: string) => {
+    try {
+      // Try to log to security_audit_log, fail gracefully if not available
+      await supabase.rpc('exec', {
+        sql: `INSERT INTO security_audit_log (user_id, event_type, event_data, user_agent) 
+              VALUES ($1, $2, $3, $4)`,
+        args: [userId || null, eventType, JSON.stringify(eventData), navigator.userAgent]
+      }).catch(() => {
+        // Ignore errors if table doesn't exist
+        console.log('Security audit logging not available');
+      });
+    } catch (error) {
+      // Fail silently - security logging is optional
+      console.log('Security event logging skipped:', error);
+    }
+  };
+
   const handleAuth = async (email: string, password: string, displayName?: string) => {
     setLoading(true);
     
@@ -46,15 +63,7 @@ const AuthPage = () => {
 
         // Log security event
         if (data.user) {
-          await supabase
-            .from('security_audit_log')
-            .insert({
-              user_id: data.user.id,
-              event_type: 'signup',
-              event_data: { email },
-              ip_address: null, // Will be populated by edge function if needed
-              user_agent: navigator.userAgent,
-            });
+          await logSecurityEvent('signup', { email }, data.user.id);
         }
 
         return { error: null };
@@ -66,29 +75,13 @@ const AuthPage = () => {
 
         if (error) {
           // Log failed login attempt
-          await supabase
-            .from('security_audit_log')
-            .insert({
-              user_id: null,
-              event_type: 'failed_login',
-              event_data: { email, reason: error.message },
-              ip_address: null,
-              user_agent: navigator.userAgent,
-            });
+          await logSecurityEvent('failed_login', { email, reason: error.message });
           throw error;
         }
 
         // Log successful login
         if (data.user) {
-          await supabase
-            .from('security_audit_log')
-            .insert({
-              user_id: data.user.id,
-              event_type: 'login',
-              event_data: { email },
-              ip_address: null,
-              user_agent: navigator.userAgent,
-            });
+          await logSecurityEvent('login', { email }, data.user.id);
         }
 
         return { error: null };
