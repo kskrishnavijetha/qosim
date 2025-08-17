@@ -120,31 +120,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Send only our custom verification email
-      console.log('Sending custom verification email...');
-      const customRedirectUrl = window.location.hostname.includes('qosim.app') 
-        ? 'https://qosim.app/auth'
-        : `${window.location.origin}/auth`;
-        
-      await supabase.functions.invoke('send-verification-email', {
-        body: {
-          email: sanitizeInput(email),
-          token: 'custom-token',
-          redirectUrl: customRedirectUrl
-        }
-      });
-      console.log('Custom verification email sent');
-
-      // Create the user account with Supabase's email confirmation completely disabled
+      // Create the user account with email confirmation disabled at database level
       const { data, error } = await supabase.auth.signUp({
         email: sanitizeInput(email),
         password,
         options: {
-          emailRedirectTo: undefined, // Disable any redirect
-          captchaToken: undefined, // No captcha
           data: {
             display_name: displayName ? sanitizeInput(displayName) : undefined,
-            email_confirm: true, // Try to bypass email confirmation
           },
         },
       });
