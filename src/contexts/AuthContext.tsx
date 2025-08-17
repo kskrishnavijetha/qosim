@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -120,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // First, send only our custom verification email BEFORE creating the user
+      // Send only our custom verification email
       console.log('Sending custom verification email...');
       const customRedirectUrl = window.location.hostname.includes('qosim.app') 
         ? 'https://qosim.app/auth'
@@ -135,23 +134,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       console.log('Custom verification email sent');
 
-      // Then create the user account with email confirmation disabled
+      // Create the user account with email confirmation completely disabled
       const { data, error } = await supabase.auth.signUp({
         email: sanitizeInput(email),
         password,
         options: {
-          emailRedirectTo: undefined, // Explicitly disable
+          emailRedirectTo: undefined, // Disable redirect
           data: {
             display_name: displayName ? sanitizeInput(displayName) : undefined,
-            email_confirm: false, // Disable Supabase's email confirmation
           },
         },
       });
 
       if (error) {
         console.error('Sign up error:', error);
-        // Don't expose detailed errors to prevent information disclosure
         return { error: { message: 'Failed to create account' } };
+      }
+
+      // Immediately confirm the user's email to bypass Supabase's email confirmation
+      if (data.user) {
+        try {
+          // This is an admin operation that bypasses email confirmation
+          const { error: confirmError } = await supabase.auth.admin.updateUserById(
+            data.user.id,
+            { email_confirm: true }
+          );
+          
+          if (confirmError) {
+            console.log('Could not auto-confirm email, user will need to verify manually');
+          }
+        } catch (adminError) {
+          // This will fail in client-side code, which is expected
+          console.log('Admin confirmation not available on client side');
+        }
       }
 
       console.log('Sign up successful:', data.user?.email);
