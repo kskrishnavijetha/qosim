@@ -1,3 +1,4 @@
+
 import { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-
       setUser(session?.user ?? null);
       setLoading(false);
     };
@@ -62,15 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: metadata,
-          emailRedirectTo: undefined // Disable default email confirmation
+          emailRedirectTo: `${window.location.origin}/auth?confirmed=true`
         }
       });
 
       if (error) throw error;
 
-      // Send custom verification email
       if (data.user && !data.user.email_confirmed_at) {
-        await sendVerificationEmail(email, data.user.id);
+        toast.success('Please check your email to verify your account');
       }
 
       return { data, error: null };

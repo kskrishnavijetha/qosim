@@ -9,32 +9,16 @@ export function useEmailVerification() {
   const sendVerificationEmail = useCallback(async (email: string, userId: string) => {
     setLoading(true);
     try {
-      // Generate secure token
-      const token = crypto.randomUUID() + '-' + Date.now();
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-      // Store token in database
-      const { error: tokenError } = await supabase
-        .from('email_verification_tokens')
-        .insert({
-          user_id: userId,
-          token,
-          email,
-          expires_at: expiresAt.toISOString()
-        });
-
-      if (tokenError) throw tokenError;
-
-      // Send email via edge function
-      const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
-        body: { 
-          email, 
-          token,
-          redirectUrl: `${window.location.origin}/auth?verify=${token}`
+      // Use Supabase's built-in email confirmation resend
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth?confirmed=true`
         }
       });
 
-      if (emailError) throw emailError;
+      if (error) throw error;
 
       toast.success('Verification email sent! Please check your inbox.');
       return { success: true };
@@ -50,33 +34,16 @@ export function useEmailVerification() {
   const verifyEmail = useCallback(async (token: string) => {
     setLoading(true);
     try {
-      // Get token from database
-      const { data: tokenData, error: fetchError } = await supabase
-        .from('email_verification_tokens')
-        .select('*')
-        .eq('token', token)
-        .is('used_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .single();
+      // Use Supabase's built-in email verification
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'email'
+      });
 
-      if (fetchError || !tokenData) {
-        throw new Error('Invalid or expired verification token');
-      }
-
-      // Mark token as used
-      const { error: updateError } = await supabase
-        .from('email_verification_tokens')
-        .update({ used_at: new Date().toISOString() })
-        .eq('id', tokenData.id);
-
-      if (updateError) throw updateError;
-
-      // Note: Supabase auth doesn't have email_confirm property in updateUser
-      // The email verification should be handled by auth.users table directly
-      // This is typically managed by Supabase's built-in email confirmation flow
+      if (error) throw error;
 
       toast.success('Email verified successfully!');
-      return { success: true, userId: tokenData.user_id };
+      return { success: true, userId: data.user?.id };
     } catch (error: any) {
       console.error('Error verifying email:', error);
       toast.error('Email verification failed');
