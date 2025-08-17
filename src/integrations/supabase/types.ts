@@ -1123,13 +1123,6 @@ export type Database = {
             foreignKeyName: "student_activity_student_enrollment_id_fkey"
             columns: ["student_enrollment_id"]
             isOneToOne: false
-            referencedRelation: "classroom_enrollments_safe"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_activity_student_enrollment_id_fkey"
-            columns: ["student_enrollment_id"]
-            isOneToOne: false
             referencedRelation: "student_enrollments"
             referencedColumns: ["id"]
           },
@@ -1190,27 +1183,20 @@ export type Database = {
       }
     }
     Views: {
-      classroom_enrollments_safe: {
-        Row: {
-          classroom_id: string | null
-          enrollment_date: string | null
-          id: string | null
-          is_active: boolean | null
-          student_name: string | null
-          student_user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_enrollments_classroom_id_fkey"
-            columns: ["classroom_id"]
-            isOneToOne: false
-            referencedRelation: "classrooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_classroom_enrollments_safe: {
+        Args: { target_classroom_id?: string }
+        Returns: {
+          classroom_id: string
+          enrollment_date: string
+          id: string
+          is_active: boolean
+          student_name: string
+          student_user_id: string
+        }[]
+      }
       get_student_email_if_authorized: {
         Args: { classroom_id: string; student_id: string }
         Returns: string
