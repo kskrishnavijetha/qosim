@@ -85,17 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, displayName?: string) => {
     console.log('Attempting sign up for:', email);
     
-    // Determine the correct redirect URL - use production URL if available
-    const redirectUrl = window.location.hostname.includes('qosim.app') 
-      ? 'https://qosim.app/auth?type=signup'
-      : `${window.location.origin}/auth?type=signup`;
-    
-    // First, sign up with Supabase (this will send the default email)
+    // Sign up with Supabase WITHOUT emailRedirectTo to prevent default email
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           display_name: displayName,
         },
@@ -109,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     console.log('Sign up successful:', data.user?.email, 'Email confirmed:', data.user?.email_confirmed_at);
     
-    // If signup was successful and we have a user, try to send custom verification email
+    // Send only our custom verification email
     if (data.user && !data.user.email_confirmed_at) {
       try {
         console.log('Sending custom verification email...');
