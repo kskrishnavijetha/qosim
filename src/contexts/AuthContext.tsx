@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    // First, sign up without email confirmation to get the user
+    // Sign up without email confirmation to prevent default Supabase email
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Generate a custom verification token
         const verificationToken = crypto.randomUUID();
         
-        // Send custom verification email
+        // Send custom verification email immediately
         await sendCustomVerificationEmail(email, verificationToken);
         
         return { 
