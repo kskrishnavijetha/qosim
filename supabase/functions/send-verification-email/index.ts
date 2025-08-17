@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     const verificationUrl = `${redirectUrl}?token=${token}&type=signup`;
 
     const emailResponse = await resend.emails.send({
-      from: "Quantum OS <noreply@yourdomain.com>", // Replace with your domain
+      from: "Quantum OS Support <support@qosim.app>",
       to: [email],
       subject: "Verify your Quantum OS account",
       html: `
@@ -141,6 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="footer">
               <p>If you didn't create this account, you can safely ignore this email.</p>
               <p>© 2024 Quantum OS - Quantum Computing Made Accessible</p>
+              <p>Need help? Contact us at <a href="mailto:support@qosim.app" style="color: #00ffff;">support@qosim.app</a></p>
             </div>
           </div>
         </body>

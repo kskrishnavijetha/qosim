@@ -68,20 +68,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendCustomVerificationEmail = async (email: string, token: string) => {
     try {
-      const response = await fetch('/functions/v1/send-verification-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('send-verification-email', {
+        body: {
           email,
           token,
-          redirectUrl: window.location.origin,
-        }),
+          redirectUrl: 'https://qosim.app',
+        },
       });
 
-      if (!response.ok) {
+      if (response.error) {
         throw new Error('Failed to send verification email');
       }
     } catch (error) {
@@ -103,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: undefined, // Disable default email
+        emailRedirectTo: 'https://qosim.app',
         data: {
           display_name: displayName,
         },
@@ -117,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // If signup was successful, send our custom verification email
     if (data.user && !data.user.email_confirmed_at) {
       try {
-        // Generate a custom verification token (you might want to store this in your database)
+        // Generate a custom verification token
         const verificationToken = crypto.randomUUID();
         
         // Send custom verification email
@@ -129,7 +124,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
       } catch (emailError) {
         console.error('Custom email error:', emailError);
-        // Fallback to default behavior if custom email fails
         return { error: null };
       }
     }
@@ -152,8 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Continue even if sign out fails
       console.error('Sign out error:', error);
     } finally {
-      // Always redirect to home page for clean state
-      window.location.href = '/';
+      // Always redirect to qosim.app for clean state
+      window.location.href = 'https://qosim.app';
     }
   };
 
