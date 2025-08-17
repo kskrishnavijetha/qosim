@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useCircuits } from "@/hooks/useCircuits";
 import { useCircuitState } from "@/hooks/useCircuitState";
+import { CircuitPrivacyWarning } from "@/components/security/CircuitPrivacyWarning";
 import { Loader2 } from "lucide-react";
 
 interface CircuitSaveDialogProps {
@@ -17,7 +17,7 @@ interface CircuitSaveDialogProps {
 export function CircuitSaveDialog({ onClose }: CircuitSaveDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+  const [privacyLevel, setPrivacyLevel] = useState<'private' | 'authenticated_only' | 'public'>('private');
   const [saving, setSaving] = useState(false);
   const { saveCircuit } = useCircuits();
   const { circuit } = useCircuitState();
@@ -27,7 +27,7 @@ export function CircuitSaveDialog({ onClose }: CircuitSaveDialogProps) {
 
     setSaving(true);
     try {
-      await saveCircuit(name.trim(), circuit, description.trim() || undefined, isPublic);
+      await saveCircuit(name.trim(), circuit, description.trim() || undefined, privacyLevel);
       onClose();
     } finally {
       setSaving(false);
@@ -64,17 +64,11 @@ export function CircuitSaveDialog({ onClose }: CircuitSaveDialogProps) {
           />
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <Label htmlFor="public-circuit">Make Public</Label>
-            <p className="text-xs text-muted-foreground">
-              Allow others to view and use this circuit
-            </p>
-          </div>
-          <Switch
-            id="public-circuit"
-            checked={isPublic}
-            onCheckedChange={setIsPublic}
+        <div className="space-y-3">
+          <Label>Privacy Settings</Label>
+          <CircuitPrivacyWarning 
+            privacyLevel={privacyLevel}
+            onPrivacyChange={setPrivacyLevel}
           />
         </div>
       </div>
