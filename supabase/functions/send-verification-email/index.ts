@@ -24,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, token, redirectUrl }: VerificationEmailRequest = await req.json();
     
-    const verificationUrl = `${redirectUrl}?message=Please sign in with your verified email address`;
+    const verificationUrl = `${redirectUrl}?token=${token}&type=signup`;
 
     const emailResponse = await resend.emails.send({
       from: "Quantum OS Support <support@qosim.app>",
@@ -114,26 +114,6 @@ const handler = async (req: Request): Promise<Response> => {
               color: #00ffff;
               font-weight: bold;
             }
-            .instructions {
-              background: rgba(0, 255, 255, 0.1);
-              border: 1px solid rgba(0, 255, 255, 0.3);
-              border-radius: 8px;
-              padding: 20px;
-              margin: 20px 0;
-              text-align: left;
-            }
-            .step {
-              margin: 10px 0;
-              padding-left: 20px;
-              position: relative;
-            }
-            .step::before {
-              content: "→";
-              position: absolute;
-              left: 0;
-              color: #00ffff;
-              font-weight: bold;
-            }
           </style>
         </head>
         <body>
@@ -144,29 +124,22 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div class="content">
-              <h1 class="title">Email Verified Successfully!</h1>
+              <h1 class="title">Welcome to Quantum OS!</h1>
               <p class="description">
-                Congratulations! Your email address has been verified. You can now access all features of our quantum computing platform.
+                Thank you for joining our quantum computing platform. To complete your registration and start building quantum circuits, please verify your email address.
               </p>
               
-              <div class="instructions">
-                <h3 style="color: #00ffff; margin-top: 0;">Next Steps:</h3>
-                <div class="step">Click the button below to return to the sign-in page</div>
-                <div class="step">Sign in with your verified email and password</div>
-                <div class="step">Start building quantum circuits and exploring our tools</div>
-              </div>
-              
               <a href="${verificationUrl}" class="verify-button">
-                Continue to Sign In
+                Verify Email Address
               </a>
               
               <p class="description">
-                You now have access to our advanced quantum circuit builder, simulation tools, and the complete <span class="quantum-accent">Quantum SDK</span>.
+                Once verified, you'll have access to our advanced quantum circuit builder, simulation tools, and the complete <span class="quantum-accent">Quantum SDK</span>.
               </p>
             </div>
             
             <div class="footer">
-              <p>Welcome to the quantum computing revolution!</p>
+              <p>If you didn't create this account, you can safely ignore this email.</p>
               <p>© 2024 Quantum OS - Quantum Computing Made Accessible</p>
               <p>Need help? Contact us at <a href="mailto:support@qosim.app" style="color: #00ffff;">support@qosim.app</a></p>
             </div>
