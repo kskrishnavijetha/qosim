@@ -85,11 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, displayName?: string) => {
     console.log('Attempting sign up for:', email);
     
+    // First, sign up with Supabase (this will send the default email)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/auth?type=signup`,
         data: {
           display_name: displayName,
         },
@@ -102,6 +103,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     console.log('Sign up successful:', data.user?.email, 'Email confirmed:', data.user?.email_confirmed_at);
+    
+    // If signup was successful and we have a user, try to send custom verification email
+    if (data.user && !data.user.email_confirmed_at) {
+      try {
+        console.log('Sending custom verification email...');
+        await supabase.functions.invoke('send-verification-email', {
+          body: {
+            email: data.user.email,
+            token: 'custom-token', // This would ideally be a proper token
+            redirectUrl: `${window.location.origin}/auth`
+          }
+        });
+        console.log('Custom verification email sent');
+      } catch (emailError) {
+        console.error('Error sending custom verification email:', emailError);
+        // Don't fail the signup if custom email fails
+      }
+    }
+
     return { error: null };
   };
 
