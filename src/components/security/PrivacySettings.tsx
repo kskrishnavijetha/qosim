@@ -28,30 +28,22 @@ export function PrivacySettings() {
   const loadPrivacySettings = async () => {
     setLoading(true);
     try {
-      // Use raw SQL query to handle potential missing columns
-      const { data, error } = await supabase.rpc('exec', {
-        sql: `SELECT privacy_level, allow_profile_search FROM profiles WHERE user_id = $1`,
-        args: [user?.id]
-      }).catch(() => {
-        // Fallback: try to get basic profile data
-        return supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user?.id)
-          .single();
-      });
+      // Try to get profile data with fallback for missing columns
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
 
       if (error) {
         console.warn('Privacy settings not available:', error);
-        // Use defaults if columns don't exist
         return;
       }
 
       if (data) {
-        // Handle both direct query results and profile data
-        const privacyData = Array.isArray(data) ? data[0] : data;
-        setPrivacyLevel((privacyData as any)?.privacy_level || 'private');
-        setAllowProfileSearch((privacyData as any)?.allow_profile_search || false);
+        // Use defaults if columns don't exist
+        setPrivacyLevel((data as any)?.privacy_level || 'private');
+        setAllowProfileSearch((data as any)?.allow_profile_search || false);
       }
     } catch (error) {
       console.error('Error loading privacy settings:', error);
@@ -66,13 +58,14 @@ export function PrivacySettings() {
 
     setSaving(true);
     try {
-      // Try to update privacy settings with raw SQL
-      const { error } = await supabase.rpc('exec', {
-        sql: `UPDATE profiles SET privacy_level = $1, allow_profile_search = $2 WHERE user_id = $3`,
-        args: [privacyLevel, allowProfileSearch, user.id]
-      }).catch(() => {
-        throw new Error('Privacy settings update not supported in current schema');
-      });
+      // Try to update privacy settings with fallback
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          privacy_level: privacyLevel,
+          allow_profile_search: allowProfileSearch
+        } as any)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 

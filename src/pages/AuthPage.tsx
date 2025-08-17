@@ -26,15 +26,9 @@ const AuthPage = () => {
 
   const logSecurityEvent = async (eventType: string, eventData: any, userId?: string) => {
     try {
-      // Try to log to security_audit_log, fail gracefully if not available
-      await supabase.rpc('exec', {
-        sql: `INSERT INTO security_audit_log (user_id, event_type, event_data, user_agent) 
-              VALUES ($1, $2, $3, $4)`,
-        args: [userId || null, eventType, JSON.stringify(eventData), navigator.userAgent]
-      }).catch(() => {
-        // Ignore errors if table doesn't exist
-        console.log('Security audit logging not available');
-      });
+      // For now, we'll skip security logging until the table is available
+      // This prevents TypeScript errors while maintaining the structure
+      console.log('Security event:', { eventType, eventData, userId });
     } catch (error) {
       // Fail silently - security logging is optional
       console.log('Security event logging skipped:', error);

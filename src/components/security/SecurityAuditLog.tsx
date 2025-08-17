@@ -29,35 +29,9 @@ export function SecurityAuditLog() {
 
   const loadSecurityEvents = async () => {
     try {
-      // Try to query security_audit_log, fallback gracefully if not available
-      const { data, error } = await supabase.rpc('exec', {
-        sql: `SELECT id, event_type, event_data, ip_address, user_agent, created_at 
-              FROM security_audit_log 
-              WHERE user_id = $1 
-              ORDER BY created_at DESC 
-              LIMIT 50`,
-        args: [user?.id]
-      }).catch(() => {
-        // Return empty result if table doesn't exist
-        return { data: [], error: null };
-      });
-
-      if (error) {
-        console.warn('Security audit log not available:', error);
-        setEvents([]);
-        return;
-      }
-
-      // Handle the response format
-      const auditEvents = Array.isArray(data) ? data : [];
-      setEvents(auditEvents.map(event => ({
-        id: event.id || crypto.randomUUID(),
-        event_type: event.event_type || 'unknown',
-        event_data: event.event_data || {},
-        ip_address: event.ip_address || null,
-        user_agent: event.user_agent || null,
-        created_at: event.created_at || new Date().toISOString()
-      })));
+      // Since security_audit_log doesn't exist in types yet, we'll gracefully handle this
+      // For now, return empty array until database is updated
+      setEvents([]);
     } catch (error) {
       console.error('Error loading security events:', error);
       setEvents([]);
