@@ -33,6 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             createUserProfile(session.user);
           }, 0);
         }
+
+        // Handle email confirmation
+        if (event === 'TOKEN_REFRESHED' && session?.user?.email_confirmed_at) {
+          // User has confirmed their email, redirect to main app
+          window.location.href = 'https://qosim.app/app';
+        }
       }
     );
 
@@ -72,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: {
           email,
           token,
-          redirectUrl: 'https://qosim.app',
+          redirectUrl: 'https://qosim.app/auth',
         },
       });
 
@@ -98,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: 'https://qosim.app',
+        emailRedirectTo: 'https://qosim.app/auth',
         data: {
           display_name: displayName,
         },
@@ -120,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return { 
           error: null,
-          message: 'Account created! Please check your email to verify your account.' 
+          message: 'Account created! Please check your email to verify your account, then return to sign in.' 
         };
       } catch (emailError) {
         console.error('Custom email error:', emailError);

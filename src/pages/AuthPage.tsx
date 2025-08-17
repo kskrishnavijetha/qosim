@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Activity, CheckCircle } from 'lucide-react';
+import { Activity, CheckCircle, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthPage() {
@@ -19,12 +19,21 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (user) {
       navigate('/app');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    // Check for URL message parameter (from email verification redirect)
+    const message = searchParams.get('message');
+    if (message) {
+      setSuccess(message);
+    }
+  }, [searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +44,11 @@ export default function AuthPage() {
     const { error } = await signIn(email, password);
     
     if (error) {
-      setError(error.message);
+      if (error.message.includes('Email not confirmed')) {
+        setError('Please check your email and click the verification link before signing in.');
+      } else {
+        setError(error.message);
+      }
     }
     setLoading(false);
   };
@@ -91,6 +104,15 @@ export default function AuthPage() {
                 <Alert className="border-green-500/50 bg-green-500/10">
                   <CheckCircle className="h-4 w-4 text-green-400" />
                   <AlertDescription className="text-green-400">{success}</AlertDescription>
+                </Alert>
+              )}
+
+              {searchParams.get('message') && (
+                <Alert className="border-blue-500/50 bg-blue-500/10">
+                  <Info className="h-4 w-4 text-blue-400" />
+                  <AlertDescription className="text-blue-400">
+                    Your email has been verified! Please sign in below to access your account.
+                  </AlertDescription>
                 </Alert>
               )}
 
