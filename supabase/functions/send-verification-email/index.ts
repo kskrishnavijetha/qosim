@@ -27,9 +27,9 @@ const handler = async (req: Request): Promise<Response> => {
     const verificationUrl = `${redirectUrl}?message=Please sign in with your verified email address`;
 
     const emailResponse = await resend.emails.send({
-      from: "Quantum OS Support <support@qosim.app>",
+      from: "QOSim Support <support@qosim.app>",
       to: [email],
-      subject: "Verify your Quantum OS account",
+      subject: "Verify your QOSim account",
       html: `
         <!DOCTYPE html>
         <html>
@@ -139,7 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">⚛️ Quantum OS</div>
+              <div class="logo">⚛️ QOSim</div>
               <div class="subtitle">Enter the quantum realm</div>
             </div>
             
@@ -161,13 +161,13 @@ const handler = async (req: Request): Promise<Response> => {
               </a>
               
               <p class="description">
-                You now have access to our advanced quantum circuit builder, simulation tools, and the complete <span class="quantum-accent">Quantum SDK</span>.
+                You now have access to our advanced quantum circuit builder, simulation tools, and the complete <span class="quantum-accent">QOSim SDK</span>.
               </p>
             </div>
             
             <div class="footer">
               <p>Welcome to the quantum computing revolution!</p>
-              <p>© 2024 Quantum OS - Quantum Computing Made Accessible</p>
+              <p>© 2024 QOSim - Quantum Computing Made Accessible</p>
               <p>Need help? Contact us at <a href="mailto:support@qosim.app" style="color: #00ffff;">support@qosim.app</a></p>
             </div>
           </div>
