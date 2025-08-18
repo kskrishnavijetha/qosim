@@ -67,8 +67,9 @@ export function CircuitEditor({
     gates: circuit.map(gate => ({
       ...gate,
       qubits: gate.qubits?.map(q => q.toString()), // Convert qubit indices from numbers to strings
+      position: { x: gate.position * 60, y: (gate.qubit || 0) * 60 }, // Convert position number to coordinate object
       layer: gate.position // Add required layer property using position
-    })), // Transform Gate[] to CircuitGate[] by adding layer property and converting qubits to strings
+    })), // Transform Gate[] to CircuitGate[] by adding layer property and converting position to coordinates
     layers: circuit.length,
     depth: circuit.length,
     metadata: {
