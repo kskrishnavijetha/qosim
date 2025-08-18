@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CircuitCanvas } from '@/components/circuits/CircuitCanvas';
 import { GatePalette } from '@/components/circuits/GatePalette';
 import { Gate } from '@/hooks/useCircuitState';
+import { useZoomPan } from '@/hooks/useZoomPan';
+import { useRef } from 'react';
 
 interface CircuitEditorProps {
   circuit: Gate[];
@@ -23,6 +25,20 @@ export function CircuitEditor({
   clearCircuit,
   loadExampleCircuit
 }: CircuitEditorProps) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [selectedGate, setSelectedGate] = useState<any>(null);
+  
+  const {
+    zoomLevel,
+    panOffset,
+    handleZoomIn,
+    handleZoomOut,
+    handlePanStart,
+    handlePanMove,
+    handlePanEnd,
+    resetView
+  } = useZoomPan(canvasRef);
+
   // Convert moveGate to match CircuitCanvas expected signature
   const handleGateMove = (gateId: string, position: { x: number; y: number }) => {
     // Convert position to time step (assuming x coordinate represents time)
@@ -49,6 +65,18 @@ export function CircuitEditor({
       type: gateType,
       qubit: 0, // Default to first qubit
       position: circuit.length // Add at end
+    };
+    addGate(newGate);
+  };
+
+  // Handle gate addition from canvas
+  const handleGateAdd = (gateType: string, qubits: string[], position: { x: number; y: number }) => {
+    const newGate: Gate = {
+      id: `${gateType}-${Date.now()}`,
+      type: gateType,
+      qubit: parseInt(qubits[0]) || 0,
+      qubits: qubits.map(q => parseInt(q)),
+      position: Math.floor(position.x / 60)
     };
     addGate(newGate);
   };
@@ -121,8 +149,21 @@ export function CircuitEditor({
             <div className="lg:col-span-3">
               <CircuitCanvas
                 circuit={circuitData}
-                onGateRemove={removeGate}
+                selectedGate={selectedGate}
+                simulationResult={null}
+                zoomLevel={zoomLevel}
+                panOffset={panOffset}
+                onGateAdd={handleGateAdd}
                 onGateMove={handleGateMove}
+                onGateSelect={setSelectedGate}
+                onGateRemove={removeGate}
+                onCanvasClick={() => setSelectedGate(null)}
+                onPanStart={handlePanStart}
+                onPanMove={handlePanMove}
+                onPanEnd={handlePanEnd}
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onResetView={resetView}
               />
             </div>
           </div>
