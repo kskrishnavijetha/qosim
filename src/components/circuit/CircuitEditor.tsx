@@ -62,7 +62,7 @@ export function CircuitEditor({
       label: `q${i}`,
       index: i,
       name: `q${i}`,
-      state: '|0⟩'
+      state: 'computational' as const // Use correct literal type
     })), // Fix: create CircuitQubit[] array with all required properties
     gates: circuit,
     layers: circuit.length,
