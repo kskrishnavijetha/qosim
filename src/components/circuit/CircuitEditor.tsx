@@ -70,7 +70,17 @@ export function CircuitEditor({
       position: { x: gate.position * 60, y: (gate.qubit || 0) * 60 }, // Convert position number to coordinate object
       layer: gate.position // Add required layer property using position
     })), // Transform Gate[] to CircuitGate[] by adding layer property and converting position to coordinates
-    layers: circuit.length,
+    layers: Array.from({ length: circuit.length || 1 }, (_, i) => ({
+      id: `layer-${i}`,
+      index: i,
+      gates: circuit.filter(gate => gate.position === i).map(gate => ({
+        ...gate,
+        qubits: gate.qubits?.map(q => q.toString()) || [],
+        position: { x: gate.position * 60, y: (gate.qubit || 0) * 60 },
+        layer: gate.position
+      })),
+      barrier: false
+    })), // Create proper CircuitLayer[] array
     depth: circuit.length,
     metadata: {
       totalParameters: circuit.length,
