@@ -66,7 +66,7 @@ export function CircuitEditor({
     })), // Fix: create CircuitQubit[] array with all required properties
     gates: circuit.map(gate => ({
       ...gate,
-      qubits: gate.qubits?.map(q => q.toString()), // Convert qubit indices from numbers to strings
+      qubits: gate.qubits?.map(q => q.toString()) || [], // Convert qubit indices from numbers to strings
       position: { x: gate.position * 60, y: (gate.qubit || 0) * 60 }, // Convert position number to coordinate object
       layer: gate.position // Add required layer property using position
     })), // Transform Gate[] to CircuitGate[] by adding layer property and converting position to coordinates
@@ -83,8 +83,10 @@ export function CircuitEditor({
     })), // Create proper CircuitLayer[] array
     depth: circuit.length,
     metadata: {
-      totalParameters: circuit.length,
-      estimatedRuntime: circuit.length * 0.1
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      version: '1.0.0',
+      author: 'Circuit Editor'
     },
     createdAt: new Date(),
     updatedAt: new Date(),
