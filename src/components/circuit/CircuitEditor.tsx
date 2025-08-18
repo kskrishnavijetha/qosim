@@ -36,6 +36,12 @@ export function CircuitEditor({
     name: 'Current Circuit',
     qubits: 5,
     gates: circuit,
+    layers: circuit.length,
+    depth: circuit.length,
+    metadata: {
+      totalParameters: circuit.length,
+      estimatedRuntime: circuit.length * 0.1
+    },
     createdAt: new Date(),
     updatedAt: new Date(),
     isPublic: false
@@ -61,7 +67,7 @@ export function CircuitEditor({
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1">
-              <GatePalette onGateAdd={addGate} />
+              <GatePalette onGateSelect={addGate} />
             </div>
             <div className="lg:col-span-3">
               <CircuitCanvas

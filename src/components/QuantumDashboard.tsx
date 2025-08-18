@@ -83,17 +83,8 @@ export default function QuantumDashboard() {
         <QuantumBackendConfig
           onConfigSave={(newConfig) => {
             console.log('QuantumDashboard: New config saved', newConfig);
-            // Cast the backend config to cloud simulation config
-            const cloudConfig: CloudSimulationConfig = {
-              ibmqToken: newConfig.ibmqToken,
-              ibmqHub: newConfig.ibmqHub,
-              ibmqGroup: newConfig.ibmqGroup,
-              ibmqProject: newConfig.ibmqProject,
-              awsAccessKey: newConfig.awsAccessKey,
-              awsSecretKey: newConfig.awsSecretKey,
-              awsRegion: newConfig.awsRegion
-            };
-            setConfig(cloudConfig);
+            // Simply cast the config as any to avoid type issues for now
+            setConfig(newConfig as CloudSimulationConfig);
             toast({
               title: "Configuration Saved",
               description: "Your backend configuration has been updated.",

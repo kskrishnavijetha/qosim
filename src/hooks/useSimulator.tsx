@@ -30,7 +30,7 @@ export function useSimulator(circuit: Gate[]) {
         qubitStates: Array(5).fill(0).map((_, i) => ({ 
           qubit: i,
           state: '|0⟩',
-          amplitude: { real: 1, imaginary: 0 },
+          amplitude: { real: 1, imag: 0 }, // Fix: use 'imag' not 'imaginary'
           phase: 0,
           probability: 1
         })), // Fix: match expected interface
