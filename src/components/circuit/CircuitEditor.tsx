@@ -58,7 +58,7 @@ export function CircuitEditor({
     id: 'current-circuit',
     name: 'Current Circuit',
     qubits: Array(5).fill(0).map((_, i) => ({ 
-      id: i, 
+      id: i.toString(), // Convert to string as required by CircuitQubit type
       label: `q${i}`,
       index: i,
       name: `q${i}`,
