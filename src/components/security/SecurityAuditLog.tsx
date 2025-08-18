@@ -11,8 +11,8 @@ interface SecurityEvent {
   id: string;
   event_type: string;
   event_data: any;
-  ip_address: string | null;
-  user_agent: string | null;
+  ip_address: string;
+  user_agent: string;
   created_at: string;
 }
 
@@ -29,12 +29,18 @@ export function SecurityAuditLog() {
 
   const loadSecurityEvents = async () => {
     try {
-      // Since security_audit_log doesn't exist in types yet, we'll gracefully handle this
-      // For now, return empty array until database is updated
-      setEvents([]);
+      const { data, error } = await supabase
+        .from('security_audit_log')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      setEvents(data || []);
     } catch (error) {
       console.error('Error loading security events:', error);
-      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -64,9 +70,9 @@ export function SecurityAuditLog() {
       case 'logout':
         return 'Signed out';
       case 'credential_stored':
-        return `Stored credentials for ${event.event_data?.service_name || 'service'}`;
+        return `Stored credentials for ${event.event_data?.service_name}`;
       case 'privacy_settings_updated':
-        return `Updated privacy level to ${event.event_data?.privacy_level || 'unknown'}`;
+        return `Updated privacy level to ${event.event_data?.privacy_level}`;
       case 'failed_login':
         return 'Failed sign-in attempt';
       default:
@@ -86,19 +92,14 @@ export function SecurityAuditLog() {
           Security Activity Log
         </CardTitle>
         <CardDescription>
-          Recent security events for your account (requires database update)
+          Recent security events for your account
         </CardDescription>
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <div className="text-center py-8 space-y-2">
-            <p className="text-muted-foreground">
-              No security events recorded yet
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Security audit logging will be available after database schema update
-            </p>
-          </div>
+          <p className="text-muted-foreground text-center py-8">
+            No security events recorded yet
+          </p>
         ) : (
           <div className="space-y-4">
             {events.map((event) => (

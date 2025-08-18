@@ -28,26 +28,21 @@ export function PrivacySettings() {
   const loadPrivacySettings = async () => {
     setLoading(true);
     try {
-      // Try to get profile data with fallback for missing columns
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('privacy_level, allow_profile_search')
         .eq('user_id', user?.id)
         .single();
 
-      if (error) {
-        console.warn('Privacy settings not available:', error);
-        return;
-      }
+      if (error) throw error;
 
       if (data) {
-        // Use defaults if columns don't exist
-        setPrivacyLevel((data as any)?.privacy_level || 'private');
-        setAllowProfileSearch((data as any)?.allow_profile_search || false);
+        setPrivacyLevel(data.privacy_level || 'private');
+        setAllowProfileSearch(data.allow_profile_search || false);
       }
     } catch (error) {
       console.error('Error loading privacy settings:', error);
-      toast.error('Privacy settings are not available yet');
+      toast.error('Failed to load privacy settings');
     } finally {
       setLoading(false);
     }
@@ -58,21 +53,29 @@ export function PrivacySettings() {
 
     setSaving(true);
     try {
-      // Try to update privacy settings with fallback
       const { error } = await supabase
         .from('profiles')
         .update({
           privacy_level: privacyLevel,
-          allow_profile_search: allowProfileSearch
-        } as any)
+          allow_profile_search: allowProfileSearch,
+        })
         .eq('user_id', user.id);
 
       if (error) throw error;
 
+      // Log security event
+      await supabase
+        .from('security_audit_log')
+        .insert({
+          user_id: user.id,
+          event_type: 'privacy_settings_updated',
+          event_data: { privacy_level: privacyLevel, allow_profile_search: allowProfileSearch },
+        });
+
       toast.success('Privacy settings updated successfully');
     } catch (error) {
       console.error('Error saving privacy settings:', error);
-      toast.error('Privacy settings update not available yet. Database schema needs to be updated.');
+      toast.error('Failed to save privacy settings');
     } finally {
       setSaving(false);
     }

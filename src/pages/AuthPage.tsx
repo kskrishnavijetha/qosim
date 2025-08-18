@@ -24,17 +24,6 @@ const AuthPage = () => {
     }
   }, [user, navigate]);
 
-  const logSecurityEvent = async (eventType: string, eventData: any, userId?: string) => {
-    try {
-      // For now, we'll skip security logging until the table is available
-      // This prevents TypeScript errors while maintaining the structure
-      console.log('Security event:', { eventType, eventData, userId });
-    } catch (error) {
-      // Fail silently - security logging is optional
-      console.log('Security event logging skipped:', error);
-    }
-  };
-
   const handleAuth = async (email: string, password: string, displayName?: string) => {
     setLoading(true);
     
@@ -57,7 +46,15 @@ const AuthPage = () => {
 
         // Log security event
         if (data.user) {
-          await logSecurityEvent('signup', { email }, data.user.id);
+          await supabase
+            .from('security_audit_log')
+            .insert({
+              user_id: data.user.id,
+              event_type: 'signup',
+              event_data: { email },
+              ip_address: null, // Will be populated by edge function if needed
+              user_agent: navigator.userAgent,
+            });
         }
 
         return { error: null };
@@ -69,13 +66,29 @@ const AuthPage = () => {
 
         if (error) {
           // Log failed login attempt
-          await logSecurityEvent('failed_login', { email, reason: error.message });
+          await supabase
+            .from('security_audit_log')
+            .insert({
+              user_id: null,
+              event_type: 'failed_login',
+              event_data: { email, reason: error.message },
+              ip_address: null,
+              user_agent: navigator.userAgent,
+            });
           throw error;
         }
 
         // Log successful login
         if (data.user) {
-          await logSecurityEvent('login', { email }, data.user.id);
+          await supabase
+            .from('security_audit_log')
+            .insert({
+              user_id: data.user.id,
+              event_type: 'login',
+              event_data: { email },
+              ip_address: null,
+              user_agent: navigator.userAgent,
+            });
         }
 
         return { error: null };
