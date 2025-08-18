@@ -66,8 +66,9 @@ export function CircuitEditor({
     })), // Fix: create CircuitQubit[] array with all required properties
     gates: circuit.map(gate => ({
       ...gate,
+      qubits: gate.qubits?.map(q => q.toString()), // Convert qubit indices from numbers to strings
       layer: gate.position // Add required layer property using position
-    })), // Transform Gate[] to CircuitGate[] by adding layer property
+    })), // Transform Gate[] to CircuitGate[] by adding layer property and converting qubits to strings
     layers: circuit.length,
     depth: circuit.length,
     metadata: {
