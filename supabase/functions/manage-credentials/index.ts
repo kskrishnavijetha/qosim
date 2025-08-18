@@ -12,7 +12,7 @@ interface CredentialRequest {
   action: 'store' | 'retrieve' | 'delete';
 }
 
-// Simple encryption/decryption using Web Crypto API
+// Enhanced encryption/decryption using Web Crypto API
 async function encryptCredentials(data: string, key: CryptoKey): Promise<Uint8Array> {
   const encoder = new TextEncoder();
   const encodedData = encoder.encode(data);
@@ -45,7 +45,13 @@ async function decryptCredentials(encryptedData: Uint8Array, key: CryptoKey): Pr
 }
 
 async function getEncryptionKey(): Promise<CryptoKey> {
-  const keyMaterial = new TextEncoder().encode(Deno.env.get('ENCRYPTION_KEY') || 'default-key-change-in-production');
+  const encryptionKeyEnv = Deno.env.get('ENCRYPTION_KEY');
+  
+  if (!encryptionKeyEnv) {
+    throw new Error('ENCRYPTION_KEY environment variable is required but not set');
+  }
+  
+  const keyMaterial = new TextEncoder().encode(encryptionKeyEnv);
   const key = await crypto.subtle.importKey(
     'raw',
     keyMaterial,
@@ -54,7 +60,7 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     ['deriveKey']
   );
   
-  const salt = new TextEncoder().encode('qosim-salt');
+  const salt = new TextEncoder().encode('qosim-secure-salt-v2');
   return await crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
@@ -83,6 +89,13 @@ Deno.serve(async (req) => {
 
     // Get user from JWT token
     const authHeader = req.headers.get('Authorization')!;
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
@@ -96,10 +109,24 @@ Deno.serve(async (req) => {
 
     const { service_name, credentials, action }: CredentialRequest = await req.json();
 
+    if (!service_name || !action) {
+      return new Response(
+        JSON.stringify({ error: 'service_name and action are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const encryptionKey = await getEncryptionKey();
 
     switch (action) {
       case 'store': {
+        if (!credentials) {
+          return new Response(
+            JSON.stringify({ error: 'credentials are required for store action' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         const encryptedCredentials = await encryptCredentials(JSON.stringify(credentials), encryptionKey);
         
         const { error } = await supabaseClient
@@ -110,18 +137,13 @@ Deno.serve(async (req) => {
             encrypted_credentials: Array.from(encryptedCredentials),
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Database error storing credentials:', error);
+          throw new Error('Failed to store credentials in database');
+        }
 
-        // Log security event
-        await supabaseClient
-          .from('security_audit_log')
-          .insert({
-            user_id: user.id,
-            event_type: 'credential_stored',
-            event_data: { service_name },
-            ip_address: req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For'),
-            user_agent: req.headers.get('User-Agent'),
-          });
+        // Log security event with minimal data
+        console.log(`[SECURITY] Credentials stored for user ${user.id}, service: ${service_name}`);
 
         return new Response(
           JSON.stringify({ success: true }),
@@ -147,6 +169,8 @@ Deno.serve(async (req) => {
         const encryptedData = new Uint8Array(data.encrypted_credentials);
         const decryptedCredentials = await decryptCredentials(encryptedData, encryptionKey);
 
+        console.log(`[SECURITY] Credentials retrieved for user ${user.id}, service: ${service_name}`);
+
         return new Response(
           JSON.stringify({ credentials: JSON.parse(decryptedCredentials) }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -160,7 +184,12 @@ Deno.serve(async (req) => {
           .eq('user_id', user.id)
           .eq('service_name', service_name);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Database error deleting credentials:', error);
+          throw new Error('Failed to delete credentials from database');
+        }
+
+        console.log(`[SECURITY] Credentials deleted for user ${user.id}, service: ${service_name}`);
 
         return new Response(
           JSON.stringify({ success: true }),
@@ -170,14 +199,15 @@ Deno.serve(async (req) => {
 
       default:
         return new Response(
-          JSON.stringify({ error: 'Invalid action' }),
+          JSON.stringify({ error: 'Invalid action. Must be store, retrieve, or delete' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
   } catch (error) {
     console.error('Credential management error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

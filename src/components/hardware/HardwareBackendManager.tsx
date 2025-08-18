@@ -7,14 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Key, Cloud, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { Key, Cloud, CheckCircle, AlertCircle, Settings, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSecureCredentials } from '@/hooks/useSecureCredentials';
 
 export interface HardwareBackend {
   id: string;
   name: string;
   provider: 'ibm' | 'rigetti' | 'ionq';
-  apiKey: string;
   isActive: boolean;
   lastTested?: Date;
   status: 'connected' | 'disconnected' | 'testing';
@@ -26,6 +26,8 @@ interface HardwareBackendManagerProps {
 }
 
 export function HardwareBackendManager({ onBackendSave, backends }: HardwareBackendManagerProps) {
+  const { storeCredentials, retrieveCredentials, loading } = useSecureCredentials();
+  
   const [ibmConfig, setIbmConfig] = useState({
     apiKey: '',
     hub: 'ibm-q',
@@ -43,62 +45,127 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
     endpoint: 'https://api.ionq.co'
   });
 
-  const testConnection = async (provider: 'ibm' | 'rigetti' | 'ionq') => {
+  const [testResults, setTestResults] = useState<{
+    ibm?: 'success' | 'error' | 'testing';
+    rigetti?: 'success' | 'error' | 'testing';
+    ionq?: 'success' | 'error' | 'testing';
+  }>({});
+
+  useEffect(() => {
+    // Load existing credentials on mount
+    loadExistingCredentials();
+  }, []);
+
+  const loadExistingCredentials = async () => {
     try {
-      // Mock API test - in real implementation, this would call actual APIs
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Check if credentials exist for each provider
+      const providers = ['ibm-quantum', 'rigetti', 'ionq'];
+      for (const provider of providers) {
+        const result = await retrieveCredentials(provider);
+        if (result.credentials && !result.error) {
+          // Don't populate the form fields with existing credentials for security
+          // Just indicate that credentials exist
+          toast.success(`Existing ${provider} credentials loaded`);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading credentials:', error);
+    }
+  };
+
+  const testConnection = async (provider: 'ibm' | 'rigetti' | 'ionq') => {
+    setTestResults(prev => ({ ...prev, [provider]: 'testing' }));
+    
+    try {
+      // Retrieve stored credentials for testing
+      const serviceName = provider === 'ibm' ? 'ibm-quantum' : provider;
+      const credentialsResult = await retrieveCredentials(serviceName);
       
-      let config;
-      switch (provider) {
-        case 'ibm':
-          config = ibmConfig;
-          break;
-        case 'rigetti':
-          config = rigettiConfig;
-          break;
-        case 'ionq':
-          config = ionqConfig;
-          break;
+      if (credentialsResult.error || !credentialsResult.credentials) {
+        toast.error(`No stored credentials found for ${provider.toUpperCase()}`);
+        setTestResults(prev => ({ ...prev, [provider]: 'error' }));
+        return false;
       }
 
-      if (config.apiKey.length > 10) {
+      // Mock API test - in production, this would test the actual connection
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const credentials = credentialsResult.credentials;
+      if (credentials.apiKey && credentials.apiKey.length > 10) {
         toast.success(`${provider.toUpperCase()} connection successful`);
+        setTestResults(prev => ({ ...prev, [provider]: 'success' }));
         return true;
       } else {
         toast.error(`Invalid ${provider.toUpperCase()} API key`);
+        setTestResults(prev => ({ ...prev, [provider]: 'error' }));
         return false;
       }
     } catch (error) {
       toast.error(`${provider.toUpperCase()} connection failed`);
+      setTestResults(prev => ({ ...prev, [provider]: 'error' }));
       return false;
     }
   };
 
-  const saveBackend = (provider: 'ibm' | 'rigetti' | 'ionq') => {
+  const saveBackend = async (provider: 'ibm' | 'rigetti' | 'ionq') => {
+    if (loading) return;
+
     let config;
+    let serviceName;
+    
     switch (provider) {
       case 'ibm':
         config = ibmConfig;
+        serviceName = 'ibm-quantum';
         break;
       case 'rigetti':
         config = rigettiConfig;
+        serviceName = 'rigetti';
         break;
       case 'ionq':
         config = ionqConfig;
+        serviceName = 'ionq';
         break;
     }
 
-    const backend: HardwareBackend = {
-      id: `${provider}-${Date.now()}`,
-      name: `${provider.toUpperCase()} Backend`,
-      provider,
-      apiKey: config.apiKey,
-      isActive: true,
-      status: 'connected'
-    };
+    if (!config.apiKey) {
+      toast.error('API key is required');
+      return;
+    }
 
-    onBackendSave(backend);
-    toast.success(`${provider.toUpperCase()} backend saved successfully`);
+    try {
+      // Store credentials securely
+      const result = await storeCredentials(serviceName, config);
+      
+      if (result.error) {
+        toast.error(`Failed to save ${provider.toUpperCase()} credentials`);
+        return;
+      }
+
+      const backend: HardwareBackend = {
+        id: `${provider}-${Date.now()}`,
+        name: `${provider.toUpperCase()} Backend`,
+        provider,
+        isActive: true,
+        status: 'connected'
+      };
+
+      onBackendSave(backend);
+      
+      // Clear the form for security
+      if (provider === 'ibm') {
+        setIbmConfig(prev => ({ ...prev, apiKey: '' }));
+      } else if (provider === 'rigetti') {
+        setRigettiConfig(prev => ({ ...prev, apiKey: '' }));
+      } else if (provider === 'ionq') {
+        setIonqConfig(prev => ({ ...prev, apiKey: '' }));
+      }
+      
+      toast.success(`${provider.toUpperCase()} backend saved successfully`);
+    } catch (error) {
+      console.error('Error saving backend:', error);
+      toast.error(`Failed to save ${provider.toUpperCase()} backend`);
+    }
   };
 
   const getStatusIcon = (status: 'connected' | 'disconnected' | 'testing') => {
@@ -122,7 +189,7 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
           Hardware Backend Configuration
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Configure API keys for real quantum hardware backends
+          Configure API keys for real quantum hardware backends (stored securely)
         </p>
       </CardHeader>
       <CardContent>
@@ -146,6 +213,9 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
                     onChange={(e) => setIbmConfig(prev => ({ ...prev, apiKey: e.target.value }))}
                     className="font-mono"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    🔒 API keys are encrypted and stored securely on the server
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4">
@@ -182,18 +252,26 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
                   <Button
                     onClick={() => testConnection('ibm')}
                     variant="outline"
-                    disabled={!ibmConfig.apiKey}
+                    disabled={testResults.ibm === 'testing' || loading}
                     className="flex items-center gap-2"
                   >
-                    <Key className="w-4 h-4" />
+                    {getStatusIcon(testResults.ibm === 'testing' ? 'testing' : 'disconnected')}
                     Test Connection
                   </Button>
                   <Button
                     onClick={() => saveBackend('ibm')}
-                    disabled={!ibmConfig.apiKey}
+                    disabled={!ibmConfig.apiKey || loading}
                     className="bg-quantum-glow text-quantum-void"
                   >
-                    Save Backend
+                    {loading ? 'Saving...' : 'Save Backend'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => window.open('https://quantum-computing.ibm.com/account', '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Get API Key
                   </Button>
                 </div>
               </div>
@@ -213,6 +291,9 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
                     onChange={(e) => setRigettiConfig(prev => ({ ...prev, apiKey: e.target.value }))}
                     className="font-mono"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    🔒 API keys are encrypted and stored securely on the server
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
@@ -229,18 +310,26 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
                   <Button
                     onClick={() => testConnection('rigetti')}
                     variant="outline"
-                    disabled={!rigettiConfig.apiKey}
+                    disabled={testResults.rigetti === 'testing' || loading}
                     className="flex items-center gap-2"
                   >
-                    <Key className="w-4 h-4" />
+                    {getStatusIcon(testResults.rigetti === 'testing' ? 'testing' : 'disconnected')}
                     Test Connection
                   </Button>
                   <Button
                     onClick={() => saveBackend('rigetti')}
-                    disabled={!rigettiConfig.apiKey}
+                    disabled={!rigettiConfig.apiKey || loading}
                     className="bg-quantum-glow text-quantum-void"
                   >
-                    Save Backend
+                    {loading ? 'Saving...' : 'Save Backend'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => window.open('https://rigetti.com/get-started', '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Get API Key
                   </Button>
                 </div>
               </div>
@@ -260,6 +349,9 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
                     onChange={(e) => setIonqConfig(prev => ({ ...prev, apiKey: e.target.value }))}
                     className="font-mono"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    🔒 API keys are encrypted and stored securely on the server
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
@@ -276,18 +368,26 @@ export function HardwareBackendManager({ onBackendSave, backends }: HardwareBack
                   <Button
                     onClick={() => testConnection('ionq')}
                     variant="outline"
-                    disabled={!ionqConfig.apiKey}
+                    disabled={testResults.ionq === 'testing' || loading}
                     className="flex items-center gap-2"
                   >
-                    <Key className="w-4 h-4" />
+                    {getStatusIcon(testResults.ionq === 'testing' ? 'testing' : 'disconnected')}
                     Test Connection
                   </Button>
                   <Button
                     onClick={() => saveBackend('ionq')}
-                    disabled={!ionqConfig.apiKey}
+                    disabled={!ionqConfig.apiKey || loading}
                     className="bg-quantum-glow text-quantum-void"
                   >
-                    Save Backend
+                    {loading ? 'Saving...' : 'Save Backend'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => window.open('https://ionq.com/get-started', '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Get API Key
                   </Button>
                 </div>
               </div>
