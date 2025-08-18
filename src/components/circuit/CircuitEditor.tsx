@@ -64,7 +64,10 @@ export function CircuitEditor({
       name: `q${i}`,
       state: 'computational' as const // Use correct literal type
     })), // Fix: create CircuitQubit[] array with all required properties
-    gates: circuit,
+    gates: circuit.map(gate => ({
+      ...gate,
+      layer: gate.position // Add required layer property using position
+    })), // Transform Gate[] to CircuitGate[] by adding layer property
     layers: circuit.length,
     depth: circuit.length,
     metadata: {
