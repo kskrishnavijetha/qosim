@@ -57,7 +57,13 @@ export function CircuitEditor({
   const circuitData = {
     id: 'current-circuit',
     name: 'Current Circuit',
-    qubits: Array(5).fill(0).map((_, i) => ({ id: i, label: `q${i}` })), // Fix: create CircuitQubit[] array
+    qubits: Array(5).fill(0).map((_, i) => ({ 
+      id: i, 
+      label: `q${i}`,
+      index: i,
+      name: `q${i}`,
+      state: '|0⟩'
+    })), // Fix: create CircuitQubit[] array with all required properties
     gates: circuit,
     layers: circuit.length,
     depth: circuit.length,
