@@ -30,11 +30,34 @@ export function CircuitEditor({
     moveGate(gateId, timeStep);
   };
 
+  // Handle gate selection from palette
+  const handleGateMouseDown = (e: React.MouseEvent, gateType: string) => {
+    e.preventDefault();
+    const newGate: Gate = {
+      id: `${gateType}-${Date.now()}`,
+      type: gateType,
+      qubit: 0, // Default to first qubit
+      position: circuit.length // Add at end
+    };
+    addGate(newGate);
+  };
+
+  const handleGateTouchStart = (e: React.TouchEvent, gateType: string) => {
+    e.preventDefault();
+    const newGate: Gate = {
+      id: `${gateType}-${Date.now()}`,
+      type: gateType,
+      qubit: 0, // Default to first qubit
+      position: circuit.length // Add at end
+    };
+    addGate(newGate);
+  };
+
   // Create a circuit object that matches expected interface
   const circuitData = {
     id: 'current-circuit',
     name: 'Current Circuit',
-    qubits: 5,
+    qubits: Array(5).fill(0).map((_, i) => ({ id: i, label: `q${i}` })), // Fix: create CircuitQubit[] array
     gates: circuit,
     layers: circuit.length,
     depth: circuit.length,
@@ -67,7 +90,10 @@ export function CircuitEditor({
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1">
-              <GatePalette onGateSelect={addGate} />
+              <GatePalette 
+                onGateMouseDown={handleGateMouseDown}
+                onGateTouchStart={handleGateTouchStart}
+              />
             </div>
             <div className="lg:col-span-3">
               <CircuitCanvas
