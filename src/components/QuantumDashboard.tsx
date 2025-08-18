@@ -10,6 +10,7 @@ import { SDKDemoPanel } from '@/components/panels/SDKDemoPanel';
 import { useCircuitState } from '@/hooks/useCircuitState';
 import { useSimulator } from '@/hooks/useSimulator';
 import { useToast } from "@/components/ui/use-toast"
+import { type CloudSimulationConfig } from '@/lib/quantumSimulationService';
 
 export default function QuantumDashboard() {
   const { toast } = useToast()
@@ -82,7 +83,17 @@ export default function QuantumDashboard() {
         <QuantumBackendConfig
           onConfigSave={(newConfig) => {
             console.log('QuantumDashboard: New config saved', newConfig);
-            setConfig(newConfig);
+            // Cast the backend config to cloud simulation config
+            const cloudConfig: CloudSimulationConfig = {
+              ibmqToken: newConfig.ibmqToken,
+              ibmqHub: newConfig.ibmqHub,
+              ibmqGroup: newConfig.ibmqGroup,
+              ibmqProject: newConfig.ibmqProject,
+              awsAccessKey: newConfig.awsAccessKey,
+              awsSecretKey: newConfig.awsSecretKey,
+              awsRegion: newConfig.awsRegion
+            };
+            setConfig(cloudConfig);
             toast({
               title: "Configuration Saved",
               description: "Your backend configuration has been updated.",

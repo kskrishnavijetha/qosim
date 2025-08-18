@@ -26,11 +26,14 @@ export function useSimulator(circuit: Gate[]) {
       // Simulate the circuit based on the mode
       const mockResult: OptimizedSimulationResult = {
         stateVector: [],
-        measurementProbabilities: circuit.map((_, i) => ({ 
-          state: `|${i.toString(2).padStart(3, '0')}>`, 
-          probability: Math.random() 
-        })),
-        qubitStates: Array(5).fill(0).map(() => ({ x: 0, y: 0, z: 1 })),
+        measurementProbabilities: [0.5, 0.3, 0.2], // Fix: should be number array
+        qubitStates: Array(5).fill(0).map((_, i) => ({ 
+          qubit: i,
+          state: '|0⟩',
+          amplitude: { real: 1, imaginary: 0 },
+          phase: 0,
+          probability: 1
+        })), // Fix: match expected interface
         entanglement: { 
           pairs: [], 
           totalEntanglement: 0, 

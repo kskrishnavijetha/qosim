@@ -23,6 +23,24 @@ export function CircuitEditor({
   clearCircuit,
   loadExampleCircuit
 }: CircuitEditorProps) {
+  // Convert moveGate to match CircuitCanvas expected signature
+  const handleGateMove = (gateId: string, position: { x: number; y: number }) => {
+    // Convert position to time step (assuming x coordinate represents time)
+    const timeStep = Math.floor(position.x / 60); // Assuming 60px per time step
+    moveGate(gateId, timeStep);
+  };
+
+  // Create a circuit object that matches expected interface
+  const circuitData = {
+    id: 'current-circuit',
+    name: 'Current Circuit',
+    qubits: 5,
+    gates: circuit,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    isPublic: false
+  };
+
   return (
     <div className="space-y-6">
       <Card className="quantum-panel neon-border">
@@ -43,13 +61,13 @@ export function CircuitEditor({
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1">
-              <GatePalette onGateSelect={addGate} />
+              <GatePalette onGateAdd={addGate} />
             </div>
             <div className="lg:col-span-3">
               <CircuitCanvas
-                circuit={circuit}
+                circuit={circuitData}
                 onGateRemove={removeGate}
-                onGateMove={moveGate}
+                onGateMove={handleGateMove}
               />
             </div>
           </div>
