@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CircuitEditor } from '@/components/circuit/CircuitEditor';
@@ -5,12 +6,12 @@ import { SimulatorOutput } from '@/components/simulation/SimulatorOutput';
 import { SimulationModeSelector } from '@/components/simulation/SimulationModeSelector';
 import { HardwareIntegrationHub } from '@/components/hardware/HardwareIntegrationHub';
 import { QuantumBackendConfig } from '@/components/simulation/QuantumBackendConfig';
-import { SDKDemoPanel } from '@/components/sdk/SDKDemoPanel';
+import { SDKDemoPanel } from '@/components/panels/SDKDemoPanel';
 import { useCircuitState } from '@/hooks/useCircuitState';
 import { useSimulator } from '@/hooks/useSimulator';
 import { useToast } from "@/components/ui/use-toast"
 
-export function QuantumDashboard() {
+export default function QuantumDashboard() {
   const { toast } = useToast()
   const {
     circuit,
@@ -32,7 +33,7 @@ export function QuantumDashboard() {
   } = useSimulator(circuit);
 
   return (
-    <Tabs defaultvalue="circuit" className="w-full">
+    <Tabs defaultValue="circuit" className="w-full">
       <TabsList className="grid w-full grid-cols-5 quantum-tabs">
         <TabsTrigger value="circuit">Circuit</TabsTrigger>
         <TabsTrigger value="simulator">Simulator</TabsTrigger>

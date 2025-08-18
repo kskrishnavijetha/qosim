@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
@@ -183,6 +184,53 @@ export function useCircuitState() {
     simulateQuantumState(newCircuit);
   }, [circuit, simulateQuantumState]);
 
+  const removeGate = useCallback((gateId: string) => {
+    const gateToDelete = circuit.find(g => g.id === gateId);
+    const newCircuit = circuit.filter(gate => gate.id !== gateId);
+    setCircuit(newCircuit);
+    setHistory(prev => [...prev, newCircuit]);
+    
+    // Track analytics
+    if (gateToDelete) {
+      trackEvent('gate_removed', { gateType: gateToDelete.type });
+    }
+    
+    simulateQuantumState(newCircuit);
+  }, [circuit, simulateQuantumState]);
+
+  const moveGate = useCallback((gateId: string, newPosition: number) => {
+    const newCircuit = circuit.map(gate => 
+      gate.id === gateId ? { ...gate, position: newPosition } : gate
+    );
+    setCircuit(newCircuit);
+    setHistory(prev => [...prev, newCircuit]);
+    simulateQuantumState(newCircuit);
+  }, [circuit, simulateQuantumState]);
+
+  const loadExampleCircuit = useCallback((type: string) => {
+    let exampleGates: Gate[] = [];
+    
+    switch (type) {
+      case 'bell':
+        exampleGates = [
+          { id: 'h1', type: 'H', qubit: 0, position: 0 },
+          { id: 'cnot1', type: 'CNOT', qubits: [0, 1], position: 1 }
+        ];
+        break;
+      case 'ghz':
+        exampleGates = [
+          { id: 'h1', type: 'H', qubit: 0, position: 0 },
+          { id: 'cnot1', type: 'CNOT', qubits: [0, 1], position: 1 },
+          { id: 'cnot2', type: 'CNOT', qubits: [0, 2], position: 2 }
+        ];
+        break;
+    }
+    
+    setCircuit(exampleGates);
+    setHistory([[], exampleGates]);
+    simulateQuantumState(exampleGates);
+  }, [simulateQuantumState]);
+
   const deleteGate = useCallback((gateId: string) => {
     const gateToDelete = circuit.find(g => g.id === gateId);
     const newCircuit = circuit.filter(gate => gate.id !== gateId);
@@ -263,9 +311,12 @@ export function useCircuitState() {
     simulationMode,
     cloudConfig,
     addGate,
+    removeGate,
+    moveGate,
     deleteGate,
     undo,
     clearCircuit,
+    loadExampleCircuit,
     simulateQuantumState,
     generateCircuitData,
     handleModeChange,
