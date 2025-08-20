@@ -895,26 +895,32 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allow_profile_search: boolean | null
           avatar_url: string | null
           created_at: string
           display_name: string | null
           id: string
+          privacy_level: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          allow_profile_search?: boolean | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          privacy_level?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          allow_profile_search?: boolean | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          privacy_level?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1057,6 +1063,36 @@ export type Database = {
           message?: string
           metadata?: Json | null
           timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      security_audit_log: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
