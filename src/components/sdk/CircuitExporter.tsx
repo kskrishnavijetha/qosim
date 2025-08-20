@@ -20,6 +20,21 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
   const [projectName, setProjectName] = useState('quantum_circuit');
   const [exportFormat, setExportFormat] = useState('qasm');
 
+  const getValidQubitIndex = (qubit: number | undefined): number => {
+    if (qubit === undefined || qubit === null || isNaN(qubit)) {
+      return 0;
+    }
+    const numQubits = Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1;
+    return Math.max(0, Math.min(qubit, numQubits - 1));
+  };
+
+  const getValidQubitIndices = (qubits: number[] | undefined): number[] => {
+    if (!qubits || !Array.isArray(qubits)) {
+      return [0, 1];
+    }
+    return qubits.map(q => getValidQubitIndex(q));
+  };
+
   const generateQASM = () => {
     const numQubits = Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1;
     
@@ -28,35 +43,71 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
     qasm += `qreg q[${numQubits}];\n`;
     qasm += `creg c[${numQubits}];\n\n`;
 
-    circuit.forEach(gate => {
+    const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+
+    sortedGates.forEach(gate => {
       switch (gate.type) {
         case 'H':
-          qasm += `h q[${gate.qubit}];\n`;
+          const hQubit = getValidQubitIndex(gate.qubit);
+          qasm += `h q[${hQubit}];\n`;
           break;
         case 'X':
-          qasm += `x q[${gate.qubit}];\n`;
+          const xQubit = getValidQubitIndex(gate.qubit);
+          qasm += `x q[${xQubit}];\n`;
           break;
         case 'Y':
-          qasm += `y q[${gate.qubit}];\n`;
+          const yQubit = getValidQubitIndex(gate.qubit);
+          qasm += `y q[${yQubit}];\n`;
           break;
         case 'Z':
-          qasm += `z q[${gate.qubit}];\n`;
+          const zQubit = getValidQubitIndex(gate.qubit);
+          qasm += `z q[${zQubit}];\n`;
+          break;
+        case 'S':
+          const sQubit = getValidQubitIndex(gate.qubit);
+          qasm += `s q[${sQubit}];\n`;
+          break;
+        case 'T':
+          const tQubit = getValidQubitIndex(gate.qubit);
+          qasm += `t q[${tQubit}];\n`;
           break;
         case 'CNOT':
-          if (gate.qubits) qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
+          const cnotQubits = getValidQubitIndices(gate.qubits);
+          qasm += `cx q[${cnotQubits[0]}],q[${cnotQubits[1]}];\n`;
+          break;
+        case 'CZ':
+          const czQubits = getValidQubitIndices(gate.qubits);
+          qasm += `cz q[${czQubits[0]}],q[${czQubits[1]}];\n`;
+          break;
+        case 'SWAP':
+          const swapQubits = getValidQubitIndices(gate.qubits);
+          qasm += `swap q[${swapQubits[0]}],q[${swapQubits[1]}];\n`;
+          break;
+        case 'CCX':
+        case 'TOFFOLI':
+          const ccxQubits = getValidQubitIndices(gate.qubits);
+          if (ccxQubits.length >= 3) {
+            qasm += `ccx q[${ccxQubits[0]}],q[${ccxQubits[1]}],q[${ccxQubits[2]}];\n`;
+          }
           break;
         case 'RX':
-          qasm += `rx(${gate.angle || 0}) q[${gate.qubit}];\n`;
+          const rxQubit = getValidQubitIndex(gate.qubit);
+          qasm += `rx(${gate.angle || 0}) q[${rxQubit}];\n`;
           break;
         case 'RY':
-          qasm += `ry(${gate.angle || 0}) q[${gate.qubit}];\n`;
+          const ryQubit = getValidQubitIndex(gate.qubit);
+          qasm += `ry(${gate.angle || 0}) q[${ryQubit}];\n`;
           break;
         case 'RZ':
-          qasm += `rz(${gate.angle || 0}) q[${gate.qubit}];\n`;
+          const rzQubit = getValidQubitIndex(gate.qubit);
+          qasm += `rz(${gate.angle || 0}) q[${rzQubit}];\n`;
           break;
         case 'M':
-          qasm += `measure q[${gate.qubit}] -> c[${gate.qubit}];\n`;
+          const mQubit = getValidQubitIndex(gate.qubit);
+          qasm += `measure q[${mQubit}] -> c[${mQubit}];\n`;
           break;
+        default:
+          console.warn(`Unsupported gate type for QASM export: ${gate.type}`);
       }
     });
 
@@ -74,35 +125,71 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
     qiskit += `cr = ClassicalRegister(${numQubits}, 'c')\n`;
     qiskit += `circuit = QuantumCircuit(qr, cr)\n\n`;
 
-    circuit.forEach(gate => {
+    const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+
+    sortedGates.forEach(gate => {
       switch (gate.type) {
         case 'H':
-          qiskit += `circuit.h(${gate.qubit})\n`;
+          const hQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.h(${hQubit})\n`;
           break;
         case 'X':
-          qiskit += `circuit.x(${gate.qubit})\n`;
+          const xQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.x(${xQubit})\n`;
           break;
         case 'Y':
-          qiskit += `circuit.y(${gate.qubit})\n`;
+          const yQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.y(${yQubit})\n`;
           break;
         case 'Z':
-          qiskit += `circuit.z(${gate.qubit})\n`;
+          const zQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.z(${zQubit})\n`;
+          break;
+        case 'S':
+          const sQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.s(${sQubit})\n`;
+          break;
+        case 'T':
+          const tQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.t(${tQubit})\n`;
           break;
         case 'CNOT':
-          if (gate.qubits) qiskit += `circuit.cx(${gate.qubits[0]}, ${gate.qubits[1]})\n`;
+          const cnotQubits = getValidQubitIndices(gate.qubits);
+          qiskit += `circuit.cx(${cnotQubits[0]}, ${cnotQubits[1]})\n`;
+          break;
+        case 'CZ':
+          const czQubits = getValidQubitIndices(gate.qubits);
+          qiskit += `circuit.cz(${czQubits[0]}, ${czQubits[1]})\n`;
+          break;
+        case 'SWAP':
+          const swapQubits = getValidQubitIndices(gate.qubits);
+          qiskit += `circuit.swap(${swapQubits[0]}, ${swapQubits[1]})\n`;
+          break;
+        case 'CCX':
+        case 'TOFFOLI':
+          const ccxQubits = getValidQubitIndices(gate.qubits);
+          if (ccxQubits.length >= 3) {
+            qiskit += `circuit.ccx(${ccxQubits[0]}, ${ccxQubits[1]}, ${ccxQubits[2]})\n`;
+          }
           break;
         case 'RX':
-          qiskit += `circuit.rx(${gate.angle || 0}, ${gate.qubit})\n`;
+          const rxQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.rx(${gate.angle || 0}, ${rxQubit})\n`;
           break;
         case 'RY':
-          qiskit += `circuit.ry(${gate.angle || 0}, ${gate.qubit})\n`;
+          const ryQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.ry(${gate.angle || 0}, ${ryQubit})\n`;
           break;
         case 'RZ':
-          qiskit += `circuit.rz(${gate.angle || 0}, ${gate.qubit})\n`;
+          const rzQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.rz(${gate.angle || 0}, ${rzQubit})\n`;
           break;
         case 'M':
-          qiskit += `circuit.measure(${gate.qubit}, ${gate.qubit})\n`;
+          const mQubit = getValidQubitIndex(gate.qubit);
+          qiskit += `circuit.measure(${mQubit}, ${mQubit})\n`;
           break;
+        default:
+          console.warn(`Unsupported gate type for Qiskit export: ${gate.type}`);
       }
     });
 
@@ -118,60 +205,99 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
   };
 
   const generateCirq = () => {
+    const numQubits = Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1;
+    
     let cirq = `import cirq\nimport numpy as np\n\n`;
     cirq += `# Create qubits\n`;
-    
-    const numQubits = Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1;
     cirq += `qubits = [cirq.GridQubit(0, i) for i in range(${numQubits})]\n\n`;
     cirq += `# Create circuit\ncircuit = cirq.Circuit()\n\n`;
 
-    circuit.forEach(gate => {
+    const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+
+    sortedGates.forEach(gate => {
       switch (gate.type) {
         case 'H':
-          cirq += `circuit.append(cirq.H(qubits[${gate.qubit}]))\n`;
+          const hQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.H(qubits[${hQubit}]))\n`;
           break;
         case 'X':
-          cirq += `circuit.append(cirq.X(qubits[${gate.qubit}]))\n`;
+          const xQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.X(qubits[${xQubit}]))\n`;
           break;
         case 'Y':
-          cirq += `circuit.append(cirq.Y(qubits[${gate.qubit}]))\n`;
+          const yQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.Y(qubits[${yQubit}]))\n`;
           break;
         case 'Z':
-          cirq += `circuit.append(cirq.Z(qubits[${gate.qubit}]))\n`;
+          const zQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.Z(qubits[${zQubit}]))\n`;
+          break;
+        case 'S':
+          const sQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.S(qubits[${sQubit}]))\n`;
+          break;
+        case 'T':
+          const tQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.T(qubits[${tQubit}]))\n`;
           break;
         case 'CNOT':
-          if (gate.qubits) cirq += `circuit.append(cirq.CNOT(qubits[${gate.qubits[0]}], qubits[${gate.qubits[1]}]))\n`;
+          const cnotQubits = getValidQubitIndices(gate.qubits);
+          cirq += `circuit.append(cirq.CNOT(qubits[${cnotQubits[0]}], qubits[${cnotQubits[1]}]))\n`;
+          break;
+        case 'CZ':
+          const czQubits = getValidQubitIndices(gate.qubits);
+          cirq += `circuit.append(cirq.CZ(qubits[${czQubits[0]}], qubits[${czQubits[1]}]))\n`;
+          break;
+        case 'SWAP':
+          const swapQubits = getValidQubitIndices(gate.qubits);
+          cirq += `circuit.append(cirq.SWAP(qubits[${swapQubits[0]}], qubits[${swapQubits[1]}]))\n`;
+          break;
+        case 'CCX':
+        case 'TOFFOLI':
+          const ccxQubits = getValidQubitIndices(gate.qubits);
+          if (ccxQubits.length >= 3) {
+            cirq += `circuit.append(cirq.CCX(qubits[${ccxQubits[0]}], qubits[${ccxQubits[1]}], qubits[${ccxQubits[2]}]))\n`;
+          }
           break;
         case 'RX':
-          cirq += `circuit.append(cirq.rx(${gate.angle || 0})(qubits[${gate.qubit}]))\n`;
+          const rxQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.rx(${gate.angle || 0})(qubits[${rxQubit}]))\n`;
           break;
         case 'RY':
-          cirq += `circuit.append(cirq.ry(${gate.angle || 0})(qubits[${gate.qubit}]))\n`;
+          const ryQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.ry(${gate.angle || 0})(qubits[${ryQubit}]))\n`;
           break;
         case 'RZ':
-          cirq += `circuit.append(cirq.rz(${gate.angle || 0})(qubits[${gate.qubit}]))\n`;
+          const rzQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.rz(${gate.angle || 0})(qubits[${rzQubit}]))\n`;
           break;
         case 'M':
-          cirq += `circuit.append(cirq.measure(qubits[${gate.qubit}], key='m${gate.qubit}'))\n`;
+          const mQubit = getValidQubitIndex(gate.qubit);
+          cirq += `circuit.append(cirq.measure(qubits[${mQubit}], key='m${mQubit}'))\n`;
           break;
+        default:
+          console.warn(`Unsupported gate type for Cirq export: ${gate.type}`);
       }
     });
 
     cirq += `\n# Simulate the circuit\n`;
     cirq += `simulator = cirq.Simulator()\n`;
     cirq += `result = simulator.run(circuit, repetitions=1024)\n`;
+    cirq += `print("Measurement results:")\n`;
     cirq += `print(result.histogram(key='measurements'))\n`;
 
     return cirq;
   };
 
   const generateJSON = () => {
+    const numQubits = Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1;
+    
     const exportData = {
       metadata: {
         name: projectName,
         version: "1.0.0",
         created: new Date().toISOString(),
-        qubits: Math.max(5, ...circuit.map(g => Math.max(g.qubit || 0, ...(g.qubits || [])))) + 1,
+        qubits: numQubits,
         gates: circuit.length,
         depth: Math.max(...circuit.map(g => g.position), 0) + 1
       },
@@ -196,12 +322,17 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
   };
 
   const getExportContent = () => {
-    switch (exportFormat) {
-      case 'qasm': return generateQASM();
-      case 'qiskit': return generateQiskit();
-      case 'cirq': return generateCirq();
-      case 'json': return generateJSON();
-      default: return '';
+    try {
+      switch (exportFormat) {
+        case 'qasm': return generateQASM();
+        case 'qiskit': return generateQiskit();
+        case 'cirq': return generateCirq();
+        case 'json': return generateJSON();
+        default: return '';
+      }
+    } catch (error) {
+      console.error(`Export error for ${exportFormat}:`, error);
+      return `# Error generating ${exportFormat} export: ${error}`;
     }
   };
 
@@ -216,23 +347,36 @@ export function CircuitExporter({ circuit, simulationResult }: CircuitExporterPr
   };
 
   const handleExport = () => {
-    const content = getExportContent();
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${projectName}.${getFileExtension()}`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    toast.success('Export Complete', { 
-      description: `Circuit exported as ${exportFormat.toUpperCase()}` 
-    });
+    try {
+      const content = getExportContent();
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectName}.${getFileExtension()}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      toast.success('Export Complete', { 
+        description: `Circuit exported as ${exportFormat.toUpperCase()}` 
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Export failed', { 
+        description: `Failed to export circuit as ${exportFormat.toUpperCase()}` 
+      });
+    }
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(getExportContent());
-    toast.success('Copied', { description: 'Code copied to clipboard' });
+    try {
+      const content = getExportContent();
+      navigator.clipboard.writeText(content);
+      toast.success('Copied', { description: 'Code copied to clipboard' });
+    } catch (error) {
+      console.error('Copy failed:', error);
+      toast.error('Copy failed', { description: 'Failed to copy code to clipboard' });
+    }
   };
 
   const exportFormats = [
