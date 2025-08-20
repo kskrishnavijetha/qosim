@@ -1,3 +1,4 @@
+
 import { useToast } from '@/hooks/use-toast';
 import { trackEvent } from '@/lib/analytics';
 
@@ -35,6 +36,20 @@ export function useExportHandlers(
       }));
   };
 
+  const getValidQubitIndex = (qubit: number | undefined): number => {
+    if (qubit === undefined || qubit === null || isNaN(qubit)) {
+      return 0; // Default to qubit 0 if undefined
+    }
+    return Math.max(0, Math.min(qubit, numQubits - 1)); // Clamp to valid range
+  };
+
+  const getValidQubitIndices = (qubits: number[] | undefined): number[] => {
+    if (!qubits || !Array.isArray(qubits)) {
+      return [0, 1]; // Default for two-qubit gates
+    }
+    return qubits.map(q => getValidQubitIndex(q));
+  };
+
   const handleExportJSON = () => {
     try {
       const data = generateCircuitData(circuit);
@@ -44,6 +59,7 @@ export function useExportHandlers(
       a.href = url;
       a.download = `${options.projectName}.json`;
       a.click();
+      URL.revokeObjectURL(url);
       trackEvent('circuit_exported', { format: 'json', gateCount: circuit.length });
       toast({ title: "JSON exported successfully!" });
     } catch (error) {
@@ -55,29 +71,64 @@ export function useExportHandlers(
     try {
       let qasm = `OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[${numQubits}];\ncreg c[${numQubits}];\n\n`;
       
-      circuit.forEach(gate => {
+      // Sort gates by position to ensure correct execution order
+      const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+      
+      sortedGates.forEach(gate => {
         switch (gate.type) {
           case 'H':
-            qasm += `h q[${gate.qubit}];\n`;
+            const hQubit = getValidQubitIndex(gate.qubit);
+            qasm += `h q[${hQubit}];\n`;
             break;
           case 'X':
-            qasm += `x q[${gate.qubit}];\n`;
+            const xQubit = getValidQubitIndex(gate.qubit);
+            qasm += `x q[${xQubit}];\n`;
+            break;
+          case 'Y':
+            const yQubit = getValidQubitIndex(gate.qubit);
+            qasm += `y q[${yQubit}];\n`;
             break;
           case 'Z':
-            qasm += `z q[${gate.qubit}];\n`;
+            const zQubit = getValidQubitIndex(gate.qubit);
+            qasm += `z q[${zQubit}];\n`;
+            break;
+          case 'S':
+            const sQubit = getValidQubitIndex(gate.qubit);
+            qasm += `s q[${sQubit}];\n`;
+            break;
+          case 'T':
+            const tQubit = getValidQubitIndex(gate.qubit);
+            qasm += `t q[${tQubit}];\n`;
             break;
           case 'CNOT':
-            if (gate.qubits) qasm += `cx q[${gate.qubits[0]}],q[${gate.qubits[1]}];\n`;
+            const cnotQubits = getValidQubitIndices(gate.qubits);
+            qasm += `cx q[${cnotQubits[0]}],q[${cnotQubits[1]}];\n`;
+            break;
+          case 'CZ':
+            const czQubits = getValidQubitIndices(gate.qubits);
+            qasm += `cz q[${czQubits[0]}],q[${czQubits[1]}];\n`;
             break;
           case 'RX':
-            qasm += `rx(${gate.angle}) q[${gate.qubit}];\n`;
+            const rxQubit = getValidQubitIndex(gate.qubit);
+            const rxAngle = gate.angle || 0;
+            qasm += `rx(${rxAngle}) q[${rxQubit}];\n`;
             break;
           case 'RY':
-            qasm += `ry(${gate.angle}) q[${gate.qubit}];\n`;
+            const ryQubit = getValidQubitIndex(gate.qubit);
+            const ryAngle = gate.angle || 0;
+            qasm += `ry(${ryAngle}) q[${ryQubit}];\n`;
+            break;
+          case 'RZ':
+            const rzQubit = getValidQubitIndex(gate.qubit);
+            const rzAngle = gate.angle || 0;
+            qasm += `rz(${rzAngle}) q[${rzQubit}];\n`;
             break;
           case 'M':
-            qasm += `measure q[${gate.qubit}] -> c[${gate.qubit}];\n`;
+            const mQubit = getValidQubitIndex(gate.qubit);
+            qasm += `measure q[${mQubit}] -> c[${mQubit}];\n`;
             break;
+          default:
+            console.warn(`Unsupported gate type for QASM export: ${gate.type}`);
         }
       });
       
@@ -87,6 +138,7 @@ export function useExportHandlers(
       a.href = url;
       a.download = `${options.projectName}.qasm`;
       a.click();
+      URL.revokeObjectURL(url);
       trackEvent('circuit_exported', { format: 'qasm', gateCount: circuit.length });
       toast({ title: "QASM exported successfully!" });
     } catch (error) {
@@ -104,41 +156,64 @@ export function useExportHandlers(
       python += `# Create quantum circuit\n`;
       python += `qc = QuantumCircuit(${numQubits}, ${numQubits})\n\n`;
       
-      circuit.forEach(gate => {
+      // Sort gates by position to ensure correct execution order
+      const sortedGates = [...circuit].sort((a, b) => a.position - b.position);
+      
+      sortedGates.forEach(gate => {
         switch (gate.type) {
           case 'H':
-            python += `qc.h(${gate.qubit})  # Hadamard gate\n`;
+            const hQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.h(${hQubit})  # Hadamard gate\n`;
             break;
           case 'X':
-            python += `qc.x(${gate.qubit})  # Pauli-X gate\n`;
+            const xQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.x(${xQubit})  # Pauli-X gate\n`;
             break;
           case 'Y':
-            python += `qc.y(${gate.qubit})  # Pauli-Y gate\n`;
+            const yQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.y(${yQubit})  # Pauli-Y gate\n`;
             break;
           case 'Z':
-            python += `qc.z(${gate.qubit})  # Pauli-Z gate\n`;
+            const zQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.z(${zQubit})  # Pauli-Z gate\n`;
             break;
           case 'CNOT':
-            if (gate.qubits) python += `qc.cx(${gate.qubits[0]}, ${gate.qubits[1]})  # CNOT gate\n`;
+            const cnotQubits = getValidQubitIndices(gate.qubits);
+            python += `qc.cx(${cnotQubits[0]}, ${cnotQubits[1]})  # CNOT gate\n`;
+            break;
+          case 'CZ':
+            const czQubits = getValidQubitIndices(gate.qubits);
+            python += `qc.cz(${czQubits[0]}, ${czQubits[1]})  # CZ gate\n`;
             break;
           case 'RX':
-            python += `qc.rx(${gate.angle || 'np.pi/2'}, ${gate.qubit})  # RX rotation\n`;
+            const rxQubit = getValidQubitIndex(gate.qubit);
+            const rxAngle = gate.angle || Math.PI / 2;
+            python += `qc.rx(${rxAngle}, ${rxQubit})  # RX rotation\n`;
             break;
           case 'RY':
-            python += `qc.ry(${gate.angle || 'np.pi/2'}, ${gate.qubit})  # RY rotation\n`;
+            const ryQubit = getValidQubitIndex(gate.qubit);
+            const ryAngle = gate.angle || Math.PI / 2;
+            python += `qc.ry(${ryAngle}, ${ryQubit})  # RY rotation\n`;
             break;
           case 'RZ':
-            python += `qc.rz(${gate.angle || 'np.pi/2'}, ${gate.qubit})  # RZ rotation\n`;
+            const rzQubit = getValidQubitIndex(gate.qubit);
+            const rzAngle = gate.angle || Math.PI / 2;
+            python += `qc.rz(${rzAngle}, ${rzQubit})  # RZ rotation\n`;
             break;
           case 'S':
-            python += `qc.s(${gate.qubit})  # S gate\n`;
+            const sQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.s(${sQubit})  # S gate\n`;
             break;
           case 'T':
-            python += `qc.t(${gate.qubit})  # T gate\n`;
+            const tQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.t(${tQubit})  # T gate\n`;
             break;
           case 'M':
-            python += `qc.measure(${gate.qubit}, ${gate.qubit})  # Measurement\n`;
+            const mQubit = getValidQubitIndex(gate.qubit);
+            python += `qc.measure(${mQubit}, ${mQubit})  # Measurement\n`;
             break;
+          default:
+            console.warn(`Unsupported gate type for Python export: ${gate.type}`);
         }
       });
       
@@ -160,6 +235,7 @@ export function useExportHandlers(
       a.href = url;
       a.download = `${options.projectName}.py`;
       a.click();
+      URL.revokeObjectURL(url);
       trackEvent('circuit_exported', { format: 'python' as any, gateCount: circuit.length });
       toast({ title: "Python exported successfully!" });
     } catch (error) {
