@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,10 @@ import { toast } from 'sonner';
 import { Shield, Users, Globe, Eye } from 'lucide-react';
 
 type PrivacyLevel = 'private' | 'friends' | 'public';
+
+const isValidPrivacyLevel = (level: string | null): level is PrivacyLevel => {
+  return level === 'private' || level === 'friends' || level === 'public';
+};
 
 export function PrivacySettings() {
   const { user } = useAuth();
@@ -37,7 +40,10 @@ export function PrivacySettings() {
       if (error) throw error;
 
       if (data) {
-        setPrivacyLevel(data.privacy_level || 'private');
+        const validPrivacyLevel = isValidPrivacyLevel(data.privacy_level) 
+          ? data.privacy_level 
+          : 'private';
+        setPrivacyLevel(validPrivacyLevel);
         setAllowProfileSearch(data.allow_profile_search || false);
       }
     } catch (error) {
