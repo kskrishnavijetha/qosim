@@ -58,7 +58,18 @@ export function convertToUnifiedCircuit(
 
     // Handle custom parameters - ensure it's a Record<string, number>
     if (gate.params && typeof gate.params === 'object' && !Array.isArray(gate.params)) {
-      gateOp.params = { ...gateOp.params, ...gate.params };
+      // Ensure we have a valid params object to spread into
+      const existingParams = gateOp.params || {};
+      const validParams: Record<string, number> = {};
+      
+      // Filter and convert gate.params to ensure all values are numbers
+      Object.entries(gate.params).forEach(([key, value]) => {
+        if (typeof key === 'string' && typeof value === 'number') {
+          validParams[key] = value;
+        }
+      });
+      
+      gateOp.params = { ...existingParams, ...validParams };
     }
 
     return gateOp;
