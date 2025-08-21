@@ -16,6 +16,13 @@ interface Toast {
   msg: string;
 }
 
+interface GateDefinition {
+  label: string;
+  arity: number;
+  params?: string[];
+  needsControl?: boolean;
+}
+
 /**
  * QOSim Circuit Builder (Debug-Ready)
  * - Single-file React component
@@ -37,7 +44,7 @@ export default function QOSimCircuitBuilder() {
 
   // ---- Gate registry (extend freely) ----
   const gates = useMemo(
-    () => ({
+    (): Record<string, GateDefinition> => ({
       H: { label: "H", arity: 1 },
       X: { label: "X", arity: 1 },
       Z: { label: "Z", arity: 1 },
@@ -72,7 +79,7 @@ export default function QOSimCircuitBuilder() {
   const isValidQubit = (q: number) => Number.isInteger(q) && q >= 0 && q < numQubits;
 
   const addGate = () => {
-    const def = gates[selectedGate as keyof typeof gates];
+    const def = gates[selectedGate];
     if (!def) return showError(`Unknown gate type: ${selectedGate}`);
 
     const needsTwo = def.arity === 2;
@@ -119,7 +126,7 @@ export default function QOSimCircuitBuilder() {
       const col = Array.from({ length: numQubits }, () => "──");
       if (s.targets?.length) {
         s.targets.forEach((t) => {
-          col[t] = s.type === "MEASURE" ? "M─" : `${gates[s.type as keyof typeof gates]?.label ?? s.type}`.padEnd(2, " ");
+          col[t] = s.type === "MEASURE" ? "M─" : `${gates[s.type]?.label ?? s.type}`.padEnd(2, " ");
         });
       }
       if (s.control !== undefined) {
@@ -168,7 +175,7 @@ export default function QOSimCircuitBuilder() {
                 className="bg-black/40 border border-white/10 rounded-lg px-3 py-2"
               >
                 {Object.keys(gates).map((k) => (
-                  <option key={k} value={k}>{gates[k as keyof typeof gates].label}</option>
+                  <option key={k} value={k}>{gates[k].label}</option>
                 ))}
               </select>
             </div>
@@ -203,7 +210,7 @@ export default function QOSimCircuitBuilder() {
               />
             </div>
 
-            {gates[selectedGate as keyof typeof gates]?.params?.includes("theta") && (
+            {gates[selectedGate]?.params?.includes("theta") && (
               <div className="flex flex-col gap-1">
                 <span className="text-xs opacity-80">θ (radians)</span>
                 <input
