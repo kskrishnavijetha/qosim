@@ -52,12 +52,19 @@ export function QuantumStateVisualizer({ simulationResult, numQubits }: QuantumS
               const qubitState = simulationResult.qubitStates[i];
               if (!qubitState) return null;
 
+              // Create proper Bloch sphere state with Complex-like objects
               const blochState = {
-                amplitude0: { real: Math.sqrt(1 - qubitState.probability), imag: 0 },
-                amplitude1: { real: Math.sqrt(qubitState.probability), imag: 0 },
-                probability0: 1 - qubitState.probability,
-                probability1: qubitState.probability,
-                phase: qubitState.phase
+                amplitude0: { 
+                  real: Math.sqrt(Math.max(0, 1 - qubitState.probability)), 
+                  imag: 0 
+                },
+                amplitude1: { 
+                  real: Math.sqrt(Math.max(0, qubitState.probability)), 
+                  imag: 0 
+                },
+                probability0: Math.max(0, 1 - qubitState.probability),
+                probability1: Math.max(0, qubitState.probability),
+                phase: qubitState.phase || 0
               };
 
               return (
@@ -102,7 +109,7 @@ export function QuantumStateVisualizer({ simulationResult, numQubits }: QuantumS
           <div className="bg-quantum-void rounded p-3 border border-quantum-matrix">
             <div className="text-muted-foreground">Fidelity</div>
             <div className="text-quantum-glow font-mono text-lg">
-              {(simulationResult.fidelity * 100).toFixed(2)}%
+              {((simulationResult.fidelity || 1) * 100).toFixed(2)}%
             </div>
           </div>
           <div className="bg-quantum-void rounded p-3 border border-quantum-matrix">
