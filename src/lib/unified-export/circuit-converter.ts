@@ -56,8 +56,8 @@ export function convertToUnifiedCircuit(
       gateOp.params = { theta: gate.angle };
     }
 
-    // Handle custom parameters
-    if (gate.params) {
+    // Handle custom parameters - ensure it's a Record<string, number>
+    if (gate.params && typeof gate.params === 'object' && !Array.isArray(gate.params)) {
       gateOp.params = { ...gateOp.params, ...gate.params };
     }
 

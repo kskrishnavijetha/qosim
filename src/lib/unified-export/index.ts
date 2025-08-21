@@ -1,10 +1,18 @@
 
-export { Circuit, GateOp, validate } from './types';
+export type { Circuit, GateOp } from './types';
+export { validate } from './types';
 export { toOpenQASM } from './openqasm-exporter';
 export { toJSON } from './json-exporter';
 export { toQiskit } from './qiskit-exporter';
 export { toJavaScript } from './javascript-exporter';
 export { convertToUnifiedCircuit } from './circuit-converter';
+
+import { Circuit } from './types';
+import { validate } from './types';
+import { toOpenQASM } from './openqasm-exporter';
+import { toJSON } from './json-exporter';
+import { toQiskit } from './qiskit-exporter';
+import { toJavaScript } from './javascript-exporter';
 
 // Unified exporter class
 export class UnifiedExporter {
