@@ -7,7 +7,7 @@ import { ProbabilityHistogram } from '@/components/visualization/ProbabilityHist
 import { QuantumStateHeatmap } from '@/components/visualization/QuantumStateHeatmap';
 import { EnhancedBlochSphere } from '@/components/quantum/EnhancedBlochSphere';
 import { StateVectorMatrix } from '@/components/quantum/StateVectorMatrix';
-import { BarChart, Sphere, Grid, Matrix } from 'lucide-react';
+import { BarChart, Circle, Grid, Table } from 'lucide-react';
 import { Complex } from '@/services/complexNumbers';
 
 interface SimulationResultsProps {
@@ -26,7 +26,7 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
     new Complex(amp.real, amp.imaginary)
   );
 
-  // Prepare basis states for matrix visualization
+  // Prepare basis states for matrix visualization with correct property names
   const basisStates = Object.entries(result.measurementProbabilities).map(([state, prob]) => ({
     state,
     amplitude: { real: Math.sqrt(prob), imag: 0 },
@@ -85,7 +85,7 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
             Histogram
           </TabsTrigger>
           <TabsTrigger value="bloch" className="text-quantum-neon">
-            <Sphere className="w-4 h-4 mr-2" />
+            <Circle className="w-4 h-4 mr-2" />
             Bloch Spheres
           </TabsTrigger>
           {showAdvanced && (
@@ -96,7 +96,7 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
           )}
           {showAdvanced && (
             <TabsTrigger value="statevector" className="text-quantum-plasma">
-              <Matrix className="w-4 h-4 mr-2" />
+              <Table className="w-4 h-4 mr-2" />
               State Vector
             </TabsTrigger>
           )}
