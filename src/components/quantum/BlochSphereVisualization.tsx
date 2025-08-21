@@ -1,145 +1,216 @@
-import { useRef, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
+import React, { useRef, useEffect, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, Text, Line } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface BlochSphereProps {
-  qubitStates: {
-    real: number;
-    imag: number;
-    magnitude: number;
+  blochSphereData: Array<{
+    x: number;
+    y: number;
+    z: number;
+    qubit: number;
+    theta?: number;
+    phi?: number;
+  }>;
+  qubitStates: Array<{
+    qubit: number;
+    state: string;
+    amplitude: { real: number; imag: number };
     phase: number;
-  }[];
-  measurements: { [qubit: number]: { "0": number; "1": number } };
+    probability: number;
+  }>;
+  selectedQubit: number;
+  onQubitSelect: (qubit: number) => void;
 }
 
-export function BlochSphereVisualization({ qubitStates, measurements }: BlochSphereProps) {
-  const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+function QubitVector({ position, color, qubit, isSelected }: {
+  position: [number, number, number];
+  color: string;
+  qubit: number;
+  isSelected: boolean;
+}) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current && isSelected) {
+      meshRef.current.rotation.y = state.clock.elapsedTime;
+    }
+  });
 
-  const drawBlochSphere = (canvas: HTMLCanvasElement, state: any, qubitIndex: number) => {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const arrowGeometry = useMemo(() => {
+    const geometry = new THREE.ConeGeometry(0.05, 0.2, 8);
+    return geometry;
+  }, []);
 
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) * 0.35;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Set quantum theme colors
-    ctx.strokeStyle = 'hsl(var(--quantum-glow))';
-    ctx.fillStyle = 'hsl(var(--quantum-particle))';
-
-    // Draw sphere outline
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // Draw equator
-    ctx.beginPath();
-    ctx.ellipse(centerX, centerY, radius, radius * 0.3, 0, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // Draw meridian
-    ctx.beginPath();
-    ctx.ellipse(centerX, centerY, radius * 0.3, radius, 0, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // Calculate state vector on Bloch sphere
-    const prob0 = measurements[qubitIndex]?.["0"] || 0;
-    const prob1 = measurements[qubitIndex]?.["1"] || 0;
-    
-    // Convert to spherical coordinates
-    const theta = 2 * Math.acos(Math.sqrt(prob0)); // polar angle
-    const phi = state.phase; // azimuthal angle
-
-    // Convert to Cartesian coordinates
-    const x = Math.sin(theta) * Math.cos(phi);
-    const y = Math.sin(theta) * Math.sin(phi);
-    const z = Math.cos(theta);
-
-    // Project to 2D
-    const screenX = centerX + x * radius;
-    const screenY = centerY - z * radius;
-
-    // Draw state vector
-    ctx.strokeStyle = 'hsl(var(--quantum-matrix))';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(screenX, screenY);
-    ctx.stroke();
-
-    // Draw state point
-    ctx.fillStyle = 'hsl(var(--quantum-glow))';
-    ctx.beginPath();
-    ctx.arc(screenX, screenY, 6, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // Add axis labels
-    ctx.fillStyle = 'hsl(var(--quantum-neon))';
-    ctx.font = '12px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('|0⟩', centerX, centerY - radius - 10);
-    ctx.fillText('|1⟩', centerX, centerY + radius + 20);
-    ctx.textAlign = 'left';
-    ctx.fillText('X', centerX + radius + 5, centerY + 5);
-    ctx.textAlign = 'right';
-    ctx.fillText('Y', centerX - radius - 5, centerY - 5);
-  };
-
-  useEffect(() => {
-    canvasRefs.current.forEach((canvas, index) => {
-      if (canvas && qubitStates[index]) {
-        drawBlochSphere(canvas, qubitStates[index], index);
-      }
-    });
-  }, [qubitStates, measurements]);
+  const linePoints = useMemo(() => [
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(position[0] * 0.8, position[1] * 0.8, position[2] * 0.8)
+  ], [position]);
 
   return (
-    <Card className="quantum-panel neon-border">
-      <CardHeader>
-        <CardTitle className="text-quantum-glow">Bloch Sphere Visualization</CardTitle>
-        <CardDescription className="text-quantum-particle">
-          Real-time qubit state representation on the Bloch sphere
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {qubitStates.map((state, index) => (
-            <div key={index} className="text-center">
-              <div className="quantum-panel neon-border p-4 rounded-lg">
-                <h4 className="text-quantum-neon font-mono mb-2">Qubit {index}</h4>
-                <canvas
-                  ref={el => canvasRefs.current[index] = el}
-                  width={200}
-                  height={200}
-                  className="border border-quantum-matrix rounded bg-quantum-void/20"
-                />
-                <div className="mt-2 space-y-1">
-                  <div className="flex justify-between text-xs font-mono">
-                    <span className="text-quantum-particle">|0⟩:</span>
-                    <Badge variant="outline" className="text-quantum-glow">
-                      {((measurements[index]?.["0"] || 0) * 100).toFixed(1)}%
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between text-xs font-mono">
-                    <span className="text-quantum-particle">|1⟩:</span>
-                    <Badge variant="outline" className="text-quantum-matrix">
-                      {((measurements[index]?.["1"] || 0) * 100).toFixed(1)}%
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-quantum-neon">
-                    φ = {state.phase.toFixed(3)} rad
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <group>
+      {/* Vector line */}
+      <Line
+        points={linePoints}
+        color={color}
+        lineWidth={isSelected ? 4 : 2}
+      />
+      
+      {/* Arrow head */}
+      <mesh
+        ref={meshRef}
+        position={position}
+        geometry={arrowGeometry}
+        lookAt={new THREE.Vector3(0, 0, 0)}
+      >
+        <meshBasicMaterial color={color} />
+      </mesh>
+      
+      {/* Qubit label */}
+      <Text
+        position={[position[0] * 1.2, position[1] * 1.2, position[2] * 1.2]}
+        fontSize={0.1}
+        color={color}
+        anchorX="center"
+        anchorY="middle"
+      >
+        Q{qubit}
+      </Text>
+    </group>
+  );
+}
+
+function BlochSphere({ blochSphereData, qubitStates, selectedQubit, onQubitSelect }: BlochSphereProps) {
+  const sphereRef = useRef<THREE.Mesh>(null);
+
+  // Create axes
+  const axes = useMemo(() => [
+    { start: [-1.2, 0, 0], end: [1.2, 0, 0], color: '#ff6b6b', label: 'X' },
+    { start: [0, -1.2, 0], end: [0, 1.2, 0], color: '#4ecdc4', label: 'Y' },
+    { start: [0, 0, -1.2], end: [0, 0, 1.2], color: '#45b7d1', label: 'Z' }
+  ], []);
+
+  // Calculate proper Bloch coordinates for each qubit
+  const qubitVectors = useMemo(() => {
+    return qubitStates.map((state, index) => {
+      const blochData = blochSphereData[index];
+      
+      if (blochData && Math.abs(blochData.x) + Math.abs(blochData.y) + Math.abs(blochData.z) > 0.01) {
+        return {
+          position: [blochData.x, blochData.y, blochData.z] as [number, number, number],
+          qubit: state.qubit,
+          color: `hsl(${(state.qubit * 60) % 360}, 70%, 60%)`
+        };
+      }
+      
+      // Calculate from amplitude and phase if Bloch data is missing/invalid
+      const { amplitude, phase } = state;
+      const prob0 = amplitude.real * amplitude.real + amplitude.imag * amplitude.imag;
+      const prob1 = 1 - prob0;
+      
+      // Convert to Bloch sphere coordinates
+      const theta = 2 * Math.acos(Math.sqrt(Math.max(0, Math.min(1, prob0))));
+      const phi = phase;
+      
+      const x = Math.sin(theta) * Math.cos(phi);
+      const y = Math.sin(theta) * Math.sin(phi);
+      const z = Math.cos(theta);
+      
+      return {
+        position: [x || 0, y || 0, z || 1] as [number, number, number],
+        qubit: state.qubit,
+        color: `hsl(${(state.qubit * 60) % 360}, 70%, 60%)`
+      };
+    });
+  }, [blochSphereData, qubitStates]);
+
+  return (
+    <Canvas
+      camera={{ position: [2, 2, 2], fov: 50 }}
+      style={{ background: 'transparent' }}
+    >
+      <ambientLight intensity={0.6} />
+      <pointLight position={[10, 10, 10]} />
+      
+      {/* Main Bloch sphere */}
+      <mesh ref={sphereRef}>
+        <sphereGeometry args={[1, 32, 32]} />
+        <meshBasicMaterial
+          color="#1a1a2e"
+          wireframe
+          opacity={0.3}
+          transparent
+        />
+      </mesh>
+      
+      {/* Coordinate axes */}
+      {axes.map((axis, index) => (
+        <group key={index}>
+          <Line
+            points={[new THREE.Vector3(...axis.start), new THREE.Vector3(...axis.end)]}
+            color={axis.color}
+            lineWidth={2}
+          />
+          <Text
+            position={axis.end.map(coord => coord * 1.1) as [number, number, number]}
+            fontSize={0.15}
+            color={axis.color}
+            anchorX="center"
+            anchorY="middle"
+          >
+            {axis.label}
+          </Text>
+        </group>
+      ))}
+      
+      {/* State labels */}
+      <Text
+        position={[0, 0, 1.3]}
+        fontSize={0.12}
+        color="#4ecdc4"
+        anchorX="center"
+        anchorY="middle"
+      >
+        |0⟩
+      </Text>
+      <Text
+        position={[0, 0, -1.3]}
+        fontSize={0.12}
+        color="#ff6b6b"
+        anchorX="center"
+        anchorY="middle"
+      >
+        |1⟩
+      </Text>
+      
+      {/* Qubit state vectors */}
+      {qubitVectors.map((vector, index) => (
+        <QubitVector
+          key={vector.qubit}
+          position={vector.position}
+          color={vector.color}
+          qubit={vector.qubit}
+          isSelected={vector.qubit === selectedQubit}
+        />
+      ))}
+      
+      <OrbitControls
+        enablePan={true}
+        enableZoom={true}
+        enableRotate={true}
+        autoRotate={false}
+        maxDistance={5}
+        minDistance={1}
+      />
+    </Canvas>
+  );
+}
+
+export function BlochSphereVisualization(props: BlochSphereProps) {
+  return (
+    <div className="h-80 w-full bg-quantum-void/20 rounded-lg border border-quantum-matrix">
+      <BlochSphere {...props} />
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { QuantumBackendResult } from "@/services/quantumBackendService";
 import { quantumSimulator } from "@/lib/quantumSimulator";
+import { BlochSphereVisualization } from "@/components/quantum/BlochSphereVisualization";
 
 interface QuantumStateVisualizationProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -38,7 +39,8 @@ export function QuantumStateVisualization({
     stateVector: backendResult.stateVector,
     executionTime: backendResult.executionTime,
     fidelity: 1.0,
-    mode: backendResult.backend
+    mode: backendResult.backend,
+    blochSphereData: backendResult.blochSphereData || []
   } : simulationResult;
   
   const getBlochSphereStyle = (qubitState: { 
@@ -56,69 +58,96 @@ export function QuantumStateVisualization({
     };
   };
 
+  // Prepare Bloch sphere data
+  const blochSphereData = displayResult?.blochSphereData || displayResult?.qubitStates?.map(qubit => {
+    const theta = 2 * Math.acos(Math.abs(qubit.amplitude.real));
+    const phi = qubit.phase;
+    
+    return {
+      x: Math.sin(theta) * Math.cos(phi),
+      y: Math.sin(theta) * Math.sin(phi),
+      z: Math.cos(theta),
+      qubit: qubit.qubit,
+      theta,
+      phi
+    };
+  }) || [];
+
   return (
-    <Card className="quantum-panel neon-border">
-      <CardHeader>
-        <CardTitle className="text-lg font-mono text-quantum-glow">
-          Live Quantum State Simulation
-          {backendResult && (
-            <span className="text-sm text-quantum-neon ml-2">
-              ({backendResult.backend.toUpperCase()})
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-5 gap-4">
-          {Array.from({ length: NUM_QUBITS }).map((_, i) => {
-            const qubitState = displayResult?.qubitStates[i] || {
-              state: '|0⟩',
-              amplitude: { real: 1, imag: 0 },
-              phase: 0,
-              probability: 1
-            };
-            
-            return (
-              <div key={i} className="flex flex-col items-center space-y-2">
-                <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
-                <div 
-                  className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation"
-                  style={getBlochSphereStyle(qubitState)}
-                >
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
+    <div className="space-y-4">
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-mono text-quantum-glow">
+            Live Quantum State Simulation
+            {backendResult && (
+              <span className="text-sm text-quantum-neon ml-2">
+                ({backendResult.backend.toUpperCase()})
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-5 gap-4 mb-6">
+            {Array.from({ length: NUM_QUBITS }).map((_, i) => {
+              const qubitState = displayResult?.qubitStates?.[i] || {
+                state: '|0⟩',
+                amplitude: { real: 1, imag: 0 },
+                phase: 0,
+                probability: 1
+              };
+              
+              return (
+                <div key={i} className="flex flex-col items-center space-y-2">
+                  <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
+                  <div 
+                    className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation"
+                    style={getBlochSphereStyle(qubitState)}
+                  >
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  <div className="text-xs font-mono text-center">
+                    <div className="text-quantum-neon">{qubitState.state}</div>
+                    <div className="text-muted-foreground">φ: {qubitState.phase.toFixed(2)}</div>
+                    <div className="text-muted-foreground">P: {qubitState.probability.toFixed(3)}</div>
+                  </div>
                 </div>
-                <div className="text-xs font-mono text-center">
-                  <div className="text-quantum-neon">{qubitState.state}</div>
-                  <div className="text-muted-foreground">φ: {qubitState.phase.toFixed(2)}</div>
-                  <div className="text-muted-foreground">P: {qubitState.probability.toFixed(3)}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        
-        {/* State Vector Display */}
-        {displayResult && (
-          <div className="mt-6 p-4 bg-quantum-matrix rounded-lg">
-            <h4 className="text-sm font-mono text-quantum-neon mb-2">State Vector</h4>
-            <div className="text-xs font-mono text-muted-foreground max-h-20 overflow-y-auto">
-              {backendResult ? 
-                `Backend Result (${backendResult.backend})` : 
-                quantumSimulator.getStateString()
-              }
-            </div>
-            <div className="mt-2">
-              <h5 className="text-xs font-mono text-quantum-particle">Measurement Probabilities</h5>
-              <div className="text-xs font-mono text-muted-foreground">
-                {displayResult.measurementProbabilities
-                  .map((prob, i) => prob > 0.001 ? `|${i.toString(2).padStart(NUM_QUBITS, '0')}⟩: ${(prob * 100).toFixed(1)}%` : null)
-                  .filter(Boolean)
-                  .join(', ')}
-              </div>
-            </div>
+              );
+            })}
           </div>
-        )}
-      </CardContent>
-    </Card>
+          
+          {/* State Vector Display */}
+          {displayResult && (
+            <div className="mt-6 p-4 bg-quantum-matrix rounded-lg">
+              <h4 className="text-sm font-mono text-quantum-neon mb-2">State Vector</h4>
+              <div className="text-xs font-mono text-muted-foreground max-h-20 overflow-y-auto">
+                {backendResult ? 
+                  `Backend Result (${backendResult.backend})` : 
+                  quantumSimulator.getStateString()
+                }
+              </div>
+              <div className="mt-2">
+                <h5 className="text-xs font-mono text-quantum-particle">Measurement Probabilities</h5>
+                <div className="text-xs font-mono text-muted-foreground">
+                  {displayResult.measurementProbabilities
+                    .map((prob, i) => prob > 0.001 ? `|${i.toString(2).padStart(NUM_QUBITS, '0')}⟩: ${(prob * 100).toFixed(1)}%` : null)
+                    .filter(Boolean)
+                    .join(', ')}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 3D Bloch Sphere Visualization */}
+      {displayResult?.qubitStates && displayResult.qubitStates.length > 0 && (
+        <BlochSphereVisualization
+          blochSphereData={blochSphereData}
+          qubitStates={displayResult.qubitStates}
+          selectedQubit={0}
+          onQubitSelect={() => {}}
+        />
+      )}
+    </div>
   );
 }
