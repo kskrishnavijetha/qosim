@@ -1,6 +1,7 @@
 
 import { StateVector, QuantumGate, SimulationResult, quantumSimulator } from '@/lib/quantumSimulator';
 import { QuantumEntanglementService } from './quantumEntanglementService';
+import { Complex } from './complexNumbers';
 
 export interface QuantumAmplitude {
   real: number;
@@ -84,19 +85,26 @@ export class QuantumBackendService {
         }
       }
 
-      // Convert state vector to proper format with helper functions for Complex
-      const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => ({
-        real: complex.real,
-        imaginary: complex.imag || 0,
-        magnitude: typeof complex.magnitude === 'function' ? complex.magnitude() : Math.sqrt(complex.real * complex.real + (complex.imag || 0) * (complex.imag || 0)),
-        phase: typeof complex.phase === 'function' ? complex.phase() : Math.atan2(complex.imag || 0, complex.real)
-      }));
+      // Convert state vector to proper format
+      const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => {
+        const magnitude = typeof complex.magnitude === 'function' ? complex.magnitude() : 
+          Math.sqrt(complex.real * complex.real + (complex.imag || complex.imaginary || 0) * (complex.imag || complex.imaginary || 0));
+        const phase = typeof complex.phase === 'function' ? complex.phase() : 
+          Math.atan2(complex.imag || complex.imaginary || 0, complex.real);
+        
+        return {
+          real: complex.real,
+          imaginary: complex.imag || complex.imaginary || 0,
+          magnitude,
+          phase
+        };
+      });
 
       // Calculate proper entanglement analysis
       const numQubits = Math.log2(result.stateVector.length);
       const entanglementInput = result.stateVector.map(complex => ({
         real: complex.real,
-        imaginary: complex.imag || 0
+        imaginary: complex.imag || complex.imaginary || 0
       }));
       
       const entanglement = QuantumEntanglementService.calculateEntanglement(
@@ -125,7 +133,7 @@ export class QuantumBackendService {
         state: qubit.state,
         amplitude: {
           real: qubit.amplitude.real,
-          imaginary: qubit.amplitude.imag || 0
+          imaginary: qubit.amplitude.imag || qubit.amplitude.imaginary || 0
         },
         phase: qubit.phase,
         probability: qubit.probability
@@ -180,4 +188,3 @@ export class QuantumBackendService {
 
 // Export the service instance for backward compatibility
 export const quantumBackendService = QuantumBackendService;
-export type { QuantumCircuit };

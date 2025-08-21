@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Zap, Cpu, Cloud, Smartphone, Settings } from "lucide-react";
+import { Complex } from "@/services/complexNumbers";
 
 interface CircuitVisualizationSectionProps {
   simulationResult: OptimizedSimulationResult | null;
@@ -101,7 +102,13 @@ export function CircuitVisualizationSection({
 
   // Convert backend result to OptimizedSimulationResult format if available
   const displayResult = lastResult ? {
-    qubitStates: lastResult.qubitStates,
+    qubitStates: lastResult.qubitStates.map(state => ({
+      qubit: state.qubit,
+      state: state.state,
+      amplitude: new Complex(state.amplitude.real, state.amplitude.imaginary),
+      phase: state.phase,
+      probability: state.probability
+    })),
     measurementProbabilities: Array.isArray(lastResult.measurementProbabilities) 
       ? lastResult.measurementProbabilities 
       : Object.values(lastResult.measurementProbabilities || {}),
