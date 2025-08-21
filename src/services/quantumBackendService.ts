@@ -86,10 +86,8 @@ export class QuantumBackendService {
 
       // Convert state vector to proper format
       const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => {
-        const magnitude = typeof complex.magnitude === 'function' ? complex.magnitude() : 
-          Math.sqrt(complex.real * complex.real + complex.imag * complex.imag);
-        const phase = typeof complex.phase === 'function' ? complex.phase() : 
-          Math.atan2(complex.imag, complex.real);
+        const magnitude = complex.magnitude();
+        const phase = complex.phase();
         
         return {
           real: complex.real,
@@ -138,9 +136,18 @@ export class QuantumBackendService {
         probability: qubit.probability
       }));
 
+      // Ensure measurementProbabilities is a proper Record<string, number>
+      const measurementProbabilities: Record<string, number> = 
+        Array.isArray(result.measurementProbabilities) 
+          ? result.measurementProbabilities.reduce((acc, prob, index) => {
+              acc[index.toString(2).padStart(numQubits, '0')] = prob;
+              return acc;
+            }, {} as Record<string, number>)
+          : result.measurementProbabilities;
+
       return {
         stateVector,
-        measurementProbabilities: result.measurementProbabilities,
+        measurementProbabilities,
         counts,
         qubitStates: convertedQubitStates,
         executionTime,

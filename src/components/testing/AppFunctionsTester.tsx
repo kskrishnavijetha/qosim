@@ -127,8 +127,14 @@ export function AppFunctionsTester() {
       // Test if backend service is available
       const { QuantumBackendService } = await import('@/services/quantumBackendService');
       
-      // Test local backend first - pass only the gates array
-      const testGates = [{ type: 'H', qubit: 0, angle: 0 }];
+      // Test local backend first - create proper QuantumGate objects
+      const testGates = [{ 
+        type: 'H' as const, 
+        qubit: 0, 
+        angle: 0,
+        id: 'test-h-gate',
+        position: { x: 0, y: 0 }
+      }];
       
       const result = await QuantumBackendService.executeCircuit(testGates, 100, 'local');
       
