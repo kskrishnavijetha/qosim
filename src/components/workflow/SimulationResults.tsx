@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,6 +24,14 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
   const stateVectorComplex = result.stateVector.map(amp => 
     new Complex(amp.real, amp.imaginary)
   );
+
+  // Convert state vector for StateVectorMatrix component (fix property name mismatch)
+  const stateVectorForMatrix = result.stateVector.map(amp => ({
+    real: amp.real,
+    imag: amp.imaginary, // Convert 'imaginary' to 'imag'
+    magnitude: amp.magnitude,
+    phase: amp.phase
+  }));
 
   // Prepare basis states for matrix visualization with correct property names
   const basisStates = Object.entries(result.measurementProbabilities).map(([state, prob]) => ({
@@ -132,7 +139,7 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
         {showAdvanced && (
           <TabsContent value="statevector" className="space-y-4">
             <StateVectorMatrix
-              stateVector={result.stateVector}
+              stateVector={stateVectorForMatrix}
               probabilities={Object.values(result.measurementProbabilities)}
               basisStates={basisStates}
             />
