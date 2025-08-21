@@ -19,6 +19,9 @@ import { useZoomPan } from '@/hooks/useZoomPan';
 import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Import the QuantumGate type from the new CircuitCanvas
+import { QuantumGate } from './QuantumCircuitBuilder';
+
 // Types for AI integration compatibility
 interface AIGate {
   id: string;
@@ -72,6 +75,70 @@ export function InteractiveCircuitBuilder() {
     handlePanEnd,
     resetView
   } = useZoomPan(canvasRef);
+
+  // Convert CircuitGate to QuantumGate for CircuitCanvas compatibility
+  const convertToQuantumGates = useCallback((circuitGates: any[], qubits: any[]): QuantumGate[] => {
+    return circuitGates.map(gate => ({
+      id: gate.id,
+      type: gate.type,
+      qubit: gate.qubits && gate.qubits.length > 0 ? 
+        qubits.findIndex(q => q.id === gate.qubits[0]) : 0,
+      qubits: gate.qubits ? 
+        gate.qubits.map((qId: string) => qubits.findIndex(q => q.id === qId)).filter((idx: number) => idx >= 0) : 
+        [],
+      position: gate.layer || 0,
+      angle: gate.params?.angle,
+      params: gate.params
+    }));
+  }, []);
+
+  // Convert QuantumGate back to CircuitGate format
+  const convertFromQuantumGate = useCallback((quantumGate: QuantumGate, position: { x: number; y: number }): any => {
+    const qubits = quantumGate.qubits && quantumGate.qubits.length > 0 ? 
+      quantumGate.qubits.map(qIndex => circuit.qubits[qIndex]?.id).filter(Boolean) :
+      quantumGate.qubit !== undefined ? [circuit.qubits[quantumGate.qubit]?.id].filter(Boolean) : [];
+
+    return {
+      id: quantumGate.id,
+      type: quantumGate.type,
+      qubits,
+      position,
+      layer: quantumGate.position,
+      params: quantumGate.params ? { ...quantumGate.params } : {},
+      metadata: {
+        label: quantumGate.type,
+        color: getGateColor(quantumGate.type)
+      }
+    };
+  }, [circuit.qubits]);
+
+  // Adapter functions for CircuitCanvas
+  const handleCanvasGateAdd = useCallback((gateType: string, position: { x: number; y: number }) => {
+    // Determine which qubit based on y position
+    const qubitIndex = Math.floor((position.y - 50) / 60);
+    if (qubitIndex >= 0 && qubitIndex < circuit.qubits.length) {
+      const qubitId = circuit.qubits[qubitIndex].id;
+      addGate(gateType, [qubitId], position);
+    }
+  }, [circuit.qubits, addGate]);
+
+  const handleCanvasGateMove = useCallback((gateId: string, position: { x: number; y: number }) => {
+    moveGate(gateId, position);
+  }, [moveGate]);
+
+  const handleCanvasGateSelect = useCallback((gate: QuantumGate) => {
+    // Find the corresponding CircuitGate
+    const circuitGate = circuit.gates.find(g => g.id === gate.id);
+    if (circuitGate) {
+      selectGate(circuitGate);
+    }
+  }, [circuit.gates, selectGate]);
+
+  // Convert circuit gates to quantum gates for canvas
+  const quantumGates = convertToQuantumGates(circuit.gates, circuit.qubits);
+
+  // Convert selected gate for canvas
+  const selectedQuantumGate = selectedGate ? convertToQuantumGates([selectedGate], circuit.qubits)[0] : null;
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -295,7 +362,7 @@ export function InteractiveCircuitBuilder() {
             
             <TabsContent value="design" className="p-4">
               <GatePaletteAdvanced
-                onGateSelect={addGate}
+                onGateSelect={handleCanvasGateAdd}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate}
               />
@@ -336,22 +403,14 @@ export function InteractiveCircuitBuilder() {
           <div className="flex-1 overflow-hidden">
             <CircuitCanvas
               ref={canvasRef}
-              circuit={circuit}
-              selectedGate={selectedGate}
-              simulationResult={simulationResult}
-              zoomLevel={zoomLevel}
-              panOffset={panOffset}
-              onGateAdd={addGate}
-              onGateMove={moveGate}
-              onGateSelect={selectGate}
+              circuit={quantumGates}
+              numQubits={circuit.qubits.length}
+              selectedGate={selectedQuantumGate}
+              onGateAdd={handleCanvasGateAdd}
+              onGateMove={handleCanvasGateMove}
+              onGateSelect={handleCanvasGateSelect}
               onGateRemove={removeGate}
               onCanvasClick={clearSelection}
-              onPanStart={handlePanStart}
-              onPanMove={handlePanMove}
-              onPanEnd={handlePanEnd}
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onResetView={resetView}
             />
           </div>
         </div>
