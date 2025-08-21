@@ -19,6 +19,17 @@ import { useZoomPan } from '@/hooks/useZoomPan';
 import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Types for AI integration compatibility
+interface AIGate {
+  id: string;
+  type: string;
+  qubit?: number;
+  qubits?: number[];
+  position: number;
+  angle?: number;
+  params?: number[];
+}
+
 export function InteractiveCircuitBuilder() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('design');
@@ -109,51 +120,76 @@ export function InteractiveCircuitBuilder() {
     }
   }, [exportCircuit]);
 
-  // AI handlers
-  const handleAICircuitGenerated = useCallback((gates: any[]) => {
-    // Convert AI gates to circuit format and load them
-    const convertedCircuit = {
+  // Convert CircuitGate[] to AIGate[] for AI integration
+  const convertCircuitToAIFormat = useCallback((circuitGates: any[]) => {
+    return circuitGates.map((gate): AIGate => ({
+      id: gate.id,
+      type: gate.type,
+      qubit: gate.qubits && gate.qubits.length > 0 ? 
+        circuit.qubits.findIndex(q => q.id === gate.qubits[0]) : 
+        undefined,
+      qubits: gate.qubits ? 
+        gate.qubits.map((qId: string) => circuit.qubits.findIndex(q => q.id === qId)) : 
+        undefined,
+      position: gate.layer || 0,
+      angle: gate.params?.angle,
+      params: gate.params ? Object.values(gate.params) : undefined
+    }));
+  }, [circuit]);
+
+  // Convert AIGate[] back to circuit format
+  const convertAIToCircuitFormat = useCallback((aiGates: AIGate[]) => {
+    return aiGates.map((gate, index) => ({
+      ...gate,
+      id: gate.id || `ai-gate-${index}`,
+      qubits: gate.qubits ? 
+        gate.qubits.map(qIndex => circuit.qubits[qIndex]?.id).filter(Boolean) : 
+        gate.qubit !== undefined ? [circuit.qubits[gate.qubit]?.id].filter(Boolean) : [],
+      layer: gate.position || 0,
+      position: { x: (gate.position || 0) * 100, y: (gate.qubit || 0) * 60 + 50 },
+      params: gate.params ? { angle: gate.angle, ...gate.params } : gate.angle ? { angle: gate.angle } : {},
+      metadata: {
+        label: gate.type,
+        color: getGateColor(gate.type)
+      }
+    }));
+  }, [circuit]);
+
+  // AI handlers with proper type conversion
+  const handleAICircuitGenerated = useCallback((gates: AIGate[]) => {
+    const convertedGates = convertAIToCircuitFormat(gates);
+    const newCircuit = {
       ...circuit,
-      gates: gates.map((gate, index) => ({
-        ...gate,
-        id: `ai-gate-${index}`,
-        timestamp: Date.now()
-      }))
+      gates: convertedGates
     };
-    loadCircuit(convertedCircuit);
+    loadCircuit(newCircuit);
     toast.success(`Generated circuit with ${gates.length} gates`);
-  }, [circuit, loadCircuit]);
+  }, [circuit, loadCircuit, convertAIToCircuitFormat]);
 
   const handleAIAlgorithmGenerated = useCallback((code: string) => {
     console.log('Generated algorithm code:', code);
     toast.success('Algorithm code generated - check console for details');
   }, []);
 
-  const handleAICircuitOptimized = useCallback((gates: any[]) => {
+  const handleAICircuitOptimized = useCallback((gates: AIGate[]) => {
+    const convertedGates = convertAIToCircuitFormat(gates);
     const optimizedCircuit = {
       ...circuit,
-      gates: gates.map((gate, index) => ({
-        ...gate,
-        id: `opt-gate-${index}`,
-        timestamp: Date.now()
-      }))
+      gates: convertedGates
     };
     loadCircuit(optimizedCircuit);
     toast.success('Circuit optimized successfully');
-  }, [circuit, loadCircuit]);
+  }, [circuit, loadCircuit, convertAIToCircuitFormat]);
 
-  const handleAICircuitFixed = useCallback((gates: any[]) => {
+  const handleAICircuitFixed = useCallback((gates: AIGate[]) => {
+    const convertedGates = convertAIToCircuitFormat(gates);
     const fixedCircuit = {
       ...circuit,
-      gates: gates.map((gate, index) => ({
-        ...gate,
-        id: `fixed-gate-${index}`,
-        timestamp: Date.now()
-      }))
+      gates: convertedGates
     };
     loadCircuit(fixedCircuit);
     toast.success('Circuit issues fixed');
-  }, [circuit, loadCircuit]);
+  }, [circuit, loadCircuit, convertAIToCircuitFormat]);
 
   const handleShowStateVisualization = useCallback((step: number) => {
     console.log('Showing state visualization for step:', step);
@@ -267,7 +303,7 @@ export function InteractiveCircuitBuilder() {
             
             <TabsContent value="ai" className="p-4">
               <UnifiedAIPanel
-                circuit={circuit.gates}
+                circuit={convertCircuitToAIFormat(circuit.gates)}
                 onCircuitGenerated={handleAICircuitGenerated}
                 onAlgorithmGenerated={handleAIAlgorithmGenerated}
                 onCircuitOptimized={handleAICircuitOptimized}
@@ -347,4 +383,23 @@ export function InteractiveCircuitBuilder() {
       />
     </div>
   );
+}
+
+// Helper function for gate colors (moved from useCircuitBuilder to avoid duplication)
+function getGateColor(gateType: string): string {
+  const colors: { [key: string]: string } = {
+    'H': '#FFD700',
+    'X': '#FF6B6B',
+    'Y': '#4ECDC4',
+    'Z': '#45B7D1',
+    'CNOT': '#96CEB4',
+    'RX': '#FFEAA7',
+    'RY': '#DDA0DD',
+    'RZ': '#98D8C8',
+    'S': '#F7DC6F',
+    'T': '#BB8FCE',
+    'SWAP': '#85C1E9',
+    'TOFFOLI': '#F8C471'
+  };
+  return colors[gateType] || '#BDC3C7';
 }
