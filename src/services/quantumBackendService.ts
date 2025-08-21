@@ -1,3 +1,4 @@
+
 import { StateVector, QuantumGate, SimulationResult, quantumSimulator } from '@/lib/quantumSimulator';
 import { QuantumEntanglementService } from './quantumEntanglementService';
 
@@ -16,6 +17,12 @@ export interface QubitState {
   probability: number;
 }
 
+export interface QuantumCircuit {
+  gates: QuantumGate[];
+  qubits: number;
+  shots: number;
+}
+
 export interface QuantumBackendResult {
   stateVector: QuantumAmplitude[];
   measurementProbabilities: Record<string, number>;
@@ -30,7 +37,7 @@ export interface QuantumBackendResult {
     totalEntanglement: number;
     entanglementThreads: Array<{ qubits: number[]; strength: number }>;
   };
-  blochSphereData: Array<{ x: number; y: number; z: number; qubit: number }>;
+  blochSphereData: Array<{ x: number; y: number; z: number; qubit: number; theta: number; phi: number }>;
 }
 
 export class QuantumBackendService {
@@ -77,23 +84,43 @@ export class QuantumBackendService {
         }
       }
 
+      // Convert state vector to proper format
+      const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => ({
+        real: complex.real,
+        imaginary: complex.imaginary || 0,
+        magnitude: complex.magnitude(),
+        phase: complex.phase()
+      }));
+
       // Calculate proper entanglement analysis
       const numQubits = Math.log2(result.stateVector.length);
+      const entanglementInput = result.stateVector.map(complex => ({
+        real: complex.real,
+        imaginary: complex.imaginary || 0
+      }));
+      
       const entanglement = QuantumEntanglementService.calculateEntanglement(
-        result.stateVector,
+        entanglementInput,
         numQubits
       );
 
-      // Generate Bloch sphere data for each qubit
-      const blochSphereData = result.qubitStates.map(qubit => ({
-        x: Math.sin(qubit.phase) * Math.sqrt(qubit.probability),
-        y: Math.cos(qubit.phase) * Math.sqrt(qubit.probability),
-        z: 2 * qubit.probability - 1,
-        qubit: qubit.qubit
-      }));
+      // Generate Bloch sphere data for each qubit with theta and phi
+      const blochSphereData = result.qubitStates.map(qubit => {
+        const theta = 2 * Math.acos(Math.abs(qubit.amplitude.real));
+        const phi = qubit.phase;
+        
+        return {
+          x: Math.sin(theta) * Math.cos(phi),
+          y: Math.sin(theta) * Math.sin(phi),
+          z: Math.cos(theta),
+          qubit: qubit.qubit,
+          theta,
+          phi
+        };
+      });
 
       return {
-        stateVector: result.stateVector,
+        stateVector,
         measurementProbabilities: result.measurementProbabilities,
         counts,
         qubitStates: result.qubitStates,
@@ -138,3 +165,6 @@ export class QuantumBackendService {
     };
   }
 }
+
+// Export the service instance for backward compatibility
+export const quantumBackendService = QuantumBackendService;

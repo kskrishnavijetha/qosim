@@ -1,6 +1,4 @@
 
-import { Complex } from './complexNumbers';
-
 export interface EntanglementPair {
   qubit1: number;
   qubit2: number;
@@ -18,12 +16,17 @@ export interface EntanglementAnalysis {
   entanglementThreads: EntanglementThread[];
 }
 
+interface ComplexNumber {
+  real: number;
+  imaginary: number;
+}
+
 export class QuantumEntanglementService {
   /**
    * Calculate entanglement analysis from state vector
    */
   static calculateEntanglement(
-    stateVector: Array<{ real: number; imaginary: number }>,
+    stateVector: ComplexNumber[],
     numQubits: number
   ): EntanglementAnalysis {
     const pairs: EntanglementPair[] = [];
@@ -58,7 +61,7 @@ export class QuantumEntanglementService {
    * Calculate entanglement between two specific qubits
    */
   private static calculatePairEntanglement(
-    stateVector: Array<{ real: number; imaginary: number }>,
+    stateVector: ComplexNumber[],
     qubit1: number,
     qubit2: number,
     numQubits: number
@@ -74,7 +77,7 @@ export class QuantumEntanglementService {
    * Calculate multi-qubit entanglement patterns
    */
   private static calculateMultiQubitEntanglement(
-    stateVector: Array<{ real: number; imaginary: number }>,
+    stateVector: ComplexNumber[],
     numQubits: number
   ): EntanglementThread[] {
     const threads: EntanglementThread[] = [];
@@ -98,13 +101,13 @@ export class QuantumEntanglementService {
    * Calculate reduced density matrix for specific qubits
    */
   private static calculateReducedDensityMatrix(
-    stateVector: Array<{ real: number; imaginary: number }>,
+    stateVector: ComplexNumber[],
     targetQubits: number[],
     numQubits: number
-  ): Complex[][] {
+  ): ComplexNumber[][] {
     const targetDim = Math.pow(2, targetQubits.length);
-    const densityMatrix: Complex[][] = Array(targetDim).fill(null).map(() => 
-      Array(targetDim).fill(null).map(() => ({ real: 0, imag: 0 }))
+    const densityMatrix: ComplexNumber[][] = Array(targetDim).fill(null).map(() => 
+      Array(targetDim).fill(null).map(() => ({ real: 0, imaginary: 0 }))
     );
 
     // Trace out non-target qubits
@@ -116,7 +119,7 @@ export class QuantumEntanglementService {
         if (this.sameNonTargetQubits(i, j, targetQubits, numQubits)) {
           const amplitude = this.multiplyComplex(
             stateVector[i], 
-            { real: stateVector[j].real, imag: -stateVector[j].imaginary }
+            { real: stateVector[j].real, imaginary: -stateVector[j].imaginary }
           );
           
           densityMatrix[targetStateI][targetStateJ] = this.addComplex(
@@ -164,7 +167,7 @@ export class QuantumEntanglementService {
   /**
    * Calculate von Neumann entropy of density matrix
    */
-  private static calculateVonNeumannEntropy(densityMatrix: Complex[][]): number {
+  private static calculateVonNeumannEntropy(densityMatrix: ComplexNumber[][]): number {
     const eigenvalues = this.calculateEigenvalues(densityMatrix);
     
     let entropy = 0;
@@ -180,7 +183,7 @@ export class QuantumEntanglementService {
   /**
    * Calculate eigenvalues of density matrix (simplified implementation)
    */
-  private static calculateEigenvalues(matrix: Complex[][]): number[] {
+  private static calculateEigenvalues(matrix: ComplexNumber[][]): number[] {
     const dim = matrix.length;
     const eigenvalues: number[] = [];
     
@@ -205,18 +208,18 @@ export class QuantumEntanglementService {
   /**
    * Helper functions for complex number operations
    */
-  private static addComplex(a: Complex, b: Complex): Complex {
-    return { real: a.real + b.real, imag: a.imag + b.imag };
+  private static addComplex(a: ComplexNumber, b: ComplexNumber): ComplexNumber {
+    return { real: a.real + b.real, imaginary: a.imaginary + b.imaginary };
   }
 
-  private static multiplyComplex(a: Complex, b: Complex): Complex {
+  private static multiplyComplex(a: ComplexNumber, b: ComplexNumber): ComplexNumber {
     return {
-      real: a.real * b.real - a.imaginary * b.imag,
-      imag: a.real * b.imag + a.imaginary * b.real
+      real: a.real * b.real - a.imaginary * b.imaginary,
+      imaginary: a.real * b.imaginary + a.imaginary * b.real
     };
   }
 
-  private static magnitude(c: Complex): number {
-    return Math.sqrt(c.real * c.real + c.imag * c.imag);
+  private static magnitude(c: ComplexNumber): number {
+    return Math.sqrt(c.real * c.real + c.imaginary * c.imaginary);
   }
 }

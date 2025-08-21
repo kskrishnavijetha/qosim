@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,6 +39,22 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
     state,
     amplitude: { real: Math.sqrt(prob), imag: 0 },
     probability: prob
+  }));
+
+  // Convert Bloch sphere data to include theta and phi if missing
+  const blochSphereData = result.blochSphereData.map(data => ({
+    ...data,
+    theta: data.theta || Math.acos(data.z),
+    phi: data.phi || Math.atan2(data.y, data.x)
+  }));
+
+  // Convert qubit states to match expected format
+  const qubitStates = result.qubitStates.map(state => ({
+    ...state,
+    amplitude: {
+      real: state.amplitude.real,
+      imag: state.amplitude.imaginary
+    }
   }));
 
   return (
@@ -119,8 +136,8 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
 
         <TabsContent value="bloch" className="space-y-4">
           <EnhancedBlochSphere
-            blochSphereData={result.blochSphereData}
-            qubitStates={result.qubitStates}
+            blochSphereData={blochSphereData}
+            qubitStates={qubitStates}
             selectedQubit={0}
             onQubitSelect={() => {}}
           />

@@ -1,6 +1,5 @@
-
 import { useState, useCallback } from 'react';
-import { quantumBackendService, QuantumBackendResult, QuantumCircuit } from '@/services/quantumBackendService';
+import { QuantumBackendService, QuantumBackendResult, QuantumCircuit } from '@/services/quantumBackendService';
 import { Gate } from './useCircuitState';
 
 export function useQuantumBackend() {
@@ -49,8 +48,12 @@ export function useQuantumBackend() {
 
       console.log('🚀 Quantum circuit prepared:', quantumCircuit);
 
-      const result = await quantumBackendService.executeCircuit(quantumCircuit, backend, shots);
+      const result = await QuantumBackendService.executeCircuit(quantumCircuit.gates, shots, backend);
       
+      if (!result) {
+        throw new Error(`Backend ${backend} execution failed`);
+      }
+
       console.log('✅ Backend execution completed:', {
         backend: result.backend,
         executionTime: result.executionTime,
@@ -71,10 +74,13 @@ export function useQuantumBackend() {
       const errorResult: QuantumBackendResult = {
         stateVector: [],
         measurementProbabilities: {},
+        counts: {},
         qubitStates: [],
         blochSphereData: [],
         executionTime: 0,
         backend,
+        jobId: `failed-${Date.now()}`,
+        entanglement: { pairs: [], totalEntanglement: 0, entanglementThreads: [] },
         error: error instanceof Error ? error.message : 'Unknown execution error'
       };
       
