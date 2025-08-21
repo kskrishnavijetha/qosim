@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,20 +18,6 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useZoomPan } from '@/hooks/useZoomPan';
 import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Import the QuantumGate type from the new CircuitCanvas
-import { QuantumGate } from './QuantumCircuitBuilder';
-
-// Types for AI integration compatibility
-interface AIGate {
-  id: string;
-  type: string;
-  qubit?: number;
-  qubits?: number[];
-  position: number;
-  angle?: number;
-  params?: number[];
-}
 
 export function InteractiveCircuitBuilder() {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -74,75 +61,6 @@ export function InteractiveCircuitBuilder() {
     handlePanEnd,
     resetView
   } = useZoomPan(canvasRef);
-
-  // Convert CircuitGate to QuantumGate for CircuitCanvas compatibility
-  const convertToQuantumGates = useCallback((circuitGates: any[], qubits: any[]): QuantumGate[] => {
-    return circuitGates.map(gate => ({
-      id: gate.id,
-      type: gate.type,
-      qubit: gate.qubits && gate.qubits.length > 0 ? 
-        qubits.findIndex(q => q.id === gate.qubits[0]) : 0,
-      qubits: gate.qubits ? 
-        gate.qubits.map((qId: string) => qubits.findIndex(q => q.id === qId)).filter((idx: number) => idx >= 0) : 
-        [],
-      position: gate.layer || 0,
-      angle: gate.params?.angle,
-      params: gate.params
-    }));
-  }, []);
-
-  // Convert QuantumGate back to CircuitGate format
-  const convertFromQuantumGate = useCallback((quantumGate: QuantumGate, position: { x: number; y: number }): any => {
-    const qubits = quantumGate.qubits && quantumGate.qubits.length > 0 ? 
-      quantumGate.qubits.map(qIndex => circuit.qubits[qIndex]?.id).filter(Boolean) :
-      quantumGate.qubit !== undefined ? [circuit.qubits[quantumGate.qubit]?.id].filter(Boolean) : [];
-
-    return {
-      id: quantumGate.id,
-      type: quantumGate.type,
-      qubits,
-      position,
-      layer: quantumGate.position,
-      params: quantumGate.params ? { ...quantumGate.params } : {},
-      metadata: {
-        label: quantumGate.type,
-        color: getGateColor(quantumGate.type)
-      }
-    };
-  }, [circuit.qubits]);
-
-  // Adapter functions for CircuitCanvas
-  const handleCanvasGateAdd = useCallback((gateType: string, position: { x: number; y: number }) => {
-    // Determine which qubit based on y position
-    const qubitIndex = Math.floor((position.y - 50) / 60);
-    if (qubitIndex >= 0 && qubitIndex < circuit.qubits.length) {
-      const qubitId = circuit.qubits[qubitIndex].id;
-      addGate(gateType, [qubitId], position);
-    }
-  }, [circuit.qubits, addGate]);
-
-  // Adapter function for GatePaletteAdvanced - matches expected signature
-  const handlePaletteGateSelect = useCallback((gateType: string, qubits: string[], position: { x: number; y: number }) => {
-    addGate(gateType, qubits, position);
-  }, [addGate]);
-
-  const handleCanvasGateMove = useCallback((gateId: string, position: { x: number; y: number }) => {
-    moveGate(gateId, position);
-  }, [moveGate]);
-
-  const handleCanvasGateSelect = useCallback((gate: QuantumGate) => {
-    // Find the corresponding CircuitGate
-    const circuitGate = circuit.gates.find(g => g.id === gate.id);
-    if (circuitGate) {
-      selectGate(circuitGate);
-    }
-  }, [circuit.gates, selectGate]);
-
-  // Convert circuit gates to quantum gates for canvas
-  const quantumGates = convertToQuantumGates(circuit.gates, circuit.qubits);
-
-  // Convert selected gate for canvas
-  const selectedQuantumGate = selectedGate ? convertToQuantumGates([selectedGate], circuit.qubits)[0] : null;
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -191,76 +109,51 @@ export function InteractiveCircuitBuilder() {
     }
   }, [exportCircuit]);
 
-  // Convert CircuitGate[] to AIGate[] for AI integration
-  const convertCircuitToAIFormat = useCallback((circuitGates: any[]) => {
-    return circuitGates.map((gate): AIGate => ({
-      id: gate.id,
-      type: gate.type,
-      qubit: gate.qubits && gate.qubits.length > 0 ? 
-        circuit.qubits.findIndex(q => q.id === gate.qubits[0]) : 
-        undefined,
-      qubits: gate.qubits ? 
-        gate.qubits.map((qId: string) => circuit.qubits.findIndex(q => q.id === qId)) : 
-        undefined,
-      position: gate.layer || 0,
-      angle: gate.params?.angle,
-      params: gate.params ? Object.values(gate.params) : undefined
-    }));
-  }, [circuit]);
-
-  // Convert AIGate[] back to circuit format
-  const convertAIToCircuitFormat = useCallback((aiGates: AIGate[]) => {
-    return aiGates.map((gate, index) => ({
-      ...gate,
-      id: gate.id || `ai-gate-${index}`,
-      qubits: gate.qubits ? 
-        gate.qubits.map(qIndex => circuit.qubits[qIndex]?.id).filter(Boolean) : 
-        gate.qubit !== undefined ? [circuit.qubits[gate.qubit]?.id].filter(Boolean) : [],
-      layer: gate.position || 0,
-      position: { x: (gate.position || 0) * 100, y: (gate.qubit || 0) * 60 + 50 },
-      params: gate.params ? { angle: gate.angle, ...gate.params } : gate.angle ? { angle: gate.angle } : {},
-      metadata: {
-        label: gate.type,
-        color: getGateColor(gate.type)
-      }
-    }));
-  }, [circuit]);
-
-  // AI handlers with proper type conversion
-  const handleAICircuitGenerated = useCallback((gates: AIGate[]) => {
-    const convertedGates = convertAIToCircuitFormat(gates);
-    const newCircuit = {
+  // AI handlers
+  const handleAICircuitGenerated = useCallback((gates: any[]) => {
+    // Convert AI gates to circuit format and load them
+    const convertedCircuit = {
       ...circuit,
-      gates: convertedGates
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `ai-gate-${index}`,
+        timestamp: Date.now()
+      }))
     };
-    loadCircuit(newCircuit);
+    loadCircuit(convertedCircuit);
     toast.success(`Generated circuit with ${gates.length} gates`);
-  }, [circuit, loadCircuit, convertAIToCircuitFormat]);
+  }, [circuit, loadCircuit]);
 
   const handleAIAlgorithmGenerated = useCallback((code: string) => {
     console.log('Generated algorithm code:', code);
     toast.success('Algorithm code generated - check console for details');
   }, []);
 
-  const handleAICircuitOptimized = useCallback((gates: AIGate[]) => {
-    const convertedGates = convertAIToCircuitFormat(gates);
+  const handleAICircuitOptimized = useCallback((gates: any[]) => {
     const optimizedCircuit = {
       ...circuit,
-      gates: convertedGates
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `opt-gate-${index}`,
+        timestamp: Date.now()
+      }))
     };
     loadCircuit(optimizedCircuit);
     toast.success('Circuit optimized successfully');
-  }, [circuit, loadCircuit, convertAIToCircuitFormat]);
+  }, [circuit, loadCircuit]);
 
-  const handleAICircuitFixed = useCallback((gates: AIGate[]) => {
-    const convertedGates = convertAIToCircuitFormat(gates);
+  const handleAICircuitFixed = useCallback((gates: any[]) => {
     const fixedCircuit = {
       ...circuit,
-      gates: convertedGates
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `fixed-gate-${index}`,
+        timestamp: Date.now()
+      }))
     };
     loadCircuit(fixedCircuit);
     toast.success('Circuit issues fixed');
-  }, [circuit, loadCircuit, convertAIToCircuitFormat]);
+  }, [circuit, loadCircuit]);
 
   const handleShowStateVisualization = useCallback((step: number) => {
     console.log('Showing state visualization for step:', step);
@@ -366,7 +259,7 @@ export function InteractiveCircuitBuilder() {
             
             <TabsContent value="design" className="p-4">
               <GatePaletteAdvanced
-                onGateSelect={handlePaletteGateSelect}
+                onGateSelect={addGate}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate}
               />
@@ -374,7 +267,7 @@ export function InteractiveCircuitBuilder() {
             
             <TabsContent value="ai" className="p-4">
               <UnifiedAIPanel
-                circuit={convertCircuitToAIFormat(circuit.gates)}
+                circuit={circuit.gates}
                 onCircuitGenerated={handleAICircuitGenerated}
                 onAlgorithmGenerated={handleAIAlgorithmGenerated}
                 onCircuitOptimized={handleAICircuitOptimized}
@@ -407,14 +300,22 @@ export function InteractiveCircuitBuilder() {
           <div className="flex-1 overflow-hidden">
             <CircuitCanvas
               ref={canvasRef}
-              circuit={quantumGates}
-              numQubits={circuit.qubits.length}
-              selectedGate={selectedQuantumGate}
-              onGateAdd={handleCanvasGateAdd}
-              onGateMove={handleCanvasGateMove}
-              onGateSelect={handleCanvasGateSelect}
+              circuit={circuit}
+              selectedGate={selectedGate}
+              simulationResult={simulationResult}
+              zoomLevel={zoomLevel}
+              panOffset={panOffset}
+              onGateAdd={addGate}
+              onGateMove={moveGate}
+              onGateSelect={selectGate}
               onGateRemove={removeGate}
               onCanvasClick={clearSelection}
+              onPanStart={handlePanStart}
+              onPanMove={handlePanMove}
+              onPanEnd={handlePanEnd}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onResetView={resetView}
             />
           </div>
         </div>
@@ -446,23 +347,4 @@ export function InteractiveCircuitBuilder() {
       />
     </div>
   );
-}
-
-// Helper function for gate colors (moved from useCircuitBuilder to avoid duplication)
-function getGateColor(gateType: string): string {
-  const colors: { [key: string]: string } = {
-    'H': '#FFD700',
-    'X': '#FF6B6B',
-    'Y': '#4ECDC4',
-    'Z': '#45B7D1',
-    'CNOT': '#96CEB4',
-    'RX': '#FFEAA7',
-    'RY': '#DDA0DD',
-    'RZ': '#98D8C8',
-    'S': '#F7DC6F',
-    'T': '#BB8FCE',
-    'SWAP': '#85C1E9',
-    'TOFFOLI': '#F8C471'
-  };
-  return colors[gateType] || '#BDC3C7';
 }
