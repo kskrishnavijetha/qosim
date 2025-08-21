@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -121,6 +120,11 @@ export function InteractiveCircuitBuilder() {
       addGate(gateType, [qubitId], position);
     }
   }, [circuit.qubits, addGate]);
+
+  // Adapter function for GatePaletteAdvanced - matches expected signature
+  const handlePaletteGateSelect = useCallback((gateType: string, qubits: string[], position: { x: number; y: number }) => {
+    addGate(gateType, qubits, position);
+  }, [addGate]);
 
   const handleCanvasGateMove = useCallback((gateId: string, position: { x: number; y: number }) => {
     moveGate(gateId, position);
@@ -362,7 +366,7 @@ export function InteractiveCircuitBuilder() {
             
             <TabsContent value="design" className="p-4">
               <GatePaletteAdvanced
-                onGateSelect={handleCanvasGateAdd}
+                onGateSelect={handlePaletteGateSelect}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate}
               />
