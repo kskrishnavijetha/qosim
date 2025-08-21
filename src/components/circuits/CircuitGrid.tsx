@@ -3,6 +3,7 @@ import React from "react";
 import { type OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { VirtualizedCircuitGrid } from "./VirtualizedCircuitGrid";
 import { MemoizedGate } from "./MemoizedGate";
+import { useCircuitValidation } from "@/hooks/useCircuitValidation";
 
 interface Gate {
   id: string;
@@ -41,9 +42,46 @@ export function CircuitGrid({
   NUM_QUBITS, 
   GRID_SIZE 
 }: CircuitGridProps) {
+  const { validateCircuit, isInitialized, validateGateType } = useCircuitValidation();
+
+  // Validate circuit before rendering
+  const validation = React.useMemo(() => {
+    if (!isInitialized) {
+      return { isValid: false, errors: ['Gate registry not initialized'], steps: [] };
+    }
+    return validateCircuit(circuit, NUM_QUBITS);
+  }, [circuit, NUM_QUBITS, isInitialized, validateCircuit]);
+
   // Check if circuit is long enough to benefit from virtualization
   const maxPosition = circuit.reduce((max, gate) => Math.max(max, gate.position), 0);
-  const shouldVirtualize = maxPosition > 20; // Virtualize for circuits with >20 time steps
+  const shouldVirtualize = maxPosition > 20;
+
+  // Validate drag state gate type
+  const isDragGateValid = React.useMemo(() => {
+    if (!dragState.isDragging || !isInitialized) return true;
+    const gateValidation = validateGateType(dragState.gateType);
+    if (!gateValidation.isValid) {
+      console.error('❌ Invalid drag gate type:', gateValidation.error);
+      return false;
+    }
+    return true;
+  }, [dragState.isDragging, dragState.gateType, isInitialized, validateGateType]);
+
+  // Display validation errors
+  if (!validation.isValid) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <h3 className="font-bold">Circuit Validation Errors:</h3>
+          <ul className="list-disc list-inside">
+            {validation.errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   if (shouldVirtualize) {
     return (
@@ -84,7 +122,7 @@ export function CircuitGrid({
         ))}
 
         {/* Drop zones grid */}
-        {dragState.isDragging && (
+        {dragState.isDragging && isDragGateValid && (
           <div className="absolute inset-0 pointer-events-none">
             {Array.from({ length: NUM_QUBITS }).map((_, qubitIndex) => 
               Array.from({ length: Math.floor((circuitRef.current?.offsetWidth || 800) / GRID_SIZE) }).map((_, posIndex) => (
@@ -116,7 +154,7 @@ export function CircuitGrid({
         ))}
 
         {/* Drop Zone Indicator */}
-        {dragState.isDragging && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (
+        {dragState.isDragging && isDragGateValid && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (
           <div
             className="absolute w-8 h-6 border-2 border-dashed border-quantum-glow rounded bg-quantum-glow/20 flex items-center justify-center text-xs font-bold quantum-glow animate-pulse"
             style={{
@@ -125,6 +163,13 @@ export function CircuitGrid({
             }}
           >
             {dragState.gateType}
+          </div>
+        )}
+
+        {/* Invalid gate warning */}
+        {dragState.isDragging && !isDragGateValid && (
+          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-2 rounded">
+            ⚠️ Unknown gate: {dragState.gateType}
           </div>
         )}
       </div>
