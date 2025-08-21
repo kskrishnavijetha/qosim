@@ -1,4 +1,3 @@
-
 import { StateVector, QuantumGate, SimulationResult, quantumSimulator } from '@/lib/quantumSimulator';
 import { QuantumEntanglementService } from './quantumEntanglementService';
 import { Complex } from './complexNumbers';
@@ -88,13 +87,13 @@ export class QuantumBackendService {
       // Convert state vector to proper format
       const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => {
         const magnitude = typeof complex.magnitude === 'function' ? complex.magnitude() : 
-          Math.sqrt(complex.real * complex.real + (complex.imag || complex.imaginary || 0) * (complex.imag || complex.imaginary || 0));
+          Math.sqrt(complex.real * complex.real + complex.imag * complex.imag);
         const phase = typeof complex.phase === 'function' ? complex.phase() : 
-          Math.atan2(complex.imag || complex.imaginary || 0, complex.real);
+          Math.atan2(complex.imag, complex.real);
         
         return {
           real: complex.real,
-          imaginary: complex.imag || complex.imaginary || 0,
+          imaginary: complex.imag,
           magnitude,
           phase
         };
@@ -104,7 +103,7 @@ export class QuantumBackendService {
       const numQubits = Math.log2(result.stateVector.length);
       const entanglementInput = result.stateVector.map(complex => ({
         real: complex.real,
-        imaginary: complex.imag || complex.imaginary || 0
+        imaginary: complex.imag
       }));
       
       const entanglement = QuantumEntanglementService.calculateEntanglement(
@@ -133,7 +132,7 @@ export class QuantumBackendService {
         state: qubit.state,
         amplitude: {
           real: qubit.amplitude.real,
-          imaginary: qubit.amplitude.imag || qubit.amplitude.imaginary || 0
+          imaginary: qubit.amplitude.imag
         },
         phase: qubit.phase,
         probability: qubit.probability
