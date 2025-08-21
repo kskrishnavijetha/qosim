@@ -3,6 +3,19 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X as XIcon, Play, Trash2 } from "lucide-react";
 
+interface Step {
+  id: string;
+  type: string;
+  targets: number[];
+  control?: number;
+  theta?: number;
+}
+
+interface Toast {
+  type: string;
+  msg: string;
+}
+
 /**
  * QOSim Circuit Builder (Debug-Ready)
  * - Single-file React component
@@ -19,8 +32,8 @@ export default function QOSimCircuitBuilder() {
 
   // --- Circuit state ---
   /** step = { id, type, targets: number[], control?: number } */
-  const [steps, setSteps] = useState([]);
-  const [toast, setToast] = useState(null);
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [toast, setToast] = useState<Toast | null>(null);
 
   // ---- Gate registry (extend freely) ----
   const gates = useMemo(
@@ -49,17 +62,17 @@ export default function QOSimCircuitBuilder() {
   const [control, setControl] = useState(0);
   const [theta, setTheta] = useState(Math.PI / 4);
 
-  const showError = (msg) => {
+  const showError = (msg: string) => {
     setToast({ type: "error", msg });
     // Auto hide
     setTimeout(() => setToast(null), 4000);
   };
 
   // --- Validation helpers ---
-  const isValidQubit = (q) => Number.isInteger(q) && q >= 0 && q < numQubits;
+  const isValidQubit = (q: number) => Number.isInteger(q) && q >= 0 && q < numQubits;
 
   const addGate = () => {
-    const def = gates[selectedGate];
+    const def = gates[selectedGate as keyof typeof gates];
     if (!def) return showError(`Unknown gate type: ${selectedGate}`);
 
     const needsTwo = def.arity === 2;
@@ -72,7 +85,7 @@ export default function QOSimCircuitBuilder() {
 
     if (!isValidQubit(a)) return showError("Target qubit A is invalid/out of range.");
 
-    const payload = { id: crypto.randomUUID(), type: selectedGate, targets: [a] };
+    const payload: Step = { id: crypto.randomUUID(), type: selectedGate, targets: [a] };
 
     if (def.params?.includes("theta")) {
       if (!Number.isFinite(theta)) return showError("Theta must be a finite number.");
@@ -100,13 +113,13 @@ export default function QOSimCircuitBuilder() {
   // --- ASCII circuit preview ---
   const ascii = useMemo(() => {
     // columns correspond to steps
-    const rows = Array.from({ length: numQubits }, (_, q) => ({ q, cols: [] }));
+    const rows = Array.from({ length: numQubits }, (_, q) => ({ q, cols: [] as string[] }));
 
     steps.forEach((s) => {
       const col = Array.from({ length: numQubits }, () => "──");
       if (s.targets?.length) {
         s.targets.forEach((t) => {
-          col[t] = s.type === "MEASURE" ? "M─" : `${gates[s.type]?.label ?? s.type}`.padEnd(2, " ");
+          col[t] = s.type === "MEASURE" ? "M─" : `${gates[s.type as keyof typeof gates]?.label ?? s.type}`.padEnd(2, " ");
         });
       }
       if (s.control !== undefined) {
@@ -123,7 +136,7 @@ export default function QOSimCircuitBuilder() {
     return lines.join("\n");
   }, [steps, numQubits, gates]);
 
-  const removeStep = (id) => setSteps((p) => p.filter((s) => s.id !== id));
+  const removeStep = (id: string) => setSteps((p) => p.filter((s) => s.id !== id));
 
   return (
     <div className="min-h-screen w-full bg-[#0b0f19] text-white p-6 flex flex-col gap-6">
@@ -155,7 +168,7 @@ export default function QOSimCircuitBuilder() {
                 className="bg-black/40 border border-white/10 rounded-lg px-3 py-2"
               >
                 {Object.keys(gates).map((k) => (
-                  <option key={k} value={k}>{gates[k].label}</option>
+                  <option key={k} value={k}>{gates[k as keyof typeof gates].label}</option>
                 ))}
               </select>
             </div>
@@ -190,7 +203,7 @@ export default function QOSimCircuitBuilder() {
               />
             </div>
 
-            {gates[selectedGate]?.params?.includes("theta") && (
+            {gates[selectedGate as keyof typeof gates]?.params?.includes("theta") && (
               <div className="flex flex-col gap-1">
                 <span className="text-xs opacity-80">θ (radians)</span>
                 <input
