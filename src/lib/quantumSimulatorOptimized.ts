@@ -22,6 +22,7 @@ export interface OptimizedSimulationResult {
   fidelity: number;
   errorRates?: { [qubit: number]: number };
   mode: SimulationMode; // Add mode property for compatibility
+  error?: string; // Add optional error property
 }
 
 export interface SimulationStepData {

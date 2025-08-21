@@ -1,4 +1,5 @@
 
+
 export interface GateDefinition {
   name: string;
   type: 'single' | 'control' | 'multi';
@@ -148,7 +149,7 @@ export class GateValidationService {
     const gate: ValidatedGate = {
       id: gateInput.id || `gate-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: gateInput.type || gateInput.gate || 'I',
-      position: Math.max(0, parseInt(gateInput.position) || 0)
+      position: Math.max(0, Number(gateInput.position) || 0)
     };
 
     // Validate gate type
@@ -164,14 +165,14 @@ export class GateValidationService {
     if (gateDefinition.type === 'single') {
       // Single qubit gates
       const qubit = gateInput.qubit ?? gateInput.target ?? gateInput.targets?.[0] ?? 0;
-      const qubitValidation = this.validateGate(gate.type, qubit, 5);
+      const qubitValidation = this.validateGate(gate.type, Number(qubit), 5);
       
       if (!qubitValidation.isValid) {
         console.error('❌ Single qubit validation failed:', qubitValidation.error);
         return null;
       }
       
-      gate.qubit = parseInt(qubit);
+      gate.qubit = Number(qubit);
       gate.targets = [gate.qubit];
 
     } else if (gateDefinition.type === 'control') {
@@ -190,15 +191,15 @@ export class GateValidationService {
         return null;
       }
 
-      const qubitValidation = this.validateGate(gate.type, [control, target], 5);
+      const qubitValidation = this.validateGate(gate.type, [Number(control), Number(target)], 5);
       if (!qubitValidation.isValid) {
         console.error('❌ Control gate validation failed:', qubitValidation.error);
         return null;
       }
 
-      gate.qubits = [parseInt(control), parseInt(target)];
-      gate.control = parseInt(control);
-      gate.targets = [parseInt(target)];
+      gate.qubits = [Number(control), Number(target)];
+      gate.control = Number(control);
+      gate.targets = [Number(target)];
 
     } else if (gateDefinition.type === 'multi') {
       // Multi-qubit gates
@@ -209,13 +210,13 @@ export class GateValidationService {
         return null;
       }
 
-      const qubitValidation = this.validateGate(gate.type, qubits, 5);
+      const qubitValidation = this.validateGate(gate.type, qubits.map(q => Number(q)), 5);
       if (!qubitValidation.isValid) {
         console.error('❌ Multi-qubit gate validation failed:', qubitValidation.error);
         return null;
       }
 
-      gate.qubits = qubits.map(q => parseInt(q));
+      gate.qubits = qubits.map(q => Number(q));
       gate.targets = gate.qubits;
     }
 
