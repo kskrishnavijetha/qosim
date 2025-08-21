@@ -5,9 +5,9 @@ export { toOpenQASM } from './openqasm-exporter';
 export { toJSON } from './json-exporter';
 export { toQiskit } from './qiskit-exporter';
 export { toJavaScript } from './javascript-exporter';
-export { convertToUnifiedCircuit } from './circuit-converter';
+export { convertToUnifiedCircuit, convertFromQuantumBackend } from './circuit-converter';
 
-import { Circuit } from './types';
+import type { Circuit } from './types';
 import { validate } from './types';
 import { toOpenQASM } from './openqasm-exporter';
 import { toJSON } from './json-exporter';
