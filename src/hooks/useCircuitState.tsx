@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
@@ -39,12 +40,49 @@ export function useCircuitState() {
     }
   }, [cloudConfig]);
 
+  // Helper function to validate and fix qubit indices
+  const validateAndFixGate = (gate: Gate): Gate => {
+    const fixedGate = { ...gate };
+    
+    // Ensure single qubit gates have valid qubit index
+    if (fixedGate.qubit !== undefined && (isNaN(fixedGate.qubit) || fixedGate.qubit < 0)) {
+      console.warn(`Invalid qubit index ${fixedGate.qubit} for gate ${fixedGate.type}, setting to 0`);
+      fixedGate.qubit = 0;
+    }
+    
+    // Ensure multi-qubit gates have valid qubit indices
+    if (fixedGate.qubits) {
+      fixedGate.qubits = fixedGate.qubits.map((q, index) => {
+        if (isNaN(q) || q < 0) {
+          console.warn(`Invalid qubit index ${q} for gate ${fixedGate.type}, setting to ${index}`);
+          return index;
+        }
+        return q;
+      });
+    }
+    
+    // Handle composite gates
+    if (fixedGate.type === 'BELL' && !fixedGate.qubits) {
+      fixedGate.qubits = [0, 1];
+    } else if (fixedGate.type === 'GHZ' && !fixedGate.qubits) {
+      fixedGate.qubits = [0, 1, 2];
+    } else if (fixedGate.type === 'W' && !fixedGate.qubits) {
+      fixedGate.qubits = [0, 1, 2];
+    }
+    
+    return fixedGate;
+  };
+
   const simulateQuantumState = useCallback(async (gates: Gate[]) => {
     console.log('🔄 simulateQuantumState called with gates:', gates);
     console.log('🔄 Current simulation mode:', simulationMode);
     
+    // Validate and fix all gates before simulation
+    const validatedGates = gates.map(validateAndFixGate);
+    console.log('🔄 Validated gates:', validatedGates);
+    
     // Generate circuit hash for uniqueness verification
-    const circuitHash = JSON.stringify(gates.map(g => ({ 
+    const circuitHash = JSON.stringify(validatedGates.map(g => ({ 
       type: g.type, 
       qubit: g.qubit, 
       qubits: g.qubits, 
@@ -58,15 +96,29 @@ export function useCircuitState() {
       optimizedQuantumSimulator.setMode(simulationMode);
       console.log('🔄 Set mode on optimizedQuantumSimulator to:', simulationMode);
       
-      // Convert our Gate interface to QuantumGate interface
-      const quantumGates: QuantumGate[] = gates.map(gate => ({
-        id: gate.id,
-        type: gate.type,
-        qubit: gate.qubit,
-        qubits: gate.qubits,
-        position: gate.position,
-        angle: gate.angle
-      }));
+      // Convert our Gate interface to QuantumGate interface with validation
+      const quantumGates: QuantumGate[] = validatedGates.map(gate => {
+        const quantumGate: QuantumGate = {
+          id: gate.id,
+          type: gate.type,
+          position: gate.position
+        };
+        
+        // Add qubit information with validation
+        if (gate.qubit !== undefined) {
+          quantumGate.qubit = Math.max(0, gate.qubit); // Ensure non-negative
+        }
+        
+        if (gate.qubits && gate.qubits.length > 0) {
+          quantumGate.qubits = gate.qubits.map(q => Math.max(0, q)); // Ensure non-negative
+        }
+        
+        if (gate.angle !== undefined) {
+          quantumGate.angle = gate.angle;
+        }
+        
+        return quantumGate;
+      });
       
       console.log('🔄 Converted quantum gates:', quantumGates);
       
@@ -92,7 +144,7 @@ export function useCircuitState() {
       
       // Track simulation analytics
       trackEvent('circuit_simulated', { 
-        gateCount: gates.length, 
+        gateCount: validatedGates.length, 
         numQubits: 5,
         mode: simulationMode
       });
@@ -148,31 +200,24 @@ export function useCircuitState() {
   const addGate = useCallback((newGate: Gate) => {
     console.log('🔄 Adding gate:', newGate);
     
-    // Handle composite gates that need multiple qubits
-    let finalGate = newGate;
+    // Validate and fix the gate before adding
+    const validatedGate = validateAndFixGate(newGate);
+    console.log('🔄 Validated gate:', validatedGate);
     
-    if (newGate.type === 'BELL' && !newGate.qubits) {
-      finalGate = { ...newGate, qubits: [0, 1] };
-    } else if (newGate.type === 'GHZ' && !newGate.qubits) {
-      finalGate = { ...newGate, qubits: [0, 1, 2] };
-    } else if (newGate.type === 'W' && !newGate.qubits) {
-      finalGate = { ...newGate, qubits: [0, 1, 2] };
-    }
-    
-    const newCircuit = [...circuit, finalGate];
+    const newCircuit = [...circuit, validatedGate];
     console.log('🔄 New circuit length:', newCircuit.length);
     setCircuit(newCircuit);
     setHistory(prev => [...prev, newCircuit]);
     
-    // Track analytics - fix the type issue
+    // Track analytics
     trackEvent('gate_added', { 
-      gateType: finalGate.type, 
-      qubit: finalGate.qubit, 
-      position: finalGate.position 
+      gateType: validatedGate.type, 
+      qubit: validatedGate.qubit, 
+      position: validatedGate.position 
     });
-    gateUsageTracker.increment(finalGate.type);
+    gateUsageTracker.increment(validatedGate.type);
     trackEvent('circuit_modified', { 
-      gateType: finalGate.type, 
+      gateType: validatedGate.type, 
       numGates: newCircuit.length 
     });
     
@@ -219,6 +264,7 @@ export function useCircuitState() {
 
   const generateCircuitData = (gates: Gate[]) => {
     return gates
+      .map(validateAndFixGate) // Validate gates in circuit data
       .sort((a, b) => a.position - b.position) // Sort by time step
       .map(gate => ({
         gate: gate.type,
