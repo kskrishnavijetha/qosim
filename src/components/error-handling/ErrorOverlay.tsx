@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,8 +13,7 @@ import {
   Clock,
   MapPin
 } from 'lucide-react';
-import { QOSimError, ErrorSeverity } from '@/services/ErrorHandlingService';
-import { ErrorFixSuggestion } from '@/services/ErrorFixSuggestionService';
+import { QOSimError, ErrorSeverity, ErrorFixSuggestion } from '@/services/ErrorHandlingService';
 import { cn } from '@/lib/utils';
 
 interface ErrorOverlayProps {
@@ -26,6 +24,7 @@ interface ErrorOverlayProps {
   onApplyFix: (suggestion: ErrorFixSuggestion) => void;
   onShowLocation?: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function ErrorOverlay({

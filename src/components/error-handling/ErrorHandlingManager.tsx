@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { QOSimError, errorHandlingService } from '@/services/ErrorHandlingService';
-import { ErrorFixSuggestion, errorFixSuggestionService } from '@/services/ErrorFixSuggestionService';
+import { QOSimError, ErrorFixSuggestion, errorHandlingService } from '@/services/ErrorHandlingService';
+import { errorFixSuggestionService } from '@/services/ErrorFixSuggestionService';
 import { ErrorOverlay } from './ErrorOverlay';
 import { ErrorLoggingConsole } from './ErrorLoggingConsole';
 import { useToast } from '@/hooks/use-toast';
