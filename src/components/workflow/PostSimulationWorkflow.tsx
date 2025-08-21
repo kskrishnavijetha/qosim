@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import { SimulationResults } from './SimulationResults';
 import { StepByStepViewer } from './StepByStepViewer';
 import { EnhancedExportOptions } from './EnhancedExportOptions';
 import { SimulationControls } from './SimulationControls';
-import { AlertTriangle, Zap, Eye, Download, Play } from 'lucide-react';
+import { CircuitExplanationPanel } from './CircuitExplanationPanel';
+import { AlertTriangle, Zap, Eye, Download, Play, Bot } from 'lucide-react';
 
 interface PostSimulationWorkflowProps {
   result: QuantumBackendResult;
@@ -134,6 +134,14 @@ export function PostSimulationWorkflow({
         </CardHeader>
       </Card>
 
+      {/* AI Circuit Explanation - New Feature */}
+      <CircuitExplanationPanel
+        gates={gates}
+        result={result}
+        numQubits={numQubits}
+        isVisible={true}
+      />
+
       {/* Simulation Controls */}
       <SimulationControls
         shots={shots}
@@ -146,20 +154,24 @@ export function PostSimulationWorkflow({
 
       {/* Main Workflow Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 quantum-panel neon-border">
+        <TabsList className="grid w-full grid-cols-5 quantum-panel neon-border">
           <TabsTrigger value="results" className="text-quantum-glow">
             <Eye className="w-4 h-4 mr-2" />
             Results
           </TabsTrigger>
-          <TabsTrigger value="evolution" className="text-quantum-neon">
+          <TabsTrigger value="explanation" className="text-quantum-neon">
+            <Bot className="w-4 h-4 mr-2" />
+            AI Explain
+          </TabsTrigger>
+          <TabsTrigger value="evolution" className="text-quantum-particle">
             <Play className="w-4 h-4 mr-2" />
             Evolution
           </TabsTrigger>
-          <TabsTrigger value="export" className="text-quantum-particle">
+          <TabsTrigger value="export" className="text-quantum-plasma">
             <Download className="w-4 h-4 mr-2" />
             Export
           </TabsTrigger>
-          <TabsTrigger value="code" className="text-quantum-plasma">
+          <TabsTrigger value="code" className="text-quantum-energy">
             Generate Code
           </TabsTrigger>
         </TabsList>
@@ -169,6 +181,15 @@ export function PostSimulationWorkflow({
             result={result}
             showAdvanced={workflowState.showAdvanced}
             numQubits={numQubits}
+          />
+        </TabsContent>
+
+        <TabsContent value="explanation" className="space-y-4">
+          <CircuitExplanationPanel
+            gates={gates}
+            result={result}
+            numQubits={numQubits}
+            isVisible={activeTab === 'explanation'}
           />
         </TabsContent>
 
