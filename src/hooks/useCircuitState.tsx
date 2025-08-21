@@ -4,6 +4,8 @@ import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@
 import { type OptimizedSimulationResult, type SimulationStepData, optimizedQuantumSimulator } from '@/lib/quantumSimulatorOptimized';
 import { type CloudSimulationConfig, quantumSimulationManager } from '@/lib/quantumSimulationService';
 import { trackEvent, gateUsageTracker, CircuitSessionTracker } from '@/lib/analytics';
+import { gateValidationService, type ValidatedGate } from '@/services/GateValidationService';
+import { circuitStateValidationService, type CircuitState } from '@/services/CircuitStateValidationService';
 
 export interface Gate {
   id: string;
@@ -16,6 +18,12 @@ export interface Gate {
 }
 
 export function useCircuitState() {
+  // Initialize with validated default state
+  const [circuitState, setCircuitState] = useState<CircuitState>(() => {
+    console.log('🏗️ Initializing circuit state with defaults');
+    return circuitStateValidationService.createDefaultCircuitState();
+  });
+  
   const [circuit, setCircuit] = useState<Gate[]>([]);
   const [history, setHistory] = useState<Gate[][]>([[]]);
   const [simulationResult, setSimulationResult] = useState<OptimizedSimulationResult | null>(null);
@@ -43,129 +51,49 @@ export function useCircuitState() {
   const emergencyValidateGate = (gate: Gate): Gate | null => {
     console.log('🚨 EMERGENCY Validating gate:', gate);
     
-    // Reject completely invalid gates
-    if (!gate || typeof gate !== 'object') {
-      console.error('❌ EMERGENCY: Gate is not a valid object');
-      return null;
-    }
+    // Use the validation service for comprehensive validation
+    const normalizedGate = gateValidationService.normalizeGate(gate);
     
-    if (!gate.type || typeof gate.type !== 'string') {
-      console.error('❌ EMERGENCY: Gate type is invalid');
-      return null;
+    if (!normalizedGate) {
+      console.error('❌ EMERGENCY: Gate failed validation service check');
+      // Return a safe fallback gate
+      return {
+        id: `emergency-${Date.now()}`,
+        type: 'I',
+        qubit: 0,
+        position: 0
+      };
     }
-    
-    if (gate.position === undefined || gate.position === null || isNaN(gate.position)) {
-      console.error('❌ EMERGENCY: Gate position is invalid');
-      return null;
-    }
-    
-    // Start with completely clean gate
-    const cleanGate: Gate = {
-      id: gate.id || `emergency-${Date.now()}-${Math.random()}`,
-      type: gate.type,
-      position: Math.max(0, Math.floor(Number(gate.position) || 0))
+
+    // Convert back to the legacy Gate format expected by existing code
+    const legacyGate: Gate = {
+      id: normalizedGate.id,
+      type: normalizedGate.type,
+      position: normalizedGate.position
     };
-    
-    // Define gate requirements
-    const singleQubitGates = ['I', 'X', 'Y', 'Z', 'H', 'S', 'SDG', 'T', 'TDG', 'RX', 'RY', 'RZ', 'U1', 'U2', 'U3', 'MEASURE', 'M', 'RESET'];
-    const twoQubitGates = ['CNOT', 'CX', 'CZ', 'SWAP', 'CY', 'CH'];
-    const threeQubitGates = ['CCX', 'TOFFOLI', 'FREDKIN', 'CSWAP'];
-    
-    if (singleQubitGates.includes(cleanGate.type)) {
-      // For single qubit gates, ensure we have exactly one valid qubit
-      let targetQubit = 0;
-      
-      if (gate.qubit !== undefined && gate.qubit !== null && !isNaN(gate.qubit) && gate.qubit >= 0) {
-        targetQubit = Math.max(0, Math.min(4, Math.floor(Number(gate.qubit))));
-      } else if (gate.qubits && Array.isArray(gate.qubits) && gate.qubits.length > 0) {
-        const firstQubit = gate.qubits[0];
-        if (firstQubit !== undefined && firstQubit !== null && !isNaN(firstQubit) && firstQubit >= 0) {
-          targetQubit = Math.max(0, Math.min(4, Math.floor(Number(firstQubit))));
-        }
-      }
-      
-      cleanGate.qubit = targetQubit;
-      console.log(`🚨 EMERGENCY: Single qubit gate ${cleanGate.type} assigned to qubit ${targetQubit}`);
-      
-    } else if (twoQubitGates.includes(cleanGate.type)) {
-      // For two qubit gates, ensure we have exactly two different valid qubits
-      let qubit1 = 0;
-      let qubit2 = 1;
-      
-      if (gate.qubits && Array.isArray(gate.qubits) && gate.qubits.length >= 2) {
-        const q1 = gate.qubits[0];
-        const q2 = gate.qubits[1];
-        
-        if (q1 !== undefined && q1 !== null && !isNaN(q1) && q1 >= 0) {
-          qubit1 = Math.max(0, Math.min(4, Math.floor(Number(q1))));
-        }
-        if (q2 !== undefined && q2 !== null && !isNaN(q2) && q2 >= 0) {
-          qubit2 = Math.max(0, Math.min(4, Math.floor(Number(q2))));
-        }
-      }
-      
-      // Ensure qubits are different
-      if (qubit1 === qubit2) {
-        qubit2 = (qubit1 + 1) % 5;
-      }
-      
-      cleanGate.qubits = [qubit1, qubit2];
-      console.log(`🚨 EMERGENCY: Two qubit gate ${cleanGate.type} assigned to qubits [${qubit1}, ${qubit2}]`);
-      
-    } else if (threeQubitGates.includes(cleanGate.type)) {
-      // For three qubit gates, ensure we have exactly three different valid qubits
-      let qubit1 = 0;
-      let qubit2 = 1;
-      let qubit3 = 2;
-      
-      if (gate.qubits && Array.isArray(gate.qubits) && gate.qubits.length >= 3) {
-        const q1 = gate.qubits[0];
-        const q2 = gate.qubits[1];
-        const q3 = gate.qubits[2];
-        
-        if (q1 !== undefined && q1 !== null && !isNaN(q1) && q1 >= 0) {
-          qubit1 = Math.max(0, Math.min(4, Math.floor(Number(q1))));
-        }
-        if (q2 !== undefined && q2 !== null && !isNaN(q2) && q2 >= 0) {
-          qubit2 = Math.max(0, Math.min(4, Math.floor(Number(q2))));
-        }
-        if (q3 !== undefined && q3 !== null && !isNaN(q3) && q3 >= 0) {
-          qubit3 = Math.max(0, Math.min(4, Math.floor(Number(q3))));
-        }
-      }
-      
-      // Ensure all qubits are different
-      if (qubit1 === qubit2) qubit2 = (qubit1 + 1) % 5;
-      if (qubit1 === qubit3 || qubit2 === qubit3) qubit3 = (Math.max(qubit1, qubit2) + 1) % 5;
-      
-      cleanGate.qubits = [qubit1, qubit2, qubit3];
-      console.log(`🚨 EMERGENCY: Three qubit gate ${cleanGate.type} assigned to qubits [${qubit1}, ${qubit2}, ${qubit3}]`);
-    } else {
-      // Unknown gate type, assign default single qubit
-      cleanGate.qubit = 0;
-      console.warn(`🚨 EMERGENCY: Unknown gate type ${cleanGate.type}, assigned to qubit 0`);
+
+    if (normalizedGate.qubit !== undefined) {
+      legacyGate.qubit = normalizedGate.qubit;
     }
-    
-    // Handle angles and params safely
-    if (gate.angle !== undefined && gate.angle !== null && !isNaN(gate.angle)) {
-      cleanGate.angle = Number(gate.angle);
-    } else if (['RX', 'RY', 'RZ', 'U1'].includes(cleanGate.type)) {
-      cleanGate.angle = 0; // Default angle for rotation gates
+    if (normalizedGate.qubits && normalizedGate.qubits.length > 0) {
+      legacyGate.qubits = normalizedGate.qubits;
     }
-    
-    if (gate.params && Array.isArray(gate.params)) {
-      cleanGate.params = gate.params.filter(p => p !== undefined && p !== null && !isNaN(p)).map(p => Number(p));
+    if (normalizedGate.angle !== undefined) {
+      legacyGate.angle = normalizedGate.angle;
     }
-    
-    console.log('✅ EMERGENCY: Gate validated:', cleanGate);
-    return cleanGate;
+    if (normalizedGate.params && normalizedGate.params.length > 0) {
+      legacyGate.params = normalizedGate.params;
+    }
+
+    console.log('✅ EMERGENCY: Gate validated and converted:', legacyGate);
+    return legacyGate;
   };
 
   // Ultra-strict validation function to eliminate all undefined values
   const validateAndFixGate = (gate: Gate): Gate => {
     console.log('🔍 STRICT Validating gate:', gate);
     
-    // First pass: emergency validation
+    // First pass: emergency validation using the validation service
     const emergencyValidated = emergencyValidateGate(gate);
     if (!emergencyValidated) {
       console.error('❌ CRITICAL: Gate failed emergency validation, creating fallback');
@@ -176,44 +104,30 @@ export function useCircuitState() {
         position: 0
       };
     }
-    
-    // Second pass: detailed validation
-    const fixedGate: Gate = { ...emergencyValidated };
-    
-    console.log(`🔍 Processing gate type: ${fixedGate.type}`);
-    
-    // Final safety check: ensure NO undefined values remain anywhere
-    if (fixedGate.qubit !== undefined) {
-      if (fixedGate.qubit === null || isNaN(fixedGate.qubit) || fixedGate.qubit < 0) {
-        console.error(`❌ FINAL CHECK FAILED: Invalid qubit ${fixedGate.qubit}, forcing to 0`);
-        fixedGate.qubit = 0;
-      } else {
-        fixedGate.qubit = Math.max(0, Math.min(4, Math.floor(Number(fixedGate.qubit))));
-      }
+
+    // Additional validation for gate type
+    const availableGates = gateValidationService.getAvailableGates();
+    if (!availableGates.includes(emergencyValidated.type)) {
+      console.error(`❌ Unknown gate type: ${emergencyValidated.type}, defaulting to Identity`);
+      emergencyValidated.type = 'I';
+      emergencyValidated.qubit = emergencyValidated.qubit || 0;
+    }
+
+    // Validate qubit assignments one more time
+    const validation = gateValidationService.validateGate(
+      emergencyValidated.type,
+      emergencyValidated.qubits || emergencyValidated.qubit,
+      5
+    );
+
+    if (!validation.isValid) {
+      console.error(`❌ Final validation failed: ${validation.error}, ${validation.suggestion}`);
+      // Throw a user-friendly error instead of returning undefined
+      throw new Error(`Gate validation failed: ${validation.error}. ${validation.suggestion}`);
     }
     
-    if (fixedGate.qubits && Array.isArray(fixedGate.qubits)) {
-      fixedGate.qubits = fixedGate.qubits.map((q, index) => {
-        if (q === undefined || q === null || isNaN(q) || q < 0) {
-          console.error(`❌ FINAL CHECK FAILED: Invalid qubit at index ${index}: ${q}, forcing to ${index}`);
-          return Math.min(index, 4);
-        }
-        return Math.max(0, Math.min(4, Math.floor(Number(q))));
-      });
-    }
-    
-    // Absolutely ensure we have valid qubit assignment
-    const hasValidQubit = (fixedGate.qubit !== undefined && fixedGate.qubit >= 0) || 
-                         (fixedGate.qubits && fixedGate.qubits.length > 0 && fixedGate.qubits.every(q => q !== undefined && q >= 0));
-    
-    if (!hasValidQubit) {
-      console.error('❌ FINAL EMERGENCY: No valid qubit assignment found, forcing single qubit 0');
-      fixedGate.qubit = 0;
-      delete fixedGate.qubits;
-    }
-    
-    console.log('✅ FINAL VALIDATED GATE:', fixedGate);
-    return fixedGate;
+    console.log('✅ FINAL VALIDATED GATE:', emergencyValidated);
+    return emergencyValidated;
   };
 
   const simulateQuantumState = useCallback(async (gates: Gate[]) => {
@@ -232,6 +146,14 @@ export function useCircuitState() {
         console.error('❌ PRE-FILTER: Removing invalid gate:', gate);
         return false;
       }
+      
+      // Check if gate type is supported
+      const availableGates = gateValidationService.getAvailableGates();
+      if (!availableGates.includes(gate.type)) {
+        console.error(`❌ PRE-FILTER: Unknown gate type ${gate.type}, removing gate`);
+        return false;
+      }
+      
       return true;
     });
     
@@ -242,23 +164,42 @@ export function useCircuitState() {
     }
     
     // ULTRA-STRICT validation of all gates
-    const validatedGates = preFilteredGates.map((gate, index) => {
-      console.log(`🔄 Validating gate ${index}:`, gate);
-      const validated = validateAndFixGate(gate);
-      
-      // TRIPLE-CHECK for any remaining undefined/null values
-      Object.keys(validated).forEach(key => {
-        const value = (validated as any)[key];
-        if (value === undefined) {
-          console.error(`❌ STILL UNDEFINED: Gate property ${key} is undefined in gate:`, validated);
-          // Remove undefined properties
-          delete (validated as any)[key];
-        }
+    let validatedGates: Gate[];
+    
+    try {
+      validatedGates = preFilteredGates.map((gate, index) => {
+        console.log(`🔄 Validating gate ${index}:`, gate);
+        const validated = validateAndFixGate(gate);
+        
+        // TRIPLE-CHECK for any remaining undefined/null values
+        Object.keys(validated).forEach(key => {
+          const value = (validated as any)[key];
+          if (value === undefined) {
+            console.error(`❌ STILL UNDEFINED: Gate property ${key} is undefined in gate:`, validated);
+            // Remove undefined properties
+            delete (validated as any)[key];
+          }
+        });
+        
+        console.log(`✅ Gate ${index} validated:`, validated);
+        return validated;
       });
-      
-      console.log(`✅ Gate ${index} validated:`, validated);
-      return validated;
-    });
+    } catch (validationError: any) {
+      console.error('❌ Gate validation error:', validationError.message);
+      // Set a user-friendly error in the simulation result
+      const errorResult: OptimizedSimulationResult = {
+        stateVector: [],
+        measurementProbabilities: [],
+        qubitStates: [],
+        entanglement: { pairs: [], totalEntanglement: 0, entanglementThreads: [] },
+        executionTime: 0,
+        fidelity: 0,
+        mode: simulationMode,
+        error: validationError.message
+      };
+      setSimulationResult(errorResult);
+      return;
+    }
     
     console.log('🔄 All gates ULTRA-validated:', validatedGates);
     
@@ -344,7 +285,7 @@ export function useCircuitState() {
       });
       
       setSimulationResult(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error in simulateQuantumState:', error);
       
       const fallbackResult: OptimizedSimulationResult = {
@@ -354,7 +295,8 @@ export function useCircuitState() {
         entanglement: { pairs: [], totalEntanglement: 0, entanglementThreads: [] },
         executionTime: 0,
         fidelity: 0,
-        mode: simulationMode
+        mode: simulationMode,
+        error: error.message || 'Simulation failed'
       };
       setSimulationResult(fallbackResult);
     }
@@ -381,21 +323,26 @@ export function useCircuitState() {
   const addGate = useCallback((newGate: Gate) => {
     console.log('🔄 Adding gate:', newGate);
     
-    const validatedGate = validateAndFixGate(newGate);
-    console.log('🔄 Validated gate before adding:', validatedGate);
-    
-    const newCircuit = [...circuit, validatedGate];
-    setCircuit(newCircuit);
-    setHistory(prev => [...prev, newCircuit]);
-    
-    trackEvent('gate_added', { 
-      gateType: validatedGate.type, 
-      qubit: validatedGate.qubit, 
-      position: validatedGate.position 
-    });
-    gateUsageTracker.increment(validatedGate.type);
-    
-    simulateQuantumState(newCircuit);
+    try {
+      const validatedGate = validateAndFixGate(newGate);
+      console.log('🔄 Validated gate before adding:', validatedGate);
+      
+      const newCircuit = [...circuit, validatedGate];
+      setCircuit(newCircuit);
+      setHistory(prev => [...prev, newCircuit]);
+      
+      trackEvent('gate_added', { 
+        gateType: validatedGate.type, 
+        qubit: validatedGate.qubit, 
+        position: validatedGate.position 
+      });
+      gateUsageTracker.increment(validatedGate.type);
+      
+      simulateQuantumState(newCircuit);
+    } catch (error: any) {
+      console.error('❌ Failed to add gate:', error.message);
+      // Could emit an event here to show user-friendly error message
+    }
   }, [circuit, simulateQuantumState]);
 
   const deleteGate = useCallback((gateId: string) => {
