@@ -25,7 +25,13 @@ export function QuantumStateVisualization({
 
   // Use backend result if available, otherwise use simulation result
   const displayResult = backendResult ? {
-    qubitStates: backendResult.qubitStates,
+    qubitStates: backendResult.qubitStates.map(qubit => ({
+      ...qubit,
+      amplitude: {
+        real: qubit.amplitude.real,
+        imag: qubit.amplitude.imaginary
+      }
+    })),
     measurementProbabilities: Array.isArray(backendResult.measurementProbabilities) 
       ? backendResult.measurementProbabilities 
       : Object.values(backendResult.measurementProbabilities || {}),

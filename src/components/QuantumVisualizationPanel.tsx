@@ -53,7 +53,16 @@ export function QuantumVisualizationPanel({
       imag: amp.imaginary 
     })),
     measurementProbabilities: Object.entries(result.measurementProbabilities).map(([state, prob]) => prob),
-    qubitStates: result.qubitStates,
+    qubitStates: result.qubitStates.map(qubit => ({
+      qubit: qubit.qubit,
+      state: qubit.state,
+      amplitude: {
+        real: qubit.amplitude.real,
+        imag: qubit.amplitude.imaginary
+      },
+      phase: qubit.phase,
+      probability: qubit.probability
+    })),
     mode: 'accurate',
     executionTime: result.executionTime,
     fidelity: 1.0,

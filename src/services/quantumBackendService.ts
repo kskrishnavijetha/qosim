@@ -84,19 +84,19 @@ export class QuantumBackendService {
         }
       }
 
-      // Convert state vector to proper format
+      // Convert state vector to proper format with helper functions for Complex
       const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => ({
         real: complex.real,
-        imaginary: complex.imaginary || 0,
-        magnitude: complex.magnitude(),
-        phase: complex.phase()
+        imaginary: complex.imag || 0,
+        magnitude: typeof complex.magnitude === 'function' ? complex.magnitude() : Math.sqrt(complex.real * complex.real + (complex.imag || 0) * (complex.imag || 0)),
+        phase: typeof complex.phase === 'function' ? complex.phase() : Math.atan2(complex.imag || 0, complex.real)
       }));
 
       // Calculate proper entanglement analysis
       const numQubits = Math.log2(result.stateVector.length);
       const entanglementInput = result.stateVector.map(complex => ({
         real: complex.real,
-        imaginary: complex.imaginary || 0
+        imaginary: complex.imag || 0
       }));
       
       const entanglement = QuantumEntanglementService.calculateEntanglement(
@@ -119,11 +119,23 @@ export class QuantumBackendService {
         };
       });
 
+      // Convert qubit states to match interface
+      const convertedQubitStates: QubitState[] = result.qubitStates.map(qubit => ({
+        qubit: qubit.qubit,
+        state: qubit.state,
+        amplitude: {
+          real: qubit.amplitude.real,
+          imaginary: qubit.amplitude.imag || 0
+        },
+        phase: qubit.phase,
+        probability: qubit.probability
+      }));
+
       return {
         stateVector,
         measurementProbabilities: result.measurementProbabilities,
         counts,
-        qubitStates: result.qubitStates,
+        qubitStates: convertedQubitStates,
         executionTime,
         backend: 'local',
         jobId: `local-${Date.now()}`,
@@ -168,3 +180,4 @@ export class QuantumBackendService {
 
 // Export the service instance for backward compatibility
 export const quantumBackendService = QuantumBackendService;
+export type { QuantumCircuit };
