@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { quantumSimulator, type QuantumGate, type SimulationResult } from '@/lib/quantumSimulator';
 import { enhancedQuantumSimulationManager, type EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
@@ -40,36 +39,102 @@ export function useCircuitState() {
     }
   }, [cloudConfig]);
 
-  // Helper function to validate and fix qubit indices
+  // Enhanced validation function with detailed logging
   const validateAndFixGate = (gate: Gate): Gate => {
+    console.log('🔍 Validating gate:', gate);
     const fixedGate = { ...gate };
     
-    // Ensure single qubit gates have valid qubit index
-    if (fixedGate.qubit !== undefined && (isNaN(fixedGate.qubit) || fixedGate.qubit < 0)) {
-      console.warn(`Invalid qubit index ${fixedGate.qubit} for gate ${fixedGate.type}, setting to 0`);
-      fixedGate.qubit = 0;
+    // Ensure gate has valid ID
+    if (!fixedGate.id) {
+      fixedGate.id = `gate-${Date.now()}-${Math.random()}`;
+      console.warn(`Gate missing ID, assigned: ${fixedGate.id}`);
     }
     
-    // Ensure multi-qubit gates have valid qubit indices
+    // Ensure gate has valid type
+    if (!fixedGate.type) {
+      console.error('Gate missing type:', fixedGate);
+      fixedGate.type = 'I'; // Default to identity gate
+    }
+    
+    // Ensure position is valid
+    if (fixedGate.position === undefined || isNaN(fixedGate.position) || fixedGate.position < 0) {
+      console.warn(`Invalid position ${fixedGate.position} for gate ${fixedGate.type}, setting to 0`);
+      fixedGate.position = 0;
+    }
+    
+    // Handle single qubit gates
+    if (fixedGate.qubit !== undefined) {
+      if (isNaN(fixedGate.qubit) || fixedGate.qubit < 0) {
+        console.warn(`Invalid qubit index ${fixedGate.qubit} for gate ${fixedGate.type}, setting to 0`);
+        fixedGate.qubit = 0;
+      }
+    }
+    
+    // Handle multi-qubit gates
     if (fixedGate.qubits) {
-      fixedGate.qubits = fixedGate.qubits.map((q, index) => {
-        if (isNaN(q) || q < 0) {
-          console.warn(`Invalid qubit index ${q} for gate ${fixedGate.type}, setting to ${index}`);
-          return index;
-        }
-        return q;
-      });
+      if (!Array.isArray(fixedGate.qubits)) {
+        console.warn(`Invalid qubits array for gate ${fixedGate.type}:`, fixedGate.qubits);
+        fixedGate.qubits = [0, 1]; // Default to first two qubits
+      } else {
+        fixedGate.qubits = fixedGate.qubits.map((q, index) => {
+          if (q === undefined || q === null || isNaN(q) || q < 0) {
+            console.warn(`Invalid qubit index ${q} at position ${index} for gate ${fixedGate.type}, setting to ${index}`);
+            return index;
+          }
+          return Math.floor(q); // Ensure integer
+        });
+      }
     }
     
-    // Handle composite gates
+    // Handle composite gates - ensure they have proper qubit arrays
     if (fixedGate.type === 'BELL' && !fixedGate.qubits) {
       fixedGate.qubits = [0, 1];
+      console.log('Set BELL gate qubits to [0, 1]');
     } else if (fixedGate.type === 'GHZ' && !fixedGate.qubits) {
       fixedGate.qubits = [0, 1, 2];
+      console.log('Set GHZ gate qubits to [0, 1, 2]');
     } else if (fixedGate.type === 'W' && !fixedGate.qubits) {
       fixedGate.qubits = [0, 1, 2];
+      console.log('Set W gate qubits to [0, 1, 2]');
     }
     
+    // Handle two-qubit gates that need qubits array
+    const twoQubitGates = ['CNOT', 'CZ', 'SWAP', 'CX'];
+    if (twoQubitGates.includes(fixedGate.type) && !fixedGate.qubits) {
+      if (fixedGate.qubit !== undefined) {
+        // If only single qubit specified, create array with control and target
+        fixedGate.qubits = [fixedGate.qubit, (fixedGate.qubit + 1) % 5];
+        delete fixedGate.qubit; // Remove single qubit property
+        console.log(`Converted ${fixedGate.type} single qubit to qubits array:`, fixedGate.qubits);
+      } else {
+        fixedGate.qubits = [0, 1]; // Default
+        console.log(`Set default qubits for ${fixedGate.type}:`, fixedGate.qubits);
+      }
+    }
+    
+    // Handle three-qubit gates
+    const threeQubitGates = ['CCX', 'TOFFOLI'];
+    if (threeQubitGates.includes(fixedGate.type) && (!fixedGate.qubits || fixedGate.qubits.length < 3)) {
+      fixedGate.qubits = [0, 1, 2];
+      console.log(`Set default qubits for ${fixedGate.type}:`, fixedGate.qubits);
+    }
+    
+    // Validate angles for rotation gates
+    const rotationGates = ['RX', 'RY', 'RZ'];
+    if (rotationGates.includes(fixedGate.type)) {
+      if (fixedGate.angle === undefined || isNaN(fixedGate.angle)) {
+        fixedGate.angle = 0;
+        console.warn(`Set default angle 0 for rotation gate ${fixedGate.type}`);
+      }
+      
+      // Ensure these gates have a valid qubit
+      if (fixedGate.qubit === undefined || isNaN(fixedGate.qubit) || fixedGate.qubit < 0) {
+        fixedGate.qubit = 0;
+        console.warn(`Set default qubit 0 for rotation gate ${fixedGate.type}`);
+      }
+    }
+    
+    console.log('✅ Validated gate result:', fixedGate);
     return fixedGate;
   };
 
@@ -77,9 +142,26 @@ export function useCircuitState() {
     console.log('🔄 simulateQuantumState called with gates:', gates);
     console.log('🔄 Current simulation mode:', simulationMode);
     
+    if (!gates || gates.length === 0) {
+      console.log('🔄 No gates to simulate, setting null result');
+      setSimulationResult(null);
+      return;
+    }
+    
     // Validate and fix all gates before simulation
     const validatedGates = gates.map(validateAndFixGate);
     console.log('🔄 Validated gates:', validatedGates);
+    
+    // Verify no undefined values remain
+    const hasUndefined = validatedGates.some(gate => 
+      gate.qubit === undefined && gate.qubits === undefined ||
+      (gate.qubits && gate.qubits.some(q => q === undefined))
+    );
+    
+    if (hasUndefined) {
+      console.error('❌ Still have undefined values after validation:', validatedGates);
+      return;
+    }
     
     // Generate circuit hash for uniqueness verification
     const circuitHash = JSON.stringify(validatedGates.map(g => ({ 
@@ -98,6 +180,8 @@ export function useCircuitState() {
       
       // Convert our Gate interface to QuantumGate interface with validation
       const quantumGates: QuantumGate[] = validatedGates.map(gate => {
+        console.log('🔄 Converting gate to QuantumGate:', gate);
+        
         const quantumGate: QuantumGate = {
           id: gate.id,
           type: gate.type,
@@ -105,22 +189,23 @@ export function useCircuitState() {
         };
         
         // Add qubit information with validation
-        if (gate.qubit !== undefined) {
-          quantumGate.qubit = Math.max(0, gate.qubit); // Ensure non-negative
+        if (gate.qubit !== undefined && !isNaN(gate.qubit)) {
+          quantumGate.qubit = Math.max(0, Math.floor(gate.qubit)); // Ensure non-negative integer
         }
         
-        if (gate.qubits && gate.qubits.length > 0) {
-          quantumGate.qubits = gate.qubits.map(q => Math.max(0, q)); // Ensure non-negative
+        if (gate.qubits && Array.isArray(gate.qubits) && gate.qubits.length > 0) {
+          quantumGate.qubits = gate.qubits.map(q => Math.max(0, Math.floor(q))); // Ensure non-negative integers
         }
         
-        if (gate.angle !== undefined) {
+        if (gate.angle !== undefined && !isNaN(gate.angle)) {
           quantumGate.angle = gate.angle;
         }
         
+        console.log('🔄 Converted QuantumGate:', quantumGate);
         return quantumGate;
       });
       
-      console.log('🔄 Converted quantum gates:', quantumGates);
+      console.log('🔄 Final quantum gates for simulation:', quantumGates);
       
       // Use the appropriate simulation method based on mode
       let result: OptimizedSimulationResult;
