@@ -17,9 +17,8 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useZoomPan } from '@/hooks/useZoomPan';
 import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Import the QuantumGate type from the new CircuitCanvas
 import { QuantumGate } from './QuantumCircuitBuilder';
+import { useSimpleDragDrop } from '@/hooks/useSimpleDragDrop';
 
 // Types for AI integration compatibility
 interface AIGate {
@@ -63,6 +62,26 @@ export function InteractiveCircuitBuilder() {
     canUndo,
     canRedo
   } = useCircuitBuilder();
+
+  // Simple drag drop handler
+  const handleDragGateAdd = useCallback((gateType: string, qubit: number, position: number) => {
+    const qubitId = circuit.qubits[qubit]?.id;
+    if (qubitId) {
+      const screenPosition = { x: position * 80, y: qubit * 60 + 50 };
+      addGate(gateType, [qubitId], screenPosition);
+    }
+  }, [circuit.qubits, addGate]);
+
+  const {
+    dragState,
+    circuitRef,
+    handleMouseDown,
+    handleTouchStart
+  } = useSimpleDragDrop({
+    onGateAdd: handleDragGateAdd,
+    numQubits: circuit.qubits.length,
+    gridSize: 80
+  });
 
   const {
     zoomLevel,
@@ -369,6 +388,8 @@ export function InteractiveCircuitBuilder() {
                 onGateSelect={handlePaletteGateSelect}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
               />
             </TabsContent>
             
@@ -404,9 +425,8 @@ export function InteractiveCircuitBuilder() {
 
         {/* Center Panel - Circuit Canvas */}
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden" ref={circuitRef}>
             <CircuitCanvas
-              ref={canvasRef}
               circuit={quantumGates}
               numQubits={circuit.qubits.length}
               selectedGate={selectedQuantumGate}
@@ -416,6 +436,19 @@ export function InteractiveCircuitBuilder() {
               onGateRemove={removeGate}
               onCanvasClick={clearSelection}
             />
+            
+            {/* Drag preview */}
+            {dragState.isDragging && (
+              <div
+                className="fixed pointer-events-none z-50 bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold shadow-lg"
+                style={{
+                  left: dragState.dragPosition.x - 16,
+                  top: dragState.dragPosition.y - 12,
+                }}
+              >
+                {dragState.gateType}
+              </div>
+            )}
           </div>
         </div>
 

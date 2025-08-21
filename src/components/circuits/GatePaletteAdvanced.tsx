@@ -1,207 +1,86 @@
-
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { CircuitGate } from '@/hooks/useCircuitBuilder';
-import { Plus, Zap, RotateCcw } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+
+interface GateInfo {
+  type: string;
+  name: string;
+  description: string;
+  color: string;
+}
 
 interface GatePaletteAdvancedProps {
   onGateSelect: (gateType: string, qubits: string[], position: { x: number; y: number }) => void;
-  onQubitAdd: () => void;
-  selectedGate: CircuitGate | null;
+  onQubitAdd?: () => void;
+  selectedGate?: any;
+  onMouseDown?: (e: React.MouseEvent, gateType: string) => void;
+  onTouchStart?: (e: React.TouchEvent, gateType: string) => void;
 }
 
-const singleQubitGates = [
-  { type: 'I', name: 'Identity', color: '#95A5A6', description: 'Identity gate' },
-  { type: 'H', name: 'Hadamard', color: '#FFD700', description: 'Creates superposition' },
-  { type: 'X', name: 'Pauli-X', color: '#FF6B6B', description: 'Bit flip gate' },
-  { type: 'Y', name: 'Pauli-Y', color: '#4ECDC4', description: 'Bit and phase flip' },
-  { type: 'Z', name: 'Pauli-Z', color: '#45B7D1', description: 'Phase flip gate' },
-  { type: 'S', name: 'S Gate', color: '#F7DC6F', description: 'Phase gate (π/2)' },
-  { type: 'T', name: 'T Gate', color: '#BB8FCE', description: 'T gate (π/4)' },
-  { type: 'S†', name: 'S Dagger', color: '#F39C12', description: 'S conjugate' },
-  { type: 'T†', name: 'T Dagger', color: '#8E44AD', description: 'T conjugate' }
-];
+export function GatePaletteAdvanced({ 
+  onGateSelect, 
+  onQubitAdd, 
+  selectedGate,
+  onMouseDown,
+  onTouchStart
+}: GatePaletteAdvancedProps) {
+  const [gates, setGates] = useState<GateInfo[]>([
+    { type: 'H', name: 'Hadamard', description: 'Creates superposition', color: 'bg-purple-600' },
+    { type: 'X', name: 'Pauli-X', description: 'Bit-flip', color: 'bg-cyan-500' },
+    { type: 'Y', name: 'Pauli-Y', description: 'Bit- and phase-flip', color: 'bg-purple-500' },
+    { type: 'Z', name: 'Pauli-Z', description: 'Phase-flip', color: 'bg-purple-700' },
+    { type: 'S', name: 'S Gate', description: 'Phase gate', color: 'bg-blue-600' },
+    { type: 'T', name: 'T Gate', description: 'π/4 phase gate', color: 'bg-cyan-600' },
+    { type: 'RX', name: 'RX', description: 'Rotation around X-axis', color: 'bg-cyan-400' },
+    { type: 'RY', name: 'RY', description: 'Rotation around Y-axis', color: 'bg-slate-500' },
+    { type: 'RZ', name: 'RZ', description: 'Rotation around Z-axis', color: 'bg-orange-500' },
+    { type: 'CNOT', name: 'CNOT', description: 'Controlled-NOT', color: 'bg-purple-500' },
+    { type: 'SWAP', name: 'SWAP', description: 'Swaps two qubits', color: 'bg-green-500' },
+    { type: 'BARRIER', name: 'Barrier', description: 'Prevents optimization', color: 'bg-amber-500' }
+  ]);
 
-const parametricGates = [
-  { type: 'RX', name: 'Rotation X', color: '#FFEAA7', description: 'X-axis rotation' },
-  { type: 'RY', name: 'Rotation Y', color: '#DDA0DD', description: 'Y-axis rotation' },
-  { type: 'RZ', name: 'Rotation Z', color: '#98D8C8', description: 'Z-axis rotation' },
-  { type: 'U1', name: 'U1 Gate', color: '#AED6F1', description: 'Single parameter' },
-  { type: 'U2', name: 'U2 Gate', color: '#F8D7DA', description: 'Two parameters' },
-  { type: 'U3', name: 'U3 Gate', color: '#D4EDDA', description: 'Three parameters' }
-];
+  const handleGateClick = useCallback((gateType: string) => {
+    // For click events, add to position 0,0 by default
+    onGateSelect(gateType, [], { x: 0, y: 0 });
+  }, [onGateSelect]);
 
-const multiQubitGates = [
-  { type: 'CNOT', name: 'CNOT', color: '#96CEB4', description: 'Controlled NOT' },
-  { type: 'CZ', name: 'CZ', color: '#FF7675', description: 'Controlled Z' },
-  { type: 'SWAP', name: 'SWAP', color: '#85C1E9', description: 'Swap qubits' },
-  { type: 'TOFFOLI', name: 'Toffoli', color: '#F8C471', description: 'Controlled-controlled NOT' },
-  { type: 'FREDKIN', name: 'Fredkin', color: '#D7BDE2', description: 'Controlled SWAP' },
-  { type: 'CRX', name: 'CRX', color: '#FAD7A0', description: 'Controlled RX' },
-  { type: 'CRY', name: 'CRY', color: '#A9DFBF', description: 'Controlled RY' },
-  { type: 'CRZ', name: 'CRZ', color: '#AED6F1', description: 'Controlled RZ' }
-];
-
-const measurementGates = [
-  { type: 'M', name: 'Measure', color: '#E74C3C', description: 'Measurement' },
-  { type: 'BARRIER', name: 'Barrier', color: '#BDC3C7', description: 'Circuit barrier' },
-  { type: 'RESET', name: 'Reset', color: '#E67E22', description: 'Reset qubit' }
-];
-
-export function GatePaletteAdvanced({ onGateSelect, onQubitAdd, selectedGate }: GatePaletteAdvancedProps) {
-  const [customAngle, setCustomAngle] = useState(Math.PI / 4);
-  const [selectedQubits, setSelectedQubits] = useState<string[]>([]);
-
-  const handleGateClick = (gateType: string) => {
-    // For now, place gates at default position - canvas will handle positioning
-    onGateSelect(gateType, selectedQubits, { x: 200, y: 100 });
-  };
-
-  const renderGateGrid = (gates: typeof singleQubitGates) => {
-    return (
-      <div className="grid grid-cols-3 gap-2">
-        {gates.map((gate) => (
-          <Button
-            key={gate.type}
-            variant="outline"
-            className="h-16 flex flex-col items-center justify-center p-2"
-            onClick={() => handleGateClick(gate.type)}
-            style={{ backgroundColor: gate.color + '20' }}
-          >
-            <div className="text-xs font-bold mb-1">{gate.type}</div>
-            <div className="text-xs text-muted-foreground">{gate.name}</div>
-          </Button>
-        ))}
+  const renderGateButton = (gate: GateInfo) => (
+    <Button
+      key={gate.type}
+      variant={selectedGate?.type === gate.type ? "default" : "outline"}
+      size="sm"
+      className={`justify-start text-left h-auto p-2 ${gate.color} hover:scale-105 transition-all duration-200`}
+      onClick={() => handleGateClick(gate.type)}
+      onMouseDown={onMouseDown ? (e) => onMouseDown(e, gate.type) : undefined}
+      onTouchStart={onTouchStart ? (e) => onTouchStart(e, gate.type) : undefined}
+      title={gate.description}
+    >
+      <div className="flex flex-col items-start w-full">
+        <div className="font-mono font-bold text-sm">{gate.type}</div>
+        <div className="text-xs opacity-75 truncate w-full">{gate.name}</div>
       </div>
-    );
-  };
+    </Button>
+  );
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Circuit Controls</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={onQubitAdd}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add Qubit
-          </Button>
-          
-          {selectedGate && (
-            <div className="p-2 bg-muted rounded">
-              <div className="text-xs font-semibold mb-1">Selected Gate</div>
-              <Badge variant="secondary">{selectedGate.type}</Badge>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+    <div className="flex flex-col h-full p-4">
+      <div className="mb-4">
+        <h4 className="font-semibold text-sm">Quantum Gates</h4>
+        <p className="text-xs text-muted-foreground">
+          Drag and drop gates onto the circuit.
+        </p>
+      </div>
 
-      <Tabs defaultValue="single" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="single">Single</TabsTrigger>
-          <TabsTrigger value="parametric">Param</TabsTrigger>
-          <TabsTrigger value="multi">Multi</TabsTrigger>
-          <TabsTrigger value="measure">Measure</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="single" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Single-Qubit Gates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {renderGateGrid(singleQubitGates)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="parametric" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Parametric Gates</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="angle">Rotation Angle</Label>
-                <Input
-                  id="angle"
-                  type="number"
-                  value={customAngle}
-                  onChange={(e) => setCustomAngle(parseFloat(e.target.value))}
-                  step="0.1"
-                  min="0"
-                  max={2 * Math.PI}
-                />
-                <div className="text-xs text-muted-foreground">
-                  {(customAngle * 180 / Math.PI).toFixed(1)}°
-                </div>
-              </div>
-              
-              {renderGateGrid(parametricGates)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="multi" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Multi-Qubit Gates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {renderGateGrid(multiQubitGates)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="measure" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Measurement & Control</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {renderGateGrid(measurementGates)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <div className="grid gap-2 mb-4">
+        {gates.map(renderGateButton)}
+      </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => handleGateClick('H')}
-          >
-            <Zap className="w-4 h-4 mr-1" />
-            Add Hadamard
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => handleGateClick('CNOT')}
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Add CNOT
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="mt-auto flex justify-between items-center">
+        <Button variant="outline" size="sm" onClick={onQubitAdd}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Qubit
+        </Button>
+      </div>
     </div>
   );
 }
