@@ -19,42 +19,54 @@ export function convertToUnifiedCircuit(
       layer: gate.position
     };
 
-    // Helper function to validate qubit index
-    const validateQubitIndex = (qubit: any): number => {
+    // Helper function to validate and ensure valid qubit index
+    const ensureValidQubitIndex = (qubit: any, fallbackIndex: number = 0): number => {
+      // If qubit is a valid number within range, use it
       if (typeof qubit === 'number' && !isNaN(qubit) && qubit >= 0 && qubit < numQubits) {
         return qubit;
       }
-      console.warn(`⚠️ Invalid qubit index ${qubit}, defaulting to 0`);
-      return 0; // Default to qubit 0 if invalid
+      
+      // If qubit is a string number, try to parse it
+      if (typeof qubit === 'string' && !isNaN(parseInt(qubit))) {
+        const parsed = parseInt(qubit);
+        if (parsed >= 0 && parsed < numQubits) {
+          return parsed;
+        }
+      }
+      
+      // Use fallback index, ensuring it's within bounds
+      const safeIndex = Math.max(0, Math.min(fallbackIndex, numQubits - 1));
+      console.warn(`⚠️ Invalid qubit index ${qubit}, using fallback: ${safeIndex}`);
+      return safeIndex;
     };
 
-    // Handle single-qubit gates
-    if (typeof gate.qubit === 'number') {
-      gateOp.targets = [validateQubitIndex(gate.qubit)];
+    // Handle single-qubit gates first
+    if (typeof gate.qubit === 'number' || typeof gate.qubit === 'string') {
+      gateOp.targets = [ensureValidQubitIndex(gate.qubit, 0)];
     }
 
     // Handle multi-qubit gates with qubits array
     if (Array.isArray(gate.qubits) && gate.qubits.length > 0) {
       const validQubits = gate.qubits
-        .filter(q => typeof q === 'number' && !isNaN(q))
-        .map(q => validateQubitIndex(q));
+        .map((q, idx) => ensureValidQubitIndex(q, idx))
+        .filter((q, idx, arr) => arr.indexOf(q) === idx); // Remove duplicates
       
       if (validQubits.length > 0) {
         gateOp.targets = validQubits;
       }
     }
 
-    // Special handling for specific gate types
-    switch (gate.type) {
+    // Special handling for specific gate types with proper qubit assignment
+    switch (gate.type?.toUpperCase()) {
       case 'CNOT':
       case 'CX':
         if (Array.isArray(gate.qubits) && gate.qubits.length >= 2) {
-          gateOp.controls = [validateQubitIndex(gate.qubits[0])];
-          gateOp.targets = [validateQubitIndex(gate.qubits[1])];
-        } else if (typeof gate.qubit === 'number') {
-          // Fallback - control is previous qubit, target is specified qubit
-          const targetQubit = validateQubitIndex(gate.qubit);
-          const controlQubit = validateQubitIndex(Math.max(0, targetQubit - 1));
+          gateOp.controls = [ensureValidQubitIndex(gate.qubits[0], 0)];
+          gateOp.targets = [ensureValidQubitIndex(gate.qubits[1], 1)];
+        } else if (typeof gate.qubit === 'number' || typeof gate.qubit === 'string') {
+          // Target is specified qubit, control is previous qubit
+          const targetQubit = ensureValidQubitIndex(gate.qubit, 1);
+          const controlQubit = ensureValidQubitIndex(Math.max(0, targetQubit - 1), 0);
           gateOp.controls = [controlQubit];
           gateOp.targets = [targetQubit];
         } else {
@@ -69,8 +81,8 @@ export function convertToUnifiedCircuit(
       case 'BELL':
         if (Array.isArray(gate.qubits) && gate.qubits.length >= 2) {
           gateOp.targets = [
-            validateQubitIndex(gate.qubits[0]),
-            validateQubitIndex(gate.qubits[1])
+            ensureValidQubitIndex(gate.qubits[0], 0),
+            ensureValidQubitIndex(gate.qubits[1], 1)
           ];
         } else {
           // Default to qubits 0 and 1
@@ -82,10 +94,10 @@ export function convertToUnifiedCircuit(
       case 'CCX':
         if (Array.isArray(gate.qubits) && gate.qubits.length >= 3) {
           gateOp.controls = [
-            validateQubitIndex(gate.qubits[0]),
-            validateQubitIndex(gate.qubits[1])
+            ensureValidQubitIndex(gate.qubits[0], 0),
+            ensureValidQubitIndex(gate.qubits[1], 1)
           ];
-          gateOp.targets = [validateQubitIndex(gate.qubits[2])];
+          gateOp.targets = [ensureValidQubitIndex(gate.qubits[2], 2)];
         } else {
           // Default Toffoli on qubits 0, 1, 2
           gateOp.controls = [0, Math.min(1, numQubits - 1)];
@@ -94,19 +106,20 @@ export function convertToUnifiedCircuit(
         break;
 
       default:
-        // For single-qubit gates, ensure we have at least one target
+        // For single-qubit gates, ensure we have at least one valid target
         if (gateOp.targets.length === 0) {
-          if (typeof gate.qubit === 'number') {
-            gateOp.targets = [validateQubitIndex(gate.qubit)];
+          if (typeof gate.qubit !== 'undefined') {
+            gateOp.targets = [ensureValidQubitIndex(gate.qubit, 0)];
           } else {
-            console.warn(`⚠️ Gate ${gate.type} has no valid targets, assigning qubit 0`);
+            // Assign to qubit 0 by default for single-qubit gates
+            console.warn(`⚠️ Gate ${gate.type} has no qubit specified, assigning to qubit 0`);
             gateOp.targets = [0];
           }
         }
         break;
     }
 
-    // Ensure we always have at least one target qubit
+    // Final safety check - ensure we always have at least one target qubit
     if (gateOp.targets.length === 0) {
       console.warn(`⚠️ Gate ${gate.type} has no targets after processing, assigning qubit 0`);
       gateOp.targets = [0];
@@ -115,7 +128,7 @@ export function convertToUnifiedCircuit(
     // Handle parameters with proper validation
     const params: Record<string, number> = {};
     
-    // Add angle parameter if present
+    // Add angle parameter if present and valid
     if (typeof gate.angle === 'number' && !isNaN(gate.angle)) {
       params.theta = gate.angle;
     }
