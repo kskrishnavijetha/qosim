@@ -58,20 +58,21 @@ export function QuantumStateVisualization({
     };
   };
 
-  // Prepare Bloch sphere data
-  const blochSphereData = displayResult?.blochSphereData || displayResult?.qubitStates?.map(qubit => {
-    const theta = 2 * Math.acos(Math.abs(qubit.amplitude.real));
-    const phi = qubit.phase;
-    
-    return {
-      x: Math.sin(theta) * Math.cos(phi),
-      y: Math.sin(theta) * Math.sin(phi),
-      z: Math.cos(theta),
-      qubit: qubit.qubit,
-      theta,
-      phi
-    };
-  }) || [];
+  // Prepare Bloch sphere data - handle both backend and simulation results
+  const blochSphereData = backendResult?.blochSphereData || 
+    (displayResult?.qubitStates?.map(qubit => {
+      const theta = 2 * Math.acos(Math.abs(qubit.amplitude.real));
+      const phi = qubit.phase;
+      
+      return {
+        x: Math.sin(theta) * Math.cos(phi),
+        y: Math.sin(theta) * Math.sin(phi),
+        z: Math.cos(theta),
+        qubit: qubit.qubit,
+        theta,
+        phi
+      };
+    }) || []);
 
   return (
     <div className="space-y-4">

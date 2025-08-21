@@ -31,6 +31,7 @@ function QubitVector({ position, color, qubit, isSelected }: {
   isSelected: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const arrowRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
     if (meshRef.current && isSelected) {
@@ -48,6 +49,25 @@ function QubitVector({ position, color, qubit, isSelected }: {
     new THREE.Vector3(position[0] * 0.8, position[1] * 0.8, position[2] * 0.8)
   ], [position]);
 
+  // Calculate direction for arrow rotation
+  const direction = useMemo(() => {
+    return new THREE.Vector3(position[0], position[1], position[2]).normalize();
+  }, [position]);
+
+  useEffect(() => {
+    if (arrowRef.current && direction) {
+      // Fix the lookAt issue by using rotation instead
+      const targetPosition = new THREE.Vector3(0, 0, 0);
+      const currentPosition = new THREE.Vector3(position[0], position[1], position[2]);
+      const lookDirection = targetPosition.sub(currentPosition).normalize();
+      
+      // Convert direction to rotation
+      const quaternion = new THREE.Quaternion();
+      quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), lookDirection);
+      arrowRef.current.setRotationFromQuaternion(quaternion);
+    }
+  }, [direction, position]);
+
   return (
     <group>
       {/* Vector line */}
@@ -59,10 +79,9 @@ function QubitVector({ position, color, qubit, isSelected }: {
       
       {/* Arrow head */}
       <mesh
-        ref={meshRef}
+        ref={arrowRef}
         position={position}
         geometry={arrowGeometry}
-        lookAt={new THREE.Vector3(0, 0, 0)}
       >
         <meshBasicMaterial color={color} />
       </mesh>
