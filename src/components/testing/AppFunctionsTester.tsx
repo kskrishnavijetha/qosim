@@ -133,7 +133,7 @@ export function AppFunctionsTester() {
         qubit: 0, 
         angle: 0,
         id: 'test-h-gate',
-        position: { x: 0, y: 0 }
+        position: 0
       }];
       
       const result = await QuantumBackendService.executeCircuit(testGates, 100, 'local');

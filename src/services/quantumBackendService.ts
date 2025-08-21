@@ -86,8 +86,10 @@ export class QuantumBackendService {
 
       // Convert state vector to proper format
       const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => {
-        const magnitude = complex.magnitude();
-        const phase = complex.phase();
+        // Create a Complex instance to ensure methods are available
+        const complexInstance = new Complex(complex.real, complex.imag);
+        const magnitude = complexInstance.magnitude();
+        const phase = complexInstance.phase();
         
         return {
           real: complex.real,
