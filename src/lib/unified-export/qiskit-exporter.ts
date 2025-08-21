@@ -1,0 +1,65 @@
+
+import { Circuit, GateOp, validate } from './types';
+
+export function toQiskit(c: Circuit): string {
+  const errs = validate(c);
+  if (errs.length) throw new Error("Invalid circuit:\n" + errs.join("\n"));
+
+  const n = c.qubits, m = c.cbits ?? n;
+
+  const map = (g: GateOp): string[] => {
+    const t = g.targets, ctrl = g.controls ?? [], p = g.params ?? {};
+    const one = (name: string) => [`qc.${name}(${t[0]})`];
+    const rot = (name: string, key = "theta") => [`qc.${name}(${p[key] ?? 0}, ${t[0]})`];
+
+    switch (g.type.toUpperCase()) {
+      case "I": return one("id");
+      case "X": return one("x");
+      case "Y": return one("y");
+      case "Z": return one("z");
+      case "H": return one("h");
+      case "S": return one("s");
+      case "SDG": return one("sdg");
+      case "T": return one("t");
+      case "TDG": return one("tdg");
+      case "RX": return rot("rx");
+      case "RY": return rot("ry");
+      case "RZ": return rot("rz");
+      case "U1": return [`qc.u1(${p.lam ?? 0}, ${t[0]})`];
+      case "U2": return [`qc.u2(${p.phi ?? 0}, ${p.lam ?? 0}, ${t[0]})`];
+      case "U3": return [`qc.u3(${p.theta ?? 0}, ${p.phi ?? 0}, ${p.lam ?? 0}, ${t[0]})`];
+      case "CX":
+      case "CNOT": return [`qc.cx(${ctrl[0]}, ${t[0]})`];
+      case "CY": return [`qc.cy(${ctrl[0]}, ${t[0]})`];
+      case "CZ": return [`qc.cz(${ctrl[0]}, ${t[0]})`];
+      case "CP": return [`qc.cp(${p.theta ?? 0}, ${ctrl[0]}, ${t[0]})`];
+      case "SWAP": return [`qc.swap(${t[0]}, ${t[1]})`];
+      case "CCX":
+      case "TOFFOLI": return [`qc.ccx(${ctrl[0]}, ${ctrl[1]}, ${t[0]})`];
+      case "CSWAP":
+      case "FREDKIN": return [`qc.cswap(${ctrl[0]}, ${t[0]}, ${t[1]})`];
+      case "RESET": return [`qc.reset(${t[0]})`];
+      case "MEASURE": return [`qc.measure(${t[0]}, ${t[0]})`];
+      default: return [`# Unknown gate ${g.type}`];
+    }
+  };
+
+  const lines: string[] = [];
+  lines.push(
+`from qiskit import QuantumCircuit, Aer, execute
+from qiskit.visualization import plot_histogram
+
+qc = QuantumCircuit(${n}, ${m})
+${c.gates.flatMap(map).join("\n")}
+
+# Ensure measurements (measure all if none present)
+if len([op for op in qc.data if op.operation.name == "measure"]) == 0:
+    qc.measure(range(${n}), range(${m}))
+
+backend = Aer.get_backend("qasm_simulator")
+result = execute(qc, backend, shots=1024).result()
+print(result.get_counts())
+print(qc.draw())`
+  );
+  return lines.join("\n") + "\n";
+}
