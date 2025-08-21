@@ -16,16 +16,29 @@ export function useCircuitValidation() {
 
   // Initialize gate registry on mount
   useEffect(() => {
-    console.log('🔧 Initializing circuit validation...');
+    console.log('🔧 Initializing circuit validation hook...');
     
-    // Ensure gate registry is initialized
-    const availableGates = gateRegistry.getAvailableGateTypes();
-    console.log('✅ Gate registry ready with gates:', availableGates);
-    
-    setIsInitialized(true);
+    try {
+      // Ensure gate registry is initialized
+      const availableGates = gateRegistry.getAvailableGateTypes();
+      
+      if (availableGates.length === 0) {
+        console.error('❌ Gate registry is empty!');
+        setIsInitialized(false);
+        return;
+      }
+      
+      console.log('✅ Gate registry ready with gates:', availableGates.length);
+      setIsInitialized(true);
+    } catch (error) {
+      console.error('❌ Failed to initialize gate registry:', error);
+      setIsInitialized(false);
+    }
   }, []);
 
   const validateCircuit = useCallback((circuit: Gate[], numQubits: number = 5) => {
+    console.log('🔍 Validating circuit:', { circuitLength: circuit?.length, numQubits, isInitialized });
+
     if (!isInitialized) {
       console.warn('⚠️ Gate registry not initialized yet');
       return {
@@ -34,6 +47,17 @@ export function useCircuitValidation() {
         isValid: false,
         errors: ['Gate registry not initialized']
       };
+    }
+
+    if (!circuit || !Array.isArray(circuit)) {
+      const validation = {
+        steps: [],
+        qubits: numQubits,
+        isValid: false,
+        errors: ['Circuit is undefined or not an array']
+      };
+      setValidationState(validation);
+      return validation;
     }
 
     const validation = circuitRenderValidation.validateCircuitForRendering(circuit, numQubits);
@@ -46,11 +70,15 @@ export function useCircuitValidation() {
       return { isValid: false, error: 'Gate registry not initialized' };
     }
     
+    if (!gateType || typeof gateType !== 'string') {
+      return { isValid: false, error: 'Gate type must be a non-empty string' };
+    }
+
     return gateRegistry.validateGateExists(gateType);
   }, [isInitialized]);
 
   const validateQubitIndex = useCallback((qubitIndex: number, numQubits: number = 5) => {
-    if (typeof qubitIndex !== 'number' || qubitIndex < 0 || qubitIndex >= numQubits) {
+    if (typeof qubitIndex !== 'number' || qubitIndex < 0 || qubitIndex >= numQubits || isNaN(qubitIndex)) {
       return {
         isValid: false,
         error: `Invalid qubit index: ${qubitIndex}. Must be between 0 and ${numQubits - 1}`
@@ -60,14 +88,35 @@ export function useCircuitValidation() {
   }, []);
 
   const safeAddGate = useCallback((qubitIndex: number, gateType: string, circuitState: any, setCircuitState: any) => {
+    console.log('🔄 Safe add gate called:', { qubitIndex, gateType, isInitialized });
+
     if (!isInitialized) {
       console.error('❌ Cannot add gate: Gate registry not initialized');
       return false;
     }
 
-    circuitRenderValidation.addGateToCircuit(qubitIndex, gateType, circuitState, setCircuitState);
-    return true;
-  }, [isInitialized]);
+    // Validate gate type
+    const gateValidation = validateGateType(gateType);
+    if (!gateValidation.isValid) {
+      console.error('❌ Invalid gate type:', gateValidation.error);
+      return false;
+    }
+
+    // Validate qubit index
+    const qubitValidation = validateQubitIndex(qubitIndex);
+    if (!qubitValidation.isValid) {
+      console.error('❌ Invalid qubit index:', qubitValidation.error);
+      return false;
+    }
+
+    try {
+      circuitRenderValidation.addGateToCircuit(qubitIndex, gateType, circuitState, setCircuitState);
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to add gate:', error);
+      return false;
+    }
+  }, [isInitialized, validateGateType, validateQubitIndex]);
 
   const safeRenderCircuit = useCallback((circuit: any) => {
     if (!isInitialized) {
@@ -75,21 +124,46 @@ export function useCircuitValidation() {
       return null;
     }
 
-    return circuitRenderValidation.renderCircuit(circuit);
+    if (!circuit) {
+      console.warn('⚠️ Cannot render: Circuit is null or undefined');
+      return null;
+    }
+
+    try {
+      return circuitRenderValidation.renderCircuit(circuit);
+    } catch (error) {
+      console.error('❌ Failed to render circuit:', error);
+      return null;
+    }
   }, [isInitialized]);
 
   const getAvailableGates = useCallback(() => {
     if (!isInitialized) {
       return [];
     }
-    return gateRegistry.getAvailableGateTypes();
+    try {
+      return gateRegistry.getAvailableGateTypes();
+    } catch (error) {
+      console.error('❌ Failed to get available gates:', error);
+      return [];
+    }
   }, [isInitialized]);
 
   const getGateDefinition = useCallback((gateType: string) => {
     if (!isInitialized) {
       return null;
     }
-    return gateRegistry.getGate(gateType);
+    
+    if (!gateType || typeof gateType !== 'string') {
+      return null;
+    }
+
+    try {
+      return gateRegistry.getGate(gateType);
+    } catch (error) {
+      console.error('❌ Failed to get gate definition:', error);
+      return null;
+    }
   }, [isInitialized]);
 
   return {

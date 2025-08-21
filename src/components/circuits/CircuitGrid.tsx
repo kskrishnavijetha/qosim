@@ -44,36 +44,53 @@ export function CircuitGrid({
 }: CircuitGridProps) {
   const { validateCircuit, isInitialized, validateGateType } = useCircuitValidation();
 
+  // Wait for initialization
+  if (!isInitialized) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+          <p>🔄 Initializing gate registry...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Validate circuit before rendering
   const validation = React.useMemo(() => {
-    if (!isInitialized) {
-      return { isValid: false, errors: ['Gate registry not initialized'], steps: [] };
+    if (!circuit || !Array.isArray(circuit)) {
+      return { 
+        isValid: false, 
+        errors: ['Circuit is undefined or not an array'], 
+        steps: [] 
+      };
     }
+
     return validateCircuit(circuit, NUM_QUBITS);
-  }, [circuit, NUM_QUBITS, isInitialized, validateCircuit]);
+  }, [circuit, NUM_QUBITS, validateCircuit]);
 
   // Check if circuit is long enough to benefit from virtualization
-  const maxPosition = circuit.reduce((max, gate) => Math.max(max, gate.position), 0);
+  const maxPosition = circuit?.reduce((max, gate) => Math.max(max, gate?.position || 0), 0) || 0;
   const shouldVirtualize = maxPosition > 20;
 
   // Validate drag state gate type
   const isDragGateValid = React.useMemo(() => {
-    if (!dragState.isDragging || !isInitialized) return true;
+    if (!dragState.isDragging || !dragState.gateType) return true;
+    
     const gateValidation = validateGateType(dragState.gateType);
     if (!gateValidation.isValid) {
       console.error('❌ Invalid drag gate type:', gateValidation.error);
       return false;
     }
     return true;
-  }, [dragState.isDragging, dragState.gateType, isInitialized, validateGateType]);
+  }, [dragState.isDragging, dragState.gateType, validateGateType]);
 
   // Display validation errors
-  if (!validation.isValid) {
+  if (!validation.isValid && validation.errors.length > 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <h3 className="font-bold">Circuit Validation Errors:</h3>
-          <ul className="list-disc list-inside">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-md">
+          <h3 className="font-bold mb-2">Circuit Validation Errors:</h3>
+          <ul className="list-disc list-inside text-sm">
             {validation.errors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
@@ -115,7 +132,7 @@ export function CircuitGrid({
                 q{i}
               </div>
               <div className="absolute -right-20 w-16 text-xs font-mono text-muted-foreground">
-                {simulationResult?.qubitStates[i]?.state || '|0⟩'}
+                {simulationResult?.qubitStates?.[i]?.state || '|0⟩'}
               </div>
             </div>
           </div>
@@ -142,16 +159,23 @@ export function CircuitGrid({
         )}
 
         {/* Placed Gates */}
-        {circuit.map((gate, index) => (
-          <MemoizedGate
-            key={gate.id}
-            gate={gate}
-            index={index}
-            gridSize={GRID_SIZE}
-            onDeleteGate={onDeleteGate}
-            qubitSpacing={60}
-          />
-        ))}
+        {circuit?.map((gate, index) => {
+          if (!gate || !gate.id || !gate.type) {
+            console.warn('⚠️ Skipping invalid gate at index:', index, gate);
+            return null;
+          }
+
+          return (
+            <MemoizedGate
+              key={gate.id}
+              gate={gate}
+              index={index}
+              gridSize={GRID_SIZE}
+              onDeleteGate={onDeleteGate}
+              qubitSpacing={60}
+            />
+          );
+        })}
 
         {/* Drop Zone Indicator */}
         {dragState.isDragging && isDragGateValid && dragState.hoverQubit !== null && dragState.hoverPosition !== null && (

@@ -27,7 +27,7 @@ export class GateRegistry {
   }
 
   private initializeDefaultGates() {
-    console.log('🔧 Initializing default gate registry...');
+    console.log('🔧 Initializing comprehensive gate registry...');
     
     // Single qubit gates
     this.registry.I = {
@@ -86,6 +86,31 @@ export class GateRegistry {
       symbol: "T"
     };
 
+    // Rotation gates
+    this.registry.RX = {
+      name: "Rotation X",
+      matrix: [[1, 0], [0, 1]], // Placeholder - actual matrix depends on angle
+      description: "X-axis rotation",
+      qubits: 1,
+      symbol: "RX"
+    };
+
+    this.registry.RY = {
+      name: "Rotation Y", 
+      matrix: [[1, 0], [0, 1]], // Placeholder - actual matrix depends on angle
+      description: "Y-axis rotation",
+      qubits: 1,
+      symbol: "RY"
+    };
+
+    this.registry.RZ = {
+      name: "Rotation Z",
+      matrix: [[1, 0], [0, 1]], // Placeholder - actual matrix depends on angle
+      description: "Z-axis rotation", 
+      qubits: 1,
+      symbol: "RZ"
+    };
+
     // Two qubit gates
     this.registry.CNOT = {
       name: "CNOT",
@@ -119,6 +144,23 @@ export class GateRegistry {
       symbol: "⤬"
     };
 
+    // Three qubit gates
+    this.registry.CCX = {
+      name: "Toffoli",
+      matrix: [[1,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,0,0,0,1,0]],
+      description: "Controlled-controlled X",
+      qubits: 3,
+      symbol: "CCX"
+    };
+
+    this.registry.TOFFOLI = {
+      name: "Toffoli",
+      matrix: [[1,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,0,0,0,1,0]],
+      description: "Controlled-controlled X",
+      qubits: 3,
+      symbol: "TOF"
+    };
+
     // Measurement
     this.registry.M = {
       name: "Measure",
@@ -136,11 +178,16 @@ export class GateRegistry {
       symbol: "📏"
     };
 
-    console.log('✅ Gate registry initialized with', Object.keys(this.registry).length, 'gates');
+    console.log('✅ Comprehensive gate registry initialized with', Object.keys(this.registry).length, 'gates');
   }
 
   getGate(gateType: string): GateMatrix | null {
-    const gate = this.registry[gateType];
+    if (!gateType || typeof gateType !== 'string') {
+      console.error(`❌ Invalid gate type: ${gateType}`);
+      return null;
+    }
+
+    const gate = this.registry[gateType.toUpperCase()];
     if (!gate) {
       console.error(`❌ Undefined gate: ${gateType}`);
       console.log('📋 Available gates:', Object.keys(this.registry).join(', '));
@@ -150,7 +197,10 @@ export class GateRegistry {
   }
 
   isValidGate(gateType: string): boolean {
-    return gateType in this.registry;
+    if (!gateType || typeof gateType !== 'string') {
+      return false;
+    }
+    return gateType.toUpperCase() in this.registry;
   }
 
   getAllGates(): GateRegistryMap {
@@ -162,11 +212,22 @@ export class GateRegistry {
   }
 
   registerCustomGate(type: string, gate: GateMatrix): void {
+    if (!type || !gate) {
+      console.error('❌ Invalid gate registration parameters');
+      return;
+    }
     console.log(`🔧 Registering custom gate: ${type}`);
-    this.registry[type] = gate;
+    this.registry[type.toUpperCase()] = gate;
   }
 
   validateGateExists(gateType: string): { isValid: boolean; error?: string } {
+    if (!gateType || typeof gateType !== 'string') {
+      return {
+        isValid: false,
+        error: 'Gate type must be a non-empty string'
+      };
+    }
+
     if (!this.isValidGate(gateType)) {
       return {
         isValid: false,
@@ -177,4 +238,5 @@ export class GateRegistry {
   }
 }
 
+// Export singleton instance
 export const gateRegistry = GateRegistry.getInstance();
