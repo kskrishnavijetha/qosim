@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { GlobalErrorBoundary } from "./components/error-handling/GlobalErrorBoundary";
 import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
 import RoadmapPage from "./pages/RoadmapPage";
@@ -33,7 +34,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <React.StrictMode>
+    <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <TooltipProvider>
@@ -60,7 +61,7 @@ function App() {
           </TooltipProvider>
         </AuthProvider>
       </QueryClientProvider>
-    </React.StrictMode>
+    </GlobalErrorBoundary>
   );
 }
 
