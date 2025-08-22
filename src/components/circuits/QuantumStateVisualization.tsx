@@ -124,125 +124,128 @@ export function QuantumStateVisualization({
   }, [displayResult, NUM_QUBITS]);
 
   return (
-    <div className="space-y-4">
-      <Tabs defaultValue="visualization" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 quantum-panel neon-border">
-          <TabsTrigger value="visualization" className="text-quantum-glow">
-            <Eye className="w-4 h-4 mr-2" />
-            State View
-          </TabsTrigger>
-          <TabsTrigger value="bloch" className="text-quantum-neon">
-            <Zap className="w-4 h-4 mr-2" />
-            Bloch Sphere
-          </TabsTrigger>
-          <TabsTrigger value="explanation" className="text-quantum-particle">
-            <Bot className="w-4 h-4 mr-2" />
-            AI Analysis
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="visualization">
-          <Card className="quantum-panel neon-border">
-            <CardHeader>
-              <CardTitle className="text-lg font-mono text-quantum-glow">
-                Live Quantum State Simulation
-                {backendResult && (
-                  <span className="text-sm text-quantum-neon ml-2">
-                    ({backendResult.backend.toUpperCase()})
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-5 gap-4 mb-6">
-                {Array.from({ length: NUM_QUBITS }).map((_, i) => {
-                  const qubitState = qubitStates[i] || {
-                    state: '|0⟩',
-                    amplitude: { real: 1, imag: 0 },
-                    phase: 0,
-                    probability: 0
-                  };
-                  
-                  return (
-                    <div key={i} className="flex flex-col items-center space-y-2">
-                      <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
-                      <div 
-                        className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation cursor-pointer"
-                        style={getBlochSphereStyle(qubitState)}
-                        onClick={() => setSelectedQubit(i)}
-                      >
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      </div>
-                      <div className="text-xs font-mono text-center">
-                        <div className="text-quantum-neon">{qubitState.state}</div>
-                        <div className="text-muted-foreground">φ: {qubitState.phase.toFixed(2)}</div>
-                        <div className="text-muted-foreground">P: {qubitState.probability.toFixed(3)}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+    <div className="space-y-6">
+      {/* Main Visualization Section */}
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            Live Quantum State Simulation
+            {backendResult && (
+              <span className="text-sm text-quantum-neon ml-2">
+                ({backendResult.backend.toUpperCase()})
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-5 gap-4 mb-6">
+            {Array.from({ length: NUM_QUBITS }).map((_, i) => {
+              const qubitState = qubitStates[i] || {
+                state: '|0⟩',
+                amplitude: { real: 1, imag: 0 },
+                phase: 0,
+                probability: 0
+              };
               
-              {/* State Vector Display */}
-              {displayResult && (
-                <div className="mt-6 p-4 bg-quantum-matrix rounded-lg">
-                  <h4 className="text-sm font-mono text-quantum-neon mb-2">State Vector</h4>
-                  <div className="text-xs font-mono text-muted-foreground max-h-20 overflow-y-auto">
-                    {backendResult ? 
-                      `Backend Result (${backendResult.backend})` : 
-                      quantumSimulator.getStateString()
-                    }
+              return (
+                <div key={i} className="flex flex-col items-center space-y-2">
+                  <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
+                  <div 
+                    className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation cursor-pointer"
+                    style={getBlochSphereStyle(qubitState)}
+                    onClick={() => setSelectedQubit(i)}
+                  >
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
-                  <div className="mt-2">
-                    <h5 className="text-xs font-mono text-quantum-particle">Measurement Probabilities</h5>
-                    <div className="text-xs font-mono text-muted-foreground">
-                      {displayResult.measurementProbabilities
-                        .map((prob, i) => prob > 0.001 ? `|${i.toString(2).padStart(NUM_QUBITS, '0')}⟩: ${(prob * 100).toFixed(1)}%` : null)
-                        .filter(Boolean)
-                        .join(', ')}
-                    </div>
+                  <div className="text-xs font-mono text-center">
+                    <div className="text-quantum-neon">{qubitState.state}</div>
+                    <div className="text-muted-foreground">φ: {qubitState.phase.toFixed(2)}</div>
+                    <div className="text-muted-foreground">P: {qubitState.probability.toFixed(3)}</div>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              );
+            })}
+          </div>
+          
+          {/* State Vector Display */}
+          {displayResult && (
+            <div className="mt-6 p-4 bg-quantum-matrix rounded-lg">
+              <h4 className="text-sm font-mono text-quantum-neon mb-2">State Vector</h4>
+              <div className="text-xs font-mono text-muted-foreground max-h-20 overflow-y-auto">
+                {backendResult ? 
+                  `Backend Result (${backendResult.backend})` : 
+                  quantumSimulator.getStateString()
+                }
+              </div>
+              <div className="mt-2">
+                <h5 className="text-xs font-mono text-quantum-particle">Measurement Probabilities</h5>
+                <div className="text-xs font-mono text-muted-foreground">
+                  {displayResult.measurementProbabilities
+                    .map((prob, i) => prob > 0.001 ? `|${i.toString(2).padStart(NUM_QUBITS, '0')}⟩: ${(prob * 100).toFixed(1)}%` : null)
+                    .filter(Boolean)
+                    .join(', ')}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        <TabsContent value="bloch">
+      {/* 3D Bloch Sphere Visualization */}
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            3D Bloch Sphere Visualization
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <BlochSphereVisualization
             blochSphereData={blochSphereData}
             qubitStates={qubitStates}
             selectedQubit={selectedQubit}
             onQubitSelect={setSelectedQubit}
           />
-        </TabsContent>
+          <div className="mt-4 text-sm text-quantum-particle">
+            Click on qubit vectors to select them. Use mouse to rotate and zoom the 3D visualization.
+          </div>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="explanation">
-          {backendResult && gates.length > 0 ? (
+      {/* AI Circuit Explanation */}
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
+            <Bot className="w-5 h-5" />
+            AI Circuit Explanation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {gates.length > 0 ? (
             <CircuitExplanationPanel
               gates={gates}
-              result={backendResult}
+              result={backendResult || {
+                qubitStates: qubitStates.map(q => ({
+                  ...q,
+                  amplitude: { real: q.amplitude.real, imaginary: q.amplitude.imag }
+                })),
+                measurementProbabilities: displayResult?.measurementProbabilities || [],
+                stateVector: displayResult?.stateVector || [],
+                executionTime: displayResult?.executionTime || 0,
+                backend: 'local'
+              } as QuantumBackendResult}
               numQubits={NUM_QUBITS}
               isVisible={true}
             />
           ) : (
-            <Card className="quantum-panel neon-border">
-              <CardHeader>
-                <CardTitle className="text-quantum-glow flex items-center gap-2">
-                  <Bot className="w-5 h-5" />
-                  AI Circuit Explanation
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Run a quantum simulation with gates to see AI explanation</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="text-center py-8 text-muted-foreground">
+              <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Add quantum gates to your circuit and run simulation to see AI explanation</p>
+            </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
@@ -16,6 +17,7 @@ import { UserProfileDropdown } from './UserProfileDropdown';
 import { QuantumErrorCorrectionPanel } from './error-correction/QuantumErrorCorrectionPanel';
 import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
+import { MainQuantumInterface } from './MainQuantumInterface';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Github } from 'lucide-react';
@@ -53,6 +55,8 @@ export default function QuantumDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case "circuits":
+        return <MainQuantumInterface />;
+      case "builder":
         return <InteractiveCircuitBuilder />;
       case "my-circuits":
         return <MyCircuitsPanel />;
@@ -112,7 +116,7 @@ export default function QuantumDashboard() {
       case "jobs":
         return <JobsPanel />;
       default:
-        return <InteractiveCircuitBuilder />;
+        return <MainQuantumInterface />;
     }
   };
 
