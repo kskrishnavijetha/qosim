@@ -25,7 +25,7 @@ export function InteractiveCircuitBuilder() {
     numQubits,
     setNumQubits,
     simulationMode,
-    setSimulationMode: setCircuitSimulationMode
+    setSimulationMode
   } = useCircuitState();
 
   const [showResults, setShowResults] = useState(false);
@@ -36,7 +36,9 @@ export function InteractiveCircuitBuilder() {
   // Convert circuit simulation mode to the mode expected by the UI
   const handleModeChange = (mode: string) => {
     if (mode === 'statevector' || mode === 'sampling') {
-      setCircuitSimulationMode(mode);
+      // Convert to EnhancedSimulationMode
+      const enhancedMode = mode === 'statevector' ? 'fast' : 'accurate';
+      setSimulationMode(enhancedMode);
     }
   };
 
@@ -107,7 +109,7 @@ export function InteractiveCircuitBuilder() {
               
               <div className="flex items-center gap-2">
                 <label className="text-sm text-quantum-particle">Mode:</label>
-                <Select value={simulationMode} onValueChange={handleModeChange}>
+                <Select value={simulationMode === 'fast' ? 'statevector' : 'sampling'} onValueChange={handleModeChange}>
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -139,31 +141,18 @@ export function InteractiveCircuitBuilder() {
       <div className="grid grid-cols-12 gap-6">
         {/* Gate Palette */}
         <div className="col-span-3">
-          <GatePalette 
-            onGateSelect={handleGateSelect}
-            selectedGate={selectedGate}
-          />
+          <GatePalette />
         </div>
 
         {/* Circuit Canvas */}
         <div className="col-span-6">
-          <CircuitCanvas
-            gates={circuit}
-            onGateAdd={handleAddGate}
-            onGateRemove={deleteGate}
-            selectedGate={selectedGate}
-            qubits={numQubits}
-          />
+          <CircuitCanvas />
         </div>
 
         {/* Circuit Actions */}
         <div className="col-span-3">
           <CircuitActions
             onClear={clearCircuit}
-            onSave={() => console.log('Save circuit')}
-            onLoad={() => console.log('Load circuit')}
-            onExport={() => console.log('Export circuit')}
-            gates={circuit}
           />
         </div>
       </div>
@@ -174,7 +163,7 @@ export function InteractiveCircuitBuilder() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <span className="text-quantum-particle">
-                Circuit Depth: {Math.max(...circuit.map(g => g.step || 0), 0)}
+                Circuit Depth: {Math.max(...circuit.map(g => (g as any).step || g.position || 0), 0)}
               </span>
               <span className="text-quantum-particle">
                 Total Gates: {circuit.length}

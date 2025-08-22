@@ -40,13 +40,16 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
   const generateAIExplanation = () => {
     const numQubits = Math.log2(stateVector.length || 4);
     const dominantState = Object.keys(measurements)[0] || '000';
-    const maxProbability = Math.max(...Object.values(measurements).map(v => Number(v))) || 0;
+    const maxProbability = Math.max(...Object.values(measurements).map(v => Number(v) || 0)) || 0;
 
     return `This ${numQubits}-qubit quantum circuit produced a quantum superposition state. 
     The dominant measurement outcome is |${dominantState}⟩ with probability ${(maxProbability * 100).toFixed(1)}%. 
     The circuit entropy is ${calculateEntropy().toFixed(3)}, indicating ${calculateEntropy() > 1 ? 'high' : 'low'} quantum coherence. 
     The state fidelity is ${calculateFidelity().toFixed(3)}, showing ${calculateFidelity() > 0.9 ? 'excellent' : 'moderate'} circuit performance.`;
   };
+
+  // Calculate total shots for probability histogram
+  const totalShots = Object.values(measurements).reduce((sum: number, count) => sum + (Number(count) || 0), 0) || 1024;
 
   return (
     <div className="space-y-6">
@@ -82,7 +85,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
               Qubits: {Math.log2(stateVector.length || 4)}
             </Badge>
             <Badge variant="outline" className="text-green-400">
-              Shots: {Object.values(measurements).reduce((sum: number, count) => sum + Number(count), 0) || 1024}
+              Shots: {totalShots}
             </Badge>
           </div>
         </CardContent>
@@ -102,8 +105,9 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
             <CardContent>
               <div className="h-80">
                 <BlochSphereVisualization 
-                  stateVector={stateVector}
-                  animate={true}
+                  qubitStates={result?.qubitStates || []}
+                  selectedQubit={0}
+                  onQubitSelect={() => {}}
                 />
               </div>
             </CardContent>
@@ -119,7 +123,8 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
             <CardContent>
               <div className="h-64">
                 <ProbabilityHistogram 
-                  measurements={measurements}
+                  counts={measurements}
+                  totalShots={totalShots}
                   maxBars={16}
                 />
               </div>
@@ -137,7 +142,8 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
               <div className="h-64">
                 <QuantumStateHeatmap 
                   stateVector={stateVector}
-                  size={Math.sqrt(stateVector.length)}
+                  numQubits={Math.log2(stateVector.length || 4)}
+                  maxStates={32}
                 />
               </div>
             </CardContent>
@@ -215,7 +221,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                     .map(([state, count]) => (
                       <div key={state} className="flex justify-between text-xs">
                         <span className="text-quantum-particle font-mono">|{state}⟩</span>
-                        <span className="text-quantum-glow">{((Number(count) / Object.values(measurements).reduce((sum: number, c) => sum + Number(c), 0)) * 100).toFixed(1)}%</span>
+                        <span className="text-quantum-glow">{((Number(count) / totalShots) * 100).toFixed(1)}%</span>
                       </div>
                     ))}
                 </div>
@@ -238,7 +244,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                 </div>
                 <div className="flex justify-between">
                   <span className="text-quantum-particle">Circuit Depth:</span>
-                  <span className="text-quantum-glow">{Math.max(...circuit.map(g => g.step || 0), 0)}</span>
+                  <span className="text-quantum-glow">{Math.max(...circuit.map(g => (g as any).step || g.position || 0), 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-quantum-particle">Gate Types:</span>
