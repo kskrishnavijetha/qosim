@@ -55,7 +55,7 @@ export default function QuantumDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case "circuits":
-        return <MainQuantumInterface />;
+        return <InteractiveCircuitBuilder />;
       case "builder":
         return <InteractiveCircuitBuilder />;
       case "my-circuits":
@@ -116,7 +116,7 @@ export default function QuantumDashboard() {
       case "jobs":
         return <JobsPanel />;
       default:
-        return <MainQuantumInterface />;
+        return <InteractiveCircuitBuilder />;
     }
   };
 
