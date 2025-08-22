@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Line } from '@react-three/drei';
 import * as THREE from 'three';
@@ -24,72 +24,49 @@ interface BlochSphereProps {
   onQubitSelect: (qubit: number) => void;
 }
 
-function QubitVector({ position, color, qubit, isSelected }: {
+function QubitVector({ position, color, qubit, isSelected, onClick }: {
   position: [number, number, number];
   color: string;
   qubit: number;
   isSelected: boolean;
+  onClick: () => void;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const arrowRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
-    if (meshRef.current && isSelected) {
-      meshRef.current.rotation.y = state.clock.elapsedTime;
+    if (groupRef.current && isSelected) {
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
     }
   });
 
-  const arrowGeometry = useMemo(() => {
-    const geometry = new THREE.ConeGeometry(0.05, 0.2, 8);
-    return geometry;
-  }, []);
-
   const linePoints = useMemo(() => [
     new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(position[0] * 0.8, position[1] * 0.8, position[2] * 0.8)
+    new THREE.Vector3(position[0] * 0.9, position[1] * 0.9, position[2] * 0.9)
   ], [position]);
 
-  // Calculate direction for arrow rotation
-  const direction = useMemo(() => {
-    return new THREE.Vector3(position[0], position[1], position[2]).normalize();
-  }, [position]);
-
-  useEffect(() => {
-    if (arrowRef.current && direction) {
-      // Fix the lookAt issue by using rotation instead
-      const targetPosition = new THREE.Vector3(0, 0, 0);
-      const currentPosition = new THREE.Vector3(position[0], position[1], position[2]);
-      const lookDirection = targetPosition.sub(currentPosition).normalize();
-      
-      // Convert direction to rotation
-      const quaternion = new THREE.Quaternion();
-      quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), lookDirection);
-      arrowRef.current.setRotationFromQuaternion(quaternion);
-    }
-  }, [direction, position]);
-
   return (
-    <group>
+    <group ref={groupRef} onClick={onClick}>
       {/* Vector line */}
       <Line
         points={linePoints}
         color={color}
-        lineWidth={isSelected ? 4 : 2}
+        lineWidth={isSelected ? 6 : 3}
       />
       
-      {/* Arrow head */}
+      {/* Vector point */}
       <mesh
-        ref={arrowRef}
-        position={position}
-        geometry={arrowGeometry}
+        ref={meshRef}
+        position={[position[0] * 0.9, position[1] * 0.9, position[2] * 0.9]}
       >
+        <sphereGeometry args={[isSelected ? 0.08 : 0.05, 16, 16]} />
         <meshBasicMaterial color={color} />
       </mesh>
       
       {/* Qubit label */}
       <Text
-        position={[position[0] * 1.2, position[1] * 1.2, position[2] * 1.2]}
-        fontSize={0.1}
+        position={[position[0] * 1.1, position[1] * 1.1, position[2] * 1.1]}
+        fontSize={0.08}
         color={color}
         anchorX="center"
         anchorY="middle"
@@ -100,44 +77,55 @@ function QubitVector({ position, color, qubit, isSelected }: {
   );
 }
 
-function BlochSphere({ blochSphereData, qubitStates, selectedQubit, onQubitSelect }: BlochSphereProps) {
+function BlochSphereScene({ blochSphereData, qubitStates, selectedQubit, onQubitSelect }: BlochSphereProps) {
   const sphereRef = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    if (sphereRef.current) {
+      sphereRef.current.rotation.y += 0.002;
+    }
+  });
 
   // Create axes
   const axes = useMemo(() => [
-    { start: [-1.2, 0, 0], end: [1.2, 0, 0], color: '#ff6b6b', label: 'X' },
-    { start: [0, -1.2, 0], end: [0, 1.2, 0], color: '#4ecdc4', label: 'Y' },
-    { start: [0, 0, -1.2], end: [0, 0, 1.2], color: '#45b7d1', label: 'Z' }
+    { start: [-1.1, 0, 0], end: [1.1, 0, 0], color: '#ef4444', label: 'X' },
+    { start: [0, -1.1, 0], end: [0, 1.1, 0], color: '#22c55e', label: 'Y' },
+    { start: [0, 0, -1.1], end: [0, 0, 1.1], color: '#3b82f6', label: 'Z' }
   ], []);
 
-  // Calculate proper Bloch coordinates for each qubit
+  // Calculate qubit vectors with proper Bloch coordinates
   const qubitVectors = useMemo(() => {
     return qubitStates.map((state, index) => {
+      let x = 0, y = 0, z = 1; // Default to |0⟩ state
+
+      // Use provided Bloch data if available
       const blochData = blochSphereData[index];
-      
-      if (blochData && Math.abs(blochData.x) + Math.abs(blochData.y) + Math.abs(blochData.z) > 0.01) {
-        return {
-          position: [blochData.x, blochData.y, blochData.z] as [number, number, number],
-          qubit: state.qubit,
-          color: `hsl(${(state.qubit * 60) % 360}, 70%, 60%)`
-        };
+      if (blochData && (Math.abs(blochData.x) + Math.abs(blochData.y) + Math.abs(blochData.z)) > 0.01) {
+        x = blochData.x;
+        y = blochData.y;
+        z = blochData.z;
+      } else {
+        // Calculate from quantum state
+        const { amplitude, phase } = state;
+        const alpha = Math.sqrt(Math.max(0, 1 - state.probability));
+        const beta = Math.sqrt(Math.max(0, state.probability));
+        
+        // Bloch sphere coordinates
+        x = 2 * alpha * beta * Math.cos(phase);
+        y = 2 * alpha * beta * Math.sin(phase);
+        z = alpha * alpha - beta * beta;
       }
-      
-      // Calculate from amplitude and phase if Bloch data is missing/invalid
-      const { amplitude, phase } = state;
-      const prob0 = amplitude.real * amplitude.real + amplitude.imag * amplitude.imag;
-      const prob1 = 1 - prob0;
-      
-      // Convert to Bloch sphere coordinates
-      const theta = 2 * Math.acos(Math.sqrt(Math.max(0, Math.min(1, prob0))));
-      const phi = phase;
-      
-      const x = Math.sin(theta) * Math.cos(phi);
-      const y = Math.sin(theta) * Math.sin(phi);
-      const z = Math.cos(theta);
-      
+
+      // Ensure coordinates are within unit sphere
+      const magnitude = Math.sqrt(x*x + y*y + z*z);
+      if (magnitude > 1) {
+        x /= magnitude;
+        y /= magnitude;
+        z /= magnitude;
+      }
+
       return {
-        position: [x || 0, y || 0, z || 1] as [number, number, number],
+        position: [x, y, z] as [number, number, number],
         qubit: state.qubit,
         color: `hsl(${(state.qubit * 60) % 360}, 70%, 60%)`
       };
@@ -145,20 +133,18 @@ function BlochSphere({ blochSphereData, qubitStates, selectedQubit, onQubitSelec
   }, [blochSphereData, qubitStates]);
 
   return (
-    <Canvas
-      camera={{ position: [2, 2, 2], fov: 50 }}
-      style={{ background: 'transparent' }}
-    >
-      <ambientLight intensity={0.6} />
-      <pointLight position={[10, 10, 10]} />
+    <>
+      <ambientLight intensity={0.4} />
+      <pointLight position={[5, 5, 5]} intensity={0.6} />
+      <pointLight position={[-5, -5, -5]} intensity={0.3} />
       
       {/* Main Bloch sphere */}
       <mesh ref={sphereRef}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshBasicMaterial
-          color="#1a1a2e"
+          color="#1f2937"
           wireframe
-          opacity={0.3}
+          opacity={0.2}
           transparent
         />
       </mesh>
@@ -172,8 +158,8 @@ function BlochSphere({ blochSphereData, qubitStates, selectedQubit, onQubitSelec
             lineWidth={2}
           />
           <Text
-            position={axis.end.map(coord => coord * 1.1) as [number, number, number]}
-            fontSize={0.15}
+            position={axis.end.map(coord => coord * 1.2) as [number, number, number]}
+            fontSize={0.1}
             color={axis.color}
             anchorX="center"
             anchorY="middle"
@@ -185,18 +171,18 @@ function BlochSphere({ blochSphereData, qubitStates, selectedQubit, onQubitSelec
       
       {/* State labels */}
       <Text
-        position={[0, 0, 1.3]}
-        fontSize={0.12}
-        color="#4ecdc4"
+        position={[0, 0, 1.2]}
+        fontSize={0.1}
+        color="#22c55e"
         anchorX="center"
         anchorY="middle"
       >
         |0⟩
       </Text>
       <Text
-        position={[0, 0, -1.3]}
-        fontSize={0.12}
-        color="#ff6b6b"
+        position={[0, 0, -1.2]}
+        fontSize={0.1}
+        color="#ef4444"
         anchorX="center"
         anchorY="middle"
       >
@@ -204,32 +190,57 @@ function BlochSphere({ blochSphereData, qubitStates, selectedQubit, onQubitSelec
       </Text>
       
       {/* Qubit state vectors */}
-      {qubitVectors.map((vector, index) => (
+      {qubitVectors.map((vector) => (
         <QubitVector
           key={vector.qubit}
           position={vector.position}
           color={vector.color}
           qubit={vector.qubit}
           isSelected={vector.qubit === selectedQubit}
+          onClick={() => onQubitSelect(vector.qubit)}
         />
       ))}
-      
-      <OrbitControls
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
-        autoRotate={false}
-        maxDistance={5}
-        minDistance={1}
-      />
-    </Canvas>
+    </>
   );
 }
 
 export function BlochSphereVisualization(props: BlochSphereProps) {
   return (
-    <div className="h-80 w-full bg-quantum-void/20 rounded-lg border border-quantum-matrix">
-      <BlochSphere {...props} />
+    <div className="h-80 w-full bg-quantum-void/20 rounded-lg border border-quantum-matrix overflow-hidden">
+      <Canvas
+        camera={{ 
+          position: [2.5, 2.5, 2.5], 
+          fov: 45,
+          near: 0.1,
+          far: 1000
+        }}
+        gl={{ 
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance"
+        }}
+      >
+        <Suspense fallback={null}>
+          <BlochSphereScene {...props} />
+          <OrbitControls
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={true}
+            autoRotate={false}
+            maxDistance={8}
+            minDistance={1.5}
+            dampingFactor={0.05}
+            enableDamping={true}
+          />
+        </Suspense>
+      </Canvas>
+      
+      {/* Loading fallback */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="text-quantum-particle text-sm opacity-50">
+          3D Bloch Sphere
+        </div>
+      </div>
     </div>
   );
 }

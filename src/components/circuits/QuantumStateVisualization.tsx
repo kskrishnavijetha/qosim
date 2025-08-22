@@ -58,21 +58,62 @@ export function QuantumStateVisualization({
     };
   };
 
-  // Prepare Bloch sphere data - handle both backend and simulation results
-  const blochSphereData = backendResult?.blochSphereData || 
-    (displayResult?.qubitStates?.map(qubit => {
-      const theta = 2 * Math.acos(Math.abs(qubit.amplitude.real));
-      const phi = qubit.phase;
-      
-      return {
-        x: Math.sin(theta) * Math.cos(phi),
-        y: Math.sin(theta) * Math.sin(phi),
-        z: Math.cos(theta),
-        qubit: qubit.qubit,
-        theta,
-        phi
-      };
-    }) || []);
+  // Generate Bloch sphere data with proper fallback
+  const blochSphereData = React.useMemo(() => {
+    // Use backend data if available
+    if (backendResult?.blochSphereData) {
+      return backendResult.blochSphereData;
+    }
+    
+    // Generate from qubit states
+    if (displayResult?.qubitStates) {
+      return displayResult.qubitStates.map(qubit => {
+        const alpha = Math.sqrt(Math.max(0, 1 - qubit.probability));
+        const beta = Math.sqrt(Math.max(0, qubit.probability));
+        const phase = qubit.phase;
+        
+        // Bloch sphere coordinates
+        const x = 2 * alpha * beta * Math.cos(phase);
+        const y = 2 * alpha * beta * Math.sin(phase);
+        const z = alpha * alpha - beta * beta;
+        
+        return {
+          x: isNaN(x) ? 0 : x,
+          y: isNaN(y) ? 0 : y,
+          z: isNaN(z) ? 1 : z,
+          qubit: qubit.qubit,
+          theta: 2 * Math.acos(alpha),
+          phi: phase
+        };
+      });
+    }
+    
+    // Default fallback for all qubits in |0⟩ state
+    return Array.from({ length: NUM_QUBITS }, (_, i) => ({
+      x: 0,
+      y: 0,
+      z: 1,
+      qubit: i,
+      theta: 0,
+      phi: 0
+    }));
+  }, [displayResult, backendResult, NUM_QUBITS]);
+
+  // Prepare qubit states for visualization
+  const qubitStates = React.useMemo(() => {
+    if (displayResult?.qubitStates) {
+      return displayResult.qubitStates;
+    }
+    
+    // Generate default qubit states
+    return Array.from({ length: NUM_QUBITS }, (_, i) => ({
+      qubit: i,
+      state: '|0⟩',
+      amplitude: { real: 1, imag: 0 },
+      phase: 0,
+      probability: 0
+    }));
+  }, [displayResult, NUM_QUBITS]);
 
   return (
     <div className="space-y-4">
@@ -90,11 +131,11 @@ export function QuantumStateVisualization({
         <CardContent>
           <div className="grid grid-cols-5 gap-4 mb-6">
             {Array.from({ length: NUM_QUBITS }).map((_, i) => {
-              const qubitState = displayResult?.qubitStates?.[i] || {
+              const qubitState = qubitStates[i] || {
                 state: '|0⟩',
                 amplitude: { real: 1, imag: 0 },
                 phase: 0,
-                probability: 1
+                probability: 0
               };
               
               return (
@@ -141,14 +182,12 @@ export function QuantumStateVisualization({
       </Card>
 
       {/* 3D Bloch Sphere Visualization */}
-      {displayResult?.qubitStates && displayResult.qubitStates.length > 0 && (
-        <BlochSphereVisualization
-          blochSphereData={blochSphereData}
-          qubitStates={displayResult.qubitStates}
-          selectedQubit={0}
-          onQubitSelect={() => {}}
-        />
-      )}
+      <BlochSphereVisualization
+        blochSphereData={blochSphereData}
+        qubitStates={qubitStates}
+        selectedQubit={0}
+        onQubitSelect={() => {}}
+      />
     </div>
   );
 }
