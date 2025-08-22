@@ -17,11 +17,11 @@ import { UserProfileDropdown } from './UserProfileDropdown';
 import { QuantumErrorCorrectionPanel } from './error-correction/QuantumErrorCorrectionPanel';
 import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
-import { MainQuantumInterface } from './MainQuantumInterface';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Github } from 'lucide-react';
 import GitHubIntegration from './github/GitHubIntegration';
+import { QuantumErrorHandler } from './error-handling/QuantumErrorHandler';
 
 export default function QuantumDashboard() {
   const [activeTab, setActiveTab] = useState("circuits");
@@ -53,75 +53,87 @@ export default function QuantumDashboard() {
   };
 
   const renderContent = () => {
-    switch (activeTab) {
-      case "circuits":
-        return <InteractiveCircuitBuilder />;
-      case "builder":
-        return <InteractiveCircuitBuilder />;
-      case "my-circuits":
-        return <MyCircuitsPanel />;
-      case "simulation":
-        return (
-          <CircuitSimulationPanel 
-            circuit={defaultCircuit}
-            simulationResult={simulationResult}
-            onSimulate={async () => {}}
-            isSimulating={false}
-          />
-        );
-      case "ai":
-        return (
-          <UnifiedAIPanel 
-            circuit={[]}
-            onCircuitGenerated={() => {}}
-            onAlgorithmGenerated={() => {}}
-            onCircuitOptimized={() => {}}
-            onCircuitFixed={() => {}}
-            onShowStateVisualization={() => {}}
-          />
-        );
-      case "sdk":
-        return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
-      case "hardware":
-        return (
-          <HardwareIntegrationHub 
-            circuit={[]}
-            simulationResult={simulationResult}
-            onExecutionComplete={handleSimulationComplete}
-          />
-        );
-      case "marketplace":
-        return <MarketplacePanel />;
-      case "community":
-        return <CommunityHubPanel />;
-      case "algorithms":
-        return (
-          <QuantumAlgorithmsSDK
-            onCircuitGenerated={() => {}}
-            onAlgorithmExecuted={() => {}}
-          />
-        );
-      case "error-correction":
-        return <QuantumErrorCorrectionPanel />;
-      case "qnn-builder":
-        return <QNNVisualBuilder />;
-      case "qmm":
-        return <QuantumMemoryMap />;
-      case "optimization":
-        return <div className="p-6 text-center text-quantum-neon">Optimization Panel Coming Soon</div>;
-      case "memory":
-        return <MemoryPanel />;
-      case "files":
-        return <EnhancedFilesPanel />;
-      case "jobs":
-        return <JobsPanel />;
-      default:
-        return <InteractiveCircuitBuilder />;
+    try {
+      switch (activeTab) {
+        case "circuits":
+        case "builder":
+          return <InteractiveCircuitBuilder />;
+        case "my-circuits":
+          return <MyCircuitsPanel />;
+        case "simulation":
+          return (
+            <CircuitSimulationPanel 
+              circuit={defaultCircuit}
+              simulationResult={simulationResult}
+              onSimulate={async () => {}}
+              isSimulating={false}
+            />
+          );
+        case "ai":
+          return (
+            <UnifiedAIPanel 
+              circuit={[]}
+              onCircuitGenerated={() => {}}
+              onAlgorithmGenerated={() => {}}
+              onCircuitOptimized={() => {}}
+              onCircuitFixed={() => {}}
+              onShowStateVisualization={() => {}}
+            />
+          );
+        case "sdk":
+          return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
+        case "hardware":
+          return (
+            <HardwareIntegrationHub 
+              circuit={[]}
+              simulationResult={simulationResult}
+              onExecutionComplete={handleSimulationComplete}
+            />
+          );
+        case "marketplace":
+          return <MarketplacePanel />;
+        case "community":
+          return <CommunityHubPanel />;
+        case "algorithms":
+          return (
+            <QuantumAlgorithmsSDK
+              onCircuitGenerated={() => {}}
+              onAlgorithmExecuted={() => {}}
+            />
+          );
+        case "error-correction":
+          return <QuantumErrorCorrectionPanel />;
+        case "qnn-builder":
+          return <QNNVisualBuilder />;
+        case "qmm":
+          return <QuantumMemoryMap />;
+        case "optimization":
+          return <div className="p-6 text-center text-quantum-neon">Optimization Panel Coming Soon</div>;
+        case "memory":
+          return <MemoryPanel />;
+        case "files":
+          return <EnhancedFilesPanel />;
+        case "jobs":
+          return <JobsPanel />;
+        default:
+          return <InteractiveCircuitBuilder />;
+      }
+    } catch (error) {
+      console.error('Error rendering content:', error);
+      return (
+        <div className="p-6 text-center">
+          <p className="text-red-500">Error loading component</p>
+          <p className="text-sm text-gray-500 mt-2">Please try refreshing the page</p>
+        </div>
+      );
     }
   };
 
   return (
     <div className="flex h-screen bg-quantum-void text-quantum-text">
+      {/* Error Handler */}
+      <QuantumErrorHandler />
+      
       <div className="w-64 bg-quantum-dark border-r border-quantum-neon/30">
         <QuantumSidebar 
           activeTab={activeTab} 

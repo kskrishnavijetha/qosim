@@ -1,302 +1,253 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QuantumVisualizationPanel } from './QuantumVisualizationPanel';
-import { SimulationResults } from './workflow/SimulationResults';
-import { CircuitExplanationPanel } from './workflow/CircuitExplanationPanel';
-import { QuantumBackendResult } from '@/services/quantumBackendService';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, Download, Share2, Calculator, Eye, Lightbulb } from 'lucide-react';
 import { Gate } from '@/hooks/useCircuitState';
-import { ArrowLeft, Calculator, Eye, Bot, BarChart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { BlochSphereVisualization } from './quantum/BlochSphereVisualization';
+import { ProbabilityHistogram } from './visualization/ProbabilityHistogram';
+import { QuantumStateHeatmap } from './visualization/QuantumStateHeatmap';
 
 interface QuantumResultsPageProps {
-  result: QuantumBackendResult;
-  gates: Gate[];
-  numQubits: number;
-  circuitName: string;
-  onRerunSimulation: () => Promise<QuantumBackendResult | null>;
-  onExecutePartialCircuit: (gates: Gate[], shots?: number) => Promise<QuantumBackendResult | null>;
+  result: any;
+  circuit: Gate[];
+  onBack: () => void;
 }
 
-export function QuantumResultsPage({
-  result,
-  gates,
-  numQubits,
-  circuitName,
-  onRerunSimulation,
-  onExecutePartialCircuit
-}: QuantumResultsPageProps) {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
-
-  // Calculate mathematical results
-  const totalShots = Object.values(result.counts || {}).reduce((sum, count) => sum + count, 0) || 1024;
-  const activeStates = Object.keys(result.measurementProbabilities).length;
-  const maxProbability = Math.max(...Object.values(result.measurementProbabilities));
-  const entropy = -Object.values(result.measurementProbabilities)
-    .filter(p => p > 0)
-    .reduce((sum, p) => sum + p * Math.log2(p), 0);
-
-  // Calculate fidelity from state vector if available
-  const calculateFidelity = () => {
-    if (result.stateVector && result.stateVector.length > 0) {
-      const norm = Math.sqrt(result.stateVector.reduce((sum, amp) => 
-        sum + amp.real * amp.real + amp.imaginary * amp.imaginary, 0
-      ));
-      return norm;
-    }
-    return 1.0; // Default fidelity
+export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPageProps) {
+  // Safely extract result data with fallbacks
+  const stateVector = result?.stateVector || result?.state || [];
+  const measurements = result?.measurements || result?.counts || {};
+  const probabilities = result?.probabilities || [];
+  const metadata = result?.metadata || {};
+  
+  // Calculate mathematical properties
+  const calculateEntropy = () => {
+    if (probabilities.length === 0) return 0;
+    return -probabilities.reduce((sum: number, p: number) => 
+      p > 0 ? sum + p * Math.log2(p) : sum, 0
+    );
   };
 
-  const fidelity = calculateFidelity();
+  const calculateFidelity = () => {
+    // Calculate fidelity with ideal state (simplified)
+    if (stateVector.length === 0) return 1;
+    return Math.abs(stateVector[0]) ** 2; // Simplified fidelity calculation
+  };
+
+  const generateAIExplanation = () => {
+    const numQubits = Math.log2(stateVector.length || 4);
+    const dominantState = Object.keys(measurements)[0] || '000';
+    const maxProbability = Math.max(...Object.values(measurements).map(v => Number(v))) || 0;
+
+    return `This ${numQubits}-qubit quantum circuit produced a quantum superposition state. 
+    The dominant measurement outcome is |${dominantState}⟩ with probability ${(maxProbability * 100).toFixed(1)}%. 
+    The circuit entropy is ${calculateEntropy().toFixed(3)}, indicating ${calculateEntropy() > 1 ? 'high' : 'low'} quantum coherence. 
+    The state fidelity is ${calculateFidelity().toFixed(3)}, showing ${calculateFidelity() > 0.9 ? 'excellent' : 'moderate'} circuit performance.`;
+  };
 
   return (
-    <div className="min-h-screen bg-quantum-void">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="quantum-panel neon-border sticky top-0 z-10 bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6">
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/app')}
-                className="quantum-panel neon-border"
-              >
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={onBack}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Builder
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-quantum-glow">Simulation Results</h1>
-                <p className="text-quantum-particle">{circuitName}</p>
-              </div>
+              <CardTitle className="text-quantum-glow">Quantum Simulation Results</CardTitle>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-quantum-neon">
-                {result.backend.toUpperCase()}
-              </Badge>
-              <Badge variant="outline" className="text-quantum-plasma">
-                {numQubits} Qubits
-              </Badge>
-              <Badge variant="outline" className="text-quantum-energy">
-                {gates.length} Gates
-              </Badge>
+              <Button variant="outline" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+              <Button variant="outline" size="sm">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
             </div>
           </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="text-quantum-glow">
+              Gates: {circuit.length}
+            </Badge>
+            <Badge variant="outline" className="text-blue-400">
+              Qubits: {Math.log2(stateVector.length || 4)}
+            </Badge>
+            <Badge variant="outline" className="text-green-400">
+              Shots: {Object.values(measurements).reduce((sum: number, count) => sum + Number(count), 0) || 1024}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Column - Visualizations */}
+        <div className="col-span-8 space-y-6">
+          {/* Bloch Sphere */}
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-sm font-mono text-quantum-glow flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Bloch Sphere Visualization
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <BlochSphereVisualization 
+                  stateVector={stateVector}
+                  animate={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Probability Histogram */}
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-sm font-mono text-quantum-glow">
+                Measurement Probability Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ProbabilityHistogram 
+                  measurements={measurements}
+                  maxBars={16}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quantum State Heatmap */}
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-sm font-mono text-quantum-glow">
+                Quantum State Heatmap
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <QuantumStateHeatmap 
+                  stateVector={stateVector}
+                  size={Math.sqrt(stateVector.length)}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Quick Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {/* Right Column - Analysis */}
+        <div className="col-span-4 space-y-6">
+          {/* AI Explanation */}
           <Card className="quantum-panel neon-border">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-quantum-glow">
-                {result.executionTime.toFixed(1)}ms
-              </div>
-              <div className="text-sm text-quantum-particle">Execution Time</div>
+            <CardHeader>
+              <CardTitle className="text-sm font-mono text-quantum-glow flex items-center gap-2">
+                <Lightbulb className="w-4 h-4" />
+                AI Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-quantum-particle leading-relaxed">
+                {generateAIExplanation()}
+              </p>
             </CardContent>
           </Card>
-          
+
+          {/* Mathematical Calculations */}
           <Card className="quantum-panel neon-border">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-quantum-neon">
-                {activeStates}
+            <CardHeader>
+              <CardTitle className="text-sm font-mono text-quantum-glow flex items-center gap-2">
+                <Calculator className="w-4 h-4" />
+                Mathematical Properties
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-xs font-semibold text-quantum-neon mb-2">Quantum Metrics</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-quantum-particle">Entropy:</span>
+                    <span className="text-quantum-glow">{calculateEntropy().toFixed(4)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-quantum-particle">Fidelity:</span>
+                    <span className="text-quantum-glow">{calculateFidelity().toFixed(4)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-quantum-particle">Purity:</span>
+                    <span className="text-quantum-glow">{(probabilities.reduce((sum: number, p: number) => sum + p * p, 0) || 1).toFixed(4)}</span>
+                  </div>
+                </div>
               </div>
-              <div className="text-sm text-quantum-particle">Active States</div>
+
+              <Separator />
+
+              <div>
+                <h4 className="text-xs font-semibold text-quantum-neon mb-2">State Information</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-quantum-particle">Dimension:</span>
+                    <span className="text-quantum-glow">{stateVector.length || 4}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-quantum-particle">Non-zero Amplitudes:</span>
+                    <span className="text-quantum-glow">{stateVector.filter((amp: number) => Math.abs(amp) > 1e-10).length}</span>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h4 className="text-xs font-semibold text-quantum-neon mb-2">Top Measurements</h4>
+                <div className="space-y-1">
+                  {Object.entries(measurements)
+                    .sort(([,a], [,b]) => Number(b) - Number(a))
+                    .slice(0, 5)
+                    .map(([state, count]) => (
+                      <div key={state} className="flex justify-between text-xs">
+                        <span className="text-quantum-particle font-mono">|{state}⟩</span>
+                        <span className="text-quantum-glow">{((Number(count) / Object.values(measurements).reduce((sum: number, c) => sum + Number(c), 0)) * 100).toFixed(1)}%</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
-          
+
+          {/* Circuit Summary */}
           <Card className="quantum-panel neon-border">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-quantum-plasma">
-                {(maxProbability * 100).toFixed(1)}%
+            <CardHeader>
+              <CardTitle className="text-sm font-mono text-quantum-glow">
+                Circuit Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-quantum-particle">Total Gates:</span>
+                  <span className="text-quantum-glow">{circuit.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-quantum-particle">Circuit Depth:</span>
+                  <span className="text-quantum-glow">{Math.max(...circuit.map(g => g.step || 0), 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-quantum-particle">Gate Types:</span>
+                  <span className="text-quantum-glow">{new Set(circuit.map(g => g.type)).size}</span>
+                </div>
               </div>
-              <div className="text-sm text-quantum-particle">Max Probability</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="quantum-panel neon-border">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-quantum-energy">
-                {entropy.toFixed(2)}
-              </div>
-              <div className="text-sm text-quantum-particle">Entropy (bits)</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="quantum-panel neon-border">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-quantum-glow">
-                {totalShots.toLocaleString()}
-              </div>
-              <div className="text-sm text-quantum-particle">Total Shots</div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Main Results Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 quantum-panel neon-border">
-            <TabsTrigger value="overview" className="text-quantum-glow">
-              <Eye className="w-4 h-4 mr-2" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="visualization" className="text-quantum-neon">
-              <BarChart className="w-4 h-4 mr-2" />
-              Visualization
-            </TabsTrigger>
-            <TabsTrigger value="ai-explanation" className="text-quantum-particle">
-              <Bot className="w-4 h-4 mr-2" />
-              AI Explanation
-            </TabsTrigger>
-            <TabsTrigger value="mathematics" className="text-quantum-plasma">
-              <Calculator className="w-4 h-4 mr-2" />
-              Mathematics
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <SimulationResults
-              result={result}
-              showAdvanced={true}
-              numQubits={numQubits}
-            />
-          </TabsContent>
-
-          <TabsContent value="visualization" className="space-y-6">
-            <QuantumVisualizationPanel
-              result={result}
-              gates={gates}
-              numQubits={numQubits}
-              circuitName={circuitName}
-              onRerunSimulation={onRerunSimulation}
-              onExecutePartialCircuit={onExecutePartialCircuit}
-            />
-          </TabsContent>
-
-          <TabsContent value="ai-explanation" className="space-y-6">
-            <CircuitExplanationPanel
-              gates={gates}
-              result={result}
-              numQubits={numQubits}
-              isVisible={activeTab === 'ai-explanation'}
-            />
-          </TabsContent>
-
-          <TabsContent value="mathematics" className="space-y-6">
-            <Card className="quantum-panel neon-border">
-              <CardHeader>
-                <CardTitle className="text-quantum-plasma flex items-center gap-2">
-                  <Calculator className="w-5 h-5" />
-                  Mathematical Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* State Vector Mathematics */}
-                <div>
-                  <h3 className="text-lg font-semibold text-quantum-glow mb-4">State Vector Analysis</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="bg-quantum-matrix border-quantum-neon">
-                      <CardContent className="p-4">
-                        <div className="text-sm text-quantum-particle">Vector Norm</div>
-                        <div className="text-xl font-mono text-quantum-neon">
-                          {Math.sqrt(result.stateVector.reduce((sum, amp) => 
-                            sum + amp.real * amp.real + amp.imaginary * amp.imaginary, 0
-                          )).toFixed(6)}
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-quantum-matrix border-quantum-plasma">
-                      <CardContent className="p-4">
-                        <div className="text-sm text-quantum-particle">Fidelity</div>
-                        <div className="text-xl font-mono text-quantum-plasma">
-                          {(fidelity * 100).toFixed(3)}%
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-quantum-matrix border-quantum-energy">
-                      <CardContent className="p-4">
-                        <div className="text-sm text-quantum-particle">Entanglement</div>
-                        <div className="text-xl font-mono text-quantum-energy">
-                          {result.entanglement?.totalEntanglement ? 
-                            (result.entanglement.totalEntanglement * 100).toFixed(2) + '%' : 
-                            '0.00%'
-                          }
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Probability Distribution */}
-                <div>
-                  <h3 className="text-lg font-semibold text-quantum-glow mb-4">Probability Distribution</h3>
-                  <div className="bg-quantum-matrix rounded-lg p-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm font-mono">
-                      {Object.entries(result.measurementProbabilities)
-                        .filter(([_, prob]) => prob > 0.001)
-                        .sort(([_, a], [__, b]) => b - a)
-                        .map(([state, probability]) => (
-                          <div key={state} className="flex items-center justify-between p-2 bg-quantum-void rounded border border-quantum-neon">
-                            <span className="text-quantum-neon">|{state}⟩</span>
-                            <span className="text-quantum-energy">{probability.toFixed(6)}</span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Shannon Entropy Calculation */}
-                <div>
-                  <h3 className="text-lg font-semibold text-quantum-glow mb-4">Information Theory</h3>
-                  <div className="bg-quantum-matrix rounded-lg p-4">
-                    <div className="space-y-2 text-sm font-mono">
-                      <div className="flex justify-between">
-                        <span className="text-quantum-particle">Shannon Entropy:</span>
-                        <span className="text-quantum-neon">H = -{entropy.toFixed(4)} bits</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-quantum-particle">Max Entropy:</span>
-                        <span className="text-quantum-plasma">{Math.log2(Math.pow(2, numQubits)).toFixed(4)} bits</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-quantum-particle">Relative Entropy:</span>
-                        <span className="text-quantum-energy">{(entropy / numQubits * 100).toFixed(2)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Measurement Statistics */}
-                <div>
-                  <h3 className="text-lg font-semibold text-quantum-glow mb-4">Measurement Statistics</h3>
-                  <div className="bg-quantum-matrix rounded-lg p-4">
-                    <div className="space-y-2 text-sm font-mono">
-                      <div className="flex justify-between">
-                        <span className="text-quantum-particle">Total Measurements:</span>
-                        <span className="text-quantum-neon">{totalShots.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-quantum-particle">Unique Outcomes:</span>
-                        <span className="text-quantum-plasma">{activeStates}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-quantum-particle">Statistical Accuracy:</span>
-                        <span className="text-quantum-energy">±{(1.96 / Math.sqrt(totalShots) * 100).toFixed(3)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
     </div>
   );
