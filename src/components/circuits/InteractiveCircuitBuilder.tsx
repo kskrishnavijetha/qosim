@@ -15,16 +15,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Play, RotateCcw, Save, Download, AlertTriangle, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { EnhancedSimulationMode } from '@/lib/enhancedQuantumSimulationService';
 
 const NUM_QUBITS = 5;
 const CIRCUIT_DEPTH = 10;
 
 export function InteractiveCircuitBuilder() {
-  const { circuit, addGate, removeGate, clearCircuit } = useCircuitState();
+  const { circuit, addGate, deleteGate, clearCircuit, simulationMode, handleModeChange } = useCircuitState();
   const { executeCircuit, lastResult, isExecuting } = useQuantumBackend();
   const { wrapWithErrorHandling } = useCircuitErrorHandling();
   
-  const [simulationMode, setSimulationMode] = useState<'statevector' | 'sampling'>('statevector');
+  const [localSimulationMode, setLocalSimulationMode] = useState<'statevector' | 'sampling'>('statevector');
   const [shots, setShots] = useState(1024);
   const [showResults, setShowResults] = useState(false);
   const [circuitName, setCircuitName] = useState('My Quantum Circuit');
@@ -43,7 +44,7 @@ export function InteractiveCircuitBuilder() {
       return;
     }
 
-    console.log('🚀 Running simulation with', { mode: simulationMode, shots, gates: circuit.length });
+    console.log('🚀 Running simulation with', { mode: localSimulationMode, shots, gates: circuit.length });
     
     const result = await executeCircuit(circuit, 'qiskit', shots);
     if (result) {
@@ -65,6 +66,13 @@ export function InteractiveCircuitBuilder() {
   const handleBackToBuilder = () => {
     setShowResults(false);
   };
+
+  const handleSimulationModeChange = useCallback((mode: 'statevector' | 'sampling') => {
+    setLocalSimulationMode(mode);
+    // Convert to EnhancedSimulationMode for the circuit state hook
+    const enhancedMode: EnhancedSimulationMode = mode === 'statevector' ? 'fast' : 'sampling';
+    handleModeChange(enhancedMode);
+  }, [handleModeChange]);
 
   // If we have results and showResults is true, show the results page
   if (showResults && lastResult) {
@@ -98,8 +106,8 @@ export function InteractiveCircuitBuilder() {
             
             <div className="flex items-center gap-3">
               <SimulationModeSelector
-                mode={simulationMode}
-                onModeChange={setSimulationMode}
+                mode={localSimulationMode}
+                onModeChange={handleSimulationModeChange}
                 shots={shots}
                 onShotsChange={setShots}
               />
@@ -132,7 +140,7 @@ export function InteractiveCircuitBuilder() {
         <div className="w-64 bg-quantum-matrix border-r border-quantum-neon overflow-y-auto">
           <div className="p-4">
             <h2 className="text-lg font-semibold text-quantum-particle mb-4">Gate Palette</h2>
-            <GatePalette onGateSelect={(gate) => console.log('Gate selected:', gate)} />
+            <GatePalette />
           </div>
         </div>
 
@@ -149,11 +157,9 @@ export function InteractiveCircuitBuilder() {
               <CardContent className="flex-1">
                 <div ref={canvasRef} className="h-full">
                   <CircuitCanvas
-                    numQubits={NUM_QUBITS}
-                    circuitDepth={CIRCUIT_DEPTH}
                     gates={circuit}
                     onAddGate={addGate}
-                    onRemoveGate={removeGate}
+                    onRemoveGate={deleteGate}
                   />
                 </div>
               </CardContent>
@@ -163,7 +169,6 @@ export function InteractiveCircuitBuilder() {
           {/* Circuit Actions */}
           <div className="border-t border-quantum-neon bg-quantum-matrix p-4">
             <CircuitActions
-              circuit={circuit}
               onClear={clearCircuit}
               onSave={() => toast.success('Circuit saved!')}
               onLoad={() => toast.info('Load circuit functionality coming soon')}
@@ -205,7 +210,7 @@ export function InteractiveCircuitBuilder() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-quantum-particle">Mode:</span>
-                  <Badge variant="secondary" className="text-xs">{simulationMode}</Badge>
+                  <Badge variant="secondary" className="text-xs">{localSimulationMode}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-quantum-particle">Shots:</span>

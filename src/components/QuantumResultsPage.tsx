@@ -40,6 +40,19 @@ export function QuantumResultsPage({
     .filter(p => p > 0)
     .reduce((sum, p) => sum + p * Math.log2(p), 0);
 
+  // Calculate fidelity from state vector if available
+  const calculateFidelity = () => {
+    if (result.stateVector && result.stateVector.length > 0) {
+      const norm = Math.sqrt(result.stateVector.reduce((sum, amp) => 
+        sum + amp.real * amp.real + amp.imaginary * amp.imaginary, 0
+      ));
+      return norm;
+    }
+    return 1.0; // Default fidelity
+  };
+
+  const fidelity = calculateFidelity();
+
   return (
     <div className="min-h-screen bg-quantum-void">
       {/* Header */}
@@ -202,7 +215,7 @@ export function QuantumResultsPage({
                       <CardContent className="p-4">
                         <div className="text-sm text-quantum-particle">Fidelity</div>
                         <div className="text-xl font-mono text-quantum-plasma">
-                          {((result.fidelity || 1) * 100).toFixed(3)}%
+                          {(fidelity * 100).toFixed(3)}%
                         </div>
                       </CardContent>
                     </Card>
