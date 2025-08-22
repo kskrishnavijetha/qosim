@@ -125,12 +125,12 @@ export function QuantumStateVisualization({
 
   return (
     <div className="space-y-6">
-      {/* Main Visualization Section */}
+      {/* Quick State Overview */}
       <Card className="quantum-panel neon-border">
         <CardHeader>
           <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
             <Activity className="w-5 h-5" />
-            Live Quantum State Simulation
+            Quantum State Overview
             {backendResult && (
               <span className="text-sm text-quantum-neon ml-2">
                 ({backendResult.backend.toUpperCase()})
@@ -233,7 +233,11 @@ export function QuantumStateVisualization({
                 measurementProbabilities: displayResult?.measurementProbabilities || [],
                 stateVector: displayResult?.stateVector || [],
                 executionTime: displayResult?.executionTime || 0,
-                backend: 'local'
+                backend: 'local',
+                counts: {},
+                jobId: `local-${Date.now()}`,
+                entanglement: { pairs: [], totalEntanglement: 0, entanglementThreads: [] },
+                blochSphereData: blochSphereData
               } as QuantumBackendResult}
               numQubits={NUM_QUBITS}
               isVisible={true}
