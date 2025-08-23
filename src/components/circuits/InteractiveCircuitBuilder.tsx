@@ -112,6 +112,17 @@ export function InteractiveCircuitBuilder() {
     error: simulationResult.error
   } : null;
 
+  // Convert circuit to quantum circuit format with required properties
+  const quantumCircuit = {
+    id: `circuit-${Date.now()}`,
+    name: "Interactive Circuit",
+    qubits: numQubits,
+    gates: circuit,
+    metadata: {},
+    created: new Date(),
+    updated: new Date()
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -184,7 +195,7 @@ export function InteractiveCircuitBuilder() {
         {/* Circuit Canvas */}
         <div className="col-span-6">
           <CircuitCanvas 
-            circuit={circuit}
+            circuit={quantumCircuit}
             selectedGate={selectedGate}
             simulationResult={convertedSimulationResult}
             zoomLevel={1}

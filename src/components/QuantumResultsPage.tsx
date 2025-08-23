@@ -279,12 +279,15 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                   {Object.entries(measurements)
                     .sort(([,a], [,b]) => Number(b) - Number(a))
                     .slice(0, 5)
-                    .map(([state, count]) => (
-                      <div key={state} className="flex justify-between text-xs">
-                        <span className="text-quantum-particle font-mono">|{state}⟩</span>
-                        <span className="text-quantum-glow">{((Number(count) / totalShots) * 100).toFixed(1)}%</span>
-                      </div>
-                    ))}
+                    .map(([state, count]) => {
+                      const percentage = ((Number(count) || 0) / totalShots) * 100;
+                      return (
+                        <div key={state} className="flex justify-between text-xs">
+                          <span className="text-quantum-particle font-mono">|{state}⟩</span>
+                          <span className="text-quantum-glow">{percentage.toFixed(1)}%</span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </CardContent>
