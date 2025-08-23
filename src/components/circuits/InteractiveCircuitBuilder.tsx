@@ -25,7 +25,9 @@ export function InteractiveCircuitBuilder() {
     numQubits,
     setNumQubits,
     simulationMode,
-    setSimulationMode
+    setSimulationMode,
+    undo,
+    canUndo
   } = useCircuitState();
 
   const [showResults, setShowResults] = useState(false);
@@ -66,6 +68,16 @@ export function InteractiveCircuitBuilder() {
     } catch (error) {
       console.error('Simulation failed:', error);
     }
+  };
+
+  const handleGateMouseDown = (e: React.MouseEvent, gateType: string) => {
+    console.log('Gate mouse down:', gateType);
+    // Handle gate drag start
+  };
+
+  const handleGateTouchStart = (e: React.TouchEvent, gateType: string) => {
+    console.log('Gate touch start:', gateType);
+    // Handle gate touch start
   };
 
   if (showResults && simulationResult) {
@@ -141,18 +153,43 @@ export function InteractiveCircuitBuilder() {
       <div className="grid grid-cols-12 gap-6">
         {/* Gate Palette */}
         <div className="col-span-3">
-          <GatePalette />
+          <GatePalette 
+            onGateMouseDown={handleGateMouseDown}
+            onGateTouchStart={handleGateTouchStart}
+          />
         </div>
 
         {/* Circuit Canvas */}
         <div className="col-span-6">
-          <CircuitCanvas />
+          <CircuitCanvas 
+            circuit={circuit}
+            selectedGate={selectedGate}
+            simulationResult={simulationResult}
+            zoomLevel={1}
+            panOffset={{ x: 0, y: 0 }}
+            onGateAdd={handleAddGate}
+            onGateRemove={deleteGate}
+            onGateSelect={handleGateSelect}
+            onPositionChange={() => {}}
+            onDrop={() => {}}
+            onDragOver={() => {}}
+            onMouseDown={() => {}}
+            onMouseMove={() => {}}
+            onMouseUp={() => {}}
+            onWheel={() => {}}
+            numQubits={numQubits}
+          />
         </div>
 
         {/* Circuit Actions */}
         <div className="col-span-3">
           <CircuitActions
             onClear={clearCircuit}
+            onUndo={undo}
+            onExportJSON={() => {}}
+            onExportQASM={() => {}}
+            onShowExportDialog={() => {}}
+            canUndo={canUndo}
           />
         </div>
       </div>
@@ -163,7 +200,7 @@ export function InteractiveCircuitBuilder() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <span className="text-quantum-particle">
-                Circuit Depth: {Math.max(...circuit.map(g => (g as any).step || g.position || 0), 0)}
+                Circuit Depth: {Math.max(...circuit.map(g => Number((g as any).step || g.position || 0)), 0)}
               </span>
               <span className="text-quantum-particle">
                 Total Gates: {circuit.length}

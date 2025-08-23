@@ -51,6 +51,35 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
   // Calculate total shots for probability histogram
   const totalShots = Object.values(measurements).reduce((sum: number, count) => sum + (Number(count) || 0), 0) || 1024;
 
+  // Generate Bloch sphere data with proper fallback
+  const blochSphereData = React.useMemo(() => {
+    const numQubits = Math.log2(stateVector.length || 4);
+    
+    // Default fallback for all qubits in |0⟩ state
+    return Array.from({ length: numQubits }, (_, i) => ({
+      x: 0,
+      y: 0,
+      z: 1,
+      qubit: i,
+      theta: 0,
+      phi: 0
+    }));
+  }, [stateVector]);
+
+  // Prepare qubit states for visualization
+  const qubitStates = React.useMemo(() => {
+    const numQubits = Math.log2(stateVector.length || 4);
+    
+    // Generate default qubit states
+    return Array.from({ length: numQubits }, (_, i) => ({
+      qubit: i,
+      state: '|0⟩',
+      amplitude: { real: 1, imag: 0 },
+      phase: 0,
+      probability: 0
+    }));
+  }, [stateVector]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -105,7 +134,8 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
             <CardContent>
               <div className="h-80">
                 <BlochSphereVisualization 
-                  qubitStates={result?.qubitStates || []}
+                  blochSphereData={blochSphereData}
+                  qubitStates={qubitStates}
                   selectedQubit={0}
                   onQubitSelect={() => {}}
                 />
@@ -244,7 +274,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                 </div>
                 <div className="flex justify-between">
                   <span className="text-quantum-particle">Circuit Depth:</span>
-                  <span className="text-quantum-glow">{Math.max(...circuit.map(g => (g as any).step || g.position || 0), 0)}</span>
+                  <span className="text-quantum-glow">{Math.max(...circuit.map(g => Number((g as any).step || g.position || 0)), 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-quantum-particle">Gate Types:</span>
