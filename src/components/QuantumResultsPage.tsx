@@ -1,10 +1,15 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Download, Share2, Eye, Lightbulb, Calculator } from 'lucide-react';
 import { QuantumBackendResult } from '@/services/quantumBackendService';
 import { ProbabilityHistogram } from '@/components/visualization/ProbabilityHistogram';
 import { QuantumStateHeatmap } from '@/components/visualization/QuantumStateHeatmap';
-import { EnhancedBlochSphere } from '@/components/quantum/EnhancedBlochSphere';
+import { BlochSphereVisualization } from '@/components/quantum/BlochSphereVisualization';
 import { StateVectorMatrix } from '@/components/quantum/StateVectorMatrix';
 import { BarChart, Circle, Grid, Table } from 'lucide-react';
 import { Complex } from '@/services/complexNumbers';
