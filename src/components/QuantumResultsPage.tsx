@@ -37,7 +37,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
     return Math.abs(stateVector[0]) ** 2; // Simplified fidelity calculation
   };
 
-  const generateAIExplanation = () => {
+  const generateAIExplanation = (): string => {
     const numQubits = Math.log2(stateVector.length || 4);
     const dominantState = Object.keys(measurements)[0] || '000';
     const maxProbability = Math.max(...Object.values(measurements).map(v => Number(v) || 0)) || 0;
@@ -274,7 +274,11 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                 </div>
                 <div className="flex justify-between">
                   <span className="text-quantum-particle">Circuit Depth:</span>
-                  <span className="text-quantum-glow">{Math.max(...circuit.map(g => Number((g as any).step || g.position || 0)), 0)}</span>
+                  <span className="text-quantum-glow">
+                    {circuit.length > 0 
+                      ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) 
+                      : 0}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-quantum-particle">Gate Types:</span>

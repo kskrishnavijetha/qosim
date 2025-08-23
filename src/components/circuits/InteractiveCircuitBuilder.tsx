@@ -200,7 +200,9 @@ export function InteractiveCircuitBuilder() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <span className="text-quantum-particle">
-                Circuit Depth: {Math.max(...circuit.map(g => Number((g as any).step || g.position || 0)), 0)}
+                Circuit Depth: {circuit.length > 0 
+                  ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) 
+                  : 0}
               </span>
               <span className="text-quantum-particle">
                 Total Gates: {circuit.length}
@@ -214,7 +216,7 @@ export function InteractiveCircuitBuilder() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }
