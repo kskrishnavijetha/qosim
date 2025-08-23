@@ -90,6 +90,32 @@ export function InteractiveCircuitBuilder() {
     );
   }
 
+  // Create a proper QuantumCircuit object for CircuitSimulationPanel
+  const defaultCircuit = {
+    id: 'default-circuit',
+    name: 'Default Circuit',
+    qubits: Array.from({ length: numQubits }, (_, i) => ({ id: i, index: i })),
+    gates: circuit,
+    layers: [],
+    depth: circuit.length > 0 
+      ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) 
+      : 0,
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      version: '1.0.0'
+    }
+  };
+
+  // Convert OptimizedSimulationResult to CircuitSimulationResult format
+  const convertedSimulationResult = simulationResult ? {
+    ...simulationResult,
+    qubitStates: simulationResult.qubitStates?.map(state => ({
+      ...state,
+      qubit: state.qubit.toString()
+    })) || []
+  } : null;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -164,7 +190,7 @@ export function InteractiveCircuitBuilder() {
           <CircuitCanvas 
             circuit={circuit}
             selectedGate={selectedGate}
-            simulationResult={simulationResult}
+            simulationResult={convertedSimulationResult}
             zoomLevel={1}
             panOffset={{ x: 0, y: 0 }}
             onGateAdd={handleAddGate}
