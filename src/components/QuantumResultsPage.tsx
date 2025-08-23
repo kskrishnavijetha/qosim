@@ -41,7 +41,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
   const calculateEntropy = (): number => {
     if (!Array.isArray(probabilities) || probabilities.length === 0) return 0;
     return -probabilities.reduce((sum: number, p: unknown) => {
-      const prob = Number(p) || 0;
+      const prob = typeof p === 'number' ? p : Number(p) || 0;
       return prob > 0 ? sum + prob * Math.log2(prob) : sum;
     }, 0);
   };
@@ -104,7 +104,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
   const calculatePurity = (): number => {
     if (!Array.isArray(probabilities) || probabilities.length === 0) return 1;
     return probabilities.reduce((sum: number, p: unknown) => {
-      const prob = Number(p) || 0;
+      const prob = typeof p === 'number' ? p : Number(p) || 0;
       return sum + prob * prob;
     }, 0);
   };

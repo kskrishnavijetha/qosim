@@ -223,7 +223,7 @@ export function InteractiveCircuitBuilder() {
             <div className="flex items-center gap-4">
               <span className="text-quantum-particle">
                 Circuit Depth: {circuit.length > 0 
-                  ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) 
+                  ? Math.max(...circuit.map(g => Number(g.position || 0))) 
                   : 0}
               </span>
               <span className="text-quantum-particle">
