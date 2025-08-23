@@ -13,17 +13,6 @@ import { Play, Zap, Settings, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { QuantumResultsPage } from '../QuantumResultsPage';
 
-// Define QuantumCircuit interface to match expected type
-interface QuantumCircuit {
-  id: string;
-  name: string;
-  qubits: number;
-  gates: any[];
-  depth: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export function InteractiveCircuitBuilder() {
   const {
     circuit,
@@ -100,17 +89,6 @@ export function InteractiveCircuitBuilder() {
       />
     );
   }
-
-  // Convert Gate[] to QuantumCircuit for GatePalette
-  const quantumCircuit: QuantumCircuit = {
-    id: `circuit-${Date.now()}`,
-    name: 'Current Circuit',
-    qubits: numQubits,
-    gates: circuit,
-    depth: circuit.length > 0 ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) : 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
 
   // Convert OptimizedSimulationResult to proper format for CircuitCanvas
   const convertedSimulationResult = simulationResult ? {
@@ -198,7 +176,6 @@ export function InteractiveCircuitBuilder() {
         {/* Gate Palette */}
         <div className="col-span-3">
           <GatePalette 
-            circuit={quantumCircuit}
             onGateMouseDown={handleGateMouseDown}
             onGateTouchStart={handleGateTouchStart}
           />

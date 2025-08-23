@@ -307,7 +307,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                   <span className="text-quantum-particle">Circuit Depth:</span>
                   <span className="text-quantum-glow">
                     {circuit.length > 0 
-                      ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) 
+                      ? Math.max(...circuit.map(g => Number(g.position || 0))) 
                       : 0}
                   </span>
                 </div>
