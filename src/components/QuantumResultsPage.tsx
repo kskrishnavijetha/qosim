@@ -1,19 +1,28 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Download, Share2, Calculator, Eye, Lightbulb } from 'lucide-react';
-import { Gate } from '@/hooks/useCircuitState';
-import { BlochSphereVisualization } from './quantum/BlochSphereVisualization';
-import { ProbabilityHistogram } from './visualization/ProbabilityHistogram';
-import { QuantumStateHeatmap } from './visualization/QuantumStateHeatmap';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { QuantumBackendResult } from '@/services/quantumBackendService';
+import { ProbabilityHistogram } from '@/components/visualization/ProbabilityHistogram';
+import { QuantumStateHeatmap } from '@/components/visualization/QuantumStateHeatmap';
+import { EnhancedBlochSphere } from '@/components/quantum/EnhancedBlochSphere';
+import { StateVectorMatrix } from '@/components/quantum/StateVectorMatrix';
+import { BarChart, Circle, Grid, Table } from 'lucide-react';
+import { Complex } from '@/services/complexNumbers';
 
 interface QuantumResultsPageProps {
   result: any;
   circuit: Gate[];
   onBack: () => void;
+}
+
+interface Gate {
+  id: string;
+  type: string;
+  qubit?: number;
+  qubits?: number[];
+  position: number;
+  angle?: number;
+  params?: number[];
 }
 
 export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPageProps) {
@@ -23,24 +32,30 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
   const probabilities = result?.probabilities || [];
   const metadata = result?.metadata || {};
   
-  // Calculate mathematical properties
-  const calculateEntropy = () => {
-    if (probabilities.length === 0) return 0;
-    return -probabilities.reduce((sum: number, p: number) => 
-      p > 0 ? sum + p * Math.log2(p) : sum, 0
-    );
+  // Calculate mathematical properties with proper type checking
+  const calculateEntropy = (): number => {
+    if (!Array.isArray(probabilities) || probabilities.length === 0) return 0;
+    return -probabilities.reduce((sum: number, p: unknown) => {
+      const prob = Number(p) || 0;
+      return prob > 0 ? sum + prob * Math.log2(prob) : sum;
+    }, 0);
   };
 
-  const calculateFidelity = () => {
+  const calculateFidelity = (): number => {
     // Calculate fidelity with ideal state (simplified)
-    if (stateVector.length === 0) return 1;
-    return Math.abs(stateVector[0]) ** 2; // Simplified fidelity calculation
+    if (!Array.isArray(stateVector) || stateVector.length === 0) return 1;
+    const firstAmplitude = stateVector[0];
+    if (typeof firstAmplitude === 'object' && firstAmplitude !== null && 'real' in firstAmplitude) {
+      return Math.abs(Number(firstAmplitude.real) || 0) ** 2;
+    }
+    return Math.abs(Number(firstAmplitude) || 0) ** 2;
   };
 
   const generateAIExplanation = (): string => {
     const numQubits = Math.log2(stateVector.length || 4);
     const dominantState = Object.keys(measurements)[0] || '000';
-    const maxProbability = Math.max(...Object.values(measurements).map(v => Number(v) || 0)) || 0;
+    const measurementValues = Object.values(measurements).map(v => Number(v) || 0);
+    const maxProbability = measurementValues.length > 0 ? Math.max(...measurementValues) : 0;
 
     return `This ${numQubits}-qubit quantum circuit produced a quantum superposition state. 
     The dominant measurement outcome is |${dominantState}⟩ with probability ${(maxProbability * 100).toFixed(1)}%. 
@@ -79,6 +94,15 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
       probability: 0
     }));
   }, [stateVector]);
+
+  // Calculate purity with proper type checking
+  const calculatePurity = (): number => {
+    if (!Array.isArray(probabilities) || probabilities.length === 0) return 1;
+    return probabilities.reduce((sum: number, p: unknown) => {
+      const prob = Number(p) || 0;
+      return sum + prob * prob;
+    }, 0);
+  };
 
   return (
     <div className="space-y-6">
@@ -219,7 +243,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                   </div>
                   <div className="flex justify-between">
                     <span className="text-quantum-particle">Purity:</span>
-                    <span className="text-quantum-glow">{(probabilities.reduce((sum: number, p: number) => sum + p * p, 0) || 1).toFixed(4)}</span>
+                    <span className="text-quantum-glow">{calculatePurity().toFixed(4)}</span>
                   </div>
                 </div>
               </div>
@@ -235,7 +259,9 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                   </div>
                   <div className="flex justify-between">
                     <span className="text-quantum-particle">Non-zero Amplitudes:</span>
-                    <span className="text-quantum-glow">{stateVector.filter((amp: number) => Math.abs(amp) > 1e-10).length}</span>
+                    <span className="text-quantum-glow">
+                      {Array.isArray(stateVector) ? stateVector.filter((amp: any) => Math.abs(Number(amp) || 0) > 1e-10).length : 0}
+                    </span>
                   </div>
                 </div>
               </div>

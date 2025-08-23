@@ -90,30 +90,26 @@ export function InteractiveCircuitBuilder() {
     );
   }
 
-  // Create a proper QuantumCircuit object for CircuitSimulationPanel
-  const defaultCircuit = {
-    id: 'default-circuit',
-    name: 'Default Circuit',
-    qubits: Array.from({ length: numQubits }, (_, i) => ({ id: i, index: i })),
-    gates: circuit,
-    layers: [],
-    depth: circuit.length > 0 
-      ? Math.max(...circuit.map(g => Number((g as any).step || g.position || 0))) 
-      : 0,
-    metadata: {
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
-      version: '1.0.0'
-    }
-  };
-
-  // Convert OptimizedSimulationResult to CircuitSimulationResult format
+  // Convert OptimizedSimulationResult to proper format for CircuitCanvas
   const convertedSimulationResult = simulationResult ? {
-    ...simulationResult,
+    stateVector: simulationResult.stateVector || [],
+    measurementProbabilities: simulationResult.measurementProbabilities || [],
     qubitStates: simulationResult.qubitStates?.map(state => ({
       ...state,
       qubit: state.qubit.toString()
-    })) || []
+    })) || [],
+    entanglement: simulationResult.entanglement ? {
+      pairs: simulationResult.entanglement.pairs.map(pair => [
+        pair.qubit1.toString(),
+        pair.qubit2.toString()
+      ]) as string[][],
+      strength: simulationResult.entanglement.totalEntanglement || 0
+    } : { pairs: [] as string[][], strength: 0 },
+    executionTime: simulationResult.executionTime || 0,
+    fidelity: simulationResult.fidelity || 1,
+    counts: {},
+    blochSphereData: [],
+    error: simulationResult.error
   } : null;
 
   return (
