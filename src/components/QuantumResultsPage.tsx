@@ -86,13 +86,13 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
     }));
   }, [stateVector]);
 
-  // Prepare qubit states for visualization
+  // Prepare qubit states for visualization with number type for qubit
   const qubitStates = React.useMemo(() => {
     const numQubits = Math.log2(stateVector.length || 4);
     
-    // Generate default qubit states
+    // Generate default qubit states with number type for qubit
     return Array.from({ length: numQubits }, (_, i) => ({
-      qubit: i.toString(),
+      qubit: i,
       state: '|0⟩',
       amplitude: { real: 1, imag: 0 },
       phase: 0,
@@ -277,11 +277,12 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                 <h4 className="text-xs font-semibold text-quantum-neon mb-2">Top Measurements</h4>
                 <div className="space-y-1">
                   {Object.entries(measurements)
-                    .sort(([,a], [,b]) => Number(b) - Number(a))
+                    .sort(([,a], [,b]) => (Number(b) || 0) - (Number(a) || 0))
                     .slice(0, 5)
                     .map(([state, count]) => {
                       const numCount = Number(count) || 0;
-                      const percentage = totalShots > 0 ? (numCount / totalShots) * 100 : 0;
+                      const numTotalShots = Number(totalShots) || 1;
+                      const percentage = numTotalShots > 0 ? (numCount / numTotalShots) * 100 : 0;
                       return (
                         <div key={state} className="flex justify-between text-xs">
                           <span className="text-quantum-particle font-mono">|{state}⟩</span>

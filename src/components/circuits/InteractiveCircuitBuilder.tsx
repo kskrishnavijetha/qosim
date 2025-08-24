@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -112,14 +111,15 @@ export function InteractiveCircuitBuilder() {
     error: simulationResult.error
   } : null;
 
-  // Convert circuit to quantum circuit format with required properties
+  // Convert circuit to quantum circuit format with required properties including state
   const quantumCircuit = {
     id: `circuit-${Date.now()}`,
     name: "Interactive Circuit",
     qubits: Array.from({ length: numQubits }, (_, i) => ({
       id: `q${i}`,
       name: `q${i}`,
-      index: i
+      index: i,
+      state: '|0⟩' // Add required state property
     })),
     gates: circuit,
     metadata: {},
