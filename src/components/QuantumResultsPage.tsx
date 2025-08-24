@@ -92,7 +92,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
     
     // Generate default qubit states
     return Array.from({ length: numQubits }, (_, i) => ({
-      qubit: i,
+      qubit: i.toString(),
       state: '|0⟩',
       amplitude: { real: 1, imag: 0 },
       phase: 0,
@@ -281,7 +281,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                     .slice(0, 5)
                     .map(([state, count]) => {
                       const numCount = Number(count) || 0;
-                      const percentage = (numCount / totalShots) * 100;
+                      const percentage = totalShots > 0 ? (numCount / totalShots) * 100 : 0;
                       return (
                         <div key={state} className="flex justify-between text-xs">
                           <span className="text-quantum-particle font-mono">|{state}⟩</span>

@@ -116,7 +116,11 @@ export function InteractiveCircuitBuilder() {
   const quantumCircuit = {
     id: `circuit-${Date.now()}`,
     name: "Interactive Circuit",
-    qubits: numQubits,
+    qubits: Array.from({ length: numQubits }, (_, i) => ({
+      id: `q${i}`,
+      name: `q${i}`,
+      index: i
+    })),
     gates: circuit,
     metadata: {},
     created: new Date(),
