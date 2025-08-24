@@ -120,7 +120,9 @@ export function InteractiveCircuitBuilder() {
     gates: circuit,
     metadata: {},
     created: new Date(),
-    updated: new Date()
+    updated: new Date(),
+    layers: circuit.length > 0 ? Math.max(...circuit.map(g => Number(g.position || 0))) + 1 : 0,
+    depth: circuit.length > 0 ? Math.max(...circuit.map(g => Number(g.position || 0))) : 0
   };
 
   return (

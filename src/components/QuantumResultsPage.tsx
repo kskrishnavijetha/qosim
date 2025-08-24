@@ -280,7 +280,8 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                     .sort(([,a], [,b]) => Number(b) - Number(a))
                     .slice(0, 5)
                     .map(([state, count]) => {
-                      const percentage = ((Number(count) || 0) / totalShots) * 100;
+                      const numCount = Number(count) || 0;
+                      const percentage = (numCount / totalShots) * 100;
                       return (
                         <div key={state} className="flex justify-between text-xs">
                           <span className="text-quantum-particle font-mono">|{state}⟩</span>
