@@ -134,6 +134,7 @@ export function InteractiveCircuitBuilder() {
     layers: circuit.length > 0 ? 
       circuit.map((gate, index) => ({
         id: `layer-${index}`,
+        index: gate.position || index, // Add required index property
         position: gate.position || index,
         gates: [gate.id]
       })) : 
@@ -267,7 +268,7 @@ export function InteractiveCircuitBuilder() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }
