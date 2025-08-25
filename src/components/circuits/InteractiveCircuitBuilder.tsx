@@ -128,7 +128,12 @@ export function InteractiveCircuitBuilder() {
       position: { x: (gate.position || index) * 60, y: 0 }, // Convert number to coordinate object
       layer: gate.position || index // Add required layer property
     })),
-    metadata: {},
+    metadata: {
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      version: "1.0.0",
+      author: "Interactive Builder"
+    },
     created: new Date(),
     updated: new Date(),
     layers: circuit.length > 0 ? 
