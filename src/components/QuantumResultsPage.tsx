@@ -285,7 +285,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                       const percentage = numTotalShots > 0 ? (numCount / numTotalShots) * 100 : 0;
                       return (
                         <div key={state} className="flex justify-between text-xs">
-                          <span className="text-quantum-particle font-mono">|{state}⟩</span>
+                          <span className="text-quantum-particle font-mono">|{String(state)}⟩</span>
                           <span className="text-quantum-glow">{percentage.toFixed(1)}%</span>
                         </div>
                       );

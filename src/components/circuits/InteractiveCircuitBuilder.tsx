@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -119,7 +120,7 @@ export function InteractiveCircuitBuilder() {
       id: `q${i}`,
       name: `q${i}`,
       index: i,
-      state: '|0⟩' // Add required state property
+      state: 'computational' as const // Use the correct enum value
     })),
     gates: circuit,
     metadata: {},
