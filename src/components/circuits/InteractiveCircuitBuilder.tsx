@@ -125,6 +125,7 @@ export function InteractiveCircuitBuilder() {
     })),
     gates: circuit.map((gate, index) => ({
       ...gate,
+      qubits: gate.qubits ? gate.qubits.map(q => q.toString()) : gate.qubit !== undefined ? [gate.qubit.toString()] : ['0'], // Convert numbers to strings
       layer: gate.position || index // Add required layer property
     })),
     metadata: {},
@@ -264,4 +265,3 @@ export function InteractiveCircuitBuilder() {
     </div>
   );
 }
-

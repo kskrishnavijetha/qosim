@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -177,7 +176,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
           <Card className="quantum-panel neon-border">
             <CardHeader>
               <CardTitle className="text-sm font-mono text-quantum-glow">
-                {React.createElement('span', null, 'Measurement Probability Distribution')}
+                Measurement Probability Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -333,4 +332,3 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
     </div>
   );
 }
-
