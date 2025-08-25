@@ -268,7 +268,7 @@ export function InteractiveCircuitBuilder() {
             </div>
           </div>
         </CardContent>
-      </div>
+      </Card>
     </div>
   );
 }
