@@ -1,5 +1,4 @@
 
-
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -126,6 +125,7 @@ export function InteractiveCircuitBuilder() {
     gates: circuit.map((gate, index) => ({
       ...gate,
       qubits: gate.qubits ? gate.qubits.map(q => q.toString()) : gate.qubit !== undefined ? [gate.qubit.toString()] : ['0'], // Convert numbers to strings
+      position: { x: (gate.position || index) * 60, y: 0 }, // Convert number to coordinate object
       layer: gate.position || index // Add required layer property
     })),
     metadata: {},
