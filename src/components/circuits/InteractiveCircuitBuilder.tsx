@@ -136,7 +136,15 @@ export function InteractiveCircuitBuilder() {
         id: `layer-${index}`,
         index: gate.position || index, // Add required index property
         position: gate.position || index,
-        gates: [gate.id]
+        gates: [{
+          id: gate.id,
+          type: gate.type,
+          qubits: gate.qubits ? gate.qubits.map(q => q.toString()) : gate.qubit !== undefined ? [gate.qubit.toString()] : ['0'],
+          position: { x: (gate.position || index) * 60, y: 0 },
+          layer: gate.position || index,
+          angle: gate.angle,
+          params: gate.params
+        }] // Convert to CircuitGate[] array instead of string[]
       })) : 
       [], // Convert to CircuitLayer[] array
     depth: circuit.length > 0 ? Math.max(...circuit.map(g => Number(g.position || 0))) : 0
