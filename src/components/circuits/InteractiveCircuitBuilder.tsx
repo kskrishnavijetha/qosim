@@ -131,7 +131,13 @@ export function InteractiveCircuitBuilder() {
     metadata: {},
     created: new Date(),
     updated: new Date(),
-    layers: circuit.length > 0 ? Math.max(...circuit.map(g => Number(g.position || 0))) + 1 : 0,
+    layers: circuit.length > 0 ? 
+      circuit.map((gate, index) => ({
+        id: `layer-${index}`,
+        position: gate.position || index,
+        gates: [gate.id]
+      })) : 
+      [], // Convert to CircuitLayer[] array
     depth: circuit.length > 0 ? Math.max(...circuit.map(g => Number(g.position || 0))) : 0
   };
 
