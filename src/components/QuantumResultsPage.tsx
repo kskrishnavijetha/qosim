@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -176,7 +177,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
           <Card className="quantum-panel neon-border">
             <CardHeader>
               <CardTitle className="text-sm font-mono text-quantum-glow">
-                Measurement Probability Distribution
+                {React.createElement('span', null, 'Measurement Probability Distribution')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -260,7 +261,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-quantum-particle">Dimension:</span>
-                    <span className="text-quantum-glow">{stateVector.length || 4}</span>
+                    <span className="text-quantum-glow">{Number(stateVector.length) || 4}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-quantum-particle">Non-zero Amplitudes:</span>
@@ -277,7 +278,11 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                 <h4 className="text-xs font-semibold text-quantum-neon mb-2">Top Measurements</h4>
                 <div className="space-y-1">
                   {Object.entries(measurements)
-                    .sort(([,a], [,b]) => (Number(b) || 0) - (Number(a) || 0))
+                    .sort(([,a], [,b]) => {
+                      const numA = Number(a) || 0;
+                      const numB = Number(b) || 0;
+                      return numB - numA;
+                    })
                     .slice(0, 5)
                     .map(([state, count]) => {
                       const numCount = Number(count) || 0;
@@ -328,3 +333,4 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
     </div>
   );
 }
+

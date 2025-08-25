@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -112,7 +113,7 @@ export function InteractiveCircuitBuilder() {
     error: simulationResult.error
   } : null;
 
-  // Convert circuit to quantum circuit format with required properties including state
+  // Convert circuit to quantum circuit format with required properties including state and layer
   const quantumCircuit = {
     id: `circuit-${Date.now()}`,
     name: "Interactive Circuit",
@@ -122,7 +123,10 @@ export function InteractiveCircuitBuilder() {
       index: i,
       state: 'computational' as const // Use the correct enum value
     })),
-    gates: circuit,
+    gates: circuit.map((gate, index) => ({
+      ...gate,
+      layer: gate.position || index // Add required layer property
+    })),
     metadata: {},
     created: new Date(),
     updated: new Date(),
@@ -256,7 +260,8 @@ export function InteractiveCircuitBuilder() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }
+
