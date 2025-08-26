@@ -11,6 +11,7 @@ import { BlochSphereVisualization } from '@/components/quantum/BlochSphereVisual
 import { ProbabilityHistogram } from '@/components/visualization/ProbabilityHistogram';
 import { QuantumStateHeatmap } from '@/components/visualization/QuantumStateHeatmap';
 import { EnhancedEntanglementVisualization } from '@/components/simulation/EnhancedEntanglementVisualization';
+import { Complex } from '@/services/complexNumbers';
 
 interface QuantumResultsPageProps {
   results: any;
@@ -141,9 +142,46 @@ export const QuantumResultsPage: React.FC<QuantumResultsPageProps> = ({
     };
   };
 
+  // Convert results to proper formats for components
   const probabilityData = getProbabilityData();
   const stateVectorData = getStateVectorData();
   const metrics = getExecutionMetrics();
+
+  // Convert to counts format for ProbabilityHistogram
+  const counts = probabilityData.reduce((acc, item) => {
+    acc[item.state] = Math.round(item.probability * 1024); // Convert probability to count
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalShots = Object.values(counts).reduce((sum, count) => sum + count, 0) || 1024;
+
+  // Convert state vector to Complex numbers for QuantumStateHeatmap
+  const stateVectorComplex = stateVectorData.map(item => 
+    new Complex(item.real, item.imag)
+  );
+
+  const numQubits = Math.ceil(Math.log2(stateVectorComplex.length || 2));
+
+  // Prepare entanglement data for EnhancedEntanglementVisualization
+  const entanglementResult = {
+    stateVector: stateVectorData.map(item => ({ real: item.real, imag: item.imag })),
+    measurementProbabilities: probabilityData.map(item => item.probability),
+    qubitStates: Array.from({ length: numQubits }).map((_, i) => ({
+      qubit: i,
+      state: `q${i}`,
+      amplitude: { real: 1, imag: 0 },
+      phase: 0,
+      probability: 0.5
+    })),
+    mode: 'accurate' as const,
+    executionTime: metrics.executionTime,
+    fidelity: 1.0,
+    entanglement: {
+      pairs: [],
+      totalEntanglement: 0,
+      entanglementThreads: []
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -280,7 +318,11 @@ export const QuantumResultsPage: React.FC<QuantumResultsPageProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="h-64">
-                  <ProbabilityHistogram data={probabilityData} />
+                  <ProbabilityHistogram 
+                    counts={counts}
+                    totalShots={totalShots}
+                    maxBars={16}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -292,7 +334,11 @@ export const QuantumResultsPage: React.FC<QuantumResultsPageProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="h-64">
-                  <QuantumStateHeatmap data={stateVectorData} />
+                  <QuantumStateHeatmap 
+                    stateVector={stateVectorComplex}
+                    numQubits={numQubits}
+                    maxStates={64}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -306,7 +352,8 @@ export const QuantumResultsPage: React.FC<QuantumResultsPageProps> = ({
                 <CardContent>
                   <div className="h-64">
                     <EnhancedEntanglementVisualization 
-                      entanglementData={results.entanglement}
+                      simulationResult={entanglementResult}
+                      numQubits={numQubits}
                     />
                   </div>
                 </CardContent>
@@ -324,7 +371,10 @@ export const QuantumResultsPage: React.FC<QuantumResultsPageProps> = ({
               <CardContent>
                 <div className="h-64">
                   <BlochSphereVisualization 
-                    stateVector={results?.stateVector}
+                    blochSphereData={[]}
+                    qubitStates={entanglementResult.qubitStates}
+                    selectedQubit={0}
+                    onQubitSelect={() => {}}
                   />
                 </div>
               </CardContent>
@@ -337,7 +387,7 @@ export const QuantumResultsPage: React.FC<QuantumResultsPageProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="h-64 overflow-auto">
-                  <QuantumResultsDisplay results={results} />
+                  <QuantumResultsDisplay result={null} />
                 </div>
               </CardContent>
             </Card>

@@ -71,11 +71,13 @@ export function InteractiveCircuitBuilder() {
     }
   };
 
+  // Handle gate drag start
   const handleGateMouseDown = (e: React.MouseEvent, gateType: string) => {
     console.log('Gate mouse down:', gateType);
     // Handle gate drag start
   };
 
+  // Handle gate touch start
   const handleGateTouchStart = (e: React.TouchEvent, gateType: string) => {
     console.log('Gate touch start:', gateType);
     // Handle gate touch start
@@ -97,9 +99,10 @@ export function InteractiveCircuitBuilder() {
   if (showResults && simulationResult) {
     return (
       <QuantumResultsPage
-        result={simulationResult}
+        results={simulationResult}
         circuit={circuit}
         onBack={() => setShowResults(false)}
+        onRerun={handleSimulate}
       />
     );
   }
