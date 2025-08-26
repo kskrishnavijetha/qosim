@@ -33,6 +33,8 @@ export function InteractiveCircuitBuilder() {
   const [showResults, setShowResults] = useState(false);
   const [selectedGate, setSelectedGate] = useState(null);
   const [shots, setShots] = useState(1024);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   // Convert circuit simulation mode to the mode expected by the UI
@@ -78,6 +80,19 @@ export function InteractiveCircuitBuilder() {
   const handleGateTouchStart = (e: React.TouchEvent, gateType: string) => {
     console.log('Gate touch start:', gateType);
     // Handle gate touch start
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.1, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.1, 0.3));
+  };
+
+  const handleResetView = () => {
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
   };
 
   if (showResults && simulationResult) {
@@ -230,18 +245,19 @@ export function InteractiveCircuitBuilder() {
             circuit={quantumCircuit}
             selectedGate={selectedGate}
             simulationResult={convertedSimulationResult}
-            zoomLevel={1}
-            panOffset={{ x: 0, y: 0 }}
+            zoomLevel={zoomLevel}
+            panOffset={panOffset}
             onGateAdd={handleAddGate}
-            onGateRemove={deleteGate}
+            onGateMove={() => {}}
             onGateSelect={handleGateSelect}
-            onPositionChange={() => {}}
-            onDrop={() => {}}
-            onDragOver={() => {}}
-            onMouseDown={() => {}}
-            onMouseMove={() => {}}
-            onMouseUp={() => {}}
-            onWheel={() => {}}
+            onGateRemove={deleteGate}
+            onCanvasClick={() => setSelectedGate(null)}
+            onPanStart={() => {}}
+            onPanMove={() => {}}
+            onPanEnd={() => {}}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onResetView={handleResetView}
             numQubits={numQubits}
           />
         </div>

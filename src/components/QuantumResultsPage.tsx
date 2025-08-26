@@ -285,7 +285,7 @@ export function QuantumResultsPage({ result, circuit, onBack }: QuantumResultsPa
                     .slice(0, 5)
                     .map(([state, count]) => {
                       const numCount = Number(count) || 0;
-                      const numTotalShots = Number(totalShots) || 1;
+                      const numTotalShots = totalShots;
                       const percentage = numTotalShots > 0 ? (numCount / numTotalShots) * 100 : 0;
                       return (
                         <div key={state} className="flex justify-between text-xs">
