@@ -131,7 +131,7 @@ export function InteractiveCircuitBuilder({
     qubits: Array.from({ length: 5 }, (_, i) => ({
       id: `q${i}`,
       name: `q${i}`,
-      state: '|0⟩',
+      state: 'computational' as const,
       index: i
     })),
     gates: circuit.map(gate => ({
