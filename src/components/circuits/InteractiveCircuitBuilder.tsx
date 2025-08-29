@@ -137,10 +137,10 @@ export function InteractiveCircuitBuilder({
     gates: circuit.map(gate => ({
       id: gate.id,
       type: gate.type,
-      qubits: gate.qubits || (gate.qubit !== undefined ? [`q${gate.qubit}`] : []),
+      qubits: gate.qubits ? gate.qubits.map(q => `q${q}`) : (gate.qubit !== undefined ? [`q${gate.qubit}`] : []),
       position: { x: gate.position * 100, y: (gate.qubit || 0) * 80 },
       params: gate.angle ? { angle: gate.angle } : undefined,
-      layer: gate.position, // Add the required layer property
+      layer: gate.position,
       metadata: {
         label: gate.type,
         color: getGateColor(gate.type)
