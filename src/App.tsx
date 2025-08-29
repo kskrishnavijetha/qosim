@@ -27,11 +27,17 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
+      retry: (failureCount, error) => {
+        console.log(`Query retry attempt ${failureCount}:`, error);
+        return failureCount < 3;
+      },
     },
   },
 });
 
 function App() {
+  console.log('🚀 App component rendering...');
+
   return (
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>

@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
@@ -54,6 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('❌ Error getting initial session:', error);
+          // Don't throw here, just log and continue
+          setSession(null);
+          setUser(null);
         } else {
           console.log('✅ Initial session retrieved successfully:', initialSession ? 'authenticated' : 'not authenticated');
           setSession(initialSession);
