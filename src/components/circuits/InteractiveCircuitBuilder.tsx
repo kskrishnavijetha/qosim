@@ -10,6 +10,7 @@ import { CircuitActions } from './CircuitActions';
 import { QuantumStateVisualization } from './QuantumStateVisualization';
 import { QuantumResultsPage } from '@/components/QuantumResultsPage';
 import { useCircuitState } from '@/hooks/useCircuitState';
+import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
 import { Play, Square, RotateCcw, Settings } from 'lucide-react';
 
 interface InteractiveCircuitBuilderProps {
@@ -20,8 +21,8 @@ interface InteractiveCircuitBuilderProps {
 }
 
 export function InteractiveCircuitBuilder({
-  dragState,
-  circuitRef,
+  dragState: externalDragState,
+  circuitRef: externalCircuitRef,
   onMouseDown,
   onTouchStart
 }: InteractiveCircuitBuilderProps) {
@@ -37,22 +38,34 @@ export function InteractiveCircuitBuilder({
     canUndo
   } = useCircuitState();
 
+  // Use the drag drop hook
+  const { dragState, circuitRef, handleMouseDown, handleTouchStart } = useCircuitDragDrop({
+    onGateAdd: addGate,
+    numQubits: 5,
+    gridSize: 100
+  });
+
   const [showResults, setShowResults] = useState(false);
   const [selectedGateType, setSelectedGateType] = useState('');
 
-  const handleMouseDown = useCallback((e: React.MouseEvent, gateType: string) => {
+  // Use external handlers if provided, otherwise use internal ones
+  const finalHandleMouseDown = useCallback((e: React.MouseEvent, gateType: string) => {
     setSelectedGateType(gateType);
     if (onMouseDown) {
       onMouseDown(e, gateType);
+    } else {
+      handleMouseDown(e, gateType);
     }
-  }, [onMouseDown]);
+  }, [onMouseDown, handleMouseDown]);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent, gateType: string) => {
+  const finalHandleTouchStart = useCallback((e: React.TouchEvent, gateType: string) => {
     setSelectedGateType(gateType);
     if (onTouchStart) {
       onTouchStart(e, gateType);
+    } else {
+      handleTouchStart(e, gateType);
     }
-  }, [onTouchStart]);
+  }, [onTouchStart, handleTouchStart]);
 
   const handleSimulate = useCallback(async () => {
     try {
@@ -83,6 +96,45 @@ export function InteractiveCircuitBuilder({
       />
     );
   }
+
+  // Convert Gate[] to QuantumCircuit for CircuitCanvas
+  const quantumCircuit = {
+    id: 'current-circuit',
+    name: 'Current Circuit',
+    qubits: Array.from({ length: 5 }, (_, i) => ({
+      id: `q${i}`,
+      name: `q${i}`,
+      state: '|0⟩'
+    })),
+    gates: circuit.map(gate => ({
+      id: gate.id,
+      type: gate.type,
+      qubits: gate.qubits || (gate.qubit !== undefined ? [`q${gate.qubit}`] : []),
+      position: { x: gate.position * 100, y: (gate.qubit || 0) * 80 },
+      params: gate.angle ? { angle: gate.angle } : undefined,
+      metadata: {
+        label: gate.type,
+        color: getGateColor(gate.type)
+      }
+    })),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    description: 'Interactive circuit'
+  };
+
+  const getGateColor = (gateType: string) => {
+    const colors: Record<string, string> = {
+      'H': '#8B5CF6',
+      'X': '#06B6D4',
+      'Y': '#A855F7',
+      'Z': '#7C3AED',
+      'CNOT': '#A855F7',
+      'RX': '#06B6D4',
+      'RY': '#64748B',
+      'RZ': '#F97316'
+    };
+    return colors[gateType] || '#64748B';
+  };
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -124,7 +176,10 @@ export function InteractiveCircuitBuilder({
             <CardTitle className="text-sm font-medium">Gate Palette</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
-            <GatePalette />
+            <GatePalette 
+              onGateMouseDown={finalHandleMouseDown}
+              onGateTouchStart={finalHandleTouchStart}
+            />
           </CardContent>
         </Card>
 
@@ -134,16 +189,29 @@ export function InteractiveCircuitBuilder({
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               Quantum Circuit
               <Badge variant="outline" className="text-xs">
-                4 Qubits
+                5 Qubits
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1">
-            <div ref={circuitRef} className="h-full min-h-[400px] relative">
+            <div ref={externalCircuitRef || circuitRef} className="h-full min-h-[400px] relative">
               <CircuitCanvas
-                circuit={circuit}
-                onGateClick={(gateId) => removeGate(gateId)}
-                dragState={dragState}
+                circuit={quantumCircuit}
+                selectedGate={null}
+                simulationResult={null}
+                zoomLevel={1}
+                panOffset={{ x: 0, y: 0 }}
+                onGateAdd={() => {}}
+                onGateMove={() => {}}
+                onGateSelect={() => {}}
+                onGateRemove={removeGate}
+                onCanvasClick={() => {}}
+                onPanStart={() => {}}
+                onPanMove={() => {}}
+                onPanEnd={() => {}}
+                onZoomIn={() => {}}
+                onZoomOut={() => {}}
+                onResetView={() => {}}
               />
             </div>
           </CardContent>
@@ -156,7 +224,6 @@ export function InteractiveCircuitBuilder({
           </CardHeader>
           <CardContent className="space-y-4">
             <CircuitActions
-              onClearCircuit={clearCircuit}
               onSimulate={handleSimulate}
               isSimulating={isSimulating}
             />
@@ -165,7 +232,8 @@ export function InteractiveCircuitBuilder({
             
             <QuantumStateVisualization
               simulationResult={simulationResult}
-              NUM_QUBITS={4}
+              NUM_QUBITS={5}
+              gates={circuit}
             />
           </CardContent>
         </Card>
