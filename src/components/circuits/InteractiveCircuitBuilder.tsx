@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -148,6 +147,7 @@ export function InteractiveCircuitBuilder({
     barrier: false
   }));
 
+  const now = new Date().toISOString();
   const quantumCircuit = {
     id: 'current-circuit',
     name: 'Current Circuit',
@@ -175,9 +175,10 @@ export function InteractiveCircuitBuilder({
     updatedAt: new Date(),
     description: 'Interactive circuit',
     metadata: {
+      created: now,
+      modified: now,
       version: '1.0',
-      creator: 'Interactive Builder',
-      tags: ['interactive']
+      author: 'Interactive Builder'
     }
   };
 
