@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
@@ -7,12 +6,14 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  signOut: async () => {},
 });
 
 export const useAuth = () => {
@@ -27,6 +28,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const signOut = async () => {
+    try {
+      console.log('🔐 Signing out...');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('❌ Error signing out:', error);
+        throw error;
+      }
+      console.log('✅ Successfully signed out');
+    } catch (error) {
+      console.error('❌ Error during sign out:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -81,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    signOut,
   };
 
   return (
