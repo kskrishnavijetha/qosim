@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -186,10 +187,8 @@ export function InteractiveCircuitBuilder({
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
             <GatePalette
-              onMouseDown={handleMouseDown}
-              onTouchStart={handleTouchStart}
-              selectedGate={selectedGateType}
-              dragState={dragState}
+              onGateMouseDown={handleMouseDown}
+              onGateTouchStart={handleTouchStart}
             />
           </CardContent>
         </Card>
@@ -228,6 +227,7 @@ export function InteractiveCircuitBuilder({
             
             <QuantumStateVisualization
               simulationResult={simulationResult}
+              NUM_QUBITS={4}
             />
           </CardContent>
         </Card>
