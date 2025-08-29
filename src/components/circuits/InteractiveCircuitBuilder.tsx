@@ -140,6 +140,7 @@ export function InteractiveCircuitBuilder({
       qubits: gate.qubits || (gate.qubit !== undefined ? [`q${gate.qubit}`] : []),
       position: { x: gate.position * 100, y: (gate.qubit || 0) * 80 },
       params: gate.angle ? { angle: gate.angle } : undefined,
+      layer: gate.position, // Add the required layer property
       metadata: {
         label: gate.type,
         color: getGateColor(gate.type)
