@@ -125,6 +125,29 @@ export function InteractiveCircuitBuilder({
   };
 
   // Convert Gate[] to QuantumCircuit for CircuitCanvas
+  const maxDepth = Math.max(1, ...circuit.map(g => g.position + 1));
+  
+  // Create circuit layers
+  const circuitLayers = Array.from({ length: maxDepth }, (_, index) => ({
+    id: `layer-${index}`,
+    index,
+    gates: circuit
+      .filter(gate => gate.position === index)
+      .map(gate => ({
+        id: gate.id,
+        type: gate.type,
+        qubits: gate.qubits ? gate.qubits.map(q => `q${q}`) : (gate.qubit !== undefined ? [`q${gate.qubit}`] : []),
+        position: { x: gate.position * 100, y: (gate.qubit || 0) * 80 },
+        layer: gate.position,
+        params: gate.angle ? { angle: gate.angle } : undefined,
+        metadata: {
+          label: gate.type,
+          color: getGateColor(gate.type)
+        }
+      })),
+    barrier: false
+  }));
+
   const quantumCircuit = {
     id: 'current-circuit',
     name: 'Current Circuit',
@@ -146,8 +169,8 @@ export function InteractiveCircuitBuilder({
         color: getGateColor(gate.type)
       }
     })),
-    layers: Math.max(1, ...circuit.map(g => g.position + 1)),
-    depth: Math.max(1, ...circuit.map(g => g.position + 1)),
+    layers: circuitLayers,
+    depth: maxDepth,
     createdAt: new Date(),
     updatedAt: new Date(),
     description: 'Interactive circuit',
