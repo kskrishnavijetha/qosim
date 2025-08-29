@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -106,6 +105,7 @@ export function InteractiveCircuitBuilder({
         results={simulationResult}
         circuit={circuit}
         onBack={() => setShowResults(false)}
+        onRerun={handleSimulate}
       />
     );
   }
@@ -186,7 +186,6 @@ export function InteractiveCircuitBuilder({
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
             <GatePalette
-              onGateSelect={handleGateSelect}
               onMouseDown={handleMouseDown}
               onTouchStart={handleTouchStart}
               selectedGate={selectedGateType}
@@ -217,17 +216,18 @@ export function InteractiveCircuitBuilder({
           </CardHeader>
           <CardContent className="flex-1 space-y-4">
             <CircuitActions
-              circuit={circuit}
-              onClearCircuit={handleClearCircuit}
-              onSimulate={handleSimulate}
-              isSimulating={isSimulating}
+              onUndo={handleUndo}
+              onClear={handleClearCircuit}
+              onExportJSON={() => console.log('Export JSON')}
+              onExportQASM={() => console.log('Export QASM')}
+              onShowExportDialog={() => console.log('Show export dialog')}
+              canUndo={canUndo}
             />
             
             <Separator />
             
             <QuantumStateVisualization
               simulationResult={simulationResult}
-              isSimulating={isSimulating}
             />
           </CardContent>
         </Card>
