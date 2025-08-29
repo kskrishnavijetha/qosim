@@ -86,6 +86,19 @@ export function InteractiveCircuitBuilder({
     await handleSimulate();
   }, [handleSimulate]);
 
+  // Dummy handlers for CircuitActions
+  const handleExportJSON = () => {
+    console.log('Export JSON clicked');
+  };
+
+  const handleExportQASM = () => {
+    console.log('Export QASM clicked');
+  };
+
+  const handleShowExportDialog = () => {
+    console.log('Show export dialog clicked');
+  };
+
   if (showResults && simulationResult) {
     return (
       <QuantumResultsPage
@@ -96,6 +109,20 @@ export function InteractiveCircuitBuilder({
       />
     );
   }
+
+  const getGateColor = (gateType: string) => {
+    const colors: Record<string, string> = {
+      'H': '#8B5CF6',
+      'X': '#06B6D4',
+      'Y': '#A855F7',
+      'Z': '#7C3AED',
+      'CNOT': '#A855F7',
+      'RX': '#06B6D4',
+      'RY': '#64748B',
+      'RZ': '#F97316'
+    };
+    return colors[gateType] || '#64748B';
+  };
 
   // Convert Gate[] to QuantumCircuit for CircuitCanvas
   const quantumCircuit = {
@@ -117,23 +144,16 @@ export function InteractiveCircuitBuilder({
         color: getGateColor(gate.type)
       }
     })),
+    layers: Math.max(1, ...circuit.map(g => g.position + 1)),
+    depth: Math.max(1, ...circuit.map(g => g.position + 1)),
     createdAt: new Date(),
     updatedAt: new Date(),
-    description: 'Interactive circuit'
-  };
-
-  const getGateColor = (gateType: string) => {
-    const colors: Record<string, string> = {
-      'H': '#8B5CF6',
-      'X': '#06B6D4',
-      'Y': '#A855F7',
-      'Z': '#7C3AED',
-      'CNOT': '#A855F7',
-      'RX': '#06B6D4',
-      'RY': '#64748B',
-      'RZ': '#F97316'
-    };
-    return colors[gateType] || '#64748B';
+    description: 'Interactive circuit',
+    metadata: {
+      version: '1.0',
+      creator: 'Interactive Builder',
+      tags: ['interactive']
+    }
   };
 
   return (
@@ -223,9 +243,22 @@ export function InteractiveCircuitBuilder({
             <CardTitle className="text-sm font-medium">Controls</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Button
+              onClick={handleSimulate}
+              disabled={isSimulating || circuit.length === 0}
+              className="w-full"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              {isSimulating ? 'Simulating...' : 'Simulate'}
+            </Button>
+            
             <CircuitActions
-              onSimulate={handleSimulate}
-              isSimulating={isSimulating}
+              onUndo={undoLastAction}
+              onClear={clearCircuit}
+              onExportJSON={handleExportJSON}
+              onExportQASM={handleExportQASM}
+              onShowExportDialog={handleShowExportDialog}
+              canUndo={canUndo}
             />
             
             <Separator />
