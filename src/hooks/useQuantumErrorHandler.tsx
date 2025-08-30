@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { ErrorDetails } from '@/components/error-handling/ErrorModal';
 
 export function useQuantumErrorHandler() {
@@ -30,6 +30,7 @@ export function useQuantumErrorHandler() {
     };
   }, [showToast]);
 
+  // Stable categorize function
   const categorizeError = useCallback((error: any): ErrorDetails['category'] => {
     const errorMessage = error?.message || error?.toString() || '';
     
@@ -49,6 +50,7 @@ export function useQuantumErrorHandler() {
     return 'Simulation Error';
   }, []);
 
+  // Stable suggestions generator
   const generateSuggestions = useCallback((error: any, category: ErrorDetails['category']): string[] => {
     const suggestions: string[] = [];
     const errorMessage = error?.message || error?.toString() || '';
@@ -80,6 +82,7 @@ export function useQuantumErrorHandler() {
     return suggestions;
   }, []);
 
+  // Stable error handler
   const handleError = useCallback((error: any, context?: string) => {
     // Prevent error handling loops
     if (errorCountRef.current > 10) {
@@ -146,8 +149,8 @@ export function useQuantumErrorHandler() {
     setConsoleVisible(prev => !prev);
   }, []);
 
-  // Memoize the return object to prevent unnecessary re-renders
-  const returnValue = useMemo(() => ({
+  // Return object directly without useMemo to avoid circular dependencies
+  return {
     errors,
     currentError,
     showModal,
@@ -159,19 +162,5 @@ export function useQuantumErrorHandler() {
     closeModal,
     clearAllErrors,
     toggleConsole
-  }), [
-    errors,
-    currentError,
-    showModal,
-    showToast,
-    consoleVisible,
-    handleError,
-    dismissToast,
-    viewErrorDetails,
-    closeModal,
-    clearAllErrors,
-    toggleConsole
-  ]);
-
-  return returnValue;
+  };
 }
