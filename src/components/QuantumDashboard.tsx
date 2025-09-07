@@ -18,8 +18,7 @@ import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Github, Bot, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Github } from 'lucide-react';
 import GitHubIntegration from './github/GitHubIntegration';
 
 export default function QuantumDashboard() {
@@ -29,7 +28,6 @@ export default function QuantumDashboard() {
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
   const [circuit, setCircuit] = useState<any[]>([]);
   const [numQubits, setNumQubits] = useState(3);
-  const [aiSidebarOpen, setAiSidebarOpen] = useState(true);
 
   const handleSDKSelect = (sdkType: string) => {
     setSelectedSDK(sdkType);
@@ -78,6 +76,16 @@ export default function QuantumDashboard() {
             isSimulating={false}
           />
         );
+      case "ai":
+        return (
+          <QuantumAICoPilot 
+            circuit={circuit}
+            result={simulationResult}
+            onCircuitUpdate={handleCircuitUpdate}
+            onRunSimulation={handleRunSimulation}
+            numQubits={numQubits}
+          />
+        );
       case "sdk":
         return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
       case "hardware":
@@ -120,7 +128,6 @@ export default function QuantumDashboard() {
 
   return (
     <div className="flex h-screen bg-quantum-void text-quantum-text">
-      {/* Main Sidebar */}
       <div className="w-64 bg-quantum-dark border-r border-quantum-neon/30">
         <QuantumSidebar 
           activeTab={activeTab} 
@@ -128,66 +135,32 @@ export default function QuantumDashboard() {
           onSDKSelect={handleSDKSelect}
         />
       </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 overflow-auto">
-          <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAiSidebarOpen(!aiSidebarOpen)}
-                className="text-quantum-glow hover:bg-quantum-neon/10"
-              >
-                <Bot className="w-4 h-4 mr-2" />
-                AI Copilot
-                {aiSidebarOpen ? <ChevronRight className="w-4 h-4 ml-1" /> : <ChevronLeft className="w-4 h-4 ml-1" />}
-              </Button>
-            </div>
-            <div className="flex items-center gap-3">
-              <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
-                    <Github className="w-4 h-4 mr-2" />
-                    GitHub
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-quantum-dark border-quantum-neon/30">
-                  <DialogHeader>
-                    <DialogTitle className="text-quantum-glow">GitHub Integration</DialogTitle>
-                  </DialogHeader>
-                  <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
-                    <GitHubIntegration />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <UserProfileDropdown />
-            </div>
-          </div>
-          <div className="p-6">
-            {renderContent()}
+      <div className="flex-1 overflow-auto">
+        <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
+          <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
+          <div className="flex items-center gap-3">
+            <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-quantum-dark border-quantum-neon/30">
+                <DialogHeader>
+                  <DialogTitle className="text-quantum-glow">GitHub Integration</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
+                  <GitHubIntegration />
+                </div>
+              </DialogContent>
+            </Dialog>
+            <UserProfileDropdown />
           </div>
         </div>
-
-        {/* AI Copilot Sidebar */}
-        {aiSidebarOpen && (
-          <div className="w-96 border-l border-quantum-neon/30 bg-quantum-dark">
-            <Card className="h-full rounded-none border-0 bg-transparent">
-              <CardContent className="p-0 h-full">
-                <QuantumAICoPilot 
-                  circuit={circuit}
-                  result={simulationResult}
-                  onCircuitUpdate={handleCircuitUpdate}
-                  onRunSimulation={handleRunSimulation}
-                  numQubits={numQubits}
-                  className="h-full"
-                />
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        <div className="p-6">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
