@@ -33,34 +33,32 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/roadmap" element={<RoadmapPage />} />
-                <Route path="/app" element={<Index />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/sdk" element={<SDKDocumentation />} />
-                <Route path="/python-sdk" element={<PythonSDKPage />} />
-                <Route path="/api" element={<APIReference />} />
-                <Route path="/tutorials" element={<TutorialsPage />} />
-                <Route path="/thank-you" element={<ThankYou />} />
-                <Route path="/testing" element={<TestingPage />} />
-                <Route path="/circuit/:id" element={<SharedCircuit />} />
-                <Route path="/embed/:id" element={<EmbedCircuit />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/roadmap" element={<RoadmapPage />} />
+              <Route path="/app" element={<Index />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/integrations" element={<IntegrationsPage />} />
+              <Route path="/sdk" element={<SDKDocumentation />} />
+              <Route path="/python-sdk" element={<PythonSDKPage />} />
+              <Route path="/api" element={<APIReference />} />
+              <Route path="/tutorials" element={<TutorialsPage />} />
+              <Route path="/thank-you" element={<ThankYou />} />
+              <Route path="/testing" element={<TestingPage />} />
+              <Route path="/circuit/:id" element={<SharedCircuit />} />
+              <Route path="/embed/:id" element={<EmbedCircuit />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
