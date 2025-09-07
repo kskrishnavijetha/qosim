@@ -36,6 +36,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { QuantumGate } from '@/lib/quantumSimulator';
 import { QuantumBackendResult } from '@/services/quantumBackendService';
 import { CircuitChatResponse } from './CircuitChatResponse';
+import { OptimizationComparison } from './OptimizationComparison';
+import { EducationQuiz } from './EducationQuiz';
 
 interface Message {
   id: string;
@@ -88,6 +90,10 @@ export function QuantumAICoPilot({
   const [optimizationData, setOptimizationData] = useState<any>(null);
   const [researchPapers, setResearchPapers] = useState<any[]>([]);
   const [cloudEstimates, setCloudEstimates] = useState<any[]>([]);
+  const [showOptimizationComparison, setShowOptimizationComparison] = useState(false);
+  const [optimizationComparison, setOptimizationComparison] = useState<any>(null);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizCircuitType, setQuizCircuitType] = useState<string>('');
   
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -140,11 +146,27 @@ export function QuantumAICoPilot({
           title: "Circuit Updated",
           description: "New quantum circuit has been generated and loaded.",
         });
+
+        // Auto-start quiz in education mode
+        if (educationMode) {
+          setQuizCircuitType(response.metadata.circuitName || 'Generated Circuit');
+          setShowQuiz(true);
+        }
       }
 
       if (response.metadata?.optimization) {
         setOptimizationData(response.metadata.optimization);
         setShowOptimization(true);
+
+        // Generate optimized circuit for comparison
+        if (response.metadata.optimization && response.metadata.optimization.optimizedCircuit) {
+          setOptimizationComparison({
+            original: circuit,
+            optimized: response.metadata.optimization.optimizedCircuit,
+            data: response.metadata.optimization
+          });
+          setShowOptimizationComparison(true);
+        }
       }
 
       if (response.metadata?.papers) {
@@ -212,14 +234,18 @@ export function QuantumAICoPilot({
       }
 
       if (requestType === 'optimization' && aiResult.optimizations) {
+        const optimizationResult = await simulateOptimization(circuit);
         return {
-          content: `I've analyzed your circuit and found ${aiResult.optimizations.length} optimization opportunities:\n\n${aiResult.optimizations.join('\n')}`,
+          content: `I've analyzed your circuit and found optimization opportunities:\n\n${optimizationResult.summary}`,
           type: 'text' as const,
           metadata: {
             optimization: {
-              gateSavings: aiResult.gateSavings || 0,
-              depthSavings: aiResult.depthSavings || 0,
-              suggestions: aiResult.optimizations || []
+              gateSavings: optimizationResult.gateSavings || 0,
+              depthSavings: optimizationResult.depthSavings || 0,
+              suggestions: optimizationResult.suggestions || aiResult.optimizations || [],
+              original: optimizationResult.original,
+              optimized: optimizationResult.optimized,
+              optimizedCircuit: optimizationResult.optimizedCircuit
             }
           }
         };
@@ -399,7 +425,12 @@ This demonstrates the quantum parallelism principle - the system explores all po
       return {
         content: `I've analyzed your circuit for optimization opportunities:\n\n${optimization.summary}\n\nWould you like me to apply these optimizations?`,
         type: 'text' as const,
-        metadata: { optimization }
+        metadata: { 
+          optimization: {
+            ...optimization,
+            optimizedCircuit: optimization.optimizedCircuit
+          }
+        }
       };
     }
 
@@ -486,18 +517,48 @@ This demonstrates the quantum parallelism principle - the system explores all po
     const originalDepth = Math.max(...circuit.map(g => g.position), 0) + 1;
     const originalGates = circuit.length;
     
+    // Simulate optimization by removing redundant gates and reducing depth
+    const optimizedCircuit = [...circuit];
+    
+    // Remove redundant gate pairs (like H-H, X-X)
+    for (let i = optimizedCircuit.length - 1; i > 0; i--) {
+      const current = optimizedCircuit[i];
+      const previous = optimizedCircuit[i - 1];
+      
+      if (current.qubit === previous.qubit && 
+          current.type === previous.type && 
+          ['H', 'X', 'Y', 'Z'].includes(current.type)) {
+        // Remove both gates (they cancel out)
+        optimizedCircuit.splice(i - 1, 2);
+        i--; // Skip the next iteration since we removed two elements
+      }
+    }
+    
+    // Recalculate positions for optimized circuit
+    optimizedCircuit.forEach((gate, index) => {
+      gate.position = Math.floor(index / 2); // Simplified position recalculation
+    });
+    
+    const optimizedDepth = Math.max(...optimizedCircuit.map(g => g.position), 0) + 1;
+    const gateSavings = originalGates - optimizedCircuit.length;
+    const depthSavings = originalDepth - optimizedDepth;
+    
     return {
-      summary: `Found ${Math.floor(Math.random() * 3) + 1} optimization opportunities`,
+      summary: `I've optimized your circuit to reduce depth by ${Math.round((depthSavings / originalDepth) * 100)}% and gates by ${Math.round((gateSavings / originalGates) * 100)}%.`,
       original: { gates: originalGates, depth: originalDepth },
       optimized: { 
-        gates: Math.max(1, originalGates - Math.floor(Math.random() * 2)), 
-        depth: Math.max(1, originalDepth - Math.floor(Math.random() * 2))
+        gates: optimizedCircuit.length, 
+        depth: optimizedDepth
       },
-      improvements: [
-        'Remove redundant gate pairs',
-        'Commute gates to reduce depth',
-        'Use more efficient gate decompositions'
-      ]
+      gateSavings,
+      depthSavings,
+      optimizedCircuit,
+      suggestions: [
+        ...(gateSavings > 0 ? ['Removed redundant gate pairs that cancel each other'] : []),
+        ...(depthSavings > 0 ? ['Commuted gates to reduce circuit depth'] : []),
+        'Applied gate fusion optimizations',
+        'Optimized for target hardware topology'
+      ].filter(s => s !== '')
     };
   };
 
@@ -701,6 +762,36 @@ This demonstrates the quantum parallelism principle - the system explores all po
     toast({ title: "Copied to clipboard" });
   };
 
+  const handleApplyOptimization = () => {
+    if (optimizationComparison?.optimized) {
+      onCircuitUpdate(optimizationComparison.optimized);
+      setShowOptimizationComparison(false);
+      toast({
+        title: "Optimization Applied",
+        description: "Your circuit has been optimized successfully!",
+      });
+    }
+  };
+
+  const handleQuizComplete = (score: number, totalQuestions: number) => {
+    setShowQuiz(false);
+    const percentage = Math.round((score / totalQuestions) * 100);
+    
+    const assistantMessage = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant' as const,
+      content: `Great job completing the quiz! You scored ${score}/${totalQuestions} (${percentage}%). ${
+        percentage === 100 ? '🏆 Perfect score! You have a solid understanding of this circuit.' :
+        percentage >= 70 ? '📚 Good work! You understand the key concepts.' :
+        '💡 Keep practicing! Review the explanations and try building more circuits.'
+      }`,
+      timestamp: new Date(),
+      type: 'text' as const
+    };
+
+    setMessages(prev => [...prev, assistantMessage]);
+  };
+
   return (
     <Card className={`h-full flex flex-col ${className}`}>
       <CardHeader className="pb-4">
@@ -736,6 +827,30 @@ This demonstrates the quantum parallelism principle - the system explores all po
           </TabsList>
 
           <TabsContent value="chat" className="flex-1 flex flex-col space-y-4 mt-4">
+            {/* Education Mode Quiz */}
+            {showQuiz && educationMode && (
+              <div className="mb-4">
+                <EducationQuiz
+                  circuitType={quizCircuitType}
+                  gates={circuit}
+                  onComplete={handleQuizComplete}
+                />
+              </div>
+            )}
+
+            {/* Optimization Comparison */}
+            {showOptimizationComparison && optimizationComparison && (
+              <div className="mb-4">
+                <OptimizationComparison
+                  originalCircuit={optimizationComparison.original}
+                  optimizedCircuit={optimizationComparison.optimized}
+                  optimizationData={optimizationComparison.data}
+                  numQubits={numQubits}
+                  onApplyOptimization={handleApplyOptimization}
+                />
+              </div>
+            )}
+
             {/* Chat Messages */}
             <ScrollArea className="flex-1 border rounded-lg p-3 quantum-panel">
               <div className="space-y-4">

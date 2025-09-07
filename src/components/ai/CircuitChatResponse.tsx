@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Copy, Download, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { EnhancedCircuitRenderer } from './EnhancedCircuitRenderer';
 
 interface CircuitGate {
   id: string;
@@ -430,10 +431,12 @@ export function CircuitChatResponse({ gates, explanation, numQubits, circuitName
         {/* Circuit Visualization */}
         <div className="mb-6">
           <div className="bg-card border rounded-lg p-4">
-            <canvas
-              ref={canvasRef}
-              className="w-full"
-              style={{ maxWidth: '100%', height: 'auto' }}
+            <EnhancedCircuitRenderer
+              gates={gates}
+              numQubits={numQubits}
+              width={600}
+              height={Math.max(200, numQubits * 60 + 100)}
+              showTooltips={true}
             />
           </div>
         </div>
