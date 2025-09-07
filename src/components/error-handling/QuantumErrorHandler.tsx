@@ -1,11 +1,11 @@
 
-import React, { memo } from 'react';
+import React from 'react';
 import { ErrorModal } from './ErrorModal';
 import { ErrorToast } from './ErrorToast';
 import { ErrorConsolePanel } from './ErrorConsolePanel';
 import { useQuantumErrorHandler } from '@/hooks/useQuantumErrorHandler';
 
-const QuantumErrorHandlerComponent = () => {
+export function QuantumErrorHandler() {
   const {
     errors,
     currentError,
@@ -47,10 +47,7 @@ const QuantumErrorHandlerComponent = () => {
       />
     </>
   );
-};
-
-// Memoize the component to prevent unnecessary re-renders
-export const QuantumErrorHandler = memo(QuantumErrorHandlerComponent);
+}
 
 // Export the hook for use in circuit components
 export { useQuantumErrorHandler };

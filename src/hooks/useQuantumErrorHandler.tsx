@@ -9,14 +9,9 @@ export function useQuantumErrorHandler() {
   const [showToast, setShowToast] = useState(false);
   const [consoleVisible, setConsoleVisible] = useState(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout>();
-  const errorCountRef = useRef(0);
 
   // Auto-dismiss toast after 5 seconds
   useEffect(() => {
-    if (showToast && toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
-    
     if (showToast) {
       toastTimeoutRef.current = setTimeout(() => {
         setShowToast(false);
@@ -30,8 +25,7 @@ export function useQuantumErrorHandler() {
     };
   }, [showToast]);
 
-  // Stable categorize function
-  const categorizeError = useCallback((error: any): ErrorDetails['category'] => {
+  const categorizeError = (error: any): ErrorDetails['category'] => {
     const errorMessage = error?.message || error?.toString() || '';
     
     if (errorMessage.includes('undefined') || errorMessage.includes('null')) {
@@ -48,10 +42,9 @@ export function useQuantumErrorHandler() {
     }
     
     return 'Simulation Error';
-  }, []);
+  };
 
-  // Stable suggestions generator
-  const generateSuggestions = useCallback((error: any, category: ErrorDetails['category']): string[] => {
+  const generateSuggestions = (error: any, category: ErrorDetails['category']): string[] => {
     const suggestions: string[] = [];
     const errorMessage = error?.message || error?.toString() || '';
 
@@ -80,17 +73,9 @@ export function useQuantumErrorHandler() {
     }
 
     return suggestions;
-  }, []);
+  };
 
-  // Stable error handler
   const handleError = useCallback((error: any, context?: string) => {
-    // Prevent error handling loops
-    if (errorCountRef.current > 10) {
-      console.warn('Too many errors detected, stopping error handler to prevent infinite loop');
-      return null;
-    }
-
-    errorCountRef.current++;
     console.error('Quantum error detected:', error);
 
     const category = categorizeError(error);
@@ -109,14 +94,14 @@ export function useQuantumErrorHandler() {
     setErrors(prev => [errorDetails, ...prev.slice(0, 49)]); // Keep last 50 errors
     setCurrentError(errorDetails);
     setShowToast(true);
-
-    // Reset error count after some time
-    setTimeout(() => {
-      errorCountRef.current = Math.max(0, errorCountRef.current - 1);
-    }, 5000);
+    
+    // Also show console if we have multiple errors
+    if (errors.length >= 2) {
+      setConsoleVisible(true);
+    }
 
     return errorDetails;
-  }, [categorizeError, generateSuggestions]);
+  }, [errors.length]);
 
   const dismissToast = useCallback(() => {
     setShowToast(false);
@@ -142,14 +127,12 @@ export function useQuantumErrorHandler() {
     setCurrentError(null);
     setShowModal(false);
     setShowToast(false);
-    errorCountRef.current = 0;
   }, []);
 
   const toggleConsole = useCallback(() => {
-    setConsoleVisible(prev => !prev);
-  }, []);
+    setConsoleVisible(!consoleVisible);
+  }, [consoleVisible]);
 
-  // Return object directly without useMemo to avoid circular dependencies
   return {
     errors,
     currentError,

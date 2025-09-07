@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Bug } from 'lucide-react';
-// Remove problematic import for now
+import { errorHandlingService } from '@/services/ErrorHandlingService';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -45,11 +45,18 @@ export class GlobalErrorBoundary extends React.Component<
       errorInfo
     });
 
-    // Simple console logging to avoid circular error dependencies
-    console.error('Error boundary triggered:', {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack
+    // Log to error handling service
+    errorHandlingService.addError({
+      type: 'runtime',
+      severity: 'critical',
+      message: error.message || 'Unhandled React Error',
+      cause: error.stack || 'React component error boundary triggered',
+      possibleFix: 'Try refreshing the page or check console for more details',
+      context: {
+        componentStack: errorInfo.componentStack,
+        errorBoundary: true,
+        timestamp: Date.now()
+      }
     });
   }
 

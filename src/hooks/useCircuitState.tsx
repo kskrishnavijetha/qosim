@@ -28,8 +28,6 @@ export function useCircuitState() {
   const [history, setHistory] = useState<Gate[][]>([[]]);
   const [simulationResult, setSimulationResult] = useState<OptimizedSimulationResult | null>(null);
   const [simulationMode, setSimulationMode] = useState<EnhancedSimulationMode>('fast');
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [numQubits, setNumQubits] = useState(5);
   const [sessionTracker] = useState(() => new CircuitSessionTracker(`circuit-${Date.now()}`));
   const [cloudConfig, setCloudConfig] = useState<CloudSimulationConfig>(() => {
     try {
@@ -136,12 +134,9 @@ export function useCircuitState() {
     console.log('🔄 simulateQuantumState called with gates:', gates);
     console.log('🔄 Current simulation mode:', simulationMode);
     
-    setIsSimulating(true);
-    
     if (!gates || gates.length === 0) {
       console.log('🔄 No gates to simulate, setting null result');
       setSimulationResult(null);
-      setIsSimulating(false);
       return;
     }
     
@@ -165,7 +160,6 @@ export function useCircuitState() {
     if (preFilteredGates.length === 0) {
       console.error('❌ All gates were invalid, aborting simulation');
       setSimulationResult(null);
-      setIsSimulating(false);
       return;
     }
     
@@ -204,7 +198,6 @@ export function useCircuitState() {
         error: validationError.message
       };
       setSimulationResult(errorResult);
-      setIsSimulating(false);
       return;
     }
     
@@ -287,7 +280,7 @@ export function useCircuitState() {
       
       trackEvent('circuit_simulated', { 
         gateCount: validatedGates.length, 
-        numQubits: numQubits,
+        numQubits: 5,
         mode: simulationMode
       });
       
@@ -306,10 +299,8 @@ export function useCircuitState() {
         error: error.message || 'Simulation failed'
       };
       setSimulationResult(fallbackResult);
-    } finally {
-      setIsSimulating(false);
     }
-  }, [simulationMode, cloudConfig, numQubits]);
+  }, [simulationMode, cloudConfig]);
 
   const handleModeChange = useCallback(async (mode: EnhancedSimulationMode) => {
     console.log('🔄 handleModeChange called with mode:', mode);
@@ -366,39 +357,6 @@ export function useCircuitState() {
     
     simulateQuantumState(newCircuit);
   }, [circuit, simulateQuantumState]);
-
-  const removeGate = useCallback((gateId: string) => {
-    const gateToDelete = circuit.find(g => g.id === gateId);
-    const newCircuit = circuit.filter(gate => gate.id !== gateId);
-    setCircuit(newCircuit);
-    setHistory(prev => [...prev, newCircuit]);
-    
-    if (gateToDelete) {
-      trackEvent('gate_removed', { gateType: gateToDelete.type });
-    }
-    
-    simulateQuantumState(newCircuit);
-  }, [circuit, simulateQuantumState]);
-
-  const simulateCircuit = useCallback(async () => {
-    if (circuit.length === 0) {
-      console.log('🔄 No gates to simulate, setting null result');
-      setSimulationResult(null);
-      return;
-    }
-    
-    await simulateQuantumState(circuit);
-  }, [circuit, simulateQuantumState]);
-
-  const undoLastAction = useCallback(() => {
-    if (history.length > 1) {
-      const newHistory = history.slice(0, -1);
-      const previousCircuit = newHistory[newHistory.length - 1];
-      setHistory(newHistory);
-      setCircuit(previousCircuit);
-      simulateQuantumState(previousCircuit);
-    }
-  }, [history, simulateQuantumState]);
 
   const undo = useCallback(() => {
     if (history.length > 1) {
@@ -464,18 +422,11 @@ export function useCircuitState() {
     simulationResult,
     simulationMode,
     cloudConfig,
-    isSimulating,
-    numQubits,
-    setNumQubits,
-    setSimulationMode: handleModeChange,
     addGate,
     deleteGate,
-    removeGate,
     undo,
-    undoLastAction,
     clearCircuit,
     simulateQuantumState,
-    simulateCircuit,
     generateCircuitData,
     handleModeChange,
     handleCloudConfigChange,

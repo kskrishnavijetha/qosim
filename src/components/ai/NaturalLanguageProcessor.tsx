@@ -1,351 +1,328 @@
 
 import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { MessageSquare, Sparkles, Loader2, AlertCircle, Key } from 'lucide-react';
-import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
+import { Brain, Sparkles, Zap, MessageSquare, Code } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface NaturalLanguageProcessorProps {
   onCircuitGenerated: (gates: any[]) => void;
   onAlgorithmGenerated: (code: string) => void;
 }
 
-export function NaturalLanguageProcessor({
-  onCircuitGenerated,
-  onAlgorithmGenerated
+export function NaturalLanguageProcessor({ 
+  onCircuitGenerated, 
+  onAlgorithmGenerated 
 }: NaturalLanguageProcessorProps) {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [response, setResponse] = useState<{
-    explanation: string;
-    confidence: number;
-    gates?: any[];
-    code?: string;
-  } | null>(null);
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState(true);
+  const [lastResult, setLastResult] = useState<any>(null);
+  const [processingStep, setProcessingStep] = useState('');
+  const [progress, setProgress] = useState(0);
+  
+  const { toast } = useToast();
 
-  const quickExamples = [
-    "Create a Bell state between two qubits",
-    "Generate Grover's algorithm for 3 qubits", 
-    "Build a quantum Fourier transform circuit",
-    "Create a superposition on 4 qubits",
-    "Design a quantum error correction circuit"
+  const examplePrompts = [
+    "Create a Bell state between qubits 0 and 1",
+    "Build a 3-qubit GHZ state for quantum networking",
+    "Generate Grover's algorithm for 2-qubit search",
+    "Make superposition on 4 qubits using Hadamard gates",
+    "Implement quantum teleportation protocol",
+    "Create quantum Fourier transform circuit"
   ];
 
   const processNaturalLanguage = async () => {
     if (!input.trim()) {
-      toast.error('Please enter a description');
-      return;
-    }
-
-    if (!apiKey.trim()) {
-      toast.error('Please enter your Perplexity API key');
-      setShowApiKeyInput(true);
+      toast({
+        title: "Input Required",
+        description: "Please enter a description of what you want to create",
+        variant: "destructive"
+      });
       return;
     }
 
     setIsProcessing(true);
+    setProgress(0);
+    setProcessingStep('Analyzing natural language input...');
+
     try {
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-sonar-small-128k-online',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a quantum computing expert. When a user describes a quantum circuit or algorithm, respond with a JSON object containing:
-              {
-                "explanation": "Brief explanation of what the circuit does",
-                "confidence": 0.95,
-                "gates": [{"type": "H", "qubit": 0, "position": 0}, {"type": "CNOT", "qubits": [0, 1], "position": 1}],
-                "code": "// Python-like pseudocode\\ncircuit.h(0)\\ncircuit.cnot(0, 1)"
-              }
-              
-              Available gate types: H, X, Y, Z, RX, RY, RZ, CNOT, CZ, SWAP, TOFFOLI, U1, U2, U3.
-              For multi-qubit gates, use "qubits" array instead of single "qubit".
-              Always include position (0-indexed layer position).`
-            },
-            {
-              role: 'user',
-              content: input
-            }
-          ],
-          temperature: 0.2,
-          top_p: 0.9,
-          max_tokens: 1000,
-          return_images: false,
-          return_related_questions: false,
-          frequency_penalty: 1,
-          presence_penalty: 0
-        }),
+      // Simulate processing steps with progress updates
+      await updateProgress(25, 'Understanding quantum concepts...');
+      await updateProgress(50, 'Generating circuit structure...');
+      await updateProgress(75, 'Optimizing gate sequence...');
+      
+      const result = await parseNaturalLanguageInput(input);
+      
+      setProgress(100);
+      setProcessingStep('Complete!');
+      setLastResult(result);
+      
+      // Generate both circuit and algorithm code
+      onCircuitGenerated(result.circuitGates);
+      onAlgorithmGenerated(result.algorithmCode);
+      
+      toast({
+        title: "Circuit Generated",
+        description: `Circuit generated with ${(result.confidence * 100).toFixed(0)}% confidence`
       });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
       
-      if (!content) {
-        throw new Error('No response from AI');
-      }
-
-      // Try to parse JSON response
-      let parsedResponse;
-      try {
-        parsedResponse = JSON.parse(content);
-      } catch {
-        // If not JSON, create a fallback response
-        parsedResponse = {
-          explanation: content,
-          confidence: 0.7,
-          gates: [{ type: 'H', qubit: 0, position: 0 }],
-          code: '// Basic quantum circuit\ncircuit.h(0);'
-        };
-      }
-
-      setResponse(parsedResponse);
-
-      if (parsedResponse.gates?.length > 0) {
-        onCircuitGenerated(parsedResponse.gates);
-      }
-
-      if (parsedResponse.code) {
-        onAlgorithmGenerated(parsedResponse.code);
-      }
-
-      toast.success('Circuit generated successfully!');
     } catch (error) {
-      console.error('Natural language processing failed:', error);
-      toast.error(`Failed to process input: ${error.message}`);
-      
-      // Fallback to local processing
-      const fallbackResponse = await processLocally(input);
-      setResponse(fallbackResponse);
-      
-      if (fallbackResponse.gates?.length > 0) {
-        onCircuitGenerated(fallbackResponse.gates);
-      }
-      
-      if (fallbackResponse.code) {
-        onAlgorithmGenerated(fallbackResponse.code);
-      }
+      toast({
+        title: "Processing Error",
+        description: "Failed to process natural language input",
+        variant: "destructive"
+      });
+      console.error('Natural language processing error:', error);
     } finally {
       setIsProcessing(false);
+      setTimeout(() => {
+        setProgress(0);
+        setProcessingStep('');
+      }, 2000);
     }
   };
 
-  const processLocally = async (input: string) => {
+  const parseNaturalLanguageInput = async (input: string): Promise<{
+    circuitGates: any[];
+    algorithmCode: string;
+    confidence: number;
+    explanation: string;
+  }> => {
+    // Simulate AI processing time
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const lowerInput = input.toLowerCase();
     
-    if (lowerInput.includes('bell state')) {
+    // Pattern matching for common quantum operations
+    if (lowerInput.includes('bell state') || lowerInput.includes('entangled')) {
       return {
-        explanation: 'Generated a Bell state circuit creating entanglement between two qubits.',
+        circuitGates: [
+          { id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] },
+          { id: 'gate2', type: 'CNOT', qubits: [0, 1], position: 1 }
+        ],
+        algorithmCode: `// Bell State Generation
+circuit.addGate("H", 0);     // Create superposition
+circuit.addGate("CNOT", 0, 1); // Create entanglement`,
         confidence: 0.95,
-        gates: [
-          { type: 'H', qubit: 0, position: 0 },
-          { type: 'CNOT', qubits: [0, 1], position: 1 }
-        ],
-        code: '// Bell State\ncircuit.h(0);\ncircuit.cnot(0, 1);'
+        explanation: 'Generated a Bell state circuit with Hadamard gate for superposition and CNOT for entanglement.'
       };
     }
-    
-    if (lowerInput.includes('grover')) {
+
+    if (lowerInput.includes('ghz') || lowerInput.includes('3-qubit')) {
       return {
-        explanation: 'Generated a simplified Grover search algorithm.',
-        confidence: 0.88,
-        gates: [
-          { type: 'H', qubit: 0, position: 0 },
-          { type: 'H', qubit: 1, position: 0 },
-          { type: 'Z', qubit: 0, position: 1 },
-          { type: 'CZ', qubits: [0, 1], position: 2 },
-          { type: 'H', qubit: 0, position: 3 },
-          { type: 'H', qubit: 1, position: 3 }
+        circuitGates: [
+          { id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] },
+          { id: 'gate2', type: 'CNOT', qubits: [0, 1], position: 1 },
+          { id: 'gate3', type: 'CNOT', qubits: [1, 2], position: 2 }
         ],
-        code: '// Grover Algorithm\ncircuit.h([0, 1]);\ncircuit.z(0);\ncircuit.cz(0, 1);\ncircuit.h([0, 1]);'
+        algorithmCode: `// GHZ State Generation
+circuit.addGate("H", 0);       // Create superposition
+circuit.addGate("CNOT", 0, 1); // Entangle qubits 0 and 1
+circuit.addGate("CNOT", 1, 2); // Extend entanglement to qubit 2`,
+        confidence: 0.92,
+        explanation: 'Generated a 3-qubit GHZ state with maximal entanglement across all qubits.'
       };
     }
-    
-    if (lowerInput.includes('superposition')) {
-      const numQubits = 3;
-      const gates = Array.from({ length: numQubits }, (_, i) => ({
+
+    if (lowerInput.includes('superposition') || lowerInput.includes('hadamard')) {
+      const qubitCount = extractQubitCount(input) || 4;
+      const gates = Array.from({ length: qubitCount }, (_, i) => ({
+        id: `gate${i + 1}`,
         type: 'H',
         qubit: i,
-        position: 0
+        position: 0,
+        qubits: [i]
       }));
-      
+
       return {
-        explanation: `Created superposition on ${numQubits} qubits using Hadamard gates.`,
-        confidence: 0.92,
-        gates,
-        code: `// Superposition\n${gates.map(g => `circuit.h(${g.qubit});`).join('\n')}`
+        circuitGates: gates,
+        algorithmCode: `// Superposition Creation
+${gates.map(g => `circuit.addGate("H", ${g.qubit});`).join('\n')}`,
+        confidence: 0.88,
+        explanation: `Created superposition on ${qubitCount} qubits using Hadamard gates.`
       };
     }
-    
+
+    if (lowerInput.includes('grover') || lowerInput.includes('search')) {
+      return {
+        circuitGates: [
+          { id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] },
+          { id: 'gate2', type: 'H', qubit: 1, position: 0, qubits: [1] },
+          { id: 'gate3', type: 'Z', qubit: 0, position: 1, qubits: [0] },
+          { id: 'gate4', type: 'CZ', qubits: [0, 1], position: 2 },
+          { id: 'gate5', type: 'H', qubit: 0, position: 3, qubits: [0] },
+          { id: 'gate6', type: 'H', qubit: 1, position: 3, qubits: [1] }
+        ],
+        algorithmCode: `// Grover's Algorithm (simplified)
+circuit.addGate("H", 0); circuit.addGate("H", 1);  // Initialize superposition
+circuit.addGate("Z", 0);    // Oracle
+circuit.addGate("CZ", 0, 1); // Controlled oracle
+circuit.addGate("H", 0); circuit.addGate("H", 1);  // Diffusion operator`,
+        confidence: 0.85,
+        explanation: 'Generated a simplified Grover search algorithm for 2-qubit search space.'
+      };
+    }
+
+    // Default response for unrecognized input
     return {
-      explanation: 'Generated a basic quantum circuit. Try being more specific about the desired operation.',
-      confidence: 0.6,
-      gates: [{ type: 'H', qubit: 0, position: 0 }],
-      code: '// Basic circuit\ncircuit.h(0);'
+      circuitGates: [{ id: 'gate1', type: 'H', qubit: 0, position: 0, qubits: [0] }],
+      algorithmCode: `// Basic quantum circuit
+circuit.addGate("H", 0);  // Create superposition`,
+      confidence: 0.60,
+      explanation: 'Generated a basic circuit. Try being more specific about the desired quantum operation.'
     };
   };
 
-  const handleExampleClick = (example: string) => {
-    setInput(example);
+  const extractQubitCount = (input: string): number | null => {
+    const match = input.match(/(\d+)[\s-]?qubit/i);
+    return match ? parseInt(match[1]) : null;
+  };
+
+  const updateProgress = async (value: number, step: string) => {
+    setProgress(value);
+    setProcessingStep(step);
+    await new Promise(resolve => setTimeout(resolve, 400));
+  };
+
+  const useExamplePrompt = (prompt: string) => {
+    setInput(prompt);
   };
 
   return (
-    <Card className="h-full">
+    <Card className="quantum-panel neon-border">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-quantum-glow">
-          <MessageSquare className="w-5 h-5" />
+          <Brain className="w-5 h-5" />
           Natural Language to Quantum Circuit
         </CardTitle>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {showApiKeyInput && (
-          <div className="space-y-2">
-            <Label htmlFor="api-key" className="flex items-center gap-2">
-              <Key className="w-4 h-4" />
-              Perplexity API Key
-            </Label>
-            <Input
-              id="api-key"
-              type="password"
-              placeholder="Enter your Perplexity API key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Get your API key from{' '}
-              <a 
-                href="https://perplexity.ai" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-quantum-neon underline"
-              >
-                Perplexity AI
-              </a>
-            </p>
-            {apiKey && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowApiKeyInput(false)}
-              >
-                Hide API Key Input
-              </Button>
+        {/* Input Area */}
+        <div className="space-y-2">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Describe what you want to create... (e.g., 'Create a Bell state between two qubits')"
+            className="min-h-[100px] quantum-panel neon-border"
+            disabled={isProcessing}
+          />
+          
+          <Button
+            onClick={processNaturalLanguage}
+            disabled={isProcessing || !input.trim()}
+            className="w-full bg-quantum-matrix hover:bg-quantum-glow text-quantum-glow hover:text-quantum-void neon-border"
+          >
+            {isProcessing ? (
+              <>
+                <Brain className="w-4 h-4 mr-2 animate-pulse" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Circuit
+              </>
             )}
+          </Button>
+        </div>
+
+        {/* Processing Progress */}
+        {isProcessing && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-quantum-particle">{processingStep}</span>
+              <span className="text-quantum-neon">{progress}%</span>
+            </div>
+            <Progress value={progress} className="quantum-progress" />
           </div>
         )}
 
-        {!showApiKeyInput && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowApiKeyInput(true)}
-            className="w-full"
-          >
-            <Key className="w-4 h-4 mr-2" />
-            Show API Key Input
-          </Button>
+        {/* Results Display */}
+        {lastResult && (
+          <div className="space-y-3 p-4 bg-quantum-matrix/20 rounded-lg border border-quantum-neon/20">
+            <div className="flex items-center justify-between">
+              <h4 className="font-semibold text-quantum-glow">Generated Result</h4>
+              <Badge variant="outline" className="text-quantum-energy">
+                {(lastResult.confidence * 100).toFixed(0)}% confidence
+              </Badge>
+            </div>
+            
+            <p className="text-sm text-quantum-particle">
+              {lastResult.explanation}
+            </p>
+            
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 bg-quantum-void/30 rounded">
+                <div className="text-quantum-neon">Gates Generated</div>
+                <div className="font-mono">{lastResult.circuitGates.length}</div>
+              </div>
+              <div className="p-2 bg-quantum-void/30 rounded">
+                <div className="text-quantum-neon">Circuit Depth</div>
+                <div className="font-mono">
+                  {Math.max(...lastResult.circuitGates.map((g: any) => g.position || 0)) + 1}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
-        <Separator />
-        
+        {/* Example Prompts */}
         <div className="space-y-2">
-          <Label htmlFor="circuit-description">Describe your quantum circuit</Label>
-          <Textarea
-            id="circuit-description"
-            placeholder="e.g., 'Create a Bell state between two qubits' or 'Generate a quantum Fourier transform for 3 qubits'"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            rows={3}
-            className="resize-none"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Try these examples:</Label>
-          <div className="flex flex-wrap gap-2">
-            {quickExamples.map((example, index) => (
+          <h4 className="text-sm font-medium text-quantum-neon">Try these examples:</h4>
+          <div className="grid grid-cols-1 gap-2">
+            {examplePrompts.slice(0, 3).map((prompt, index) => (
               <Button
                 key={index}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => handleExampleClick(example)}
-                className="text-xs"
+                onClick={() => useExamplePrompt(prompt)}
+                disabled={isProcessing}
+                className="text-left justify-start h-auto p-2 text-xs hover:bg-quantum-matrix/30"
               >
-                {example}
+                <MessageSquare className="w-3 h-3 mr-2 shrink-0" />
+                <span className="truncate">{prompt}</span>
               </Button>
             ))}
           </div>
         </div>
 
-        <Button
-          onClick={processNaturalLanguage}
-          disabled={isProcessing || !input.trim()}
-          className="w-full"
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Generate Circuit
-            </>
-          )}
-        </Button>
-
-        {response && (
-          <Card className="mt-4">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">AI Response</CardTitle>
-                <Badge variant="secondary">
-                  {Math.round(response.confidence * 100)}% confidence
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground mb-2">
-                {response.explanation}
-              </p>
-              {response.gates && (
-                <p className="text-xs text-quantum-particle">
-                  Generated {response.gates.length} gates
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        <Card className="bg-muted/30">
-          <CardContent className="pt-4">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-muted-foreground">
-                <p className="font-medium mb-1">How it works:</p>
-                <p>Describe quantum circuits in plain English. The AI will generate the corresponding gates and code.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Quick Actions */}
+        <div className="flex gap-2 pt-2 border-t border-quantum-neon/20">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 neon-border text-xs"
+            onClick={() => setInput("Create a Bell state")}
+            disabled={isProcessing}
+          >
+            <Zap className="w-3 h-3 mr-1" />
+            Bell State
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 neon-border text-xs"
+            onClick={() => setInput("Build superposition on 3 qubits")}
+            disabled={isProcessing}
+          >
+            <Sparkles className="w-3 h-3 mr-1" />
+            Superposition
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 neon-border text-xs"
+            onClick={() => setInput("Implement Grover search")}
+            disabled={isProcessing}
+          >
+            <Code className="w-3 h-3 mr-1" />
+            Grover
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

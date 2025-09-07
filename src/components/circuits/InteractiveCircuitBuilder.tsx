@@ -1,159 +1,174 @@
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { GatePalette } from './GatePalette';
-import { CircuitGrid } from './CircuitGrid';
-import { CircuitActions } from './CircuitActions';
-import { QuantumStateVisualization } from './QuantumStateVisualization';
-import { QuantumResultsPage } from '@/components/QuantumResultsPage';
-import { QubitSelector } from './QubitSelector';
-import { ExportDialog } from '@/components/dialogs/ExportDialog';
-import { useCircuitState } from '@/hooks/useCircuitState';
-import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
-import { Play, Square, RotateCcw, Settings, Download } from 'lucide-react';
+import { useCircuitBuilder } from '@/hooks/useCircuitBuilder';
+import { CircuitCanvas } from './CircuitCanvas';
+import { GatePaletteAdvanced } from './GatePaletteAdvanced';
+import { CircuitPropertiesPanel } from './CircuitPropertiesPanel';
+import { CircuitExportDialog } from './CircuitExportDialog';
+import { CircuitImportDialog } from './CircuitImportDialog';
+import { CircuitSimulationPanel } from './CircuitSimulationPanel';
+import { CircuitCollaborationPanel } from './CircuitCollaborationPanel';
+import { UnifiedAIPanel } from '../ai/UnifiedAIPanel';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useZoomPan } from '@/hooks/useZoomPan';
+import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot } from 'lucide-react';
+import { toast } from 'sonner';
 
-interface InteractiveCircuitBuilderProps {
-  dragState?: any;
-  circuitRef?: React.RefObject<HTMLDivElement>;
-  onMouseDown?: (e: React.MouseEvent, gateType: string) => void;
-  onTouchStart?: (e: React.TouchEvent, gateType: string) => void;
-}
+export function InteractiveCircuitBuilder() {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState('design');
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
 
-export function InteractiveCircuitBuilder({
-  dragState: externalDragState,
-  circuitRef: externalCircuitRef,
-  onMouseDown,
-  onTouchStart
-}: InteractiveCircuitBuilderProps) {
   const {
     circuit,
+    selectedGate,
+    simulationResult,
+    circuitHistory,
+    addQubit,
+    removeQubit,
     addGate,
     removeGate,
+    moveGate,
+    updateGateParams,
+    selectGate,
+    clearSelection,
+    undo,
+    redo,
     clearCircuit,
+    saveCircuit,
+    loadCircuit,
     simulateCircuit,
-    simulationResult,
-    isSimulating,
-    undoLastAction,
+    exportCircuit,
+    importCircuit,
     canUndo,
-    numQubits,
-    setNumQubits
-  } = useCircuitState();
+    canRedo
+  } = useCircuitBuilder();
 
-  // Use the drag drop hook with dynamic qubit count
-  const { dragState, circuitRef, handleMouseDown, handleTouchStart } = useCircuitDragDrop({
-    onGateAdd: addGate,
-    numQubits,
-    gridSize: 100
+  const {
+    zoomLevel,
+    panOffset,
+    handleZoomIn,
+    handleZoomOut,
+    handlePanStart,
+    handlePanMove,
+    handlePanEnd,
+    resetView
+  } = useZoomPan(canvasRef);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    'ctrl+z': undo,
+    'ctrl+y': redo,
+    'ctrl+s': () => saveCircuit(),
+    'ctrl+n': clearCircuit,
+    'delete': () => selectedGate && removeGate(selectedGate.id),
+    'escape': clearSelection,
+    'ctrl+=': handleZoomIn,
+    'ctrl+-': handleZoomOut,
+    'ctrl+0': resetView,
+    'space': () => setIsSimulating(!isSimulating)
   });
 
-  const [showResults, setShowResults] = useState(false);
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [selectedGateType, setSelectedGateType] = useState('');
-
-  // Use external handlers if provided, otherwise use internal ones
-  const finalHandleMouseDown = useCallback((e: React.MouseEvent, gateType: string) => {
-    console.log('🎯 Mouse down on gate:', gateType);
-    setSelectedGateType(gateType);
-    if (onMouseDown) {
-      onMouseDown(e, gateType);
-    } else {
-      handleMouseDown(e, gateType);
+  const handleSimulation = useCallback(async () => {
+    if (isSimulating) {
+      setIsSimulating(false);
+      return;
     }
-  }, [onMouseDown, handleMouseDown]);
 
-  const finalHandleTouchStart = useCallback((e: React.TouchEvent, gateType: string) => {
-    console.log('🎯 Touch start on gate:', gateType);
-    setSelectedGateType(gateType);
-    if (onTouchStart) {
-      onTouchStart(e, gateType);
-    } else {
-      handleTouchStart(e, gateType);
-    }
-  }, [onTouchStart, handleTouchStart]);
-
-  const handleSimulate = useCallback(async () => {
-    console.log('🔄 Starting simulation with', circuit.length, 'gates');
+    setIsSimulating(true);
     try {
       await simulateCircuit();
-      console.log('✅ Simulation completed, result:', simulationResult);
-      if (simulationResult) {
-        setShowResults(true);
-      }
+      toast.success('Circuit simulation completed');
     } catch (error) {
-      console.error('❌ Simulation failed:', error);
+      toast.error('Simulation failed: ' + error);
+    } finally {
+      setIsSimulating(false);
     }
-  }, [simulateCircuit, simulationResult]);
+  }, [isSimulating, simulateCircuit]);
 
-  const handleBackToBuilder = useCallback(() => {
-    setShowResults(false);
+  const handleExport = useCallback(async (format: string) => {
+    try {
+      const exportData = await exportCircuit(format);
+      const blob = new Blob([exportData], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `quantum_circuit.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Circuit exported as ${format.toUpperCase()}`);
+    } catch (error) {
+      toast.error('Export failed: ' + error);
+    }
+  }, [exportCircuit]);
+
+  // AI handlers
+  const handleAICircuitGenerated = useCallback((gates: any[]) => {
+    // Convert AI gates to circuit format and load them
+    const convertedCircuit = {
+      ...circuit,
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `ai-gate-${index}`,
+        timestamp: Date.now()
+      }))
+    };
+    loadCircuit(convertedCircuit);
+    toast.success(`Generated circuit with ${gates.length} gates`);
+  }, [circuit, loadCircuit]);
+
+  const handleAIAlgorithmGenerated = useCallback((code: string) => {
+    console.log('Generated algorithm code:', code);
+    toast.success('Algorithm code generated - check console for details');
   }, []);
 
-  const handleRerun = useCallback(async () => {
-    await handleSimulate();
-  }, [handleSimulate]);
+  const handleAICircuitOptimized = useCallback((gates: any[]) => {
+    const optimizedCircuit = {
+      ...circuit,
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `opt-gate-${index}`,
+        timestamp: Date.now()
+      }))
+    };
+    loadCircuit(optimizedCircuit);
+    toast.success('Circuit optimized successfully');
+  }, [circuit, loadCircuit]);
 
-  const handleQubitCountChange = useCallback((count: number) => {
-    console.log('🔢 Changing qubit count to:', count);
-    setNumQubits(count);
-    // Clear circuit when changing qubit count to avoid invalid states
-    clearCircuit();
-  }, [setNumQubits, clearCircuit]);
+  const handleAICircuitFixed = useCallback((gates: any[]) => {
+    const fixedCircuit = {
+      ...circuit,
+      gates: gates.map((gate, index) => ({
+        ...gate,
+        id: `fixed-gate-${index}`,
+        timestamp: Date.now()
+      }))
+    };
+    loadCircuit(fixedCircuit);
+    toast.success('Circuit issues fixed');
+  }, [circuit, loadCircuit]);
 
-  // Export handlers
-  const handleExportJSON = () => {
-    setShowExportDialog(true);
-  };
-
-  const handleExportQASM = () => {
-    setShowExportDialog(true);
-  };
-
-  const handleShowExportDialog = () => {
-    setShowExportDialog(true);
-  };
-
-  if (showResults && simulationResult) {
-    return (
-      <QuantumResultsPage
-        results={simulationResult}
-        circuit={circuit}
-        onBack={handleBackToBuilder}
-        onRerun={handleRerun}
-      />
-    );
-  }
+  const handleShowStateVisualization = useCallback((step: number) => {
+    console.log('Showing state visualization for step:', step);
+    toast.info(`Visualizing quantum state at step ${step}`);
+  }, []);
 
   return (
-    <div className="h-full flex flex-col gap-4">
-      {/* Circuit Builder Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold">Interactive Circuit Builder</h2>
-          <Badge variant="secondary">
-            Gates: {circuit.length}
-          </Badge>
-          <Badge variant="outline">
-            Depth: {Math.max(1, ...circuit.map(g => g.position + 1))}
-          </Badge>
-        </div>
-        
+    <div className="h-full flex flex-col bg-background">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between p-4 border-b bg-card">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={handleShowExportDialog}
-            disabled={circuit.length === 0}
-          >
-            <Download className="w-4 h-4 mr-1" />
-            Export
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={undoLastAction}
+            onClick={undo}
             disabled={!canUndo}
           >
             <RotateCcw className="w-4 h-4 mr-1" />
@@ -162,112 +177,173 @@ export function InteractiveCircuitBuilder({
           <Button
             variant="outline"
             size="sm"
-            onClick={clearCircuit}
-            disabled={circuit.length === 0}
+            onClick={redo}
+            disabled={!canRedo}
           >
-            <Square className="w-4 h-4 mr-1" />
-            Clear
+            <Redo2 className="w-4 h-4 mr-1" />
+            Redo
+          </Button>
+          <Separator orientation="vertical" className="h-8" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => saveCircuit()}
+          >
+            <Save className="w-4 h-4 mr-1" />
+            Save
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowImportDialog(true)}
+          >
+            <Upload className="w-4 h-4 mr-1" />
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowExportDialog(true)}
+          >
+            <Download className="w-4 h-4 mr-1" />
+            Export
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">
+            Qubits: {circuit.qubits.length}
+          </Badge>
+          <Badge variant="secondary">
+            Gates: {circuit.gates.length}
+          </Badge>
+          <Badge variant="secondary">
+            Depth: {circuit.depth}
+          </Badge>
+          <Separator orientation="vertical" className="h-8" />
+          <Button
+            variant={isSimulating ? "destructive" : "default"}
+            size="sm"
+            onClick={handleSimulation}
+            disabled={circuit.gates.length === 0}
+          >
+            {isSimulating ? (
+              <>
+                <Pause className="w-4 h-4 mr-1" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 mr-1" />
+                Simulate
+              </>
+            )}
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Gate Palette & Controls */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Controls & Gates</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Qubit Selector */}
-            <QubitSelector
-              numQubits={numQubits}
-              onQubitCountChange={handleQubitCountChange}
-              maxQubits={10}
-              minQubits={2}
-            />
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* Left Panel - Gate Palette */}
+        <div className="w-80 border-r bg-card">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="design">Design</TabsTrigger>
+              <TabsTrigger value="ai">
+                <Bot className="w-4 h-4 mr-1" />
+                AI
+              </TabsTrigger>
+              <TabsTrigger value="simulate">Simulate</TabsTrigger>
+              <TabsTrigger value="collab">Collab</TabsTrigger>
+            </TabsList>
             
-            <Separator />
-            
-            {/* Simulation Button */}
-            <Button
-              onClick={handleSimulate}
-              disabled={isSimulating || circuit.length === 0}
-              className="w-full"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              {isSimulating ? 'Simulating...' : 'Simulate'}
-            </Button>
-            
-            <Separator />
-            
-            {/* Gate Palette */}
-            <div className="flex-1 overflow-y-auto max-h-96">
-              <GatePalette 
-                onGateMouseDown={finalHandleMouseDown}
-                onGateTouchStart={finalHandleTouchStart}
+            <TabsContent value="design" className="p-4">
+              <GatePaletteAdvanced
+                onGateSelect={addGate}
+                onQubitAdd={addQubit}
+                selectedGate={selectedGate}
               />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Circuit Canvas */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              Quantum Circuit
-              <Badge variant="outline" className="text-xs">
-                {numQubits} Qubits
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1">
-            <div className="h-full min-h-[400px] relative">
-              <CircuitGrid
+            </TabsContent>
+            
+            <TabsContent value="ai" className="p-4">
+              <UnifiedAIPanel
+                circuit={circuit.gates}
+                onCircuitGenerated={handleAICircuitGenerated}
+                onAlgorithmGenerated={handleAIAlgorithmGenerated}
+                onCircuitOptimized={handleAICircuitOptimized}
+                onCircuitFixed={handleAICircuitFixed}
+                onShowStateVisualization={handleShowStateVisualization}
+              />
+            </TabsContent>
+            
+            <TabsContent value="simulate" className="p-4">
+              <CircuitSimulationPanel
                 circuit={circuit}
-                dragState={externalDragState || dragState}
                 simulationResult={simulationResult}
-                onDeleteGate={removeGate}
-                circuitRef={externalCircuitRef || circuitRef}
-                NUM_QUBITS={numQubits}
-                GRID_SIZE={100}
+                onSimulate={handleSimulation}
+                isSimulating={isSimulating}
               />
-            </div>
-          </CardContent>
-        </Card>
+            </TabsContent>
+            
+            <TabsContent value="collab" className="p-4">
+              <CircuitCollaborationPanel
+                circuit={circuit}
+                onSave={saveCircuit}
+                onLoad={loadCircuit}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
 
-        {/* Analysis Panel */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Analysis</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <CircuitActions
-              onUndo={undoLastAction}
-              onClear={clearCircuit}
-              onExportJSON={handleExportJSON}
-              onExportQASM={handleExportQASM}
-              onShowExportDialog={handleShowExportDialog}
-              canUndo={canUndo}
-            />
-            
-            <Separator />
-            
-            <QuantumStateVisualization
+        {/* Center Panel - Circuit Canvas */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-hidden">
+            <CircuitCanvas
+              ref={canvasRef}
+              circuit={circuit}
+              selectedGate={selectedGate}
               simulationResult={simulationResult}
-              NUM_QUBITS={numQubits}
-              gates={circuit}
+              zoomLevel={zoomLevel}
+              panOffset={panOffset}
+              onGateAdd={addGate}
+              onGateMove={moveGate}
+              onGateSelect={selectGate}
+              onGateRemove={removeGate}
+              onCanvasClick={clearSelection}
+              onPanStart={handlePanStart}
+              onPanMove={handlePanMove}
+              onPanEnd={handlePanEnd}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onResetView={resetView}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Right Panel - Properties */}
+        <div className="w-80 border-l bg-card">
+          <CircuitPropertiesPanel
+            circuit={circuit}
+            selectedGate={selectedGate}
+            onGateUpdate={updateGateParams}
+            onQubitRemove={removeQubit}
+            simulationResult={simulationResult}
+          />
+        </div>
       </div>
 
-      {/* Export Dialog */}
-      <ExportDialog
+      {/* Dialogs */}
+      <CircuitExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
         circuit={circuit}
-        circuitRef={externalCircuitRef || circuitRef}
-        numQubits={numQubits}
+        onExport={handleExport}
+      />
+      
+      <CircuitImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={importCircuit}
       />
     </div>
   );

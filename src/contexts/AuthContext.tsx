@@ -1,124 +1,185 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
+import { sanitizeInput, emailSchema, passwordSchema } from '@/lib/security';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const signOut = async () => {
-    try {
-      console.log('🔐 Signing out...');
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('❌ Error signing out:', error);
-        throw error;
-      }
-      console.log('✅ Successfully signed out');
-    } catch (error) {
-      console.error('❌ Error during sign out:', error);
-      throw error;
-    }
-  };
-
   useEffect(() => {
-    let mounted = true;
-
-    // Get initial session
-    const initializeAuth = async () => {
-      try {
-        console.log('🔐 Initializing authentication...');
-        
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (error) {
-          console.error('❌ Error getting initial session:', error);
-          setSession(null);
-          setUser(null);
-        } else {
-          console.log('✅ Initial session retrieved successfully:', initialSession ? 'authenticated' : 'not authenticated');
-          setSession(initialSession);
-          setUser(initialSession?.user ?? null);
-        }
-      } catch (error) {
-        console.error('❌ Error during auth initialization:', error);
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      console.log('🔄 Auth state change:', event, session ? 'authenticated' : 'not authenticated');
-      
-      try {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-      } catch (error) {
-        console.error('❌ Error handling auth state change:', error);
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-          setLoading(false);
+
+        // Create/update profile when user signs in
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(() => {
+            createUserProfile(session.user);
+          }, 0);
         }
       }
+    );
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
+
+  const createUserProfile = async (user: User) => {
+    try {
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!existingProfile) {
+        // Sanitize display name from metadata
+        const rawDisplayName = user.user_metadata?.display_name || user.email?.split('@')[0];
+        const sanitizedDisplayName = sanitizeInput(rawDisplayName);
+        
+        await supabase.from('profiles').insert({
+          user_id: user.id,
+          display_name: sanitizedDisplayName,
+          avatar_url: user.user_metadata?.avatar_url,
+        });
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    console.log('Attempting sign in for:', email);
+    
+    // Validate inputs
+    try {
+      emailSchema.parse(email);
+      if (password.length < 1) {
+        throw new Error('Password is required');
+      }
+    } catch (validationError: any) {
+      return { error: { message: validationError.message || 'Invalid input' } };
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: sanitizeInput(email),
+        password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        // Don't expose detailed auth errors to prevent enumeration attacks
+        return { error: { message: 'Invalid email or password' } };
+      }
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      return { error: { message: 'Authentication failed' } };
+    }
+  };
+
+  const signUp = async (email: string, password: string, displayName?: string) => {
+    console.log('Attempting sign up for:', email);
+    
+    // Validate inputs
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(password);
+      if (displayName && displayName.trim().length < 1) {
+        throw new Error('Display name is required');
+      }
+    } catch (validationError: any) {
+      return { error: { message: validationError.message || 'Invalid input' } };
+    }
+
+    try {
+      // Create the user account with email confirmation disabled at database level
+      const { data, error } = await supabase.auth.signUp({
+        email: sanitizeInput(email),
+        password,
+        options: {
+          data: {
+            display_name: displayName ? sanitizeInput(displayName) : undefined,
+          },
+        },
+      });
+
+      if (error) {
+        console.error('Sign up error:', error);
+        return { error: { message: 'Failed to create account' } };
+      }
+
+      console.log('Sign up successful:', data.user?.email);
+      return { error: null };
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      return { error: { message: 'Failed to create account' } };
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      // Clean up auth state
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Attempt global sign out
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (error) {
+      // Continue even if sign out fails
+      console.error('Sign out error:', error);
+    } finally {
+      // Always redirect to home for clean state
+      window.location.href = '/';
+    }
+  };
 
   const value = {
     user,
     session,
     loading,
+    signIn,
+    signUp,
     signOut,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

@@ -1,161 +1,83 @@
 
-import React, { useState, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState } from 'react';
+import { useCircuitState, type Gate } from '@/hooks/useCircuitState';
+import { useQuantumBackend } from '@/hooks/useQuantumBackend';
+import { QuantumVisualizationPanel } from './QuantumVisualizationPanel';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
-import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
-import { QuantumAlgorithmsSDKPanel } from './panels/QuantumAlgorithmsSDKPanel';
-import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
-import { useCircuitState } from '@/hooks/useCircuitState';
-import { useCircuitDragDrop } from '@/hooks/useCircuitDragDrop';
-import { Brain, Cpu, Code, Network, Zap } from 'lucide-react';
-import { toast } from 'sonner';
+import { Play, Zap } from 'lucide-react';
 
 export function MainQuantumInterface() {
-  console.log('🎯 MainQuantumInterface rendering...');
-  
-  try {
-    const [activeTab, setActiveTab] = useState('circuits');
-    const [showAIPanel, setShowAIPanel] = useState(true);
-    
-    console.log('✅ MainQuantumInterface - State initialized');
-    
-    // Test the hooks one by one
-    let circuit, addGate, removeGate, clearCircuit, simulateCircuit, simulationResult, isSimulating;
-    
-    try {
-      console.log('🔧 MainQuantumInterface - Initializing useCircuitState...');
-      const circuitState = useCircuitState();
-      ({ circuit, addGate, removeGate, clearCircuit, simulateCircuit, simulationResult, isSimulating } = circuitState);
-      console.log('✅ MainQuantumInterface - useCircuitState initialized');
-    } catch (error) {
-      console.error('❌ MainQuantumInterface - useCircuitState failed:', error);
-      throw error;
+  const { circuit, simulationResult } = useCircuitState();
+  const { executeCircuit, lastResult, isExecuting } = useQuantumBackend();
+  const [shots, setShots] = useState(1024);
+
+  // Default values for missing properties
+  const numQubits = 5; // Standard 5-qubit system
+  const circuitName = 'Quantum Circuit';
+
+  const handleRunSimulation = async () => {
+    if (circuit.length === 0) {
+      console.warn('No gates to simulate');
+      return null;
     }
-
-    let dragState, circuitRef, handleMouseDown, handleTouchStart;
     
-    try {
-      console.log('🔧 MainQuantumInterface - Initializing useCircuitDragDrop...');
-      const dragDropState = useCircuitDragDrop({
-        onGateAdd: addGate,
-        numQubits: 4,
-        gridSize: 100
-      });
-      ({ dragState, circuitRef, handleMouseDown, handleTouchStart } = dragDropState);
-      console.log('✅ MainQuantumInterface - useCircuitDragDrop initialized');
-    } catch (error) {
-      console.error('❌ MainQuantumInterface - useCircuitDragDrop failed:', error);
-      throw error;
-    }
+    return await executeCircuit(circuit, 'local', shots);
+  };
 
-    const handleCircuitGenerated = useCallback((gates: any[]) => {
-      try {
-        clearCircuit();
-        gates.forEach(gate => {
-          try {
-            addGate(gate);
-            console.log('Added AI-generated gate:', gate);
-          } catch (error) {
-            console.warn('Failed to add AI-generated gate:', gate, error);
-            toast.error(`Failed to add ${gate.type} gate`);
-          }
-        });
-        toast.success(`Generated circuit with ${gates.length} gates`);
-      } catch (error) {
-        console.error('❌ MainQuantumInterface - handleCircuitGenerated failed:', error);
-      }
-    }, [addGate, clearCircuit]);
+  const handleExecutePartialCircuit = async (partialGates: Gate[], simulationShots?: number) => {
+    return await executeCircuit(partialGates, 'local', simulationShots || shots);
+  };
 
-    const handleAlgorithmGenerated = useCallback((code: string) => {
-      console.log('Generated algorithm code:', code);
-      toast.success('Algorithm code generated - check console for details');
-    }, []);
-
-    const handleCircuitOptimized = useCallback((optimizedGates: any[]) => {
-      clearCircuit();
-      optimizedGates.forEach(gate => {
-        try {
-          addGate(gate);
-        } catch (error) {
-          console.warn('Failed to add optimized gate:', gate, error);
-        }
-      });
-      toast.success('Circuit optimized successfully');
-    }, [addGate, clearCircuit]);
-
-    const handleCircuitFixed = useCallback((fixedGates: any[]) => {
-      clearCircuit();
-      fixedGates.forEach(gate => {
-        try {
-          addGate(gate);
-        } catch (error) {
-          console.warn('Failed to add fixed gate:', gate, error);
-        }
-      });
-      toast.success('Circuit debugging completed');
-    }, [addGate, clearCircuit]);
-
-    const handleShowStateVisualization = useCallback((step: number) => {
-      toast.info(`Showing quantum state at step ${step}`);
-    }, []);
-
-    console.log('🎯 MainQuantumInterface - Starting render...');
-
-    return (
-      <div className="h-full flex flex-col bg-background">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-card">
-          <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-quantum-glow" />
-            <h1 className="text-xl font-mono text-quantum-glow">QOSim Quantum Simulator</h1>
-            <Badge variant="secondary">
-              Gates: {circuit.length}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAIPanel(!showAIPanel)}
+  return (
+    <div className="space-y-6">
+      {/* Simulation Controls */}
+      <Card className="quantum-panel neon-border">
+        <CardHeader>
+          <CardTitle className="text-quantum-glow flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            Quantum Circuit Simulation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={handleRunSimulation}
+              disabled={isExecuting || circuit.length === 0}
+              className="quantum-panel neon-border"
             >
-              <Brain className="w-4 h-4 mr-1" />
-              AI Assistant
+              <Play className="w-4 h-4 mr-2" />
+              {isExecuting ? 'Simulating...' : 'Run Simulation'}
             </Button>
-            <Separator orientation="vertical" className="h-8" />
-            <Button
-              variant={isSimulating ? "destructive" : "default"}
-              size="sm"
-              onClick={simulateCircuit}
-              disabled={circuit.length === 0 || isSimulating}
-            >
-              {isSimulating ? 'Simulating...' : 'Run Simulation'}
-            </Button>
-          </div>
-        </div>
-
-        {/* Simplified Main Content */}
-        <div className="flex-1 flex overflow-hidden">
-          <div className="flex-1 flex flex-col">
-            <div className="p-4">
-              <Card>
-                <CardContent className="p-4">
-                  <p>Circuit Builder Loading...</p>
-                  <p>Circuit gates: {circuit.length}</p>
-                </CardContent>
-              </Card>
+            
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-quantum-particle">Shots:</label>
+              <input
+                type="number"
+                value={shots}
+                onChange={(e) => setShots(Number(e.target.value))}
+                min="1"
+                max="100000"
+                className="w-20 px-2 py-1 text-sm bg-quantum-matrix border border-quantum-neon rounded"
+              />
+            </div>
+            
+            <div className="text-sm text-quantum-particle">
+              Gates: {circuit.length} | Qubits: {numQubits}
             </div>
           </div>
-        </div>
-      </div>
-    );
-    
-  } catch (error) {
-    console.error('❌ MainQuantumInterface - Render failed:', error);
-    throw error;
-  }
+        </CardContent>
+      </Card>
+
+      {/* Visualization Results */}
+      <QuantumVisualizationPanel
+        result={lastResult}
+        gates={circuit}
+        numQubits={numQubits}
+        circuitName={circuitName}
+        onRerunSimulation={handleRunSimulation}
+        onExecutePartialCircuit={handleExecutePartialCircuit}
+      />
+    </div>
+  );
 }
