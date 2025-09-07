@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BlochSphereVisualization } from "@/components/quantum/BlochSphereVisualization";
 import { StateVectorMatrix } from "@/components/quantum/StateVectorMatrix";
@@ -11,33 +10,6 @@ interface SimulationOutputProps {
 }
 
 export function SimulationOutput({ output, isRunning, simulationResult }: SimulationOutputProps) {
-  // Convert simulation result to proper format for components
-  const convertedQubitStates = simulationResult?.stateVector ? 
-    simulationResult.stateVector.map((amplitude, index) => ({
-      qubit: index,
-      state: `|${index.toString(2).padStart(Math.ceil(Math.log2(simulationResult.stateVector.length)), '0')}⟩`,
-      amplitude: {
-        real: amplitude.real,
-        imag: amplitude.imag
-      },
-      phase: Math.atan2(amplitude.imag, amplitude.real),
-      probability: amplitude.real * amplitude.real + amplitude.imag * amplitude.imag
-    })) : [];
-
-  const blochSphereData = convertedQubitStates.map(qubit => {
-    const theta = 2 * Math.acos(Math.abs(qubit.amplitude.real));
-    const phi = qubit.phase;
-    
-    return {
-      x: Math.sin(theta) * Math.cos(phi),
-      y: Math.sin(theta) * Math.sin(phi),
-      z: Math.cos(theta),
-      qubit: qubit.qubit,
-      theta,
-      phi
-    };
-  });
-
   return (
     <div className="flex flex-col gap-6 h-full overflow-y-auto">
       {/* Results Summary */}
@@ -75,10 +47,8 @@ export function SimulationOutput({ output, isRunning, simulationResult }: Simula
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1">
             <BlochSphereVisualization 
-              blochSphereData={blochSphereData}
-              qubitStates={convertedQubitStates}
-              selectedQubit={0}
-              onQubitSelect={() => {}}
+              qubitStates={simulationResult.stateVector}
+              measurements={simulationResult.measurements}
             />
           </div>
           <div className="flex-1">
