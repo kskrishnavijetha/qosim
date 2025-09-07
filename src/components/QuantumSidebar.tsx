@@ -38,7 +38,6 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
         { id: "circuits", label: "Circuit Builder", icon: CircuitBoard, description: "Design quantum circuits" },
         { id: "my-circuits", label: "My Circuits", icon: FileCode, description: "Saved circuits" },
         { id: "simulation", label: "Simulation", icon: Zap, description: "Run simulations" },
-        { id: "ai", label: "AI Assistant", icon: Bot, description: "Quantum AI tools" },
       ]
     },
     {
