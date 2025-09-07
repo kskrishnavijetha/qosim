@@ -25,97 +25,6 @@ interface AIRequest {
   framework?: string;
 }
 
-// Rate limiting and retry logic
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const makeOpenAIRequest = async (requestBody: any, retries = 3): Promise<any> => {
-  for (let attempt = 0; attempt < retries; attempt++) {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (response.ok) {
-        return await response.json();
-      }
-
-      // Handle rate limiting (429) with exponential backoff
-      if (response.status === 429) {
-        const backoffTime = Math.pow(2, attempt) * 1000 + Math.random() * 1000; // 1-2s, 2-4s, 4-8s
-        console.log(`🔄 Rate limited, retrying in ${backoffTime}ms (attempt ${attempt + 1}/${retries})`);
-        
-        if (attempt < retries - 1) {
-          await delay(backoffTime);
-          continue;
-        }
-      }
-
-      // For other errors, throw immediately
-      throw new Error(`OpenAI API error: ${response.status}`);
-      
-    } catch (error) {
-      if (attempt === retries - 1) {
-        throw error;
-      }
-      console.log(`🔄 Request failed, retrying... (attempt ${attempt + 1}/${retries})`);
-      await delay(1000 * (attempt + 1));
-    }
-  }
-};
-
-// Fallback responses for when API is unavailable
-const getFallbackResponse = (type: string, input: string, circuit: any[]) => {
-  switch (type) {
-    case 'natural_language':
-      if (input.toLowerCase().includes('bell')) {
-        return {
-          gates: [
-            { type: 'H', qubit: 0, position: 0 },
-            { type: 'CNOT', qubits: [0, 1], position: 1 }
-          ],
-          explanation: 'Created a Bell state circuit with Hadamard and CNOT gates (offline mode)'
-        };
-      }
-      return {
-        gates: [{ type: 'H', qubit: 0, position: 0 }],
-        explanation: 'Created a basic superposition circuit (offline mode)'
-      };
-      
-    case 'optimization':
-      return {
-        optimizations: ['Circuit analysis unavailable in offline mode'],
-        summary: 'AI optimization temporarily unavailable',
-        gateSavings: 0,
-        depthSavings: 0
-      };
-      
-    case 'explanation':
-      return {
-        text: `This circuit has ${circuit.length} gates. AI explanation temporarily unavailable - try again in a moment.`
-      };
-      
-    case 'research':
-      return {
-        text: 'Research search temporarily unavailable. Please try again in a moment.'
-      };
-      
-    case 'debug':
-      return {
-        text: 'Circuit debugging temporarily unavailable. Please try again in a moment.'
-      };
-      
-    default:
-      return {
-        text: 'AI assistant temporarily unavailable. Please try again in a moment.'
-      };
-  }
-};
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -126,21 +35,6 @@ serve(async (req) => {
     const { type, input, circuit, numQubits, framework }: AIRequest = await req.json();
 
     console.log('🧠 AI Co-Pilot Request:', { type, input, circuitLength: circuit?.length || 0 });
-
-    // Check if OpenAI API key is available
-    if (!openAIApiKey) {
-      console.error('❌ OpenAI API key not configured');
-      const fallback = getFallbackResponse(type, input, circuit || []);
-      return new Response(JSON.stringify({
-        ...fallback,
-        type,
-        timestamp: new Date().toISOString(),
-        model: 'fallback',
-        warning: 'AI features require OpenAI API key configuration'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
     let systemPrompt = '';
     let userPrompt = '';
@@ -215,9 +109,13 @@ serve(async (req) => {
         throw new Error('Invalid request type');
     }
 
-    try {
-      // Make the OpenAI request with retry logic
-      const data = await makeOpenAIRequest({
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
@@ -225,46 +123,37 @@ serve(async (req) => {
         ],
         max_tokens: 1500,
         temperature: 0.3,
-      });
+      }),
+    });
 
-      const aiResponse = data.choices[0].message.content;
-      console.log('🧠 AI Response:', aiResponse.substring(0, 200) + '...');
-
-      // Try to parse JSON responses, fallback to plain text
-      let parsedResponse;
-      try {
-        parsedResponse = JSON.parse(aiResponse);
-      } catch {
-        parsedResponse = { text: aiResponse };
-      }
-
-      // Add metadata based on request type
-      const result = {
-        ...parsedResponse,
-        type,
-        timestamp: new Date().toISOString(),
-        model: 'gpt-4o-mini'
-      };
-
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-
-    } catch (apiError) {
-      console.error('🚨 OpenAI API failed after retries:', apiError);
-      
-      // Return fallback response
-      const fallback = getFallbackResponse(type, input, circuit || []);
-      return new Response(JSON.stringify({
-        ...fallback,
-        type,
-        timestamp: new Date().toISOString(),
-        model: 'fallback',
-        warning: 'AI temporarily unavailable, using fallback response'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
+
+    const data = await response.json();
+    const aiResponse = data.choices[0].message.content;
+
+    console.log('🧠 AI Response:', aiResponse.substring(0, 200) + '...');
+
+    // Try to parse JSON responses, fallback to plain text
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(aiResponse);
+    } catch {
+      parsedResponse = { text: aiResponse };
+    }
+
+    // Add metadata based on request type
+    const result = {
+      ...parsedResponse,
+      type,
+      timestamp: new Date().toISOString(),
+      model: 'gpt-4o-mini'
+    };
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
     console.error('Error in quantum-ai-copilot function:', error);
