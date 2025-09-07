@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,17 +22,17 @@ import EmbedCircuit from "./pages/EmbedCircuit";
 import TestingPage from "./pages/TestingPage";
 import NotFound from "./pages/NotFound";
 
-function App() {
-  // Create QueryClient instance inside component to ensure React context is available
-  const [queryClient] = React.useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      },
+// Create QueryClient instance with proper configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
-  }));
+  },
+});
 
+function App() {
   return (
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>

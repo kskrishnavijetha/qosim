@@ -1,30 +1,22 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OptimizedSimulationResult } from "@/lib/quantumSimulatorOptimized";
 import { QuantumBackendResult } from "@/services/quantumBackendService";
 import { quantumSimulator } from "@/lib/quantumSimulator";
 import { BlochSphereVisualization } from "@/components/quantum/BlochSphereVisualization";
-import { CircuitExplanationPanel } from "@/components/workflow/CircuitExplanationPanel";
-import { Gate } from "@/hooks/useCircuitState";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Activity, Bot, Zap } from 'lucide-react';
 
 interface QuantumStateVisualizationProps {
   simulationResult: OptimizedSimulationResult | null;
   NUM_QUBITS: number;
   backendResult?: QuantumBackendResult | null;
-  gates?: Gate[];
 }
 
 export function QuantumStateVisualization({ 
   simulationResult, 
   NUM_QUBITS, 
-  backendResult,
-  gates = []
+  backendResult 
 }: QuantumStateVisualizationProps) {
-  const [selectedQubit, setSelectedQubit] = useState(0);
-
   console.log('🔬 QuantumStateVisualization: Rendering with', { 
     simulationResult, 
     NUM_QUBITS, 
@@ -124,13 +116,11 @@ export function QuantumStateVisualization({
   }, [displayResult, NUM_QUBITS]);
 
   return (
-    <div className="space-y-6">
-      {/* Quick State Overview */}
+    <div className="space-y-4">
       <Card className="quantum-panel neon-border">
         <CardHeader>
-          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Quantum State Overview
+          <CardTitle className="text-lg font-mono text-quantum-glow">
+            Live Quantum State Simulation
             {backendResult && (
               <span className="text-sm text-quantum-neon ml-2">
                 ({backendResult.backend.toUpperCase()})
@@ -152,9 +142,8 @@ export function QuantumStateVisualization({
                 <div key={i} className="flex flex-col items-center space-y-2">
                   <div className="text-xs font-mono text-quantum-neon">Qubit {i}</div>
                   <div 
-                    className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation cursor-pointer"
+                    className="w-16 h-16 rounded-full border-2 border-quantum-neon flex items-center justify-center quantum-float particle-animation"
                     style={getBlochSphereStyle(qubitState)}
-                    onClick={() => setSelectedQubit(i)}
                   >
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
@@ -193,63 +182,12 @@ export function QuantumStateVisualization({
       </Card>
 
       {/* 3D Bloch Sphere Visualization */}
-      <Card className="quantum-panel neon-border">
-        <CardHeader>
-          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
-            <Zap className="w-5 h-5" />
-            3D Bloch Sphere Visualization
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BlochSphereVisualization
-            blochSphereData={blochSphereData}
-            qubitStates={qubitStates}
-            selectedQubit={selectedQubit}
-            onQubitSelect={setSelectedQubit}
-          />
-          <div className="mt-4 text-sm text-quantum-particle">
-            Click on qubit vectors to select them. Use mouse to rotate and zoom the 3D visualization.
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Circuit Explanation */}
-      <Card className="quantum-panel neon-border">
-        <CardHeader>
-          <CardTitle className="text-lg font-mono text-quantum-glow flex items-center gap-2">
-            <Bot className="w-5 h-5" />
-            AI Circuit Explanation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {gates.length > 0 ? (
-            <CircuitExplanationPanel
-              gates={gates}
-              result={backendResult || {
-                qubitStates: qubitStates.map(q => ({
-                  ...q,
-                  amplitude: { real: q.amplitude.real, imaginary: q.amplitude.imag }
-                })),
-                measurementProbabilities: displayResult?.measurementProbabilities || [],
-                stateVector: displayResult?.stateVector || [],
-                executionTime: displayResult?.executionTime || 0,
-                backend: 'local',
-                counts: {},
-                jobId: `local-${Date.now()}`,
-                entanglement: { pairs: [], totalEntanglement: 0, entanglementThreads: [] },
-                blochSphereData: blochSphereData
-              } as QuantumBackendResult}
-              numQubits={NUM_QUBITS}
-              isVisible={true}
-            />
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Add quantum gates to your circuit and run simulation to see AI explanation</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <BlochSphereVisualization
+        blochSphereData={blochSphereData}
+        qubitStates={qubitStates}
+        selectedQubit={0}
+        onQubitSelect={() => {}}
+      />
     </div>
   );
 }
