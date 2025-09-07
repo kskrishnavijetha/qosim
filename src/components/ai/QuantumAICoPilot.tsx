@@ -32,6 +32,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { QuantumGate } from '@/lib/quantumSimulator';
 import { QuantumBackendResult } from '@/services/quantumBackendService';
 
@@ -162,7 +163,93 @@ export function QuantumAICoPilot({
   const processAIRequest = async (input: string, circuit: QuantumGate[], result: QuantumBackendResult | null) => {
     const lowerInput = input.toLowerCase();
 
-    // Natural Language → Quantum Circuit
+    // Determine request type based on input
+    let requestType: 'natural_language' | 'optimization' | 'explanation' | 'research' | 'debug' = 'natural_language';
+    
+    if (lowerInput.includes('explain') || lowerInput.includes('what does')) {
+      requestType = 'explanation';
+    } else if (lowerInput.includes('optimize') || lowerInput.includes('improve') || lowerInput.includes('reduce')) {
+      requestType = 'optimization';
+    } else if (lowerInput.includes('research') || lowerInput.includes('papers') || lowerInput.includes('study')) {
+      requestType = 'research';
+    } else if (lowerInput.includes('debug') || lowerInput.includes('error') || lowerInput.includes('fix')) {
+      requestType = 'debug';
+    }
+
+    try {
+      // Call the actual edge function
+      const response = await supabase.functions.invoke('quantum-ai-copilot', {
+        body: {
+          type: requestType,
+          input: input,
+          circuit: circuit,
+          numQubits: numQubits,
+          framework: selectedFramework
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'AI request failed');
+      }
+
+      const aiResult = response.data;
+
+      // Process different response types
+      if (requestType === 'natural_language' && aiResult.gates) {
+        return {
+          content: aiResult.explanation || 'I\'ve created a quantum circuit based on your request.',
+          type: 'circuit' as const,
+          metadata: {
+            gates: aiResult.gates.map((gate: any, index: number) => ({
+              id: `${gate.type.toLowerCase()}-${index}`,
+              ...gate
+            })) as QuantumGate[]
+          }
+        };
+      }
+
+      if (requestType === 'optimization' && aiResult.optimizations) {
+        return {
+          content: `I've analyzed your circuit and found ${aiResult.optimizations.length} optimization opportunities:\n\n${aiResult.optimizations.join('\n')}`,
+          type: 'text' as const,
+          metadata: {
+            optimization: {
+              gateSavings: aiResult.gateSavings || 0,
+              depthSavings: aiResult.depthSavings || 0,
+              suggestions: aiResult.optimizations || []
+            }
+          }
+        };
+      }
+
+      if (requestType === 'research') {
+        return {
+          content: aiResult.text || 'Here are some relevant research papers and topics.',
+          type: 'text' as const,
+          metadata: {
+            papers: aiResult.papers || []
+          }
+        };
+      }
+
+      // Default text response
+      return {
+        content: aiResult.text || aiResult.explanation || 'I\'ve processed your request.',
+        type: 'text' as const,
+        metadata: {}
+      };
+
+    } catch (error) {
+      console.error('Edge function call failed:', error);
+      // Fallback to basic pattern matching for offline/error cases
+      return await fallbackProcessing(input, circuit);
+    }
+  };
+
+  const fallbackProcessing = async (input: string, circuit: QuantumGate[]) => {
+    const lowerInput = input.toLowerCase();
+
+    // Natural Language → Quantum Circuit fallback
     if (lowerInput.includes('create') || lowerInput.includes('build') || lowerInput.includes('generate')) {
       if (lowerInput.includes('ghz') || lowerInput.includes('greenberger')) {
         return {
@@ -204,6 +291,39 @@ export function QuantumAICoPilot({
             })) as QuantumGate[]
           }
         };
+      }
+
+      // Parse specific gate sequences like "H,CNOT,X,Z"
+      if (lowerInput.includes('h,') || lowerInput.includes('cnot,') || lowerInput.includes('x,') || lowerInput.includes('z,')) {
+        const gateSequence = input.match(/([HXYZCNOT]+(?:,[HXYZCNOT]+)*)/i)?.[0];
+        if (gateSequence) {
+          const gateTypes = gateSequence.split(',').map(g => g.trim().toUpperCase());
+          const gates: QuantumGate[] = [];
+          
+          gateTypes.forEach((gateType, index) => {
+            if (['H', 'X', 'Y', 'Z'].includes(gateType)) {
+              gates.push({
+                id: `${gateType.toLowerCase()}-${index}`,
+                type: gateType,
+                qubit: 0, // Default to qubit 0
+                position: index
+              });
+            } else if (gateType === 'CNOT') {
+              gates.push({
+                id: `cnot-${index}`,
+                type: 'CNOT',
+                qubits: [0, 1], // Default control=0, target=1
+                position: index
+              });
+            }
+          });
+
+          return {
+            content: `I've created a circuit with the gates: ${gateTypes.join(', ')}.\n\nThis creates a sequence of quantum operations as requested.`,
+            type: 'circuit' as const,
+            metadata: { gates }
+          };
+        }
       }
     }
 
