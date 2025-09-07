@@ -15,179 +15,147 @@ import { Brain, Cpu, Code, Network, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function MainQuantumInterface() {
-  const [activeTab, setActiveTab] = useState('circuits');
-  const [showAIPanel, setShowAIPanel] = useState(true);
+  console.log('🎯 MainQuantumInterface rendering...');
   
-  const {
-    circuit,
-    addGate,
-    removeGate,
-    clearCircuit,
-    simulateCircuit,
-    simulationResult,
-    isSimulating
-  } = useCircuitState();
+  try {
+    const [activeTab, setActiveTab] = useState('circuits');
+    const [showAIPanel, setShowAIPanel] = useState(true);
+    
+    console.log('✅ MainQuantumInterface - State initialized');
+    
+    // Test the hooks one by one
+    let circuit, addGate, removeGate, clearCircuit, simulateCircuit, simulationResult, isSimulating;
+    
+    try {
+      console.log('🔧 MainQuantumInterface - Initializing useCircuitState...');
+      const circuitState = useCircuitState();
+      ({ circuit, addGate, removeGate, clearCircuit, simulateCircuit, simulationResult, isSimulating } = circuitState);
+      console.log('✅ MainQuantumInterface - useCircuitState initialized');
+    } catch (error) {
+      console.error('❌ MainQuantumInterface - useCircuitState failed:', error);
+      throw error;
+    }
 
-  const {
-    dragState,
-    circuitRef,
-    handleMouseDown,
-    handleTouchStart
-  } = useCircuitDragDrop({
-    onGateAdd: addGate,
-    numQubits: 4,
-    gridSize: 100
-  });
+    let dragState, circuitRef, handleMouseDown, handleTouchStart;
+    
+    try {
+      console.log('🔧 MainQuantumInterface - Initializing useCircuitDragDrop...');
+      const dragDropState = useCircuitDragDrop({
+        onGateAdd: addGate,
+        numQubits: 4,
+        gridSize: 100
+      });
+      ({ dragState, circuitRef, handleMouseDown, handleTouchStart } = dragDropState);
+      console.log('✅ MainQuantumInterface - useCircuitDragDrop initialized');
+    } catch (error) {
+      console.error('❌ MainQuantumInterface - useCircuitDragDrop failed:', error);
+      throw error;
+    }
 
-  const handleCircuitGenerated = useCallback((gates: any[]) => {
-    clearCircuit();
-    gates.forEach(gate => {
+    const handleCircuitGenerated = useCallback((gates: any[]) => {
       try {
-        addGate(gate);
-        console.log('Added AI-generated gate:', gate);
+        clearCircuit();
+        gates.forEach(gate => {
+          try {
+            addGate(gate);
+            console.log('Added AI-generated gate:', gate);
+          } catch (error) {
+            console.warn('Failed to add AI-generated gate:', gate, error);
+            toast.error(`Failed to add ${gate.type} gate`);
+          }
+        });
+        toast.success(`Generated circuit with ${gates.length} gates`);
       } catch (error) {
-        console.warn('Failed to add AI-generated gate:', gate, error);
-        toast.error(`Failed to add ${gate.type} gate`);
+        console.error('❌ MainQuantumInterface - handleCircuitGenerated failed:', error);
       }
-    });
-    toast.success(`Generated circuit with ${gates.length} gates`);
-  }, [addGate, clearCircuit]);
+    }, [addGate, clearCircuit]);
 
-  const handleAlgorithmGenerated = useCallback((code: string) => {
-    console.log('Generated algorithm code:', code);
-    toast.success('Algorithm code generated - check console for details');
-  }, []);
+    const handleAlgorithmGenerated = useCallback((code: string) => {
+      console.log('Generated algorithm code:', code);
+      toast.success('Algorithm code generated - check console for details');
+    }, []);
 
-  const handleCircuitOptimized = useCallback((optimizedGates: any[]) => {
-    clearCircuit();
-    optimizedGates.forEach(gate => {
-      try {
-        addGate(gate);
-      } catch (error) {
-        console.warn('Failed to add optimized gate:', gate, error);
-      }
-    });
-    toast.success('Circuit optimized successfully');
-  }, [addGate, clearCircuit]);
+    const handleCircuitOptimized = useCallback((optimizedGates: any[]) => {
+      clearCircuit();
+      optimizedGates.forEach(gate => {
+        try {
+          addGate(gate);
+        } catch (error) {
+          console.warn('Failed to add optimized gate:', gate, error);
+        }
+      });
+      toast.success('Circuit optimized successfully');
+    }, [addGate, clearCircuit]);
 
-  const handleCircuitFixed = useCallback((fixedGates: any[]) => {
-    clearCircuit();
-    fixedGates.forEach(gate => {
-      try {
-        addGate(gate);
-      } catch (error) {
-        console.warn('Failed to add fixed gate:', gate, error);
-      }
-    });
-    toast.success('Circuit debugging completed');
-  }, [addGate, clearCircuit]);
+    const handleCircuitFixed = useCallback((fixedGates: any[]) => {
+      clearCircuit();
+      fixedGates.forEach(gate => {
+        try {
+          addGate(gate);
+        } catch (error) {
+          console.warn('Failed to add fixed gate:', gate, error);
+        }
+      });
+      toast.success('Circuit debugging completed');
+    }, [addGate, clearCircuit]);
 
-  const handleShowStateVisualization = useCallback((step: number) => {
-    toast.info(`Showing quantum state at step ${step}`);
-  }, []);
+    const handleShowStateVisualization = useCallback((step: number) => {
+      toast.info(`Showing quantum state at step ${step}`);
+    }, []);
 
-  return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-card">
-        <div className="flex items-center gap-2">
-          <Zap className="w-6 h-6 text-quantum-glow" />
-          <h1 className="text-xl font-mono text-quantum-glow">QOSim Quantum Simulator</h1>
-          <Badge variant="secondary">
-            Gates: {circuit.length}
-          </Badge>
-        </div>
+    console.log('🎯 MainQuantumInterface - Starting render...');
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAIPanel(!showAIPanel)}
-          >
-            <Brain className="w-4 h-4 mr-1" />
-            AI Assistant
-          </Button>
-          <Separator orientation="vertical" className="h-8" />
-          <Button
-            variant={isSimulating ? "destructive" : "default"}
-            size="sm"
-            onClick={simulateCircuit}
-            disabled={circuit.length === 0 || isSimulating}
-          >
-            {isSimulating ? 'Simulating...' : 'Run Simulation'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - AI Assistant */}
-        {showAIPanel && (
-          <div className="w-80 border-r bg-card overflow-y-auto">
-            <UnifiedAIPanel
-              circuit={circuit}
-              onCircuitGenerated={handleCircuitGenerated}
-              onAlgorithmGenerated={handleAlgorithmGenerated}
-              onCircuitOptimized={handleCircuitOptimized}
-              onCircuitFixed={handleCircuitFixed}
-              onShowStateVisualization={handleShowStateVisualization}
-            />
+    return (
+      <div className="h-full flex flex-col bg-background">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-card">
+          <div className="flex items-center gap-2">
+            <Zap className="w-6 h-6 text-quantum-glow" />
+            <h1 className="text-xl font-mono text-quantum-glow">QOSim Quantum Simulator</h1>
+            <Badge variant="secondary">
+              Gates: {circuit.length}
+            </Badge>
           </div>
-        )}
 
-        {/* Center Panel - Main Interface */}
-        <div className="flex-1 flex flex-col">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-4 m-4">
-              <TabsTrigger value="circuits">
-                <Cpu className="w-4 h-4 mr-1" />
-                Circuit Builder
-              </TabsTrigger>
-              <TabsTrigger value="algorithms">
-                <Code className="w-4 h-4 mr-1" />
-                Algorithms SDK
-              </TabsTrigger>
-              <TabsTrigger value="qnn">
-                <Network className="w-4 h-4 mr-1" />
-                QNN Builder
-              </TabsTrigger>
-              <TabsTrigger value="learning">
-                <Brain className="w-4 h-4 mr-1" />
-                Learning Mode
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="circuits" className="flex-1 p-4">
-              <InteractiveCircuitBuilder
-                dragState={dragState}
-                circuitRef={circuitRef}
-                onMouseDown={handleMouseDown}
-                onTouchStart={handleTouchStart}
-              />
-            </TabsContent>
-            
-            <TabsContent value="algorithms" className="flex-1 p-4">
-              <QuantumAlgorithmsSDKPanel />
-            </TabsContent>
-            
-            <TabsContent value="qnn" className="flex-1 p-4">
-              <QNNVisualBuilder />
-            </TabsContent>
-            
-            <TabsContent value="learning" className="flex-1 p-4">
-              <Card className="h-full flex items-center justify-center">
-                <CardContent className="text-center">
-                  <Brain className="w-12 h-12 mx-auto mb-4 text-quantum-neon opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">Learning Mode</h3>
-                  <p className="text-muted-foreground">
-                    Interactive tutorials and guided learning experiences coming soon!
-                  </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAIPanel(!showAIPanel)}
+            >
+              <Brain className="w-4 h-4 mr-1" />
+              AI Assistant
+            </Button>
+            <Separator orientation="vertical" className="h-8" />
+            <Button
+              variant={isSimulating ? "destructive" : "default"}
+              size="sm"
+              onClick={simulateCircuit}
+              disabled={circuit.length === 0 || isSimulating}
+            >
+              {isSimulating ? 'Simulating...' : 'Run Simulation'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Simplified Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex flex-col">
+            <div className="p-4">
+              <Card>
+                <CardContent className="p-4">
+                  <p>Circuit Builder Loading...</p>
+                  <p>Circuit gates: {circuit.length}</p>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+    
+  } catch (error) {
+    console.error('❌ MainQuantumInterface - Render failed:', error);
+    throw error;
+  }
 }
