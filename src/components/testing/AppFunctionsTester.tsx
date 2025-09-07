@@ -129,13 +129,17 @@ export function AppFunctionsTester() {
       const { quantumBackendService } = await import('@/services/quantumBackendService');
       
       // Test local backend first
-      const testCircuit = {
-        gates: [{ type: 'H', qubit: 0, angle: 0 }],
-        qubits: 2,
-        shots: 100
-      };
+      const testCircuit = [
+        { 
+          id: 'test-h-0', 
+          type: 'H', 
+          qubit: 0, 
+          position: 0,
+          angle: 0 
+        }
+      ];
       
-      const result = await quantumBackendService.executeCircuit(testCircuit, 'local', 100);
+      const result = await quantumBackendService.executeCircuit(testCircuit, 100);
       
       if (result && result.stateVector && result.stateVector.length > 0) {
         updateTest('Cloud Backend APIs', 'passed', 'Local quantum backend working', 

@@ -12,7 +12,7 @@ export interface QuantumAmplitude {
 export interface QubitState {
   qubit: number;
   state: string;
-  amplitude: { real: number; imaginary: number };
+  amplitude: { real: number; imag: number };
   phase: number;
   probability: number;
 }
@@ -69,14 +69,28 @@ export class QuantumBackendService {
 
       // Generate measurement counts from probabilities
       const counts: Record<string, number> = {};
-      const stateLabels = Object.keys(result.measurementProbabilities);
+      const measurementProbabilities: Record<string, number> = {};
+      
+      // Calculate proper entanglement analysis
+      const numQubits = circuit.reduce((max, gate) => {
+        const maxQubit = Math.max(gate.qubit || 0, ...(gate.qubits || []));
+        return Math.max(max, maxQubit + 1);
+      }, 1);
+      
+      // Convert measurement probabilities array to record
+      result.measurementProbabilities.forEach((prob, index) => {
+        const binaryState = index.toString(2).padStart(numQubits, '0');
+        measurementProbabilities[binaryState] = prob;
+      });
+      
+      const stateLabels = Object.keys(measurementProbabilities);
       
       for (let shot = 0; shot < shots; shot++) {
         const rand = Math.random();
         let cumulative = 0;
         
         for (const state of stateLabels) {
-          cumulative += result.measurementProbabilities[state];
+          cumulative += measurementProbabilities[state];
           if (rand <= cumulative) {
             counts[state] = (counts[state] || 0) + 1;
             break;
@@ -87,16 +101,14 @@ export class QuantumBackendService {
       // Convert state vector to proper format
       const stateVector: QuantumAmplitude[] = result.stateVector.map(complex => ({
         real: complex.real,
-        imaginary: complex.imaginary || 0,
-        magnitude: complex.magnitude(),
-        phase: complex.phase()
+        imaginary: complex.imag || 0,
+        magnitude: Math.sqrt(complex.real * complex.real + (complex.imag || 0) * (complex.imag || 0)),
+        phase: Math.atan2(complex.imag || 0, complex.real)
       }));
 
-      // Calculate proper entanglement analysis
-      const numQubits = Math.log2(result.stateVector.length);
       const entanglementInput = result.stateVector.map(complex => ({
         real: complex.real,
-        imaginary: complex.imaginary || 0
+        imaginary: complex.imag || 0
       }));
       
       const entanglement = QuantumEntanglementService.calculateEntanglement(
@@ -121,9 +133,12 @@ export class QuantumBackendService {
 
       return {
         stateVector,
-        measurementProbabilities: result.measurementProbabilities,
+        measurementProbabilities,
         counts,
-        qubitStates: result.qubitStates,
+        qubitStates: result.qubitStates.map(qs => ({
+          ...qs,
+          amplitude: { real: qs.amplitude.real, imag: qs.amplitude.imag }
+        })),
         executionTime,
         backend: 'local',
         jobId: `local-${Date.now()}`,
