@@ -177,7 +177,10 @@ export function QuantumAICoPilot({
     }
 
     try {
-      // Call the actual edge function
+      // Call the actual edge function with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await supabase.functions.invoke('quantum-ai-copilot', {
         body: {
           type: requestType,
@@ -188,11 +191,23 @@ export function QuantumAICoPilot({
         }
       });
 
+      clearTimeout(timeoutId);
+
       if (response.error) {
+        console.error('Edge function error:', response.error);
         throw new Error(response.error.message || 'AI request failed');
       }
 
       const aiResult = response.data;
+
+      // Show warning if using fallback
+      if (aiResult.warning) {
+        toast({
+          title: "AI Assistant",
+          description: aiResult.warning,
+          variant: "default",
+        });
+      }
 
       // Process different response types
       if (requestType === 'natural_language' && aiResult.gates) {
@@ -210,7 +225,7 @@ export function QuantumAICoPilot({
 
       if (requestType === 'optimization' && aiResult.optimizations) {
         return {
-          content: `I've analyzed your circuit and found ${aiResult.optimizations.length} optimization opportunities:\n\n${aiResult.optimizations.join('\n')}`,
+          content: `I've analyzed your circuit and found optimization opportunities:\n\n${aiResult.optimizations.join('\n\n')}\n\n**Savings:** ${aiResult.gateSavings || 0} gates, ${aiResult.depthSavings || 0} depth reduction`,
           type: 'text' as const,
           metadata: {
             optimization: {
@@ -232,6 +247,22 @@ export function QuantumAICoPilot({
         };
       }
 
+      if (requestType === 'explanation') {
+        return {
+          content: aiResult.text || 'Circuit explanation available.',
+          type: 'explanation' as const,
+          metadata: {}
+        };
+      }
+
+      if (requestType === 'debug') {
+        return {
+          content: aiResult.text || 'Circuit debugging complete.',
+          type: 'text' as const,
+          metadata: {}
+        };
+      }
+
       // Default text response
       return {
         content: aiResult.text || aiResult.explanation || 'I\'ve processed your request.',
@@ -241,6 +272,14 @@ export function QuantumAICoPilot({
 
     } catch (error) {
       console.error('Edge function call failed:', error);
+      
+      // Show user-friendly error message
+      toast({
+        title: "AI Assistant Unavailable",
+        description: "AI features are temporarily unavailable. Using fallback response.",
+        variant: "default",
+      });
+
       // Fallback to basic pattern matching for offline/error cases
       return await fallbackProcessing(input, circuit);
     }
@@ -596,12 +635,54 @@ export function QuantumAICoPilot({
   };
 
   const quickActions = [
-    { label: 'Explain Circuit', icon: BookOpen, action: () => setInput('Explain this circuit') },
-    { label: 'Suggest Next Gate', icon: Lightbulb, action: () => setInput('What gate should I add next?') },
-    { label: 'Optimize Circuit', icon: TrendingUp, action: () => setInput('Optimize this circuit') },
-    { label: 'Generate Qiskit Code', icon: Code, action: () => setInput('Export to Qiskit code') },
-    { label: 'Find Research Papers', icon: Search, action: () => setInput('Find research papers about quantum circuits') },
-    { label: 'Debug Circuit', icon: Bug, action: () => setInput('Debug this circuit for errors') }
+    { 
+      label: 'Explain Circuit', 
+      icon: BookOpen, 
+      action: () => {
+        setInput('Explain this circuit');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Suggest Next Gate', 
+      icon: Lightbulb, 
+      action: () => {
+        setInput('What gate should I add next?');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Optimize Circuit', 
+      icon: TrendingUp, 
+      action: () => {
+        setInput('Optimize this circuit');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Generate Qiskit Code', 
+      icon: Code, 
+      action: () => {
+        setInput('Export to Qiskit code');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Find Research Papers', 
+      icon: Search, 
+      action: () => {
+        setInput('Find research papers about quantum circuits');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Debug Circuit', 
+      icon: Bug, 
+      action: () => {
+        setInput('Debug this circuit for errors');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    }
   ];
 
   const copyToClipboard = (text: string) => {
