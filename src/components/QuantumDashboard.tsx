@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
 import { CircuitSimulationPanel } from './circuits/CircuitSimulationPanel';
-import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
+import { QuantumAICoPilot } from './ai/QuantumAICoPilot';
 import { SDKDemoPanel } from './panels/SDKDemoPanel';
 import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
 import { MemoryPanel } from './panels/MemoryPanel';
@@ -26,6 +26,8 @@ export default function QuantumDashboard() {
   const [selectedSDK, setSelectedSDK] = useState("javascript");
   const [simulationResult, setSimulationResult] = useState<any>(null);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
+  const [circuit, setCircuit] = useState<any[]>([]);
+  const [numQubits, setNumQubits] = useState(3);
 
   const handleSDKSelect = (sdkType: string) => {
     setSelectedSDK(sdkType);
@@ -33,6 +35,15 @@ export default function QuantumDashboard() {
 
   const handleSimulationComplete = (result: any) => {
     setSimulationResult(result);
+  };
+
+  const handleCircuitUpdate = (gates: any[]) => {
+    setCircuit(gates);
+  };
+
+  const handleRunSimulation = () => {
+    // This will be handled by the circuit builder or simulation panel
+    console.log('Running simulation with circuit:', circuit);
   };
 
   // Create a default circuit object that matches the QuantumCircuit interface
@@ -67,13 +78,12 @@ export default function QuantumDashboard() {
         );
       case "ai":
         return (
-          <UnifiedAIPanel 
-            circuit={[]}
-            onCircuitGenerated={() => {}}
-            onAlgorithmGenerated={() => {}}
-            onCircuitOptimized={() => {}}
-            onCircuitFixed={() => {}}
-            onShowStateVisualization={() => {}}
+          <QuantumAICoPilot 
+            circuit={circuit}
+            result={simulationResult}
+            onCircuitUpdate={handleCircuitUpdate}
+            onRunSimulation={handleRunSimulation}
+            numQubits={numQubits}
           />
         );
       case "sdk":
