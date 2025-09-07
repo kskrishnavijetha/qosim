@@ -21,7 +21,6 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GlobalErrorBoundary } from "./components/error-handling/GlobalErrorBoundary";
 import { QuantumErrorHandler } from "./components/error-handling/QuantumErrorHandler";
-import { ErrorHandlingManager } from "./components/error-handling/ErrorHandlingManager";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,8 +61,7 @@ function App() {
                   <Route path="/thank-you" element={<ThankYou />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                <QuantumErrorHandler />
-                <ErrorHandlingManager />
+        <QuantumErrorHandler />
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
