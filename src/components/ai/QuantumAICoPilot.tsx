@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { QuantumGate } from '@/lib/quantumSimulator';
 import { QuantumBackendResult } from '@/services/quantumBackendService';
+import { CircuitChatResponse } from './CircuitChatResponse';
 
 interface Message {
   id: string;
@@ -47,6 +48,7 @@ interface Message {
     framework?: string;
     optimization?: any;
     papers?: any[];
+    circuitName?: string;
   };
 }
 
@@ -203,7 +205,8 @@ export function QuantumAICoPilot({
             gates: aiResult.gates.map((gate: any, index: number) => ({
               id: `${gate.type.toLowerCase()}-${index}`,
               ...gate
-            })) as QuantumGate[]
+            })) as QuantumGate[],
+            circuitName: aiResult.circuitName || 'AI Generated Circuit'
           }
         };
       }
@@ -253,34 +256,80 @@ export function QuantumAICoPilot({
     if (lowerInput.includes('create') || lowerInput.includes('build') || lowerInput.includes('generate')) {
       if (lowerInput.includes('ghz') || lowerInput.includes('greenberger')) {
         return {
-          content: `I've created a 3-qubit GHZ state circuit for you. This creates the maximally entangled state |000⟩ + |111⟩.\n\nThe circuit uses:\n1. Hadamard gate on qubit 0 to create superposition\n2. CNOT gates to entangle all qubits`,
+          content: `I've created a 3-qubit GHZ state circuit for you. This creates the maximally entangled state |000⟩ + |111⟩.
+
+The circuit construction follows these steps:
+
+**Step 1: Initialize Superposition**
+The Hadamard gate on qubit 0 creates an equal superposition: (|0⟩ + |1⟩)/√2
+
+**Step 2: Create First Entanglement** 
+The CNOT gate between qubits 0 and 1 creates the Bell-like state: (|00⟩ + |11⟩)/√2
+
+**Step 3: Extend to GHZ State**
+The second CNOT gate between qubits 1 and 2 creates the full 3-qubit GHZ state: (|000⟩ + |111⟩)/√2
+
+This state demonstrates maximal multipartite entanglement - all three qubits are quantum mechanically correlated.`,
           type: 'circuit' as const,
           metadata: {
             gates: [
               { id: 'h-0', type: 'H', qubit: 0, position: 0 },
               { id: 'cnot-0-1', type: 'CNOT', qubits: [0, 1], position: 1 },
               { id: 'cnot-1-2', type: 'CNOT', qubits: [1, 2], position: 2 }
-            ] as QuantumGate[]
+            ] as QuantumGate[],
+            circuitName: 'GHZ State Circuit'
           }
         };
       }
       
       if (lowerInput.includes('bell') || lowerInput.includes('epr')) {
         return {
-          content: `I've created a Bell state (EPR pair) circuit. This creates the entangled state |00⟩ + |11⟩.\n\nThe circuit consists of:\n1. Hadamard gate on qubit 0\n2. CNOT gate with control on qubit 0 and target on qubit 1`,
+          content: `I've created a Bell state (EPR pair) circuit. This creates the maximally entangled state |00⟩ + |11⟩.
+
+The circuit construction follows these steps:
+
+**Step 1: Create Superposition**
+The Hadamard gate on qubit 0 transforms |0⟩ → (|0⟩ + |1⟩)/√2
+
+**Step 2: Entangle Qubits**
+The CNOT gate creates quantum entanglement:
+- If qubit 0 is |0⟩, qubit 1 remains |0⟩
+- If qubit 0 is |1⟩, qubit 1 becomes |1⟩
+
+**Final State: (|00⟩ + |11⟩)/√2**
+This creates perfect correlation - measuring one qubit instantly determines the state of the other, regardless of distance. This is the foundation of quantum communication protocols like quantum teleportation.`,
           type: 'circuit' as const,
           metadata: {
             gates: [
               { id: 'h-0', type: 'H', qubit: 0, position: 0 },
               { id: 'cnot-0-1', type: 'CNOT', qubits: [0, 1], position: 1 }
-            ] as QuantumGate[]
+            ] as QuantumGate[],
+            circuitName: 'Bell State Circuit'
           }
         };
       }
 
       if (lowerInput.includes('superposition')) {
         return {
-          content: `I've created a superposition circuit that puts all qubits in equal superposition states.\n\nEach Hadamard gate creates the state (|0⟩ + |1⟩)/√2 for each qubit.`,
+          content: `I've created a superposition circuit that puts all ${numQubits} qubits in equal superposition states.
+
+**Circuit Analysis:**
+
+Each Hadamard gate transforms |0⟩ → (|0⟩ + |1⟩)/√2
+
+**Step-by-Step Process:**
+${Array.from({ length: numQubits }, (_, i) => 
+  `**Step ${i + 1}:** Apply H gate to qubit ${i}
+  - Creates superposition: qubit ${i} becomes (|0⟩ + |1⟩)/√2`
+).join('\n')}
+
+**Final State:**
+The circuit creates a uniform superposition of all ${2**numQubits} computational basis states:
+${Array.from({ length: Math.min(8, 2**numQubits) }, (_, i) => 
+  `|${i.toString(2).padStart(numQubits, '0')}⟩`
+).join(' + ')}${2**numQubits > 8 ? ' + ...' : ''} (all with equal probability)
+
+This demonstrates the quantum parallelism principle - the system explores all possible states simultaneously.`,
           type: 'circuit' as const,
           metadata: {
             gates: Array.from({ length: numQubits }, (_, i) => ({
@@ -288,7 +337,8 @@ export function QuantumAICoPilot({
               type: 'H',
               qubit: i,
               position: 0
-            })) as QuantumGate[]
+            })) as QuantumGate[],
+            circuitName: `${numQubits}-Qubit Superposition Circuit`
           }
         };
       }
@@ -596,12 +646,54 @@ export function QuantumAICoPilot({
   };
 
   const quickActions = [
-    { label: 'Explain Circuit', icon: BookOpen, action: () => setInput('Explain this circuit') },
-    { label: 'Suggest Next Gate', icon: Lightbulb, action: () => setInput('What gate should I add next?') },
-    { label: 'Optimize Circuit', icon: TrendingUp, action: () => setInput('Optimize this circuit') },
-    { label: 'Generate Qiskit Code', icon: Code, action: () => setInput('Export to Qiskit code') },
-    { label: 'Find Research Papers', icon: Search, action: () => setInput('Find research papers about quantum circuits') },
-    { label: 'Debug Circuit', icon: Bug, action: () => setInput('Debug this circuit for errors') }
+    { 
+      label: 'Explain Circuit', 
+      icon: BookOpen, 
+      action: () => {
+        setInput('Explain this circuit');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Suggest Next Gate', 
+      icon: Lightbulb, 
+      action: () => {
+        setInput('What gate should I add next?');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Optimize Circuit', 
+      icon: TrendingUp, 
+      action: () => {
+        setInput('Optimize this circuit');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Generate Qiskit Code', 
+      icon: Code, 
+      action: () => {
+        setInput('Export to Qiskit code');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Find Research Papers', 
+      icon: Search, 
+      action: () => {
+        setInput('Find research papers about quantum circuits');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    },
+    { 
+      label: 'Debug Circuit', 
+      icon: Bug, 
+      action: () => {
+        setInput('Debug this circuit for errors');
+        setTimeout(() => handleSendMessage(), 100);
+      }
+    }
   ];
 
   const copyToClipboard = (text: string) => {
@@ -652,29 +744,43 @@ export function QuantumAICoPilot({
                     key={message.id}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div
-                      className={`max-w-[80%] p-3 rounded-lg ${
-                        message.role === 'user'
-                          ? 'bg-quantum-glow text-white'
-                          : 'bg-quantum-matrix border border-quantum-neon/20'
-                      }`}
-                    >
-                      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                      {message.type === 'code' && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="mt-2"
-                          onClick={() => copyToClipboard(message.content.split('```')[1])}
-                        >
-                          <Copy className="w-3 h-3 mr-1" />
-                          Copy Code
-                        </Button>
-                      )}
-                      <div className="text-xs opacity-70 mt-2">
-                        {message.timestamp.toLocaleTimeString()}
+                    {message.role === 'user' ? (
+                      <div className="max-w-[80%] p-3 rounded-lg bg-quantum-glow text-white">
+                        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                        <div className="text-xs opacity-70 mt-2">
+                          {message.timestamp.toLocaleTimeString()}
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="w-full max-w-full">
+                        {message.type === 'circuit' && message.metadata?.gates ? (
+                          <CircuitChatResponse
+                            gates={message.metadata.gates}
+                            explanation={message.content}
+                            numQubits={numQubits}
+                            circuitName={message.metadata.circuitName || 'Generated Circuit'}
+                          />
+                        ) : (
+                          <div className="bg-quantum-matrix border border-quantum-neon/20 p-3 rounded-lg">
+                            <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                            {message.type === 'code' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="mt-2"
+                                onClick={() => copyToClipboard(message.content.split('```')[1])}
+                              >
+                                <Copy className="w-3 h-3 mr-1" />
+                                Copy Code
+                              </Button>
+                            )}
+                            <div className="text-xs opacity-70 mt-2">
+                              {message.timestamp.toLocaleTimeString()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isProcessing && (
