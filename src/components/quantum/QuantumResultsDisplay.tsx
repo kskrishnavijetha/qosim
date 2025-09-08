@@ -1,156 +1,284 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { QuantumBackendResult } from '@/services/quantumBackendService';
-import { EnhancedBlochSphere } from './EnhancedBlochSphere';
-import { ProbabilityHistogram } from '@/components/visualization/ProbabilityHistogram';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, Circle, Activity } from 'lucide-react';
+import { EnhancedBlochSphere } from './EnhancedBlochSphere';
+import { Clock, Cpu, Zap, Activity } from 'lucide-react';
+import { QuantumBackendResult } from '@/services/quantumBackendService';
 
 interface QuantumResultsDisplayProps {
-  result: QuantumBackendResult | null;
-  numQubits?: number;
+  result: QuantumBackendResult;
 }
 
-export function QuantumResultsDisplay({ result, numQubits = 5 }: QuantumResultsDisplayProps) {
-  if (!result) {
+export function QuantumResultsDisplay({ result }: QuantumResultsDisplayProps) {
+  const [selectedQubit, setSelectedQubit] = useState(0);
+
+  if (result.error) {
     return (
-      <Card className="quantum-panel neon-border">
+      <Card className="quantum-panel neon-border border-destructive">
         <CardHeader>
-          <CardTitle className="text-quantum-glow flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Quantum Results
-          </CardTitle>
+          <CardTitle className="text-destructive">Quantum Execution Error</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Run a quantum simulation to see results</p>
-          </div>
+          <p className="text-sm text-muted-foreground">{result.error}</p>
         </CardContent>
       </Card>
     );
   }
 
-  // Prepare data for visualizations with proper type conversions
-  const counts = result.counts || {};
-  const totalShots = Object.values(counts).reduce((sum, count) => sum + count, 0) || 1024;
+  const formatComplex = (amplitude: { real: number; imaginary: number }) => {
+    const real = amplitude.real.toFixed(4);
+    const imag = Math.abs(amplitude.imaginary).toFixed(4);
+    const sign = amplitude.imaginary >= 0 ? '+' : '-';
+    return imag === '0.0000' ? real : `${real}${sign}${imag}i`;
+  };
 
-  // Convert bloch sphere data to include required theta and phi properties
-  const blochSphereData = result.blochSphereData.map(data => ({
-    ...data,
-    theta: data.theta || Math.acos(data.z),
-    phi: data.phi || Math.atan2(data.y, data.x)
-  }));
-
-  // Convert qubit states to match expected format
-  const qubitStates = result.qubitStates.map(state => ({
-    qubit: state.qubit,
-    state: state.state,
-    amplitude: {
-      real: state.amplitude.real,
-      imag: state.amplitude.imaginary
-    },
-    probability: state.probability,
-    phase: state.phase
-  }));
+  const significantProbabilities = Object.entries(result.measurementProbabilities)
+    .filter(([_, prob]) => prob > 0.001)
+    .sort(([_, a], [__, b]) => b - a)
+    .slice(0, 8);
 
   return (
     <div className="space-y-6">
-      {/* Quick Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="quantum-panel neon-border">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-quantum-glow">
-              {Object.keys(result.measurementProbabilities).length}
-            </div>
-            <div className="text-sm text-quantum-particle">Active States</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="quantum-panel neon-border">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-quantum-neon">
-              {result.executionTime.toFixed(1)}ms
-            </div>
-            <div className="text-sm text-quantum-particle">Execution Time</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="quantum-panel neon-border">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-quantum-plasma">
-              {totalShots.toLocaleString()}
-            </div>
-            <div className="text-sm text-quantum-particle">Total Shots</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="quantum-panel neon-border">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-quantum-energy">
-              {result.backend.toUpperCase()}
-            </div>
-            <div className="text-sm text-quantum-particle">Backend</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Results Tabs */}
-      <Tabs defaultValue="histogram" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 quantum-panel neon-border">
-          <TabsTrigger value="histogram" className="text-quantum-glow">
-            <BarChart className="w-4 h-4 mr-2" />
-            Measurement Results
-          </TabsTrigger>
-          <TabsTrigger value="bloch" className="text-quantum-neon">
-            <Circle className="w-4 h-4 mr-2" />
-            Bloch Spheres
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="histogram">
-          <ProbabilityHistogram
-            counts={counts}
-            totalShots={totalShots}
-            maxBars={16}
-          />
-        </TabsContent>
-
-        <TabsContent value="bloch">
-          <EnhancedBlochSphere
-            blochSphereData={blochSphereData}
-            qubitStates={qubitStates}
-            selectedQubit={0}
-            onQubitSelect={() => {}}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Status Information */}
+      {/* Execution Summary */}
       <Card className="quantum-panel neon-border">
         <CardHeader>
-          <CardTitle className="text-quantum-energy flex items-center gap-2">
-            <Badge variant="outline" className="text-quantum-glow">
-              Job ID: {result.jobId}
-            </Badge>
-            <Badge variant="outline" className="text-quantum-neon">
-              Backend: {result.backend}
-            </Badge>
+          <CardTitle className="text-quantum-glow flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            Quantum Execution Summary
           </CardTitle>
+          <CardDescription>
+            Results from {result.backend} quantum backend
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {result.error ? (
-            <div className="text-red-400 font-mono text-sm">
-              Error: {result.error}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="quantum-panel neon-border rounded p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Clock className="w-4 h-4 text-quantum-glow" />
+                <span className="text-xs text-quantum-particle">Execution Time</span>
+              </div>
+              <div className="text-lg font-mono text-quantum-glow">
+                {result.executionTime.toFixed(2)}ms
+              </div>
             </div>
-          ) : (
-            <div className="text-quantum-particle text-sm">
-              Simulation completed successfully in {result.executionTime.toFixed(2)}ms
+            
+            <div className="quantum-panel neon-border rounded p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Cpu className="w-4 h-4 text-quantum-neon" />
+                <span className="text-xs text-quantum-particle">Backend</span>
+              </div>
+              <Badge variant="outline" className="text-quantum-neon">
+                {result.backend.toUpperCase()}
+              </Badge>
             </div>
-          )}
+            
+            <div className="quantum-panel neon-border rounded p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-quantum-plasma" />
+                <span className="text-xs text-quantum-particle">States</span>
+              </div>
+              <div className="text-lg font-mono text-quantum-plasma">
+                {result.stateVector.length}
+              </div>
+            </div>
+            
+            <div className="quantum-panel neon-border rounded p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Activity className="w-4 h-4 text-quantum-particle" />
+                <span className="text-xs text-quantum-particle">Job ID</span>
+              </div>
+              <div className="text-sm font-mono text-quantum-particle truncate">
+                {result.jobId || 'Local'}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Tabbed Results */}
+      <Tabs defaultValue="visualization" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 quantum-panel neon-border">
+          <TabsTrigger value="visualization" className="text-quantum-glow">Visualization</TabsTrigger>
+          <TabsTrigger value="probabilities" className="text-quantum-neon">Probabilities</TabsTrigger>
+          <TabsTrigger value="statevector" className="text-quantum-particle">State Vector</TabsTrigger>
+          <TabsTrigger value="qubits" className="text-quantum-plasma">Qubits</TabsTrigger>
+        </TabsList>
+
+        {/* Bloch Sphere Visualization */}
+        <TabsContent value="visualization">
+          <EnhancedBlochSphere
+            blochSphereData={result.blochSphereData}
+            qubitStates={result.qubitStates}
+            selectedQubit={selectedQubit}
+            onQubitSelect={setSelectedQubit}
+          />
+        </TabsContent>
+
+        {/* Measurement Probabilities */}
+        <TabsContent value="probabilities">
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-quantum-glow">Measurement Probabilities</CardTitle>
+              <CardDescription>
+                Probability distribution over computational basis states
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {significantProbabilities.map(([state, probability]) => (
+                  <div key={state} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-quantum-neon font-mono text-lg">
+                          |{state}⟩
+                        </span>
+                        <span className="text-xs text-quantum-particle">
+                          (decimal: {parseInt(state, 2)})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-quantum-glow">
+                          {(probability * 100).toFixed(2)}%
+                        </Badge>
+                        {result.counts && (
+                          <Badge variant="outline" className="text-quantum-particle">
+                            {result.counts[state] || 0} shots
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="relative">
+                      <Progress value={probability * 100} className="h-3" />
+                      <div 
+                        className="absolute top-0 left-0 h-3 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${probability * 100}%`,
+                          background: `linear-gradient(90deg, 
+                            hsl(var(--quantum-glow) / 0.8), 
+                            hsl(var(--quantum-neon) / 0.6), 
+                            hsl(var(--quantum-particle) / 0.4)
+                          )`,
+                          boxShadow: `0 0 10px hsl(var(--quantum-glow) / ${probability})`
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                {significantProbabilities.length === 0 && (
+                  <div className="text-center text-quantum-particle py-8">
+                    No significant measurement probabilities found
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* State Vector */}
+        <TabsContent value="statevector">
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-quantum-glow">Quantum State Vector</CardTitle>
+              <CardDescription>
+                Complex amplitudes for each computational basis state
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="quantum-panel neon-border rounded p-4 max-h-64 overflow-y-auto">
+                <div className="space-y-2">
+                  {result.stateVector.map((amplitude, index) => {
+                    if (amplitude.magnitude < 0.001) return null;
+                    
+                    const binaryState = index.toString(2).padStart(
+                      Math.log2(result.stateVector.length), 
+                      '0'
+                    );
+                    
+                    return (
+                      <div key={index} className="flex items-center justify-between font-mono text-sm">
+                        <span className="text-quantum-neon">
+                          |{binaryState}⟩:
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-quantum-glow">
+                            {formatComplex(amplitude)}
+                          </span>
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs"
+                            style={{ 
+                              backgroundColor: `hsl(var(--quantum-matrix) / ${amplitude.magnitude})`,
+                              borderColor: 'hsl(var(--quantum-glow))'
+                            }}
+                          >
+                            |{amplitude.magnitude.toFixed(3)}|
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Individual Qubits */}
+        <TabsContent value="qubits">
+          <Card className="quantum-panel neon-border">
+            <CardHeader>
+              <CardTitle className="text-quantum-glow">Individual Qubit States</CardTitle>
+              <CardDescription>
+                Reduced density matrix analysis for each qubit
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {result.qubitStates.map((qubit, index) => (
+                  <div key={index} className="quantum-panel neon-border rounded p-4">
+                    <div className="text-center mb-3">
+                      <div className="text-lg font-mono text-quantum-neon">
+                        Qubit {qubit.qubit}
+                      </div>
+                      <Badge variant="outline" className="text-quantum-glow">
+                        {qubit.state}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-quantum-particle">Amplitude:</span>
+                        <span className="text-quantum-neon font-mono">
+                          {qubit.amplitude.real.toFixed(4)} + {qubit.amplitude.imag.toFixed(4)}i
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="text-quantum-particle">Probability:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {(qubit.probability * 100).toFixed(1)}%
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="text-quantum-particle">Phase:</span>
+                        <span className="text-quantum-plasma font-mono">
+                          {qubit.phase.toFixed(3)} rad
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

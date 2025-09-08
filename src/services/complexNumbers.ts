@@ -1,35 +1,27 @@
+
 export class Complex {
-  constructor(public real: number, public imag: number) {}
-
-  // Keep backward compatibility with 'imaginary' property
-  get imaginary(): number {
-    return this.imag;
-  }
-
-  set imaginary(value: number) {
-    this.imag = value;
-  }
+  constructor(public real: number, public imaginary: number) {}
 
   add(other: Complex): Complex {
-    return new Complex(this.real + other.real, this.imag + other.imag);
+    return new Complex(this.real + other.real, this.imaginary + other.imaginary);
   }
 
   multiply(other: Complex): Complex {
     return new Complex(
-      this.real * other.real - this.imag * other.imag,
-      this.real * other.imag + this.imag * other.real
+      this.real * other.real - this.imaginary * other.imaginary,
+      this.real * other.imaginary + this.imaginary * other.real
     );
   }
 
   conjugate(): Complex {
-    return new Complex(this.real, -this.imag);
+    return new Complex(this.real, -this.imaginary);
   }
 
   magnitude(): number {
-    return Math.sqrt(this.real * this.real + this.imag * this.imag);
+    return Math.sqrt(this.real * this.real + this.imaginary * this.imaginary);
   }
 
   phase(): number {
-    return Math.atan2(this.imag, this.real);
+    return Math.atan2(this.imaginary, this.real);
   }
 }

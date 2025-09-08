@@ -1,11 +1,8 @@
-
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
-import { AIIntegratedCircuitBuilder } from './circuits/AIIntegratedCircuitBuilder';
 import { CircuitSimulationPanel } from './circuits/CircuitSimulationPanel';
-import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
+import { QuantumAICoPilot } from './ai/QuantumAICoPilot';
 import { SDKDemoPanel } from './panels/SDKDemoPanel';
 import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
 import { MemoryPanel } from './panels/MemoryPanel';
@@ -19,28 +16,18 @@ import { UserProfileDropdown } from './UserProfileDropdown';
 import { QuantumErrorCorrectionPanel } from './error-correction/QuantumErrorCorrectionPanel';
 import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
-import { MainQuantumInterface } from './MainQuantumInterface';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Github } from 'lucide-react';
 import GitHubIntegration from './github/GitHubIntegration';
 
 export default function QuantumDashboard() {
-  const location = useLocation();
-  const [activeTab, setActiveTab] = useState(() => {
-    // Auto-open AI tab if coming from /ai-copilot route
-    return location.pathname === '/ai-copilot' ? 'ai' : 'circuits';
-  });
+  const [activeTab, setActiveTab] = useState("circuits");
   const [selectedSDK, setSelectedSDK] = useState("javascript");
   const [simulationResult, setSimulationResult] = useState<any>(null);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
-
-  // Update active tab when route changes
-  useEffect(() => {
-    if (location.pathname === '/ai-copilot') {
-      setActiveTab('ai');
-    }
-  }, [location.pathname]);
+  const [circuit, setCircuit] = useState<any[]>([]);
+  const [numQubits, setNumQubits] = useState(3);
 
   const handleSDKSelect = (sdkType: string) => {
     setSelectedSDK(sdkType);
@@ -48,6 +35,15 @@ export default function QuantumDashboard() {
 
   const handleSimulationComplete = (result: any) => {
     setSimulationResult(result);
+  };
+
+  const handleCircuitUpdate = (gates: any[]) => {
+    setCircuit(gates);
+  };
+
+  const handleRunSimulation = () => {
+    // This will be handled by the circuit builder or simulation panel
+    console.log('Running simulation with circuit:', circuit);
   };
 
   // Create a default circuit object that matches the QuantumCircuit interface
@@ -69,8 +65,6 @@ export default function QuantumDashboard() {
     switch (activeTab) {
       case "circuits":
         return <InteractiveCircuitBuilder />;
-      case "builder":
-        return <InteractiveCircuitBuilder />;
       case "my-circuits":
         return <MyCircuitsPanel />;
       case "simulation":
@@ -83,7 +77,15 @@ export default function QuantumDashboard() {
           />
         );
       case "ai":
-        return <AIIntegratedCircuitBuilder />;
+        return (
+          <QuantumAICoPilot 
+            circuit={circuit}
+            result={simulationResult}
+            onCircuitUpdate={handleCircuitUpdate}
+            onRunSimulation={handleRunSimulation}
+            numQubits={numQubits}
+          />
+        );
       case "sdk":
         return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
       case "hardware":
