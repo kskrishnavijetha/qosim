@@ -21,16 +21,18 @@ import {
   Briefcase,
   FileCode,
   Cloud,
-  Map
+  Map,
+  MessageSquare
 } from 'lucide-react';
 
 interface QuantumSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onSDKSelect: (sdkType: string) => void;
+  onAICoPilotToggle?: () => void;
 }
 
-export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumSidebarProps) {
+export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect, onAICoPilotToggle }: QuantumSidebarProps) {
   const menuSections = [
     {
       title: "CORE TOOLS",
@@ -39,6 +41,7 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
         { id: "my-circuits", label: "My Circuits", icon: FileCode, description: "Saved circuits" },
         { id: "simulation", label: "Simulation", icon: Zap, description: "Run simulations" },
         { id: "ai", label: "AI Assistant", icon: Bot, description: "Quantum AI tools" },
+        { id: "ai-copilot", label: "AI Co-Pilot", icon: MessageSquare, description: "Interactive AI chat", isSpecial: true },
       ]
     },
     {
@@ -102,8 +105,14 @@ export function QuantumSidebar({ activeTab, onTabChange, onSDKSelect }: QuantumS
                       activeTab === item.id 
                         ? "bg-quantum-glow/20 text-quantum-glow border-quantum-glow/30" 
                         : "text-quantum-text hover:bg-quantum-neon/10 hover:text-quantum-glow"
-                    }`}
-                    onClick={() => onTabChange(item.id)}
+                    } ${(item as any).isSpecial ? "quantum-glow border-quantum-neon/30" : ""}`}
+                    onClick={() => {
+                      if (item.id === 'ai-copilot' && onAICoPilotToggle) {
+                        onAICoPilotToggle();
+                      } else {
+                        onTabChange(item.id);
+                      }
+                    }}
                   >
                     <item.icon className="mr-3 h-4 w-4" />
                     <div className="flex flex-col items-start flex-1">
