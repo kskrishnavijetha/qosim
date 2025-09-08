@@ -19,6 +19,7 @@ import ThankYou from "./pages/ThankYou";
 import SharedCircuit from "./pages/SharedCircuit";
 import EmbedCircuit from "./pages/EmbedCircuit";
 import TestingPage from "./pages/TestingPage";
+import AICoPilotPage from "./pages/AICoPilotPage";
 import NotFound from "./pages/NotFound";
 
 // Create QueryClient instance with proper configuration
@@ -51,6 +52,7 @@ function App() {
               <Route path="/tutorials" element={<TutorialsPage />} />
               <Route path="/thank-you" element={<ThankYou />} />
               <Route path="/testing" element={<TestingPage />} />
+              <Route path="/ai-copilot" element={<AICoPilotPage />} />
               <Route path="/circuit/:id" element={<SharedCircuit />} />
               <Route path="/embed/:id" element={<EmbedCircuit />} />
               <Route path="*" element={<NotFound />} />

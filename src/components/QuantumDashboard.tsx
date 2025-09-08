@@ -18,7 +18,7 @@ import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Github } from 'lucide-react';
+import { Github, Brain, ExternalLink } from 'lucide-react';
 import GitHubIntegration from './github/GitHubIntegration';
 
 export default function QuantumDashboard() {
@@ -139,6 +139,16 @@ export default function QuantumDashboard() {
         <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
           <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
           <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => window.open('/ai-copilot', '_blank')}
+              className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              AI Co-Pilot
+              <ExternalLink className="w-3 h-3 ml-2" />
+            </Button>
             <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
