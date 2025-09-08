@@ -45,6 +45,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/roadmap" element={<RoadmapPage />} />
                 <Route path="/app" element={<Index />} />
+                <Route path="/ai-copilot" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/integrations" element={<IntegrationsPage />} />
                 <Route path="/sdk" element={<SDKDocumentation />} />
