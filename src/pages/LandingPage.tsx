@@ -109,7 +109,7 @@ const LandingPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => window.open('/ai-copilot', '_blank')}
+                onClick={() => window.open('/auth?redirect=/ai-copilot', '_blank')}
                 className="hidden sm:flex border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10"
               >
                 <Brain className="w-4 h-4 mr-2" />
