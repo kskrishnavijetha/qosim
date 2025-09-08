@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu, Download, FileText, BookOpen, PlayCircle, ExternalLink } from "lucide-react";
+import { ArrowRight, Zap, Eye, Cpu, GraduationCap, Code, FlaskConical, Users, Github, Twitter, Mail, Shield, CircuitBoard, Database, MemoryStick, Atom, Menu, Download, FileText, BookOpen, PlayCircle, ExternalLink, Sparkles, Brain, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { QuantumAICoPilot } from "@/components/ai/QuantumAICoPilot";
 
 const LandingPage = () => {
   const [email, setEmail] = useState("");
@@ -358,6 +359,106 @@ const LandingPage = () => {
                   Try It Yourself
                 </Link>
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Co-Pilot Showcase Section */}
+      <section className="py-24 bg-gradient-to-br from-quantum-matrix/5 to-quantum-void/5 relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_60%,hsl(var(--quantum-neon))/8,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--quantum-glow))/6,transparent_60%)]"></div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <Badge variant="outline" className="border-quantum-neon text-quantum-neon mb-4">
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI-Powered Quantum Assistant
+              </Badge>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6">
+                Meet Your{" "}
+                <span className="bg-gradient-to-r from-quantum-glow to-quantum-neon bg-clip-text text-transparent">
+                  AI Co-Pilot
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                Experience the future of quantum circuit design with our AI assistant that understands 
+                natural language, optimizes circuits, and teaches quantum concepts interactively.
+              </p>
+            </div>
+            
+            {/* Interactive AI Co-Pilot Demo */}
+            <div className="relative">
+              {/* Glowing border effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-quantum-glow via-quantum-neon to-quantum-plasma rounded-2xl blur-sm opacity-20"></div>
+              
+              {/* AI Co-Pilot Container */}
+              <div className="relative bg-gradient-to-br from-background/95 to-quantum-void/10 border border-quantum-neon/30 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="mb-4 text-center">
+                  <h3 className="text-xl font-semibold text-quantum-glow mb-2">Try the AI Co-Pilot</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Ask me to create a quantum circuit, explain concepts, or optimize your designs
+                  </p>
+                </div>
+                
+                {/* Live AI Co-Pilot Component */}
+                <div className="max-w-4xl mx-auto">
+                  <QuantumAICoPilot 
+                    circuit={[]}
+                    result={null}
+                    onCircuitUpdate={() => {}}
+                    onRunSimulation={() => {}}
+                    numQubits={3}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* AI Features Grid */}
+            <div className="grid md:grid-cols-3 gap-6 mt-16">
+              <Card className="border-quantum-glow/30 bg-gradient-to-br from-quantum-void/10 to-background hover:border-quantum-glow/50 transition-all duration-300 group">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-glow/20 to-quantum-glow/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Brain className="w-6 h-6 text-quantum-glow" />
+                  </div>
+                  <CardTitle className="text-lg">Natural Language Processing</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground text-center">
+                    "Create a GHZ state for 3 qubits" → Instant circuit generation with explanations
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-quantum-neon/30 bg-gradient-to-br from-quantum-matrix/10 to-background hover:border-quantum-neon/50 transition-all duration-300 group">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-neon/20 to-quantum-neon/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-6 h-6 text-quantum-neon" />
+                  </div>
+                  <CardTitle className="text-lg">Circuit Optimization</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Automatically detects redundant gates and reduces circuit depth by up to 40%
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-quantum-plasma/30 bg-gradient-to-br from-quantum-particle/10 to-background hover:border-quantum-plasma/50 transition-all duration-300 group">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-quantum-plasma/20 to-quantum-plasma/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <BookOpen className="w-6 h-6 text-quantum-plasma" />
+                  </div>
+                  <CardTitle className="text-lg">Interactive Learning</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Education mode with quizzes, progress tracking, and personalized explanations
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
