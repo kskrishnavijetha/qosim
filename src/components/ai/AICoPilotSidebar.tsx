@@ -43,7 +43,7 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [framework, setFramework] = useState('Qiskit');
+  const [framework, setFramework] = useState('QOSim');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -222,6 +222,7 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="QOSim">QOSim</SelectItem>
               <SelectItem value="Qiskit">Qiskit</SelectItem>
               <SelectItem value="Cirq">Cirq</SelectItem>
               <SelectItem value="PennyLane">PennyLane</SelectItem>

@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { user_query, framework = 'Qiskit' } = await req.json();
+    const { user_query, framework = 'QOSim' } = await req.json();
 
     if (!user_query) {
       return new Response(
@@ -40,28 +40,37 @@ serve(async (req) => {
 
     console.log('Processing query:', user_query, 'Framework:', framework);
 
-    // Create a specialized prompt for quantum circuit generation
-    const systemPrompt = `You are QOSim AI Co-Pilot, an expert quantum computing assistant. Your task is to help users create quantum circuits based on natural language descriptions.
+    // Create QOSim-specific prompt for quantum circuit generation
+    const systemPrompt = `You are QOSim Co-Pilot, an AI quantum assistant.
+Convert natural language queries into QOSim circuit code (Python).
 
-Given a user query about quantum computing, you should:
-1. Generate Python code for the specified framework (${framework})
-2. Provide a clear explanation in Markdown format
-3. Optionally provide an SVG visual hint of the circuit structure
+If user says: "Create a Bell state", return:
 
-Guidelines:
-- For Qiskit: Use qiskit library syntax
-- For Cirq: Use cirq library syntax  
-- For PennyLane: Use pennylane library syntax
-- Always include proper imports
-- Add comments explaining each step
-- Keep code practical and runnable
-- Explain quantum concepts clearly in the explanation
+\`\`\`python
+from qosim import QuantumCircuit, Simulator
+qc = QuantumCircuit(2)
+qc.h(0); qc.cx(0, 1)
+result = Simulator().run(qc)
+print(result.probabilities())
+\`\`\`
+
+Always explain what the circuit does in simple terms.
+
+Keep circuits short, optimized, and runnable in QOSim.
+
+If unclear, ask clarifying questions.
+
+Framework Guidelines:
+- QOSim (default): Use QOSim syntax as shown above
+- Qiskit: Use qiskit library syntax when specifically requested
+- Cirq: Use cirq library syntax when specifically requested  
+- PennyLane: Use pennylane library syntax when specifically requested
 
 Return your response in this exact JSON format:
 {
-  "circuit_code": "# Python code here",
-  "explanation": "## Markdown explanation here",
-  "visual_hint": "<svg>optional SVG circuit diagram</svg>"
+  "circuit_code": "# Python code using ${framework || 'QOSim'} syntax",
+  "explanation": "## Simple explanation in Markdown format",
+  "visual_hint": null
 }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -79,7 +88,7 @@ Return your response in this exact JSON format:
           },
           { 
             role: 'user', 
-            content: `Create a quantum circuit for: ${user_query}\n\nFramework: ${framework}`
+            content: `Convert this natural language query into ${framework || 'QOSim'} quantum circuit code: "${user_query}"`
           }
         ],
         max_completion_tokens: 2000,
@@ -109,7 +118,7 @@ Return your response in this exact JSON format:
       console.error('Failed to parse AI response:', parseError);
       // Fallback response structure
       result = {
-        circuit_code: `# ${framework} quantum circuit\n# Generated from: ${user_query}\n# Please check the explanation for details`,
+        circuit_code: `# ${framework || 'QOSim'} quantum circuit\n# Generated from: ${user_query}\n# Please check the explanation for details`,
         explanation: aiResponse.choices[0].message.content,
         visual_hint: null
       };
@@ -117,7 +126,7 @@ Return your response in this exact JSON format:
 
     // Ensure required fields are present
     const finalResult = {
-      circuit_code: result.circuit_code || `# ${framework} code for: ${user_query}`,
+      circuit_code: result.circuit_code || `# ${framework || 'QOSim'} code for: ${user_query}`,
       explanation: result.explanation || 'Please try rephrasing your quantum computing question.',
       visual_hint: result.visual_hint || null
     };
