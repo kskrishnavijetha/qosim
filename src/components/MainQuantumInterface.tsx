@@ -4,9 +4,10 @@ import { useCircuitState, type Gate } from '@/hooks/useCircuitState';
 import { useQuantumBackend } from '@/hooks/useQuantumBackend';
 import { QuantumVisualizationPanel } from './QuantumVisualizationPanel';
 import { AICoPilotIntegration } from './ai/AICoPilotIntegration';
+import { CircuitCodeParser } from '@/lib/circuitCodeParser';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Zap } from 'lucide-react';
+import { Play, Zap, CircuitBoard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function MainQuantumInterface() {
@@ -19,58 +20,59 @@ export function MainQuantumInterface() {
   const numQubits = 5; // Standard 5-qubit system
   const circuitName = 'Quantum Circuit';
 
-  const handleInsertFromAI = (content: string) => {
-    // Parse AI content and insert into circuit
+  const handleInsertFromAI = (content: string, framework?: string) => {
     try {
-      // Simple QASM parsing (you can enhance this)
-      const lines = content.split('\n');
-      let gateCount = 0;
+      console.log('🤖 AI Co-Pilot: Inserting circuit code from framework:', framework);
+      console.log('🤖 Content received:', content);
       
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (trimmedLine.startsWith('h ')) {
-          // Hadamard gate
-          const qubitMatch = trimmedLine.match(/h q\[(\d+)\]/);
-          if (qubitMatch) {
-            const qubit = parseInt(qubitMatch[1]);
-            addGate({ 
-              type: 'h', 
-              qubits: [qubit], 
-              id: `ai-gate-${Date.now()}-${gateCount++}`,
-              position: gateCount
-            });
+      // Extract code blocks from the AI response
+      const codeBlocks = CircuitCodeParser.extractCodeBlocks(content);
+      
+      if (codeBlocks.length === 0) {
+        // Fallback: try to parse the entire content as code
+        codeBlocks.push(content);
+      }
+      
+      let totalGatesAdded = 0;
+      let lastFramework = framework || 'QOSim';
+      
+      // Parse each code block
+      for (const codeBlock of codeBlocks) {
+        const parseResult = CircuitCodeParser.parseCircuitCode(codeBlock, framework);
+        
+        if (parseResult.success && parseResult.gates.length > 0) {
+          console.log(`🤖 Successfully parsed ${parseResult.gates.length} gates from ${parseResult.framework}`);
+          
+          // Add each gate to the circuit
+          for (const gate of parseResult.gates) {
+            addGate(gate);
           }
-        } else if (trimmedLine.startsWith('cx ')) {
-          // CNOT gate
-          const qubitMatch = trimmedLine.match(/cx q\[(\d+)\],q\[(\d+)\]/);
-          if (qubitMatch) {
-            const control = parseInt(qubitMatch[1]);
-            const target = parseInt(qubitMatch[2]);
-            addGate({ 
-              type: 'cnot', 
-              qubits: [control, target], 
-              id: `ai-gate-${Date.now()}-${gateCount++}`,
-              position: gateCount
-            });
-          }
+          
+          totalGatesAdded += parseResult.gates.length;
+          lastFramework = parseResult.framework;
+        } else if (parseResult.error) {
+          console.warn('🤖 Parse error:', parseResult.error);
         }
       }
       
-      if (gateCount > 0) {
+      // Show appropriate toast message
+      if (totalGatesAdded > 0) {
         toast({
-          title: "AI Circuit Inserted",
-          description: `Added ${gateCount} gates from AI Co-Pilot to your circuit.`,
+          title: "🎯 Circuit Inserted Successfully",
+          description: `Added ${totalGatesAdded} ${lastFramework} gates to your quantum circuit. The visual canvas has been updated.`,
         });
       } else {
+        // Fallback: show the AI guidance even if we couldn't parse gates
         toast({
-          title: "Circuit Generated",
-          description: "AI Co-Pilot provided quantum circuit guidance.",
+          title: "💡 AI Guidance Provided",
+          description: "The AI Co-Pilot has provided quantum circuit guidance. You may need to implement complex operations manually.",
         });
       }
     } catch (error) {
+      console.error('🤖 AI Co-Pilot insertion error:', error);
       toast({
-        title: "Insert Note",
-        description: "AI content has been noted. Manual implementation may be needed for complex circuits.",
+        title: "⚠️ Insertion Note",
+        description: "AI content received. Complex circuits may require manual implementation in the visual editor.",
         variant: "default",
       });
     }
@@ -122,8 +124,14 @@ export function MainQuantumInterface() {
               />
             </div>
             
-            <div className="text-sm text-quantum-particle">
+            <div className="text-sm text-sidebar-foreground/70 flex items-center gap-2">
               Gates: {circuit.length} | Qubits: {numQubits}
+              {circuit.length > 0 && (
+                <div className="flex items-center gap-1 text-quantum-glow">
+                  <div className="w-2 h-2 rounded-full bg-quantum-glow animate-pulse" />
+                  <span className="text-xs">Live</span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

@@ -6,18 +6,18 @@ import { MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AICoPilotIntegrationProps {
-  onInsertToCanvas?: (content: string) => void;
+  onInsertToCanvas?: (content: string, framework?: string) => void;
 }
 
 export function AICoPilotIntegration({ onInsertToCanvas }: AICoPilotIntegrationProps) {
   const { isOpen, toggleCoPilot, closeCoPilot } = useAICoPilot();
   const { toast } = useToast();
 
-  const handleInsertToCanvas = (content: string) => {
+  const handleInsertToCanvas = (content: string, framework?: string) => {
     if (onInsertToCanvas) {
       // Extract quantum circuit information from the AI response
       const circuitData = parseAIResponseToCircuit(content);
-      onInsertToCanvas(circuitData);
+      onInsertToCanvas(circuitData, framework);
     } else {
       toast({
         title: "Circuit Generation",

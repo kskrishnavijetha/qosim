@@ -33,7 +33,7 @@ interface ChatMessage {
 }
 
 interface AICoPilotSidebarProps {
-  onInsertToCanvas?: (content: string) => void;
+  onInsertToCanvas?: (content: string, framework?: string) => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -144,10 +144,10 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
 
   const handleInsertToCanvas = (content: string) => {
     if (onInsertToCanvas) {
-      onInsertToCanvas(content);
+      onInsertToCanvas(content, framework);
       toast({
-        title: "Inserted to Canvas",
-        description: "Circuit has been added to your quantum canvas.",
+        title: "🎯 Inserted to Canvas",
+        description: `${framework} circuit has been added to your quantum canvas.`,
       });
     }
   };
@@ -285,27 +285,31 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
                     </div>
                   )}
                   
-                  {!message.isProcessing && message.type === 'assistant' && (
-                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-sidebar-border">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleInsertToCanvas(message.content)}
-                        className="text-xs"
-                      >
-                        <CircuitBoard className="h-3 w-3 mr-1" />
-                        Insert to Canvas
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyMessage(message.content)}
-                        className="text-xs"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
+                   {!message.isProcessing && message.type === 'assistant' && (
+                     <div className="flex items-center gap-2 mt-3 pt-2 border-t border-sidebar-border">
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => handleInsertToCanvas(message.content)}
+                         className="text-xs flex items-center gap-1 text-quantum-glow hover:bg-quantum-glow/10"
+                       >
+                         <CircuitBoard className="h-3 w-3" />
+                         Insert to Canvas
+                       </Button>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => copyMessage(message.content)}
+                         className="text-xs"
+                       >
+                         <Copy className="h-3 w-3" />
+                       </Button>
+                       <div className="ml-auto flex items-center gap-1 text-xs text-sidebar-foreground/50">
+                         <div className="w-2 h-2 rounded-full bg-quantum-energy animate-pulse" />
+                         <span>{framework}</span>
+                       </div>
+                     </div>
+                   )}
                 </div>
                 
                 {message.type === 'user' && (
@@ -353,9 +357,13 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
         </div>
         
         {!user && (
-          <p className="text-xs text-sidebar-foreground/50 mt-2">
-            Sign in for enhanced AI features and circuit saving
-          </p>
+          <div className="text-xs text-sidebar-foreground/50 mt-2 space-y-1">
+            <p>Sign in for enhanced AI features and circuit saving</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-quantum-glow" />
+              <span>Code ↔ Visual sync enabled</span>
+            </div>
+          </div>
         )}
       </div>
     </div>
