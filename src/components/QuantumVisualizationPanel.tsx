@@ -3,12 +3,13 @@ import React from 'react';
 import { PostSimulationWorkflow } from './workflow/PostSimulationWorkflow';
 import { EntanglementVisualization } from './simulation/EntanglementVisualization';
 import { EnhancedEntanglementVisualization } from './simulation/EnhancedEntanglementVisualization';
+import { QuantumStateVisualization } from './circuits/QuantumStateVisualization';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuantumBackendResult } from '@/services/quantumBackendService';
 import { Gate } from '@/hooks/useCircuitState';
 import { OptimizedSimulationResult } from '@/lib/quantumSimulatorOptimized';
-import { Activity, Link2, BarChart, Zap } from 'lucide-react';
+import { Activity, Link2, BarChart, Zap, Eye } from 'lucide-react';
 
 interface QuantumVisualizationPanelProps {
   result: QuantumBackendResult | null;
@@ -53,7 +54,16 @@ export function QuantumVisualizationPanel({
       imag: amp.imaginary 
     })),
     measurementProbabilities: Object.entries(result.measurementProbabilities).map(([state, prob]) => prob),
-    qubitStates: result.qubitStates,
+    qubitStates: result.qubitStates.map(qubit => ({
+      qubit: qubit.qubit,
+      state: qubit.state,
+      amplitude: {
+        real: qubit.amplitude.real,
+        imag: qubit.amplitude.imaginary
+      },
+      phase: qubit.phase,
+      probability: qubit.probability
+    })),
     mode: 'accurate',
     executionTime: result.executionTime,
     fidelity: 1.0,
@@ -67,8 +77,12 @@ export function QuantumVisualizationPanel({
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="workflow" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 quantum-panel neon-border">
+      <Tabs defaultValue="state" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 quantum-panel neon-border">
+          <TabsTrigger value="state" className="text-quantum-glow">
+            <Eye className="w-4 h-4 mr-2" />
+            State & AI
+          </TabsTrigger>
           <TabsTrigger value="workflow" className="text-quantum-glow">
             <BarChart className="w-4 h-4 mr-2" />
             Full Analysis
@@ -82,6 +96,15 @@ export function QuantumVisualizationPanel({
             Enhanced View
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="state">
+          <QuantumStateVisualization
+            simulationResult={optimizedResult}
+            NUM_QUBITS={numQubits}
+            backendResult={result}
+            gates={gates}
+          />
+        </TabsContent>
 
         <TabsContent value="workflow">
           <PostSimulationWorkflow

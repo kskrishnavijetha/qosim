@@ -20,9 +20,7 @@ const AuthPage = () => {
     
     // Redirect if already authenticated
     if (user) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectPath = urlParams.get('redirect') || '/app';
-      navigate(redirectPath);
+      navigate('/app');
     }
   }, [user, navigate]);
 
@@ -31,9 +29,7 @@ const AuthPage = () => {
     
     try {
       if (mode === 'signup') {
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectPath = urlParams.get('redirect') || '/app';
-        const redirectUrl = `${window.location.origin}${redirectPath}`;
+        const redirectUrl = `${window.location.origin}/app`;
         
         const { data, error } = await supabase.auth.signUp({
           email,

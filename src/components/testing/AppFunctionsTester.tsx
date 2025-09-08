@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -126,20 +125,18 @@ export function AppFunctionsTester() {
     
     try {
       // Test if backend service is available
-      const { quantumBackendService } = await import('@/services/quantumBackendService');
+      const { QuantumBackendService } = await import('@/services/quantumBackendService');
       
-      // Test local backend first
-      const testCircuit = [
-        { 
-          id: 'test-h-0', 
-          type: 'H', 
-          qubit: 0, 
-          position: 0,
-          angle: 0 
-        }
-      ];
+      // Test local backend first - create proper QuantumGate objects
+      const testGates = [{ 
+        type: 'H' as const, 
+        qubit: 0, 
+        angle: 0,
+        id: 'test-h-gate',
+        position: 0
+      }];
       
-      const result = await quantumBackendService.executeCircuit(testCircuit, 100);
+      const result = await QuantumBackendService.executeCircuit(testGates, 100, 'local');
       
       if (result && result.stateVector && result.stateVector.length > 0) {
         updateTest('Cloud Backend APIs', 'passed', 'Local quantum backend working', 

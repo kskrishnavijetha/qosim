@@ -53,7 +53,7 @@ export function SimulationResults({ result, showAdvanced, numQubits }: Simulatio
     ...state,
     amplitude: {
       real: state.amplitude.real,
-      imag: state.amplitude.imag
+      imag: state.amplitude.imaginary
     }
   }));
 

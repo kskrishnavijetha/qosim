@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
 import { CircuitSimulationPanel } from './circuits/CircuitSimulationPanel';
-import { QuantumAICoPilot } from './ai/QuantumAICoPilot';
+import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
 import { SDKDemoPanel } from './panels/SDKDemoPanel';
 import { QuantumAlgorithmsSDK } from './algorithms/QuantumAlgorithmsSDK';
 import { MemoryPanel } from './panels/MemoryPanel';
@@ -16,9 +17,10 @@ import { UserProfileDropdown } from './UserProfileDropdown';
 import { QuantumErrorCorrectionPanel } from './error-correction/QuantumErrorCorrectionPanel';
 import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
+import { MainQuantumInterface } from './MainQuantumInterface';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Github, Brain, ExternalLink } from 'lucide-react';
+import { Github } from 'lucide-react';
 import GitHubIntegration from './github/GitHubIntegration';
 
 export default function QuantumDashboard() {
@@ -26,8 +28,6 @@ export default function QuantumDashboard() {
   const [selectedSDK, setSelectedSDK] = useState("javascript");
   const [simulationResult, setSimulationResult] = useState<any>(null);
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
-  const [circuit, setCircuit] = useState<any[]>([]);
-  const [numQubits, setNumQubits] = useState(3);
 
   const handleSDKSelect = (sdkType: string) => {
     setSelectedSDK(sdkType);
@@ -35,15 +35,6 @@ export default function QuantumDashboard() {
 
   const handleSimulationComplete = (result: any) => {
     setSimulationResult(result);
-  };
-
-  const handleCircuitUpdate = (gates: any[]) => {
-    setCircuit(gates);
-  };
-
-  const handleRunSimulation = () => {
-    // This will be handled by the circuit builder or simulation panel
-    console.log('Running simulation with circuit:', circuit);
   };
 
   // Create a default circuit object that matches the QuantumCircuit interface
@@ -65,6 +56,8 @@ export default function QuantumDashboard() {
     switch (activeTab) {
       case "circuits":
         return <InteractiveCircuitBuilder />;
+      case "builder":
+        return <InteractiveCircuitBuilder />;
       case "my-circuits":
         return <MyCircuitsPanel />;
       case "simulation":
@@ -78,12 +71,13 @@ export default function QuantumDashboard() {
         );
       case "ai":
         return (
-          <QuantumAICoPilot 
-            circuit={circuit}
-            result={simulationResult}
-            onCircuitUpdate={handleCircuitUpdate}
-            onRunSimulation={handleRunSimulation}
-            numQubits={numQubits}
+          <UnifiedAIPanel 
+            circuit={[]}
+            onCircuitGenerated={() => {}}
+            onAlgorithmGenerated={() => {}}
+            onCircuitOptimized={() => {}}
+            onCircuitFixed={() => {}}
+            onShowStateVisualization={() => {}}
           />
         );
       case "sdk":
@@ -139,16 +133,6 @@ export default function QuantumDashboard() {
         <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
           <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => window.open('/ai-copilot', '_blank')}
-              className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10"
-            >
-              <Brain className="w-4 h-4 mr-2" />
-              AI Co-Pilot
-              <ExternalLink className="w-3 h-3 ml-2" />
-            </Button>
             <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">

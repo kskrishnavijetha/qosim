@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -10,14 +10,12 @@ interface AuthGuardProps {
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     if (!loading && !user) {
-      const redirectPath = encodeURIComponent(location.pathname);
-      navigate(`/auth?redirect=${redirectPath}`);
+      navigate('/');
     }
-  }, [user, loading, navigate, location.pathname]);
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
