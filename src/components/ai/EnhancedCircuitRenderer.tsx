@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+// Utility function to get computed CSS custom property value
+const getCSSVariableValue = (variable: string): string => {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+  return value ? `hsl(${value})` : '#000000';
+};
+
 interface CircuitGate {
   id: string;
   type: string;
@@ -84,7 +90,7 @@ export function EnhancedCircuitRenderer({
       canvas.height = height;
       
       // Clear canvas
-      ctx.fillStyle = 'hsl(var(--background))';
+      ctx.fillStyle = getCSSVariableValue('--background');
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Circuit drawing parameters
@@ -97,7 +103,7 @@ export function EnhancedCircuitRenderer({
       const newGateRegions: GateTooltipInfo[] = [];
       
       // Draw qubit wires
-      ctx.strokeStyle = 'hsl(var(--foreground))';
+      ctx.strokeStyle = getCSSVariableValue('--foreground');
       ctx.lineWidth = 2;
       
       for (let i = 0; i < numQubits; i++) {
@@ -108,7 +114,7 @@ export function EnhancedCircuitRenderer({
         ctx.stroke();
         
         // Draw qubit labels
-        ctx.fillStyle = 'hsl(var(--foreground))';
+        ctx.fillStyle = getCSSVariableValue('--foreground');
         ctx.font = '12px monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`q${i}`, startX - 10, y + 4);
@@ -140,13 +146,13 @@ export function EnhancedCircuitRenderer({
             const targetY = startY + (gate.qubits[1] || 1) * wireSpacing;
             
             // Control dot
-            ctx.fillStyle = 'hsl(var(--primary))';
+            ctx.fillStyle = getCSSVariableValue('--primary');
             ctx.beginPath();
             ctx.arc(x, controlY, 4, 0, 2 * Math.PI);
             ctx.fill();
             
             // Connection line
-            ctx.strokeStyle = 'hsl(var(--primary))';
+            ctx.strokeStyle = getCSSVariableValue('--primary');
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(x, controlY);
@@ -154,7 +160,7 @@ export function EnhancedCircuitRenderer({
             ctx.stroke();
             
             // Target circle
-            ctx.strokeStyle = 'hsl(var(--primary))';
+            ctx.strokeStyle = getCSSVariableValue('--primary');
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(x, targetY, 12, 0, 2 * Math.PI);
@@ -187,25 +193,26 @@ export function EnhancedCircuitRenderer({
             
             // Gate box with gradient
             const gradient = ctx.createLinearGradient(x - gateSize/2, y - gateSize/2, x + gateSize/2, y + gateSize/2);
-            gradient.addColorStop(0, 'hsl(var(--primary))');
-            gradient.addColorStop(1, 'hsl(var(--primary) / 0.8)');
+            const primaryColor = getCSSVariableValue('--primary');
+            gradient.addColorStop(0, primaryColor);
+            gradient.addColorStop(1, primaryColor.replace('hsl(', 'hsla(').replace(')', ', 0.8)'));
             
             ctx.fillStyle = gradient;
             ctx.fillRect(x - gateSize/2, y - gateSize/2, gateSize, gateSize);
             
             // Gate border
-            ctx.strokeStyle = 'hsl(var(--primary-foreground))';
+            ctx.strokeStyle = getCSSVariableValue('--primary-foreground');
             ctx.lineWidth = 1;
             ctx.strokeRect(x - gateSize/2, y - gateSize/2, gateSize, gateSize);
             
             // Gate label
-            ctx.fillStyle = 'hsl(var(--primary-foreground))';
+            ctx.fillStyle = getCSSVariableValue('--primary-foreground');
             ctx.fillText(gate.type, x, y);
             
             // Angle annotation for rotation gates
             if (gate.angle && ['RX', 'RY', 'RZ'].includes(gate.type)) {
               ctx.font = '8px monospace';
-              ctx.fillStyle = 'hsl(var(--muted-foreground))';
+              ctx.fillStyle = getCSSVariableValue('--muted-foreground');
               ctx.fillText(`${gate.angle.toFixed(2)}`, x, y + gateSize/2 + 12);
               ctx.font = '11px monospace';
             }
