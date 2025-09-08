@@ -29,7 +29,8 @@ import {
   Download,
   Share2,
   FileText,
-  Sparkles
+  Sparkles,
+  Mic
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,6 +39,7 @@ import { QuantumBackendResult } from '@/services/quantumBackendService';
 import { CircuitChatResponse } from './CircuitChatResponse';
 import { OptimizationComparison } from './OptimizationComparison';
 import { EducationQuiz } from './EducationQuiz';
+import { RealtimeVoiceInterface } from '@/components/RealtimeVoiceInterface';
 
 interface Message {
   id: string;
@@ -98,6 +100,45 @@ export function QuantumAICoPilot({
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleVoiceCircuitGenerated = (circuitData: any) => {
+    if (circuitData.gates) {
+      const gates: QuantumGate[] = circuitData.gates.map((gate: any, index: number) => ({
+        id: `${gate.type.toLowerCase()}-${index}`,
+        ...gate
+      }));
+      
+      onCircuitUpdate(gates);
+      toast({
+        title: "Circuit Generated via Voice",
+        description: `${circuitData.circuit_name} has been created and loaded.`,
+      });
+
+      // Add a message to chat for tracking
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Voice-generated circuit: ${circuitData.circuit_name}`,
+        timestamp: new Date(),
+        type: 'circuit',
+        metadata: {
+          gates: gates,
+          circuitName: circuitData.circuit_name
+        }
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Auto-switch to chat tab to show the result
+      setActiveTab('chat');
+
+      // Auto-start quiz in education mode
+      if (educationMode) {
+        setQuizCircuitType(circuitData.circuit_name || 'Voice-Generated Circuit');
+        setShowQuiz(true);
+      }
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -807,10 +848,14 @@ This demonstrates the quantum parallelism principle - the system explores all po
 
       <CardContent className="flex-1 flex flex-col space-y-4 p-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="grid grid-cols-4 quantum-panel">
+          <TabsList className="grid grid-cols-5 quantum-panel">
             <TabsTrigger value="chat" className="text-xs">
               <MessageSquare className="w-3 h-3 mr-1" />
               Chat
+            </TabsTrigger>
+            <TabsTrigger value="voice" className="text-xs">
+              <Mic className="w-3 h-3 mr-1" />
+              Voice
             </TabsTrigger>
             <TabsTrigger value="tools" className="text-xs">
               <Settings className="w-3 h-3 mr-1" />
@@ -953,6 +998,10 @@ This demonstrates the quantum parallelism principle - the system explores all po
                 <MessageSquare className="w-4 h-4" />
               </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="voice" className="flex-1 space-y-4 mt-4">
+            <RealtimeVoiceInterface onCircuitGenerated={handleVoiceCircuitGenerated} />
           </TabsContent>
 
           <TabsContent value="tools" className="flex-1 space-y-4 mt-4">
