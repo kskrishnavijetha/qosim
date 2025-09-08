@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { QuantumSidebar } from './QuantumSidebar';
 import { InteractiveCircuitBuilder } from './circuits/InteractiveCircuitBuilder';
+import { AIIntegratedCircuitBuilder } from './circuits/AIIntegratedCircuitBuilder';
 import { CircuitSimulationPanel } from './circuits/CircuitSimulationPanel';
 import { UnifiedAIPanel } from './ai/UnifiedAIPanel';
 import { SDKDemoPanel } from './panels/SDKDemoPanel';
@@ -82,7 +83,7 @@ export default function QuantumDashboard() {
           />
         );
       case "ai":
-        return <MainQuantumInterface />;
+        return <AIIntegratedCircuitBuilder />;
       case "sdk":
         return <SDKDemoPanel defaultSDK={selectedSDK as 'javascript' | 'python'} />;
       case "hardware":
