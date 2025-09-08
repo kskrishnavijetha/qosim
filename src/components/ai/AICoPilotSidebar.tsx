@@ -9,8 +9,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Send, 
   Bot, 
@@ -41,6 +43,7 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [framework, setFramework] = useState('Qiskit');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,15 +87,24 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
     setIsLoading(true);
 
     try {
-      // Simulate AI processing (replace with actual API call)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock AI response based on user input
-      const response = generateMockResponse(userMessage.content);
+      // Call the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('copilot-ask', {
+        body: {
+          user_query: userMessage.content,
+          framework: framework
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to get AI response');
+      }
+
+      // Format the AI response
+      const formattedResponse = formatAIResponse(data);
       
       setMessages(prev => prev.map(msg => 
         msg.id === processingMessage.id 
-          ? { ...msg, content: response, isProcessing: false }
+          ? { ...msg, content: formattedResponse, isProcessing: false }
           : msg
       ));
 
@@ -101,10 +113,11 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
         description: "Your quantum circuit suggestion is ready!",
       });
     } catch (error) {
+      console.error('AI Co-Pilot Error:', error);
       setMessages(prev => prev.filter(msg => msg.id !== processingMessage.id));
       toast({
         title: "Error",
-        description: "Failed to generate AI response. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate AI response. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -112,89 +125,22 @@ export function AICoPilotSidebar({ onInsertToCanvas, isOpen, onClose }: AICoPilo
     }
   };
 
-  const generateMockResponse = (input: string): string => {
-    const lowerInput = input.toLowerCase();
+  const formatAIResponse = (data: any): string => {
+    const { circuit_code, explanation, visual_hint } = data;
     
-    if (lowerInput.includes('bell') || lowerInput.includes('entanglement')) {
-      return `# Bell State Circuit
-
-To create a Bell state (maximally entangled two-qubit state):
-
-## Circuit Description
-$$|\\psi\\rangle = \\frac{1}{\\sqrt{2}}(|00\\rangle + |11\\rangle)$$
-
-## Gates Required:
-1. **Hadamard Gate** on qubit 0: $H|0\\rangle = \\frac{1}{\\sqrt{2}}(|0\\rangle + |1\\rangle)$
-2. **CNOT Gate** with qubit 0 as control, qubit 1 as target
-
-## Quantum Code:
-\`\`\`qasm
-OPENQASM 2.0;
-include "qelib1.inc";
-qreg q[2];
-creg c[2];
-h q[0];
-cx q[0],q[1];
-measure q[0] -> c[0];
-measure q[1] -> c[1];
-\`\`\`
-
-This creates perfect entanglement with 50% probability of measuring |00⟩ or |11⟩.`;
+    let response = explanation || '';
+    
+    if (circuit_code) {
+      response += `\n\n## ${framework} Code\n\n\`\`\`python\n${circuit_code}\n\`\`\``;
     }
     
-    if (lowerInput.includes('grover') || lowerInput.includes('search')) {
-      return `# Grover's Search Algorithm
-
-## Overview
-Grover's algorithm provides quadratic speedup for searching unsorted databases.
-
-## Key Components:
-1. **Oracle Function**: $O|x\\rangle = (-1)^{f(x)}|x\\rangle$
-2. **Diffusion Operator**: $2|s\\rangle\\langle s| - I$
-
-## Iterations Required:
-$$\\text{Iterations} ≈ \\frac{\\pi}{4}\\sqrt{N}$$
-
-For N = 4 items, optimal iterations: ~1
-For N = 16 items, optimal iterations: ~3
-
-Would you like me to generate the specific circuit for your search space?`;
+    if (visual_hint) {
+      response += `\n\n## Circuit Visualization\n\n${visual_hint}`;
     }
     
-    if (lowerInput.includes('superposition')) {
-      return `# Creating Superposition States
-
-## Equal Superposition:
-Use Hadamard gates: $H|0\\rangle = \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$
-
-## Custom Amplitude States:
-For state $\\alpha|0\\rangle + \\beta|1\\rangle$ with $|\\alpha|^2 + |\\beta|^2 = 1$:
-
-Use rotation gates:
-- $R_y(2\\arccos(\\alpha))$ for amplitude control
-- $R_z(\\phi)$ for phase control
-
-## Multi-Qubit Superposition:
-$H^{\\otimes n}|0\\rangle^{\\otimes n} = \\frac{1}{\\sqrt{2^n}}\\sum_{x=0}^{2^n-1}|x\\rangle$`;
-    }
-    
-    return `# Quantum Circuit Analysis
-
-I understand you're working on: "${input}"
-
-## General Recommendations:
-- Consider **decoherence effects** for longer circuits
-- Use **error correction** for critical computations  
-- Optimize **gate depth** for NISQ devices
-
-## Next Steps:
-1. Define your quantum state preparation
-2. Apply quantum operations
-3. Add measurement basis
-4. Consider noise mitigation
-
-Would you like me to elaborate on any specific aspect of your quantum circuit?`;
+    return response;
   };
+
 
   const handleInsertToCanvas = (content: string) => {
     if (onInsertToCanvas) {
@@ -251,7 +197,7 @@ Would you like me to elaborate on any specific aspect of your quantum circuit?`;
 
       {/* Chat Controls */}
       <div className="p-4 border-b border-sidebar-border bg-sidebar-accent/50">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-sidebar-foreground">
             Quantum Circuit Assistant
           </span>
@@ -266,6 +212,21 @@ Would you like me to elaborate on any specific aspect of your quantum circuit?`;
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+        
+        {/* Framework Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-sidebar-foreground/70">Framework:</span>
+          <Select value={framework} onValueChange={setFramework}>
+            <SelectTrigger className="w-32 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Qiskit">Qiskit</SelectItem>
+              <SelectItem value="Cirq">Cirq</SelectItem>
+              <SelectItem value="PennyLane">PennyLane</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
