@@ -4,7 +4,25 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 // Utility function to get computed CSS custom property value
 const getCSSVariableValue = (variable: string): string => {
   const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-  return value ? `hsl(${value})` : '#000000';
+  if (!value) return '#000000';
+  
+  // Convert modern space-separated HSL to comma-separated for canvas compatibility
+  const hslMatch = value.match(/(\d+)\s+(\d+%)\s+(\d+%)/);
+  if (hslMatch) {
+    return `hsl(${hslMatch[1]}, ${hslMatch[2]}, ${hslMatch[3]})`;
+  }
+  
+  return `hsl(${value})`;
+};
+
+// Utility function to create HSLA color from HSL with alpha
+const createHSLAColor = (hslColor: string, alpha: number): string => {
+  // Extract HSL values and create proper HSLA format
+  const hslMatch = hslColor.match(/hsl\((\d+),\s*(\d+%),\s*(\d+%)\)/);
+  if (hslMatch) {
+    return `hsla(${hslMatch[1]}, ${hslMatch[2]}, ${hslMatch[3]}, ${alpha})`;
+  }
+  return hslColor;
 };
 
 interface CircuitGate {
@@ -195,7 +213,7 @@ export function EnhancedCircuitRenderer({
             const gradient = ctx.createLinearGradient(x - gateSize/2, y - gateSize/2, x + gateSize/2, y + gateSize/2);
             const primaryColor = getCSSVariableValue('--primary');
             gradient.addColorStop(0, primaryColor);
-            gradient.addColorStop(1, primaryColor.replace('hsl(', 'hsla(').replace(')', ', 0.8)'));
+            gradient.addColorStop(1, createHSLAColor(primaryColor, 0.8));
             
             ctx.fillStyle = gradient;
             ctx.fillRect(x - gateSize/2, y - gateSize/2, gateSize, gateSize);
