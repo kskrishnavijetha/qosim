@@ -106,6 +106,16 @@ const LandingPage = () => {
               Patent Pending
             </Badge>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.open('/ai-copilot', '_blank')}
+                className="hidden sm:flex border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                AI Co-Pilot
+                <ExternalLink className="w-3 h-3 ml-2" />
+              </Button>
               <Button variant="outline" asChild>
                 <Link to="/integrations">SDKs</Link>
               </Button>
