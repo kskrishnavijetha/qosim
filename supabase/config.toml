@@ -25,6 +25,9 @@ port = 54323
 [functions.manage-credentials]
 verify_jwt = true
 
+[functions.quantum-ai-copilot]
+verify_jwt = false
+
 [db]
 enabled = true
 port = 54322
