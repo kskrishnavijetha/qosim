@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -169,9 +169,15 @@ export function EnhancedInteractiveBuilder({
     event.target.value = '';
   }, [importCircuit]);
 
-  const validationStatus = validateCircuit();
-  const hasErrors = validationErrors.some(e => e.severity === 'error');
-  const hasWarnings = validationErrors.some(e => e.severity === 'warning');
+  // Memoize validation status to avoid unnecessary re-calculations
+  const validationStatus = useMemo(() => ({
+    isValid: validationErrors.length === 0 || validationErrors.every(e => e.severity === 'warning'),
+    errors: validationErrors.filter(e => e.severity === 'error'),
+    warnings: validationErrors.filter(e => e.severity === 'warning')
+  }), [validationErrors]);
+  
+  const hasErrors = validationStatus.errors.length > 0;
+  const hasWarnings = validationStatus.warnings.length > 0;
 
   return (
     <div className="h-full flex flex-col bg-background">
