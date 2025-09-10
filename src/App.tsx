@@ -19,6 +19,7 @@ import ThankYou from "./pages/ThankYou";
 import SharedCircuit from "./pages/SharedCircuit";
 import EmbedCircuit from "./pages/EmbedCircuit";
 import TestingPage from "./pages/TestingPage";
+import EnhancedQOSimPage from "./pages/EnhancedQOSimPage";
 import NotFound from "./pages/NotFound";
 
 // Create QueryClient instance outside of component to prevent recreation
@@ -47,6 +48,7 @@ const App: React.FC = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/roadmap" element={<RoadmapPage />} />
               <Route path="/app" element={<Index />} />
+              <Route path="/enhanced-qosim" element={<EnhancedQOSimPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/integrations" element={<IntegrationsPage />} />
               <Route path="/sdk" element={<SDKDocumentation />} />

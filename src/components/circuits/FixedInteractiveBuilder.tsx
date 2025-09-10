@@ -1,5 +1,4 @@
-
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,7 +19,7 @@ import { Save, Upload, Download, Play, Pause, RotateCcw, Redo2, Zap, Users, Bot 
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
 
-export function InteractiveCircuitBuilder() {
+export function FixedInteractiveBuilder() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('design');
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -77,6 +76,28 @@ export function InteractiveCircuitBuilder() {
     'space': () => setIsSimulating(!isSimulating)
   });
 
+  // Fixed gate adding function compatible with old interface
+  const handleGateAdd = useCallback((gateType: string, qubits: string[], position: { x: number; y: number }, controlTarget?: { control: number; target: number }) => {
+    const numericQubits = qubits.map(q => parseInt(q));
+    const gatePosition = Math.max(0, Math.floor(position.x / 100));
+    
+    const gateData = {
+      id: nanoid(),
+      type: gateType,
+      qubit: numericQubits[0],
+      qubits: numericQubits,
+      position: gatePosition,
+      params: controlTarget ? { control: controlTarget.control, target: controlTarget.target } : undefined,
+      metadata: {
+        angle: 0
+      }
+    };
+    
+    // Use the correct addGate signature: (gateType, qubits, position, controlTarget)
+    addGate(gateType, [gateData.qubit.toString()], { x: position.x, y: position.y }, controlTarget);
+    toast.success(`${gateType} gate added`);
+  }, [addGate]);
+
   const handleSimulation = useCallback(async () => {
     if (isSimulating) {
       setIsSimulating(false);
@@ -112,7 +133,6 @@ export function InteractiveCircuitBuilder() {
 
   // AI handlers
   const handleAICircuitGenerated = useCallback((gates: any[]) => {
-    // Convert AI gates to circuit format and load them
     const convertedCircuit = {
       ...circuit,
       gates: gates.map((gate, index) => ({
@@ -260,22 +280,22 @@ export function InteractiveCircuitBuilder() {
             
             <TabsContent value="design" className="p-4">
               <GatePaletteAdvanced
-                onGateSelect={addGate}
+                onGateSelect={handleGateAdd}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate ? {
                   ...selectedGate,
-                  qubits: selectedGate.qubits.map(q => q.toString())
+                  qubits: selectedGate.qubits || []
                 } as any : null}
                 circuit={{
-                  qubits: circuit.qubits.map((_, i) => ({ 
-                    id: `q${i}`, 
-                    name: `q${i}`, 
+                  qubits: circuit.qubits.map((qubit, i) => ({ 
+                    id: qubit.id, 
+                    name: qubit.name, 
                     index: i 
                   })),
                   gates: circuit.gates.map(gate => ({
                     ...gate,
-                    qubits: gate.qubits.map(q => q.toString()),
-                    layer: gate.position || 0
+                    qubits: gate.qubits || [],
+                    layer: gate.layer || 0
                   })) as any
                 }}
               />
