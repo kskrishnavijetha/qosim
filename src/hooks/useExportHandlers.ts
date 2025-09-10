@@ -11,6 +11,11 @@ interface Gate {
   angle?: number;
   label?: string;
   comment?: string;
+  params?: {
+    control?: number;
+    target?: number;
+    [key: string]: any;
+  };
 }
 
 interface ExportOptions {
@@ -69,7 +74,12 @@ export function useExportHandlers(
           position: gate.position,
           angle: gate.angle,
           label: gate.label,
-          comment: gate.comment
+          comment: gate.comment,
+          // Add control/target information for CNOT gates
+          ...(gate.type === 'CNOT' && gate.params && {
+            control: gate.params.control,
+            target: gate.params.target
+          })
         }))
       };
 
@@ -121,8 +131,9 @@ export function useExportHandlers(
             qasm += `t q[${tQubit}];\n`;
             break;
           case 'CNOT':
-            const cnotQubits = getValidQubitIndices(gate.qubits);
-            qasm += `cx q[${cnotQubits[0]}],q[${cnotQubits[1]}];\n`;
+            const controlQubit = getValidQubitIndex(gate.params?.control ?? gate.qubit);
+            const targetQubit = getValidQubitIndex(gate.params?.target ?? (gate.qubits?.[1] ?? 1));
+            qasm += `cx q[${controlQubit}],q[${targetQubit}];\n`;
             break;
           case 'CZ':
             const czQubits = getValidQubitIndices(gate.qubits);
@@ -217,8 +228,9 @@ export function useExportHandlers(
             python += `qc.t(${tQubit})  # T gate\n`;
             break;
           case 'CNOT':
-            const cnotQubits = getValidQubitIndices(gate.qubits);
-            python += `qc.cx(${cnotQubits[0]}, ${cnotQubits[1]})  # CNOT gate\n`;
+            const cnotControl = getValidQubitIndex(gate.params?.control ?? gate.qubit);
+            const cnotTarget = getValidQubitIndex(gate.params?.target ?? (gate.qubits?.[1] ?? 1));
+            python += `qc.cx(${cnotControl}, ${cnotTarget})  # CNOT gate (control=${cnotControl}, target=${cnotTarget})\n`;
             break;
           case 'CZ':
             const czQubits = getValidQubitIndices(gate.qubits);
@@ -324,8 +336,9 @@ export function useExportHandlers(
             cirq += `circuit.append(cirq.T(qubits[${tQubit}]))\n`;
             break;
           case 'CNOT':
-            const cnotQubits = getValidQubitIndices(gate.qubits);
-            cirq += `circuit.append(cirq.CNOT(qubits[${cnotQubits[0]}], qubits[${cnotQubits[1]}]))\n`;
+            const cirqControl = getValidQubitIndex(gate.params?.control ?? gate.qubit);
+            const cirqTarget = getValidQubitIndex(gate.params?.target ?? (gate.qubits?.[1] ?? 1));
+            cirq += `circuit.append(cirq.CNOT(qubits[${cirqControl}], qubits[${cirqTarget}]))  # Control=${cirqControl}, Target=${cirqTarget}\n`;
             break;
           case 'CZ':
             const czQubits = getValidQubitIndices(gate.qubits);

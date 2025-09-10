@@ -262,6 +262,7 @@ export function InteractiveCircuitBuilder() {
                 onGateSelect={addGate}
                 onQubitAdd={addQubit}
                 selectedGate={selectedGate}
+                circuit={circuit}
               />
             </TabsContent>
             

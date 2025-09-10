@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { AppFunctionsTester } from '@/components/testing/AppFunctionsTester';
 import { HadamardGateValidator } from '@/components/testing/HadamardGateValidator';
+import { CNOTGateValidator } from '@/components/testing/CNOTGateValidator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, TestTube, Zap } from 'lucide-react';
+import { ArrowLeft, TestTube, Zap, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function TestingPage() {
@@ -34,14 +35,18 @@ export default function TestingPage() {
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-quantum-dark">
+                <TabsList className="grid w-full grid-cols-3 bg-quantum-dark">
                   <TabsTrigger value="system" className="text-quantum-text data-[state=active]:bg-quantum-neon data-[state=active]:text-quantum-void">
                     <TestTube className="w-4 h-4 mr-2" />
                     System Tests
                   </TabsTrigger>
-                  <TabsTrigger value="quantum" className="text-quantum-text data-[state=active]:bg-quantum-neon data-[state=active]:text-quantum-void">
+                  <TabsTrigger value="hadamard" className="text-quantum-text data-[state=active]:bg-quantum-neon data-[state=active]:text-quantum-void">
                     <Zap className="w-4 h-4 mr-2" />
-                    Quantum Gates
+                    Hadamard Gate
+                  </TabsTrigger>
+                  <TabsTrigger value="cnot" className="text-quantum-text data-[state=active]:bg-quantum-neon data-[state=active]:text-quantum-void">
+                    <Target className="w-4 h-4 mr-2" />
+                    CNOT Gate
                   </TabsTrigger>
                 </TabsList>
                 
@@ -86,28 +91,53 @@ export default function TestingPage() {
                   <AppFunctionsTester />
                 </TabsContent>
                 
-                <TabsContent value="quantum" className="mt-6">
+                <TabsContent value="hadamard" className="mt-6">
                   <div className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4 text-sm mb-6">
                       <div className="space-y-2">
-                        <h3 className="font-semibold text-quantum-neon">Gate Implementation</h3>
+                        <h3 className="font-semibold text-quantum-neon">Hadamard Gate Testing</h3>
                         <ul className="space-y-1 text-muted-foreground">
-                          <li>• Matrix correctness</li>
-                          <li>• Transformation accuracy</li>
-                          <li>• Export format validation</li>
+                          <li>• Matrix [[1, 1], [1, -1]] / √2 validation</li>
+                          <li>• |0⟩ → (|0⟩ + |1⟩)/√2 transformation</li>
+                          <li>• |1⟩ → (|0⟩ - |1⟩)/√2 transformation</li>
                         </ul>
                       </div>
                       
                       <div className="space-y-2">
-                        <h3 className="font-semibold text-quantum-neon">Simulator Consistency</h3>
+                        <h3 className="font-semibold text-quantum-neon">Export Format Validation</h3>
                         <ul className="space-y-1 text-muted-foreground">
-                          <li>• Cross-simulator validation</li>
-                          <li>• State vector precision</li>
-                          <li>• Probability calculations</li>
+                          <li>• OpenQASM: h q[n];</li>
+                          <li>• Qiskit: qc.h(n)</li>
+                          <li>• JSON: correct matrix representation</li>
                         </ul>
                       </div>
                     </div>
                     <HadamardGateValidator />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="cnot" className="mt-6">
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-4 text-sm mb-6">
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-quantum-neon">CNOT Gate Testing</h3>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• Control/target qubit selection</li>
+                          <li>• Truth table validation</li>
+                          <li>• Entanglement creation testing</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-quantum-neon">Export Syntax Validation</h3>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• OpenQASM: cx q[control],q[target];</li>
+                          <li>• Qiskit: qc.cx(control, target)</li>
+                          <li>• JavaScript: qc.cnot(control, target)</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <CNOTGateValidator />
                   </div>
                 </TabsContent>
               </Tabs>

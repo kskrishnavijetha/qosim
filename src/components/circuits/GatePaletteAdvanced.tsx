@@ -6,13 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CircuitGate } from '@/hooks/useCircuitBuilder';
-import { Plus, Zap, RotateCcw } from 'lucide-react';
+import { CNOTGateSelector } from './CNOTGateSelector';
+import { Plus, Zap, RotateCcw, Target } from 'lucide-react';
 
 interface GatePaletteAdvancedProps {
-  onGateSelect: (gateType: string, qubits: string[], position: { x: number; y: number }) => void;
+  onGateSelect: (gateType: string, qubits: string[], position: { x: number; y: number }, controlTarget?: { control: number; target: number }) => void;
   onQubitAdd: () => void;
   selectedGate: CircuitGate | null;
+  circuit?: { qubits: { id: string; name: string; index: number }[] };
 }
 
 const singleQubitGates = [
@@ -53,13 +56,23 @@ const measurementGates = [
   { type: 'RESET', name: 'Reset', color: '#E67E22', description: 'Reset qubit' }
 ];
 
-export function GatePaletteAdvanced({ onGateSelect, onQubitAdd, selectedGate }: GatePaletteAdvancedProps) {
+export function GatePaletteAdvanced({ onGateSelect, onQubitAdd, selectedGate, circuit }: GatePaletteAdvancedProps) {
   const [customAngle, setCustomAngle] = useState(Math.PI / 4);
   const [selectedQubits, setSelectedQubits] = useState<string[]>([]);
+  const [showCNOTSelector, setShowCNOTSelector] = useState(false);
 
   const handleGateClick = (gateType: string) => {
+    if (gateType === 'CNOT') {
+      setShowCNOTSelector(true);
+      return;
+    }
     // For now, place gates at default position - canvas will handle positioning
     onGateSelect(gateType, selectedQubits, { x: 200, y: 100 });
+  };
+
+  const handleCNOTAdd = (control: number, target: number) => {
+    onGateSelect('CNOT', [], { x: 200, y: 100 }, { control, target });
+    setShowCNOTSelector(false);
   };
 
   const renderGateGrid = (gates: typeof singleQubitGates) => {
@@ -191,15 +204,29 @@ export function GatePaletteAdvanced({ onGateSelect, onQubitAdd, selectedGate }: 
             Add Hadamard
           </Button>
           
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => handleGateClick('CNOT')}
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Add CNOT
-          </Button>
+          <Popover open={showCNOTSelector} onOpenChange={setShowCNOTSelector}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setShowCNOTSelector(true)}
+                disabled={!circuit || circuit.qubits.length < 2}
+              >
+                <Target className="w-4 h-4 mr-1" />
+                Add CNOT
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent side="right" className="p-0 w-auto">
+              {circuit && (
+                <CNOTGateSelector
+                  qubits={circuit.qubits}
+                  onCNOTAdd={handleCNOTAdd}
+                  onClose={() => setShowCNOTSelector(false)}
+                />
+              )}
+            </PopoverContent>
+          </Popover>
         </CardContent>
       </Card>
     </div>

@@ -147,7 +147,7 @@ export function useCircuitBuilder() {
     });
   }, [circuit, updateCircuit]);
 
-  const addGate = useCallback((gateType: string, qubits: string[], position: { x: number; y: number }) => {
+  const addGate = useCallback((gateType: string, qubits: string[], position: { x: number; y: number }, controlTarget?: { control: number; target: number }) => {
     const layer = Math.floor(position.x / 100);
     
     const newGate: CircuitGate = {
@@ -162,6 +162,15 @@ export function useCircuitBuilder() {
         color: getGateColor(gateType)
       }
     };
+
+    // Add control/target information for multi-qubit gates
+    if (controlTarget && (gateType === 'CNOT' || gateType === 'CZ')) {
+      newGate.params = {
+        ...newGate.params,
+        control: controlTarget.control,
+        target: controlTarget.target
+      };
+    }
     
     updateCircuit({
       ...circuit,
