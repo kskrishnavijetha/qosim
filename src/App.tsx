@@ -21,17 +21,21 @@ import EmbedCircuit from "./pages/EmbedCircuit";
 import TestingPage from "./pages/TestingPage";
 import NotFound from "./pages/NotFound";
 
-// Create QueryClient instance with proper configuration
+// Create QueryClient instance outside of component to prevent recreation
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
 
-function App() {
+const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -60,6 +64,6 @@ function App() {
       </AuthProvider>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;
