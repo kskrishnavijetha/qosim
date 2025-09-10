@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { AppFunctionsTester } from '@/components/testing/AppFunctionsTester';
 import { HadamardGateValidator } from '@/components/testing/HadamardGateValidator';
 import { CNOTGateValidator } from '@/components/testing/CNOTGateValidator';
+import { QuantumAccuracyTester } from '@/components/testing/QuantumAccuracyTester';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, TestTube, Zap, Target } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, TestTube, Zap, Target, BeakerIcon, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function TestingPage() {
@@ -35,7 +37,11 @@ export default function TestingPage() {
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-quantum-dark">
+                <TabsList className="grid w-full grid-cols-4 bg-quantum-dark">
+                  <TabsTrigger value="accuracy" className="text-quantum-text data-[state=active]:bg-quantum-neon data-[state=active]:text-quantum-void">
+                    <BeakerIcon className="w-4 h-4 mr-2" />
+                    Accuracy Tests
+                  </TabsTrigger>
                   <TabsTrigger value="system" className="text-quantum-text data-[state=active]:bg-quantum-neon data-[state=active]:text-quantum-void">
                     <TestTube className="w-4 h-4 mr-2" />
                     System Tests
@@ -49,6 +55,51 @@ export default function TestingPage() {
                     CNOT Gate
                   </TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="accuracy" className="mt-6 space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4 text-sm mb-6">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-quantum-neon">Quantum State Validation</h3>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li>• State vector accuracy testing</li>
+                        <li>• Bell state creation validation</li>
+                        <li>• Multi-qubit entanglement verification</li>
+                        <li>• Probability distribution validation</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-quantum-neon">Gate Implementation Tests</h3>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li>• Hadamard gate matrix validation</li>
+                        <li>• CNOT gate truth table testing</li>
+                        <li>• Rotation gate parameter accuracy</li>
+                        <li>• Pauli gate transformations</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-quantum-neon">Performance Metrics</h3>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li>• Execution time benchmarks</li>
+                        <li>• Memory usage optimization</li>
+                        <li>• Fidelity measurements</li>
+                        <li>• Scalability testing (up to 50 qubits)</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-quantum-neon">Export Validation</h3>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li>• OpenQASM 2.0 compatibility</li>
+                        <li>• Qiskit format validation</li>
+                        <li>• JSON circuit representation</li>
+                        <li>• JavaScript SDK compliance</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <QuantumAccuracyTester />
+                </TabsContent>
                 
                 <TabsContent value="system" className="mt-6 space-y-6">
                   <div className="grid md:grid-cols-2 gap-4 text-sm mb-6">

@@ -7,15 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CircuitGate } from '@/hooks/useCircuitBuilder';
+import { QuantumGateOp } from '@/lib/enhancedQuantumSimulator';
 import { CNOTGateSelector } from './CNOTGateSelector';
 import { Plus, Zap, RotateCcw, Target } from 'lucide-react';
 
 interface GatePaletteAdvancedProps {
   onGateSelect: (gateType: string, qubits: string[], position: { x: number; y: number }, controlTarget?: { control: number; target: number }) => void;
   onQubitAdd: () => void;
-  selectedGate: CircuitGate | null;
-  circuit?: { qubits: { id: string; name: string; index: number }[] };
+  selectedGate: QuantumGateOp | null;
+  circuit?: { qubits: { id: string; name: string; index: number }[], gates: QuantumGateOp[] };
 }
 
 const singleQubitGates = [
