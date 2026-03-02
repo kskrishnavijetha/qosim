@@ -626,3 +626,105 @@
     transform: translateY(20px) translateX(10px);
   }
 }
+
+/* ===== MOBILE RESPONSIVENESS ===== */
+
+/* Minimum typography sizes */
+@layer base {
+  body {
+    font-size: 14px;
+  }
+  
+  @media (min-width: 768px) {
+    body {
+      font-size: 16px;
+    }
+  }
+
+  /* Enforce minimum text sizes */
+  * {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+@layer utilities {
+  /* Touch targets - Apple HIG minimum 44x44 */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Responsive grid layouts */
+  .responsive-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4;
+  }
+
+  /* Mobile-safe scrollable canvas */
+  .circuit-canvas-mobile {
+    @apply overflow-x-auto overflow-y-auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  /* Minimum label size */
+  .label-min {
+    font-size: max(0.75rem, 12px);
+  }
+
+  /* Minimum body text */
+  .body-min {
+    font-size: max(0.875rem, 14px);
+  }
+
+  /* No text smaller than 11px */
+  .text-safe {
+    font-size: max(0.6875rem, 11px);
+  }
+}
+
+/* Gate nodes touch targets on mobile */
+@media (max-width: 767px) {
+  .quantum-gate,
+  .gate-node,
+  [data-gate] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .dropzone,
+  [data-dropzone] {
+    min-height: 44px !important;
+  }
+
+  /* Ensure badges and small text stay readable */
+  .text-xs {
+    font-size: max(0.75rem, 11px) !important;
+  }
+
+  /* Make select triggers tappable */
+  button, [role="button"], select, input {
+    min-height: 44px;
+  }
+
+  /* Single column for all card grids */
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-5 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Allow 2-col for very small items like badges */
+  .grid-cols-2.compact-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Tablet breakpoint adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
