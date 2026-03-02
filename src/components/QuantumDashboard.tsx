@@ -18,7 +18,7 @@ import { QNNVisualBuilder } from './qnn/QNNVisualBuilder';
 import { QuantumMemoryMap } from './qmm/QuantumMemoryMap';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Github } from 'lucide-react';
+import { Github, Menu, X } from 'lucide-react';
 import GitHubIntegration from './github/GitHubIntegration';
 
 export default function QuantumDashboard() {
@@ -28,6 +28,7 @@ export default function QuantumDashboard() {
   const [githubDialogOpen, setGithubDialogOpen] = useState(false);
   const [circuit, setCircuit] = useState<any[]>([]);
   const [numQubits, setNumQubits] = useState(3);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSDKSelect = (sdkType: string) => {
     setSelectedSDK(sdkType);
@@ -42,11 +43,14 @@ export default function QuantumDashboard() {
   };
 
   const handleRunSimulation = () => {
-    // This will be handled by the circuit builder or simulation panel
     console.log('Running simulation with circuit:', circuit);
   };
 
-  // Create a default circuit object that matches the QuantumCircuit interface
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setSidebarOpen(false); // Close sidebar on mobile after selection
+  };
+
   const defaultCircuit = {
     id: 'default-circuit',
     name: 'Default Circuit',
@@ -127,21 +131,64 @@ export default function QuantumDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-quantum-void text-quantum-text">
-      <div className="w-64 bg-quantum-dark border-r border-quantum-neon/30">
+    <div className="flex h-screen bg-quantum-void text-quantum-text overflow-hidden">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - hidden on mobile, slides in when open */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
+        md:relative md:translate-x-0 md:z-auto
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        bg-quantum-dark border-r border-quantum-neon/30
+      `}>
+        {/* Mobile close button */}
+        <div className="absolute top-3 right-3 md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-quantum-text hover:text-quantum-glow"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
         <QuantumSidebar 
           activeTab={activeTab} 
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           onSDKSelect={handleSDKSelect}
         />
       </div>
-      <div className="flex-1 overflow-auto">
-        <div className="flex justify-between items-center p-4 border-b border-quantum-matrix bg-quantum-dark">
-          <h2 className="text-xl font-bold text-quantum-glow">Quantum OS</h2>
-          <div className="flex items-center gap-3">
+
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Topbar */}
+        <div className="flex justify-between items-center px-3 py-2 md:px-4 md:py-3 border-b border-quantum-matrix bg-quantum-dark">
+          <div className="flex items-center gap-2">
+            {/* Hamburger - mobile only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-quantum-text hover:text-quantum-glow"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            <h2 className="text-base md:text-xl font-bold text-quantum-glow truncate">
+              <span className="md:hidden">QOSim</span>
+              <span className="hidden md:inline">Quantum OS</span>
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* GitHub & profile - hidden on mobile, shown in sidebar footer instead */}
             <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
+                <Button variant="outline" size="sm" className="hidden md:inline-flex border-quantum-neon/30 text-quantum-glow hover:bg-quantum-neon/10">
                   <Github className="w-4 h-4 mr-2" />
                   GitHub
                 </Button>
@@ -158,7 +205,9 @@ export default function QuantumDashboard() {
             <UserProfileDropdown />
           </div>
         </div>
-        <div className="p-6">
+
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-3 md:p-6">
           {renderContent()}
         </div>
       </div>
